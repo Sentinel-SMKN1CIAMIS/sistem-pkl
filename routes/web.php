@@ -56,7 +56,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('kompetensi', \App\Http\Controllers\KompetensiController::class);
         Route::resource('panduan', \App\Http\Controllers\Admin\BukuPanduanController::class);
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
-        Route::get('logs', function() { return 'Logs'; })->name('logs.index');
+        Route::get('logs', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('logs.index');
         Route::get('config', [\App\Http\Controllers\Admin\ConfigController::class, 'index'])->name('config.index');
         Route::post('config', [\App\Http\Controllers\Admin\ConfigController::class, 'update'])->name('config.update');
     });

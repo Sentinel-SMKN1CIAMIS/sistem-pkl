@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\AuditLog;
 use Illuminate\Database\Eloquent\Model;
 
 class Jurnal extends Model
 {
+    use AuditLog;
     protected $fillable = [
         'siswa_id', 'kompetensi_id', 'tanggal', 
         'deskripsi_pekerjaan', 'catatan', 'foto_path', 

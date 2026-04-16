@@ -16,3 +16,14 @@
 - Perbaikan fatal error "namespace already in use" pada `NotifikasiController`.
 - Perbaikan missing PHP tag dan namespace pada `AbsensiController` (Siswa) dan `BukuPanduanController` (Admin).
 - Pembersihan duplikasi import (Request & Controller) pada `LaporanController` dan `PanduanController`.
+- Implementasi sistem **Audit Log (Log Aktivitas)** kustom untuk melacak aktivitas pengguna.
+- Pembuatan Trait `Auditable` untuk pemantauan otomatis pada model `User`, `Jurnal`, dan `Kompetensi`.
+- Implementasi Event Listener untuk pencatatan otomatis aktivitas **Login** dan **Logout**.
+- Pembuatan halaman **Log Sistem** di dashboard admin dengan antarmuka premium dan fitur pagination.
+- Penambahan `ActivityLogSeeder` untuk inisialisasi data log sistem.
+
+
+### Fixed
+- Perbaikan fatal error pada `UserController` (Admin) akibat hilangnya tag pembuka PHP `<?php` dan namespace declaration.
+- Perbaikan navigasi "Kelola Pengguna" pada sidebar admin agar mengarah ke route yang valid.
+- Perbaikan `RelationNotFoundException` pada halaman Kelola Kompetensi dengan mendefinisikan relasi `konsentrasiKeahlian` pada model `Kompetensi`.
