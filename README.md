@@ -150,7 +150,7 @@ SIPKL dikembangkan oleh **Tim RPL Sentinel SMKN 1 Ciamis**:
         <img src="https://github.com/PradiptaPPLG.png" width="100px;" alt="Pradipta"/><br />
         <sub><b>Pradipta Endra Maulana</b></sub>
       </a><br />
-      <sub>Lead Developer</sub>
+      <sub>Full Stack Developer</sub>
     </td>
     <td align="center">
       <a href="https://github.com/rasyakt" target="_blank">
@@ -164,14 +164,14 @@ SIPKL dikembangkan oleh **Tim RPL Sentinel SMKN 1 Ciamis**:
         <img src="https://github.com/rafliaditya0125.png" width="100px;" alt="Rafli Aditya"/><br />
         <sub><b>Rafli Aditya</b></sub>
       </a><br />
-      <sub>Backend Developer</sub>
+      <sub>Full Stack Developer</sub>
     </td>
     <td align="center">
       <a href="https://github.com/ZidnyAl-HikamMawarist" target="_blank">
         <img src="https://github.com/ZidnyAl-HikamMawarist.png" width="100px;" alt="Zidny Al-Hikam"/><br />
-        <sub><b>Zidny Al-Hikam M.</b></sub>
+        <sub><b>Zidny Al-Hikam Mawarist</b></sub>
       </a><br />
-      <sub>Busines Analyst & QA Engineer</sub>
+      <sub>Full Stack Developer</sub>
     </td>
   </tr>
 </table>
