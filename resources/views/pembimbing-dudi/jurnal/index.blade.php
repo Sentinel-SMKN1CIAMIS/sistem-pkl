@@ -2,7 +2,7 @@
     <x-slot name="header">Validasi Jurnal Siswa</x-slot>
 
     <div class="mb-6 flex justify-between items-center">
-        <p class="text-slate-400">Review dan berikan feedback pada laporan harian siswa PKL di perusahaan Anda.</p>
+        <p class="text-slate-600 dark:text-slate-400">Review dan berikan feedback pada laporan harian siswa PKL di perusahaan Anda.</p>
     </div>
 
     @if(session('success'))
@@ -19,12 +19,12 @@
                     <div class="flex flex-col md:flex-row justify-between gap-6">
                         <div class="flex-1">
                             <div class="flex items-center gap-4 mb-3">
-                                <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-blue-400 font-bold">
+                                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-blue-400 font-bold">
                                     {{ substr($item->siswa->nama_lengkap, 0, 1) }}
                                 </div>
                                 <div>
-                                    <span class="text-sm font-bold text-slate-100 block">{{ $item->siswa->nama_lengkap }}</span>
-                                    <span class="text-xs text-slate-500">{{ \Carbon\Carbon::parse($item->tanggal)->isoFormat('dddd, D MMMM YYYY') }}</span>
+                                    <span class="text-sm font-bold text-slate-900 dark:text-slate-100 block">{{ $item->siswa->nama_lengkap }}</span>
+                                    <span class="text-xs text-slate-500 dark:text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal)->isoFormat('dddd, D MMMM YYYY') }}</span>
                                 </div>
                                 <div class="ml-auto">
                                      @php
@@ -41,11 +41,11 @@
                             </div>
 
                             <div class="mt-4">
-                                <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-400 mb-2 inline-block">
+                                <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400 mb-2 inline-block">
                                     {{ $item->kompetensi->nama }}
                                 </span>
-                                <h3 class="text-lg font-semibold text-slate-100 mb-2">{{ $item->deskripsi_pekerjaan }}</h3>
-                                <p class="text-slate-400 text-sm italic mb-4">{{ $item->catatan }}</p>
+                                <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">{{ $item->deskripsi_pekerjaan }}</h3>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm italic mb-4">{{ $item->catatan }}</p>
                             </div>
 
                             @if($item->foto_path)
@@ -58,29 +58,29 @@
                         </div>
 
                         <!-- Sidebar Action -->
-                        <div class="w-full md:w-80 p-4 rounded-xl bg-slate-900/30 border border-slate-700/50">
+                        <div class="w-full md:w-80 p-4 rounded-xl bg-slate-100 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/50">
                             <form action="{{ route('pembimbing_dudi.jurnal.update', $item) }}" method="POST" class="space-y-4">
                                 @csrf
                                 @method('PATCH')
                                 
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tindakan</label>
+                                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Tindakan</label>
                                     <div class="grid grid-cols-2 gap-2">
                                         <button type="submit" name="status" value="valid" 
-                                                class="px-3 py-2 rounded-lg text-xs font-bold transition-all {{ $item->status == 'valid' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-800 text-slate-400 hover:bg-emerald-600/20 hover:text-emerald-400' }}">
+                                                class="px-3 py-2 rounded-lg text-xs font-bold transition-all {{ $item->status == 'valid' ? 'bg-emerald-600 text-slate-900 dark:text-white shadow-lg shadow-emerald-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-emerald-600/20 hover:text-emerald-400' }}">
                                             VALIDASI
                                         </button>
                                         <button type="submit" name="status" value="invalid" 
-                                                class="px-3 py-2 rounded-lg text-xs font-bold transition-all {{ $item->status == 'invalid' ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'bg-slate-800 text-slate-400 hover:bg-red-600/20 hover:text-red-400' }}">
+                                                class="px-3 py-2 rounded-lg text-xs font-bold transition-all {{ $item->status == 'invalid' ? 'bg-red-600 text-slate-900 dark:text-white shadow-lg shadow-red-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-red-600/20 hover:text-red-400' }}">
                                             TOLAK
                                         </button>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label for="catatan_pembimbing" class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Feedback / Catatan</label>
+                                    <label for="catatan_pembimbing" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Feedback / Catatan</label>
                                     <textarea name="catatan_pembimbing" rows="2" 
-                                              class="w-full px-3 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-sm text-slate-300 focus:ring-1 focus:ring-blue-500"
+                                              class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-blue-500"
                                               placeholder="Berikan saran atau alasan penolakan...">{{ $item->catatan_pembimbing }}</textarea>
                                 </div>
                             </form>
@@ -89,7 +89,7 @@
                 </div>
             </div>
         @empty
-             <div class="glass-card p-12 text-center text-slate-500 italic">
+             <div class="glass-card p-12 text-center text-slate-500 dark:text-slate-400 italic">
                 Semua jurnal siswa telah diproses atau belum ada data.
             </div>
         @endforelse

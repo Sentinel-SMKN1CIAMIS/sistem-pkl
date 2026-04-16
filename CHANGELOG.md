@@ -2,6 +2,12 @@
 
 ## [2026-04-16]
 ### Added
+- Implementasi sistem beralih tema (Light, Dark, dan System) secara menyeluruh menggunakan Alpine.js.
+- Refaktor antarmuka besar-besaran dengan menghapus seluruh efek "glassmorphism" dan "blur" sesuai preferensi desain solid.
+- Sinkronisasi warna teks global di 52+ file Blade agar mendukung keterbacaan di Mode Terang dan Gelap.
+- Implementasi fitur Daftar Siswa Bimbingan untuk Pembimbing Sekolah dan Pembimbing DUDI.
+- Perbaikan berbagai peringatan (*linting*) Tailwind CSS v4 untuk optimalisasi performa dan standar kode.
+- Pembersihan skrip refaktor sementara dari direktori utama.
 - Inisialisasi CHANGELOG.md sesuai dengan aturan proyek.
 - Implementasi status "Memproses" dan validasi otomatis pada tombol submit menggunakan Alpine.js.
 - Komponen Blade `<x-button>` untuk standarisasi tombol di seluruh aplikasi.

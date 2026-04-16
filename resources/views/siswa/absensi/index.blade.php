@@ -1,13 +1,13 @@
 <x-app-layout>
     <x-slot name="header">Absensi Harian PKL</x-slot>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 text-slate-300">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 text-slate-700 dark:text-slate-300">
         <!-- Main Action -->
         <div class="lg:col-span-1 space-y-6">
             <div class="glass-card p-6 text-center">
                 <div class="mb-6">
-                    <h2 class="text-3xl font-bold text-slate-100" id="current-time">00:00:00</h2>
-                    <p class="text-slate-400" id="current-date">{{ \Carbon\Carbon::now()->isoFormat('dddd, D MMMM YYYY') }}</p>
+                    <h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100" id="current-time">00:00:00</h2>
+                    <p class="text-slate-600 dark:text-slate-400" id="current-date">{{ \Carbon\Carbon::now()->isoFormat('dddd, D MMMM YYYY') }}</p>
                 </div>
 
                 @if(!$absensiToday)
@@ -19,11 +19,11 @@
                         <input type="hidden" name="longitude" id="longitude-input">
 
                         <div class="space-y-2">
-                             <label class="block text-sm font-medium text-slate-400 text-left">Tanda Tangan Digital</label>
+                             <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 text-left">Tanda Tangan Digital</label>
                              <div class="bg-white rounded-xl overflow-hidden cursor-crosshair">
                                  <canvas id="signature-pad" class="w-full h-40 border border-slate-300"></canvas>
                              </div>
-                             <button type="button" id="clear-pad" class="text-[10px] text-slate-500 hover:text-red-400 flex items-center gap-1">
+                             <button type="button" id="clear-pad" class="text-[10px] text-slate-500 dark:text-slate-400 hover:text-red-400 flex items-center gap-1">
                                  <i data-lucide="refresh-cw" class="w-3 h-3"></i> Bersihkan TTD
                              </button>
                         </div>
@@ -31,13 +31,13 @@
                         <x-button type="button" onclick="submitAbsensi()" variant="emerald" class="w-full py-4 !font-black !rounded-2xl shadow-emerald-500/20" icon="log-in">
                             ABSEN DATANG SEKARANG
                         </x-button>
-                        <p class="text-[10px] text-slate-500 italic">Harap aktifkan GPS perangkat Anda.</p>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 italic">Harap aktifkan GPS perangkat Anda.</p>
                     </form>
                 @elseif(!$absensiToday->waktu_pulang)
                     <!-- Clock Out Form -->
                     <div class="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl mb-6">
                         <p class="text-emerald-400 text-sm font-bold uppercase tracking-widest mb-1">Sudah Hadir</p>
-                        <p class="text-2xl font-bold text-slate-200">{{ \Carbon\Carbon::parse($absensiToday->waktu_datang)->format('H:i') }}</p>
+                        <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">{{ \Carbon\Carbon::parse($absensiToday->waktu_datang)->format('H:i') }}</p>
                     </div>
 
                     <form action="{{ route('siswa.absensi.clock-out') }}" method="POST">
@@ -48,12 +48,12 @@
                     </form>
                 @else
                     <!-- Finished Today -->
-                    <div class="py-12 bg-slate-800/30 rounded-2xl border border-slate-700/50">
+                    <div class="py-12 bg-white dark:bg-slate-800/30 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
                         <div class="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i data-lucide="check" class="w-10 h-10 text-emerald-400"></i>
                         </div>
-                        <h3 class="text-slate-100 font-bold italic">Selesai Untuk Hari Ini</h3>
-                        <p class="text-slate-400 text-sm">Selamat istirahat!</p>
+                        <h3 class="text-slate-900 dark:text-slate-100 font-bold italic">Selesai Untuk Hari Ini</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">Selamat istirahat!</p>
                     </div>
                 @endif
             </div>
@@ -75,8 +75,8 @@
         <!-- History -->
         <div class="lg:col-span-2">
             <div class="glass-card overflow-hidden">
-                <div class="p-6 border-b border-slate-700/50 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-100 flex items-center gap-2">
+                <div class="p-6 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                          <i data-lucide="history" class="w-5 h-5 text-blue-400"></i>
                          Riwayat Kehadiran
                     </h3>
@@ -84,7 +84,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
-                            <tr class="bg-slate-800/30 border-b border-slate-700/50 text-slate-400 text-xs uppercase font-bold tracking-wider">
+                            <tr class="bg-white dark:bg-slate-800/30 border-b border-slate-200/50 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
                                 <th class="px-6 py-4">Tanggal</th>
                                 <th class="px-6 py-4">Status</th>
                                 <th class="px-6 py-4">Datang</th>
@@ -94,13 +94,13 @@
                         </thead>
                         <tbody class="divide-y divide-slate-700/50 text-sm">
                             @foreach($history as $row)
-                                <tr class="hover:bg-slate-800/10 transition-colors">
-                                    <td class="px-6 py-4 font-medium text-slate-300">{{ \Carbon\Carbon::parse($row->tanggal)->format('d M Y') }}</td>
+                                <tr class="hover:bg-white dark:bg-slate-800/10 transition-colors">
+                                    <td class="px-6 py-4 font-medium text-slate-700 dark:text-slate-300">{{ \Carbon\Carbon::parse($row->tanggal)->format('d M Y') }}</td>
                                     <td class="px-6 py-4">
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Hadir</span>
                                     </td>
-                                    <td class="px-6 py-4 text-slate-400">{{ $row->waktu_datang ? \Carbon\Carbon::parse($row->waktu_datang)->format('H:i') : '-' }}</td>
-                                    <td class="px-6 py-4 text-slate-400">{{ $row->waktu_pulang ? \Carbon\Carbon::parse($row->waktu_pulang)->format('H:i') : '-' }}</td>
+                                    <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ $row->waktu_datang ? \Carbon\Carbon::parse($row->waktu_datang)->format('H:i') : '-' }}</td>
+                                    <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ $row->waktu_pulang ? \Carbon\Carbon::parse($row->waktu_pulang)->format('H:i') : '-' }}</td>
                                     <td class="px-6 py-4">
                                         @if($row->latitude)
                                             <a href="https://www.google.com/maps?q={{ $row->latitude }},{{ $row->longitude }}" target="_blank" class="text-blue-400 hover:text-blue-300 flex items-center">

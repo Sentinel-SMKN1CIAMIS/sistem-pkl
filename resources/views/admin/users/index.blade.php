@@ -2,7 +2,7 @@
     <x-slot name="header">Kelola Pengguna Sistem</x-slot>
 
     <div class="mb-6 flex justify-between items-center">
-        <p class="text-slate-400">Total terdaftar: <span class="text-blue-400 font-bold">{{ $users->total() }}</span> akun.</p>
+        <p class="text-slate-600 dark:text-slate-400">Total terdaftar: <span class="text-blue-400 font-bold">{{ $users->total() }}</span> akun.</p>
     </div>
 
     @if(session('success'))
@@ -16,7 +16,7 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
-                    <tr class="bg-slate-800/30 border-b border-slate-700/50 text-slate-400 text-xs uppercase font-bold tracking-wider">
+                    <tr class="bg-white dark:bg-slate-800/30 border-b border-slate-200/50 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
                         <th class="px-6 py-4">Username</th>
                         <th class="px-6 py-4">Role</th>
                         <th class="px-6 py-4">Terdaftar</th>
@@ -25,9 +25,9 @@
                 </thead>
                 <tbody class="divide-y divide-slate-700/50 text-sm italic">
                     @foreach($users as $user)
-                        <tr class="hover:bg-slate-800/10 transition-colors group">
+                        <tr class="hover:bg-white dark:bg-slate-800/10 transition-colors group">
                             <td class="px-6 py-4">
-                                <span class="text-slate-200 font-bold not-italic font-mono">{{ $user->username }}</span>
+                                <span class="text-slate-800 dark:text-slate-200 font-bold not-italic font-mono">{{ $user->username }}</span>
                             </td>
                             <td class="px-6 py-4">
                                 @php
@@ -39,22 +39,22 @@
                                         'pembimbing_dudi' => 'bg-amber-500/10 text-amber-400 border-amber-500/20',
                                     ];
                                 @endphp
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-black border {{ $roleClasses[$user->role] ?? 'bg-slate-500/10 text-slate-400' }}">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-black border {{ $roleClasses[$user->role] ?? 'bg-slate-500/10 text-slate-600 dark:text-slate-400' }}">
                                     {{ str_replace('_', ' ', $user->role) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-slate-500 whitespace-nowrap">
+                            <td class="px-6 py-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                 {{ $user->created_at->format('d M Y') }}
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <a href="{{ route('admin.users.edit', $user) }}" class="p-2 text-slate-400 hover:text-blue-400 transition-colors">
+                                    <a href="{{ route('admin.users.edit', $user) }}" class="p-2 text-slate-600 dark:text-slate-400 hover:text-blue-400 transition-colors">
                                         <i data-lucide="edit-3" class="w-4 h-4"></i>
                                     </a>
                                     <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Hapus user ini?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="p-2 text-slate-400 hover:text-red-400 transition-colors">
+                                        <button class="p-2 text-slate-600 dark:text-slate-400 hover:text-red-400 transition-colors">
                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
                                     </form>
@@ -66,7 +66,7 @@
             </table>
         </div>
         @if($users->hasPages())
-            <div class="px-6 py-4 border-t border-slate-700/50">
+            <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50">
                 {{ $users->links() }}
             </div>
         @endif

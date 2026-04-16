@@ -2,7 +2,7 @@
     <x-slot name="header">Monitoring Jurnal Siswa</x-slot>
 
     <div class="mb-6">
-        <p class="text-slate-400">Pantau aktivitas harian siswa bimbingan Anda di industri.</p>
+        <p class="text-slate-600 dark:text-slate-400">Pantau aktivitas harian siswa bimbingan Anda di industri.</p>
     </div>
 
     <div class="grid grid-cols-1 gap-6">
@@ -10,12 +10,12 @@
             <div class="glass-card overflow-hidden">
                 <div class="p-6">
                     <div class="flex items-center gap-4 mb-4">
-                        <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 font-bold">
+                        <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-emerald-400 font-bold">
                             {{ substr($item->siswa->nama_lengkap, 0, 1) }}
                         </div>
                         <div>
-                            <span class="text-sm font-bold text-slate-100 block">{{ $item->siswa->nama_lengkap }}</span>
-                            <span class="text-xs text-slate-500">{{ \Carbon\Carbon::parse($item->tanggal)->isoFormat('dddd, D MMMM YYYY') }}</span>
+                            <span class="text-sm font-bold text-slate-900 dark:text-slate-100 block">{{ $item->siswa->nama_lengkap }}</span>
+                            <span class="text-xs text-slate-500 dark:text-slate-400">{{ \Carbon\Carbon::parse($item->tanggal)->isoFormat('dddd, D MMMM YYYY') }}</span>
                         </div>
                         <div class="ml-auto">
                              @php
@@ -32,11 +32,11 @@
                     </div>
 
                     <div class="pl-14">
-                        <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-400 mb-2 inline-block">
+                        <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400 mb-2 inline-block">
                             {{ $item->kompetensi->nama }}
                         </span>
-                        <h3 class="text-base font-semibold text-slate-200 mb-2">{{ $item->deskripsi_pekerjaan }}</h3>
-                        <p class="text-slate-400 text-sm italic mb-4">{{ $item->catatan }}</p>
+                        <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">{{ $item->deskripsi_pekerjaan }}</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm italic mb-4">{{ $item->catatan }}</p>
 
                         @if($item->catatan_pembimbing)
                             <div class="p-3 rounded-lg bg-blue-500/5 border border-blue-500/10 text-xs text-blue-300/80">
@@ -47,7 +47,7 @@
                 </div>
             </div>
         @empty
-             <div class="glass-card p-12 text-center text-slate-500 italic">
+             <div class="glass-card p-12 text-center text-slate-500 dark:text-slate-400 italic">
                 Belum ada aktivitas jurnal dari siswa bimbingan Anda.
             </div>
         @endforelse

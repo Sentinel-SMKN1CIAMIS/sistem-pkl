@@ -8,8 +8,8 @@
                     <i data-lucide="graduation-cap" class="w-6 h-6 text-blue-400"></i>
                 </div>
                 <div>
-                    <p class="text-slate-400 text-sm font-medium mb-1">Total Siswa PKL</p>
-                    <h3 class="text-2xl font-bold text-slate-100">{{ $stats['total_siswa'] ?? 0 }}</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Total Siswa PKL</p>
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $stats['total_siswa'] ?? 0 }}</h3>
                 </div>
             </div>
         </div>
@@ -20,8 +20,8 @@
                     <i data-lucide="building-2" class="w-6 h-6 text-amber-400"></i>
                 </div>
                 <div>
-                    <p class="text-slate-400 text-sm font-medium mb-1">Total DUDI</p>
-                    <h3 class="text-2xl font-bold text-slate-100">{{ $stats['total_dudi'] ?? 0 }}</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Total DUDI</p>
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $stats['total_dudi'] ?? 0 }}</h3>
                 </div>
             </div>
         </div>
@@ -32,8 +32,8 @@
                     <i data-lucide="users" class="w-6 h-6 text-purple-400"></i>
                 </div>
                 <div>
-                    <p class="text-slate-400 text-sm font-medium mb-1">Pembimbing Sekolah</p>
-                    <h3 class="text-2xl font-bold text-slate-100">{{ $stats['total_pembimbing'] ?? 0 }}</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Pembimbing Sekolah</p>
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $stats['total_pembimbing'] ?? 0 }}</h3>
                 </div>
             </div>
         </div>
@@ -44,8 +44,8 @@
                     <i data-lucide="check-circle" class="w-6 h-6 text-emerald-400"></i>
                 </div>
                 <div>
-                    <p class="text-slate-400 text-sm font-medium mb-1">Sistem Aktif</p>
-                    <h3 class="text-2xl font-bold text-slate-100">100%</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Sistem Aktif</p>
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">100%</h3>
                 </div>
             </div>
         </div>

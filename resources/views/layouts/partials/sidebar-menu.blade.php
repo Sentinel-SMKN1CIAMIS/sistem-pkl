@@ -54,8 +54,11 @@
             $isActive = request()->routeIs($item['route']);
         @endphp
         <a href="{{ route($item['route']) }}" 
-           class="{{ $isActive ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent' }} flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group">
-            <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 {{ $isActive ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300' }}"></i>
+           class="{{ $isActive 
+                ? 'bg-blue-600/10 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20' 
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 border border-transparent' 
+           }} flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group">
+            <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 {{ $isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-blue-500 transition-colors' }}"></i>
             {{ $item['name'] }}
         </a>
     @endforeach

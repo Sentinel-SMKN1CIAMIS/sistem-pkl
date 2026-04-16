@@ -3,12 +3,12 @@
 
     <div class="max-w-2xl mx-auto space-y-4">
         @forelse($notifikasis as $item)
-            <div class="glass-card p-6 border-l-4 {{ $item->is_read ? 'border-slate-700 opacity-60' : 'border-blue-500' }} transition-all">
+            <div class="glass-card p-6 border-l-4 {{ $item->is_read ? 'border-slate-200 dark:border-slate-700 opacity-60' : 'border-blue-500' }} transition-all">
                 <div class="flex justify-between items-start gap-4">
                     <div class="flex-1">
-                        <h3 class="font-bold text-slate-100 mb-1">{{ $item->judul }}</h3>
-                        <p class="text-sm text-slate-400 mb-3">{{ $item->pesan }}</p>
-                        <span class="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">
+                        <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1">{{ $item->judul }}</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">{{ $item->pesan }}</p>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-tighter uppercase">
                             {{ $item->created_at->diffForHumans() }}
                         </span>
                     </div>
@@ -25,7 +25,7 @@
                 </div>
             </div>
         @empty
-            <div class="glass-card p-12 text-center text-slate-500 italic">
+            <div class="glass-card p-12 text-center text-slate-500 dark:text-slate-400 italic">
                 Tidak ada notifikasi baru untuk Anda.
             </div>
         @endforelse
