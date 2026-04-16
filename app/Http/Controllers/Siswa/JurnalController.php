@@ -34,7 +34,7 @@ class JurnalController extends Controller
         $request->validate([
             'kompetensi_id' => 'required|exists:kompetensis,id',
             'tanggal' => 'required|date',
-            'deskripsi_pekerjaan' => 'required|string',
+            'kegiatan' => 'required|string',
             'catatan' => 'nullable|string',
             'foto' => 'nullable|image|max:2048'
         ]);

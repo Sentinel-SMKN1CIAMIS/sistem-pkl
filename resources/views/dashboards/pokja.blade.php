@@ -9,7 +9,7 @@
                 </div>
                 <div>
                     <p class="text-slate-400 text-sm font-medium mb-1">Total Siswa PKL</p>
-                    <h3 class="text-2xl font-bold text-slate-100">600</h3>
+                    <h3 class="text-2xl font-bold text-slate-100">{{ $stats['total_siswa'] ?? 0 }}</h3>
                 </div>
             </div>
         </div>
@@ -21,7 +21,7 @@
                 </div>
                 <div>
                     <p class="text-slate-400 text-sm font-medium mb-1">Total DUDI</p>
-                    <h3 class="text-2xl font-bold text-slate-100">120</h3>
+                    <h3 class="text-2xl font-bold text-slate-100">{{ $stats['total_dudi'] ?? 0 }}</h3>
                 </div>
             </div>
         </div>
@@ -33,7 +33,7 @@
                 </div>
                 <div>
                     <p class="text-slate-400 text-sm font-medium mb-1">Pembimbing Sekolah</p>
-                    <h3 class="text-2xl font-bold text-slate-100">45</h3>
+                    <h3 class="text-2xl font-bold text-slate-100">{{ $stats['total_pembimbing'] ?? 0 }}</h3>
                 </div>
             </div>
         </div>
@@ -41,10 +41,10 @@
         <div class="glass-card p-6 border-t-4 border-emerald-500">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="network" class="w-6 h-6 text-emerald-400"></i>
+                    <i data-lucide="check-circle" class="w-6 h-6 text-emerald-400"></i>
                 </div>
                 <div>
-                    <p class="text-slate-400 text-sm font-medium mb-1">Telah Dipetakan</p>
+                    <p class="text-slate-400 text-sm font-medium mb-1">Sistem Aktif</p>
                     <h3 class="text-2xl font-bold text-slate-100">100%</h3>
                 </div>
             </div>

@@ -32,10 +32,10 @@
                     </div>
 
                     <div class="md:col-span-2">
-                        <label for="deskripsi_pekerjaan" class="block text-sm font-medium text-slate-300 mb-2">Apa yang kamu kerjakan hari ini?</label>
-                        <input type="text" name="deskripsi_pekerjaan" id="deskripsi_pekerjaan" required
-                               class="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-200 transition-all"
-                               placeholder="Contoh: Maintenance jaringan server atau slicing landing page">
+                        <label for="kegiatan" class="block text-sm font-medium text-slate-300 mb-2">Unit Kerja / Pekerjaan</label>
+                        <input type="text" name="kegiatan" id="kegiatan" required
+                               class="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-200 transition-all font-mono"
+                               placeholder="Sebutkan unit kerja dan apa yang Anda kerjakan hari ini...">
                     </div>
 
                     <div class="md:col-span-2">

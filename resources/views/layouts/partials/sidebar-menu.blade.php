@@ -39,7 +39,7 @@
         $navItems = [
             ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
             ['name' => 'Kelola Pengguna', 'route' => 'admin.users.index', 'icon' => 'users'],
-            ['name' => 'Konfigurasi Sistem', 'route' => 'admin.konfigurasi.index', 'icon' => 'settings'],
+            ['name' => 'Konfigurasi Sistem', 'route' => 'admin.config.index', 'icon' => 'settings'],
             ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book'],
             ['name' => 'Konsentrasi Keahlian', 'route' => 'admin.konsentrasi_keahlian.index', 'icon' => 'layers'],
             ['name' => 'Kompetensi', 'route' => 'admin.kompetensi.index', 'icon' => 'target'],

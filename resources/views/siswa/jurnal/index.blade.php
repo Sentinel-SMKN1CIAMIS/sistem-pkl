@@ -2,11 +2,17 @@
     <x-slot name="header">Jurnal Kegiatan PKL</x-slot>
 
     <div class="mb-6 flex justify-between items-center">
-        <p class="text-slate-400">Catat setiap aktivitas pengerjaan atau pembelajaran di industri.</p>
-        <a href="{{ route('siswa.jurnal.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-5 h-5"></i>
-            Tambah Jurnal
-        </a>
+        <p class="text-slate-400">Catat setiap aktivitas pengerjaan atau pembelajaran di industri sesuai format resmi.</p>
+        <div class="flex gap-3">
+            <a href="{{ route('siswa.jurnal.export') }}" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl border border-slate-700 transition-all flex items-center gap-2">
+                <i data-lucide="printer" class="w-5 h-5"></i>
+                Cetak Jurnal
+            </a>
+            <a href="{{ route('siswa.jurnal.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                Tambah Jurnal
+            </a>
+        </div>
     </div>
 
     @if(session('success'))
@@ -35,7 +41,9 @@
                                     {{ $item->status }}
                                 </span>
                             </div>
-                            <h3 class="text-lg font-semibold text-slate-100 mb-2">{{ $item->deskripsi_pekerjaan }}</h3>
+                             <h3 class="text-lg font-black text-slate-100 mb-2 uppercase tracking-wide decoration-blue-500 underline underline-offset-8 decoration-2">
+                                {{ $item->kegiatan }}
+                             </h3>
                             <div class="flex items-center gap-2 mb-4">
                                 <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-400">
                                     {{ $item->kompetensi->nama }}

@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
         Route::get('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'index'])->name('laporan.index');
         Route::post('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'store'])->name('laporan.store');
         Route::get('panduan', [\App\Http\Controllers\Siswa\PanduanController::class, 'index'])->name('panduan.index');
+        Route::get('jurnal/export', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'export'])->name('jurnal.export');
     });
 
     // Verification Routes (Review by Mentors)
@@ -56,7 +57,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('panduan', \App\Http\Controllers\Admin\BukuPanduanController::class);
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
         Route::get('logs', function() { return 'Logs'; })->name('logs.index');
-        Route::get('konfigurasi', function() { return 'Config'; })->name('konfigurasi.index');
+        Route::get('config', [\App\Http\Controllers\Admin\ConfigController::class, 'index'])->name('config.index');
+        Route::post('config', [\App\Http\Controllers\Admin\ConfigController::class, 'update'])->name('config.update');
     });
 
     // Pokja Routes

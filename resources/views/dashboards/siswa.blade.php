@@ -7,7 +7,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-slate-400 text-sm font-medium mb-1">Status PKL</p>
-                    <h3 class="text-2xl font-bold text-slate-100">Sedang Berjalan</h3>
+                    <h3 class="text-xl font-bold text-slate-100 uppercase tracking-tighter">{{ str_replace('_', ' ', auth()->user()->siswa->status_pkl) }}</h3>
                 </div>
                 <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center relative z-10">
                     <i data-lucide="activity" class="w-6 h-6 text-blue-400"></i>
@@ -16,7 +16,7 @@
             <div class="mt-4 pt-4 border-t border-slate-700/50">
                 <p class="text-sm text-slate-400 flex items-center gap-2">
                     <i data-lucide="building-2" class="w-4 h-4 text-slate-500"></i>
-                    PT Teknologi Nusantara
+                    {{ auth()->user()->siswa->dudi->nama ?? 'Belum Penempatan' }}
                 </p>
             </div>
         </div>
@@ -26,7 +26,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-slate-400 text-sm font-medium mb-1">Jurnal Terisi</p>
-                    <h3 class="text-2xl font-bold text-slate-100">45 <span class="text-sm font-normal text-slate-400">/ 120 Hari</span></h3>
+                    <h3 class="text-2xl font-bold text-slate-100">{{ $stats['jurnal_total'] }} <span class="text-sm font-normal text-slate-400">Harian</span></h3>
                 </div>
                 <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center relative z-10">
                     <i data-lucide="book-open" class="w-6 h-6 text-emerald-400"></i>
@@ -34,10 +34,10 @@
             </div>
             <div class="mt-4 pt-4 border-t border-slate-700/50 relative pt-1">
                 <div class="flex mb-2 items-center justify-between">
-                    <span class="text-xs font-semibold inline-block text-emerald-400">37% Process</span>
+                    <span class="text-xs font-semibold inline-block text-emerald-400">Valid: {{ $stats['jurnal_valid'] }}</span>
                 </div>
                 <div class="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-slate-700">
-                    <div style="width: 37%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-emerald-400 to-emerald-500"></div>
+                    <div style="width: {{ $stats['jurnal_total'] > 0 ? ($stats['jurnal_valid'] / $stats['jurnal_total'] * 100) : 0 }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-emerald-400 to-emerald-500"></div>
                 </div>
             </div>
         </div>
@@ -46,15 +46,15 @@
             <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-slate-400 text-sm font-medium mb-1">Persentase Hadir</p>
-                    <h3 class="text-2xl font-bold text-slate-100">98%</h3>
+                    <p class="text-slate-400 text-sm font-medium mb-1">Kehadiran</p>
+                    <h3 class="text-2xl font-bold text-slate-100">{{ $stats['absensi_count'] }} <span class="text-sm font-normal text-slate-400">Hari</span></h3>
                 </div>
                 <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center relative z-10">
                     <i data-lucide="check-circle" class="w-6 h-6 text-purple-400"></i>
                 </div>
             </div>
             <div class="mt-4 pt-4 border-t border-slate-700/50">
-                <p class="text-sm text-slate-400"><span class="text-emerald-400">Sangat Baik</span>, pertahankan!</p>
+                <p class="text-sm text-slate-400">Absensi harian tercatat di sistem.</p>
             </div>
         </div>
     </div>
