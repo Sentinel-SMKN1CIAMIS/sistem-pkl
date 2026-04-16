@@ -67,8 +67,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);
         Route::resource('pembimbing_dudi', \App\Http\Controllers\PembimbingDudiController::class);
-        Route::get('pemetaan', function() { return 'Pemetaan'; })->name('pemetaan.index');
+        Route::get('pemetaan', [\App\Http\Controllers\Pokja\PemetaanController::class, 'index'])->name('pemetaan.index');
         Route::get('monitoring', [\App\Http\Controllers\Pokja\MonitoringController::class, 'index'])->name('monitoring.index');
-        Route::get('evaluasi', function() { return 'Evaluasi'; })->name('evaluasi.index');
+        Route::get('evaluasi', [\App\Http\Controllers\Pokja\EvaluasiController::class, 'index'])->name('evaluasi.index');
     });
 });

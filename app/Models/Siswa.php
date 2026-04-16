@@ -42,4 +42,10 @@ class Siswa extends Model
     {
         return $this->hasMany(Absensi::class);
     }
+
+    public function laporan()
+    {
+        return $this->hasOne(LaporanPkl::class);
+    }
 }
+

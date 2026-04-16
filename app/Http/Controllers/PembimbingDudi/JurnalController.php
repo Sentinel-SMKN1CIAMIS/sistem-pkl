@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Jurnal;
 use App\Models\Siswa;
-use Illuminate\Http\Request;
+
 
 class JurnalController extends Controller
 {

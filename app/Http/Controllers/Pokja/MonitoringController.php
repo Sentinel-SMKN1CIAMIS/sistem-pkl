@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\PembimbingSekolah;
 use App\Models\Siswa;
 use App\Models\Jurnal;
-use Illuminate\Http\Request;
+
 
 class MonitoringController extends Controller
 {
