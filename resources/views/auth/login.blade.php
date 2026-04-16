@@ -20,7 +20,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}" class="space-y-6">
+        <form method="POST" action="{{ route('login') }}" class="space-y-6" x-data="{ username: '{{ old('username') }}', password: '' }">
             @csrf
 
             <!-- Username -->
@@ -30,7 +30,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i data-lucide="user" class="h-5 w-5 text-slate-500"></i>
                     </div>
-                    <input id="username" name="username" type="text" value="{{ old('username') }}" required autofocus
+                    <input id="username" name="username" type="text" value="{{ old('username') }}" required autofocus x-model="username"
                            class="w-full pl-10 pr-3 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-200 placeholder-slate-500 transition-all"
                            placeholder="Masukkan username anda">
                 </div>
@@ -43,7 +43,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i data-lucide="lock" class="h-5 w-5 text-slate-500"></i>
                     </div>
-                    <input id="password" name="password" type="password" required
+                    <input id="password" name="password" type="password" required x-model="password"
                            class="w-full pl-10 pr-3 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-200 placeholder-slate-500 transition-all"
                            placeholder="••••••••">
                 </div>
@@ -59,7 +59,7 @@
             </div>
 
             <!-- Submit -->
-            <x-button class="w-full" icon="arrow-right-circle">
+            <x-button class="w-full" icon="arrow-right-circle" x-bind:error-text="!username && !password ? 'isi username/NIS/NIP dan password' : (!username ? 'Isi username/NIS/NIP' : 'Isi Password')">
                 Masuk
             </x-button>
         </form>

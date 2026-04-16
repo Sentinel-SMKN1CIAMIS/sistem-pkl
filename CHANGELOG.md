@@ -9,3 +9,6 @@
 - Fitur pesan validasi real-time pada komponen `<x-button>` jika form tidak valid.
 - Penggunaan `<x-button>` pada halaman login, logout, create user admin, dan absensi siswa.
 - Penambahan varian warna 'emerald' dan 'orange' pada komponen `<x-button>`.
+- Relokasi pesan validasi form dari bawah tombol ke teks di dalam tombol itu sendiri pada komponen `<x-button>`.
+- Implementasi logika pesan validasi dinamis pada halaman login (Isi username/NIS/NIP, Isi Password, atau keduanya) yang ditampilkan langsung pada tombol.
+- Penambahan prop `errorText` pada komponen `<x-button>` untuk kustomisasi pesan error inline.

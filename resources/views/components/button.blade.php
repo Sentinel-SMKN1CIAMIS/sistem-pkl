@@ -3,6 +3,7 @@
     'variant' => 'primary',
     'class' => '',
     'icon' => null,
+    'errorText' => 'Lengkapi data',
 ])
 
 @php
@@ -49,10 +50,29 @@
     <!-- Normal State -->
     <template x-if="!loading">
         <div class="flex items-center gap-2">
-            {{ $slot }}
-            @if($icon)
-                <i data-lucide="{{ $icon }}" class="w-5 h-5"></i>
-            @endif
+            <!-- Default State -->
+            <template x-if="!form || isValid">
+                <div class="flex items-center gap-2">
+                    {{ $slot }}
+                    @if($icon)
+                        <i data-lucide="{{ $icon }}" class="w-5 h-5"></i>
+                    @endif
+                </div>
+            </template>
+
+            <!-- Error State -->
+            <template x-if="form && !isValid">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    <span>
+                        @if($attributes->has('error-text'))
+                            <span x-text="{{ $attributes->get('error-text') }}"></span>
+                        @else
+                            {{ $errorText }}
+                        @endif
+                    </span>
+                </div>
+            </template>
         </div>
     </template>
 
@@ -67,9 +87,3 @@
         </div>
     </template>
 </button>
-
-<!-- Validation Message -->
-<div x-show="form && !isValid" x-cloak class="mt-2 text-xs text-red-400 flex items-center gap-1 animate-pulse">
-    <i data-lucide="alert-circle" class="w-3 h-3"></i>
-    <span>Lengkapi semua data dengan benar.</span>
-</div>
