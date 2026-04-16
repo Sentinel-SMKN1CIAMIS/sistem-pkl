@@ -48,10 +48,9 @@
                 </div>
 
                 <div class="pt-4 flex justify-end">
-                    <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all text-sm uppercase tracking-widest flex items-center gap-2">
-                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                    <x-button icon="user-plus" class="px-8 py-3 !text-sm uppercase tracking-widest">
                         Buat Akun Sekarang
-                    </button>
+                    </x-button>
                 </div>
             </form>
         </div>

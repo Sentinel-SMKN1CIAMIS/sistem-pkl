@@ -59,10 +59,9 @@
             </div>
 
             <!-- Submit -->
-            <button type="submit" class="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 flex justify-center items-center gap-2">
+            <x-button class="w-full" icon="arrow-right-circle">
                 Masuk
-                <i data-lucide="arrow-right-circle" class="w-5 h-5"></i>
-            </button>
+            </x-button>
         </form>
 
         <div class="mt-8 text-center border-t border-slate-700/50 pt-6">

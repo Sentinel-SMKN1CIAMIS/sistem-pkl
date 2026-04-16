@@ -28,10 +28,9 @@
                              </button>
                         </div>
 
-                        <button type="button" onclick="submitAbsensi()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-3 active:scale-95">
-                            <i data-lucide="log-in" class="w-6 h-6"></i>
+                        <x-button type="button" onclick="submitAbsensi()" variant="emerald" class="w-full py-4 !font-black !rounded-2xl shadow-emerald-500/20" icon="log-in">
                             ABSEN DATANG SEKARANG
-                        </button>
+                        </x-button>
                         <p class="text-[10px] text-slate-500 italic">Harap aktifkan GPS perangkat Anda.</p>
                     </form>
                 @elseif(!$absensiToday->waktu_pulang)
@@ -43,10 +42,9 @@
 
                     <form action="{{ route('siswa.absensi.clock-out') }}" method="POST">
                         @csrf
-                        <button type="submit" class="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 transition-all flex items-center justify-center gap-3 active:scale-95">
-                            <i data-lucide="log-out" class="w-6 h-6"></i>
+                        <x-button variant="orange" class="w-full py-4 !font-black !rounded-2xl shadow-orange-500/20" icon="log-out">
                             ABSEN PULANG
-                        </button>
+                        </x-button>
                     </form>
                 @else
                     <!-- Finished Today -->
