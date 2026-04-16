@@ -1,3 +1,7 @@
+<?php
+
+namespace App\Http\Controllers\Siswa;
+
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use Illuminate\Http\Request;

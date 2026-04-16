@@ -12,3 +12,7 @@
 - Relokasi pesan validasi form dari bawah tombol ke teks di dalam tombol itu sendiri pada komponen `<x-button>`.
 - Implementasi logika pesan validasi dinamis pada halaman login (Isi username/NIS/NIP, Isi Password, atau keduanya) yang ditampilkan langsung pada tombol.
 - Penambahan prop `errorText` pada komponen `<x-button>` untuk kustomisasi pesan error inline.
+- Implementasi fitur show/hide password pada halaman login untuk meningkatkan UX.
+- Perbaikan fatal error "namespace already in use" pada `NotifikasiController`.
+- Perbaikan missing PHP tag dan namespace pada `AbsensiController` (Siswa) dan `BukuPanduanController` (Admin).
+- Pembersihan duplikasi import (Request & Controller) pada `LaporanController` dan `PanduanController`.

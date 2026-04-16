@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\Notifikasi;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class NotifikasiController extends Controller

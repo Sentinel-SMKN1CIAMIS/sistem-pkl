@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use App\Http\Controllers\Controller;
 use App\Models\LaporanPkl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
