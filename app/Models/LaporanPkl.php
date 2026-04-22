@@ -8,7 +8,11 @@ class LaporanPkl extends Model
 {
     protected $fillable = [
         'siswa_id', 'judul', 'deskripsi', 
-        'file_path', 'status', 'submitted_at'
+        'link_media_sosial', 'status', 'submitted_at'
+    ];
+
+    protected $casts = [
+        'link_media_sosial' => 'array',
     ];
 
     public function siswa()

@@ -56,21 +56,23 @@
                             </td>
                             <td class="px-6 py-4">
                                 @php
-                                    $statusClasses = [
-                                        'belum_mulai' => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
-                                        'sedang_pkl' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-                                        'selesai' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-                                        'dibatalkan' => 'bg-red-500/10 text-red-400 border-red-500/20',
-                                    ];
-                                    $statusLabels = [
-                                        'belum_mulai' => 'Belum Mulai',
-                                        'sedang_pkl' => 'Sedang PKL',
-                                        'selesai' => 'Selesai',
-                                        'dibatalkan' => 'Dibatalkan',
-                                    ];
+                                    $hariIni = strtolower($item->status_hari_ini);
+                                    if ($hariIni === 'masuk kerja') {
+                                        $statusClass = 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+                                    } elseif ($hariIni === 'pulang kerja') {
+                                        $statusClass = 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
+                                    } elseif ($hariIni === 'selesai') {
+                                        $statusClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                                    } elseif ($hariIni === 'dibatalkan') {
+                                        $statusClass = 'bg-red-500/10 text-red-500 border-red-500/20';
+                                    } elseif ($hariIni === 'belum absen') {
+                                        $statusClass = 'bg-slate-500/10 text-slate-500 border-slate-500/20';
+                                    } else {
+                                        $statusClass = 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
+                                    }
                                 @endphp
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border {{ $statusClasses[$item->status_pkl] }}">
-                                    {{ $statusLabels[$item->status_pkl] }}
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border {{ $statusClass }}">
+                                    {{ $item->status_hari_ini }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">

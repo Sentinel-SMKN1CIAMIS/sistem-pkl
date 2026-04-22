@@ -19,6 +19,20 @@
 - Perbaikan bug foto jurnal **tidak tersimpan** — field form `kegiatan` tidak dipetakan ke kolom database `deskripsi_pekerjaan` pada controller `JurnalController@store`.
 - Perbaikan bug data kegiatan tidak muncul pada daftar jurnal dan hasil export PDF dengan mengganti properti lama `$item->kegiatan` menjadi `$item->deskripsi_pekerjaan`.
 - Perbaikan bug foto jurnal **tidak tersimpan** pada halaman Tambah Jurnal Harian — foto hasil crop tidak terkirim ke server karena field form `foto_bukti` tidak memiliki atribut `name`.
+- Perubahan format angka "Rata-rata Jurnal Valid" pada halaman Evaluasi Progres Siswa agar ditampilkan sebagai angka bulat (integer).
+- Perubahan tampilan kolom "Progress Jurnal" dari menggunakan format pecah (contoh: 1/10) menjadi menggunakan kata hubung (contoh: 1 dari 10).
+
+### Added
+- Penambahan fitur input form **Link Media Sosial** dinamis (seperti link YouTube atau TikTok) pada Laporan Akhir PKL Siswa. Pengguna dapat menambahkan hingga 5 link dengan menekan tombol "Tambah Link" menggunakan Alpine.js.
+- Pembuatan migrasi database untuk menambahkan field `link_media_sosial` berformat `json` ke dalam tabel `laporan_pkls` guna mendukung multi-link.
+- Pembuatan halaman **Evaluasi Laporan Akhir** (`PembimbingSekolah\LaporanController`) beserta *routes* dan menu navigasinya, sehingga Pembimbing Sekolah (Guru) dapat melihat dan meninjau (*Approve/Reject*) laporan akhir beserta tautan eksternal yang diunggah siswa bimbingannya.
+- Pembuatan fitur penanda "Status Hari Ini" yang dinamis berdasarkan aktivitas **Absensi** harian. Status "Sedang PKL" pada _dashboard_ siswa dan tabel daftar siswa (baik bagi Pembimbing DUDI, Pembimbing Sekolah, maupun Pokja) kini secara otomatis berubah menjadi "Masuk Kerja", "Pulang Kerja", atau "Belum Absen" mengikuti rekam jejak absensi hari tersebut.
+
+### Changed
+- Pengisian Laporan Akhir PKL kini sepenuhnya bergantung pada tautan eksternal dan ringkasan teks.
+
+### Removed
+- Menghapus fitur unggah dokumen (PDF/Docx) beserta tombol "Lihat File" dari halaman Laporan Akhir PKL, karena laporan kini difokuskan menggunakan link media sosial atau platform eksternal. Kolom `file_path` pada tabel `laporan_pkls` juga dihapus via migrasi.
 
 
 ## [2026-04-16]

@@ -16,6 +16,7 @@
             ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
             ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
             ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
+            ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
         ];
     } elseif ($role === 'pembimbing_dudi') {
         $navItems = [

@@ -47,5 +47,26 @@ class Siswa extends Model
     {
         return $this->hasOne(LaporanPkl::class);
     }
+
+    public function getStatusHariIniAttribute()
+    {
+        if ($this->status_pkl !== 'sedang_pkl') {
+            return str_replace('_', ' ', $this->status_pkl);
+        }
+
+        $todayAbsensi = Absensi::where('siswa_id', $this->id)
+            ->whereDate('created_at', \Carbon\Carbon::today())
+            ->first();
+
+        if ($todayAbsensi) {
+            if ($todayAbsensi->waktu_pulang) {
+                return 'pulang kerja';
+            } else {
+                return 'masuk kerja';
+            }
+        }
+
+        return 'belum absen';
+    }
 }
 

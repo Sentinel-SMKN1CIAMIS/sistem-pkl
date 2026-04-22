@@ -41,7 +41,7 @@
                 </div>
                 <div>
                     <p class="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest">Rata-rata Jurnal Valid</p>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ number_format($rataJurnal, 1) }}</p>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ number_format($rataJurnal, 0) }}</p>
                 </div>
             </div>
             <div class="h-1.5 w-full bg-white dark:bg-slate-800 rounded-full overflow-hidden">
@@ -93,7 +93,7 @@
                                         @endphp
                                         <div class="h-full bg-blue-500" style="width: {{ $journalPercent }}%"></div>
                                     </div>
-                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $siswa->valid_jurnal }}/{{ $siswa->total_jurnal }}</span>
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $siswa->valid_jurnal }} dari {{ $siswa->total_jurnal }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-center">

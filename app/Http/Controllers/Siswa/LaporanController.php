@@ -22,25 +22,25 @@ class LaporanController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'file' => 'required|file|mimes:pdf,docx,doc|max:5120',
+            'link_media_sosial' => 'nullable|array|max:5',
+            'link_media_sosial.*' => 'nullable|url',
         ]);
 
         $siswa = auth()->user()->siswa;
         
-        if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('laporan', 'public');
-            
-            LaporanPkl::updateOrCreate(
-                ['siswa_id' => $siswa->id],
-                [
-                    'judul' => $request->judul,
-                    'deskripsi' => $request->deskripsi,
-                    'file_path' => $path,
-                    'status' => 'submitted',
-                    'submitted_at' => Carbon::now()
-                ]
-            );
-        }
+        // Filter empty links
+        $links = $request->link_media_sosial ? array_filter($request->link_media_sosial) : null;
+        
+        LaporanPkl::updateOrCreate(
+            ['siswa_id' => $siswa->id],
+            [
+                'judul' => $request->judul,
+                'deskripsi' => $request->deskripsi,
+                'link_media_sosial' => empty($links) ? null : array_values($links),
+                'status' => 'submitted',
+                'submitted_at' => Carbon::now()
+            ]
+        );
 
         return redirect()->route('siswa.laporan.index')->with('success', 'Laporan berhasil diunggah.');
     }

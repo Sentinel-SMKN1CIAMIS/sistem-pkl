@@ -6,8 +6,8 @@
             <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Status PKL</p>
-                    <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tighter">{{ str_replace('_', ' ', auth()->user()->siswa->status_pkl) }}</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Status Hari Ini</p>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tighter">{{ auth()->user()->siswa->status_hari_ini }}</h3>
                 </div>
                 <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center relative z-10">
                     <i data-lucide="activity" class="w-6 h-6 text-blue-400"></i>

@@ -36,6 +36,8 @@ Route::middleware('auth')->group(function () {
         Route::get('siswa', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'index'])->name('siswa.index');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'index'])->name('jurnal.index');
         Route::get('absensi', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'index'])->name('absensi.index');
+        Route::get('laporan', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'index'])->name('laporan.index');
+        Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
     });
 
     Route::middleware('role:pembimbing_dudi')->prefix('pembimbing_dudi')->name('pembimbing_dudi.')->group(function () {
