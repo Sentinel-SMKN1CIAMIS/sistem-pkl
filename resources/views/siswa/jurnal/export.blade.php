@@ -57,7 +57,7 @@
                 <tr>
                     <td style="text-align: center;">{{ $index + 1 }}</td>
                     <td>{{ \Carbon\Carbon::parse($row->tanggal)->isoFormat('dddd') }}<br>{{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}</td>
-                    <td>{{ $row->kegiatan }}</td>
+                    <td>{{ $row->deskripsi_pekerjaan }}</td>
                     <td>{{ $row->catatan_pembimbing ?? '-' }}</td>
                 </tr>
             @empty

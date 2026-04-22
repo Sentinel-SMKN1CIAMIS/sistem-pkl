@@ -17,6 +17,8 @@
 - Perbaikan fitur **Tanda Tangan Digital** pada halaman Absensi Siswa — skrip `SignaturePad` dan logika JavaScript tidak pernah dieksekusi karena `@stack('scripts')` hilang dari layout utama.
 - Perbaikan JavaScript signature pad: inisialisasi di dalam `DOMContentLoaded`, *debounced resize*, preserve data saat resize, `touch-action: none` untuk mobile, dan error handling geolokasi.
 - Perbaikan bug foto jurnal **tidak tersimpan** — field form `kegiatan` tidak dipetakan ke kolom database `deskripsi_pekerjaan` pada controller `JurnalController@store`.
+- Perbaikan bug data kegiatan tidak muncul pada daftar jurnal dan hasil export PDF dengan mengganti properti lama `$item->kegiatan` menjadi `$item->deskripsi_pekerjaan`.
+- Perbaikan bug foto jurnal **tidak tersimpan** pada halaman Tambah Jurnal Harian — foto hasil crop tidak terkirim ke server karena field form `foto_bukti` tidak memiliki atribut `name`.
 
 
 ## [2026-04-16]

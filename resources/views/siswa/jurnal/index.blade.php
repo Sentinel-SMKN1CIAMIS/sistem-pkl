@@ -42,7 +42,7 @@
                                 </span>
                             </div>
                              <h3 class="text-lg font-black text-slate-900 dark:text-slate-100 mb-2 uppercase tracking-wide decoration-blue-500 underline underline-offset-8 decoration-2">
-                                {{ $item->kegiatan }}
+                                {{ $item->deskripsi_pekerjaan }}
                              </h3>
                             <div class="flex items-center gap-2 mb-4">
                                 <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400">
