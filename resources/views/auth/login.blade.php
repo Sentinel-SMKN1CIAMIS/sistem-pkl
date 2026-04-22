@@ -7,7 +7,7 @@
                 <i data-lucide="briefcase" class="w-8 h-8 text-slate-900 dark:text-white"></i>
             </div>
             <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-300">MAS-PKL</h1>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Sistem Monitoring & Manajemen PKL</p>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Monitoring & Administrasi Siswa PKL</p>
         </div>
 
         @if ($errors->any())
