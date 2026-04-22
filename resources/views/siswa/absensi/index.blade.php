@@ -131,52 +131,81 @@
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+            const el = document.getElementById('current-time');
+            if (el) el.textContent = `${hours}:${minutes}:${seconds}`;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
         // Signature Pad
         @if(!$absensiToday)
-            const canvas = document.querySelector("#signature-pad");
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('signature-pad');
+            if (!canvas) return;
 
-            // Adjust canvas size to parent container
-            function resizeCanvas() {
-                const ratio =  Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
-                // signaturePad.clear(); // clearing canvas normally after resize
-            }
+            // Prevent touch scrolling on canvas (important for mobile)
+            canvas.style.touchAction = 'none';
 
-            window.addEventListener("resize", resizeCanvas);
-            
             const signaturePad = new SignaturePad(canvas, {
                 backgroundColor: 'rgb(255, 255, 255)',
-                penColor: 'rgb(0, 0, 0)'
+                penColor: 'rgb(0, 0, 0)',
+                minWidth: 0.5,
+                maxWidth: 2.5
             });
-            
+
+            // Resize canvas to match display size while preserving signature data
+            function resizeCanvas() {
+                const data = signaturePad.toData();
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+                signaturePad.clear(); // Reset canvas after resize
+                if (data && data.length > 0) {
+                    signaturePad.fromData(data); // Restore signature data
+                }
+            }
+
+            // Initial sizing
             resizeCanvas();
 
-            document.getElementById('clear-pad').addEventListener('click', () => signaturePad.clear());
+            // Debounced resize handler
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(resizeCanvas, 250);
+            });
+
+            // Clear button
+            document.getElementById('clear-pad').addEventListener('click', function() {
+                signaturePad.clear();
+            });
 
             // Get Geolocation
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    document.getElementById('latitude-input').value = position.coords.latitude;
-                    document.getElementById('longitude-input').value = position.coords.longitude;
-                });
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        document.getElementById('latitude-input').value = position.coords.latitude;
+                        document.getElementById('longitude-input').value = position.coords.longitude;
+                    },
+                    function(error) {
+                        console.warn('Geolocation error:', error.message);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
             }
 
-            function submitAbsensi() {
+            // Submit function — exposed globally for onclick
+            window.submitAbsensi = function() {
                 if (signaturePad.isEmpty()) {
-                    alert("Harap isi tanda tangan terlebih dahulu.");
+                    alert('Harap isi tanda tangan terlebih dahulu.');
                     return;
                 }
-                
+
                 document.getElementById('signature-input').value = signaturePad.toDataURL();
                 document.getElementById('absensi-form').submit();
-            }
+            };
+        });
         @endif
     </script>
     @endpush

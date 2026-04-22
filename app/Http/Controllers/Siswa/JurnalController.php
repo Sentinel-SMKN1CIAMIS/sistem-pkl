@@ -36,21 +36,33 @@ class JurnalController extends Controller
             'tanggal' => 'required|date',
             'kegiatan' => 'required|string',
             'catatan' => 'nullable|string',
-            'foto' => 'nullable|image|max:2048'
+            'foto_cropped' => 'nullable|string', // Base64 cropped image
         ]);
 
-        $data = $request->except('foto');
-        $data['siswa_id'] = auth()->user()->siswa->id;
-        $data['status'] = 'pending';
+        $siswa = auth()->user()->siswa;
 
-        if ($request->hasFile('foto')) {
-            $data['foto_path'] = $request->file('foto')->store('jurnal', 'public');
+        $data = [
+            'siswa_id' => $siswa->id,
+            'kompetensi_id' => $request->kompetensi_id,
+            'tanggal' => $request->tanggal,
+            'deskripsi_pekerjaan' => $request->kegiatan,
+            'catatan' => $request->catatan,
+            'status' => 'pending',
+        ];
+
+        // Handle cropped base64 image
+        if ($request->filled('foto_cropped')) {
+            $imageData = $request->foto_cropped;
+            $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
+            $imageData = str_replace(' ', '+', $imageData);
+            $fileName = 'jurnal/' . $siswa->id . '_' . time() . '.png';
+            Storage::disk('public')->put($fileName, base64_decode($imageData));
+            $data['foto_path'] = $fileName;
         }
 
         $jurnal = Jurnal::create($data);
 
         // Notify Mentor Industri
-        $siswa = auth()->user()->siswa;
         if($siswa->pembimbing_dudi_id) {
             \App\Models\Notifikasi::create([
                 'from_user_id' => auth()->id(),

@@ -53,7 +53,7 @@
                 <div class="w-10 h-10 rounded-xl bg-linear-to-br from-blue-600 to-indigo-700 dark:from-blue-500 dark:to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
                     <i data-lucide="briefcase" class="w-6 h-6 text-white"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-gradient tracking-tight">Simbiosis</h1>
+                <h1 class="text-2xl font-bold text-gradient tracking-tight">MAS-PKL</h1>
             </div>
         </div>
 
@@ -160,5 +160,14 @@
     </div>
 
     <!-- Scripts -->
+    @stack('scripts')
+    <script>
+        // Initialize Lucide icons after page load and after any pushed scripts
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
 </body>
 </html>

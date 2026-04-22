@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## [2026-04-22]
+### Changed
+- Perubahan nama aplikasi dari **Simbiosis** menjadi **MAS-PKL** di seluruh sistem (Konfigurasi, Halaman Login, dan Layout Utama).
+- Penyesuaian `APP_NAME` pada file `.env` untuk sinkronisasi identitas aplikasi.
+- Perubahan layout form **Tambah Jurnal Harian**: field "Foto Bukti Kegiatan" dan "Catatan Detail / Kendala" kini ditampilkan secara *grid* berdampingan (foto kiri, catatan kanan).
+
+### Added
+- Penambahan `@stack('scripts')` pada layout utama (`app.blade.php`) agar seluruh skrip `@push('scripts')` di halaman Blade dapat dieksekusi dengan benar.
+- Inisialisasi ulang **Lucide Icons** via `DOMContentLoaded` di layout utama untuk memastikan ikon selalu ter-render.
+- Pembuatan *storage symlink* (`php artisan storage:link`) dan direktori `signatures/` untuk penyimpanan tanda tangan digital.
+- Implementasi fitur **Crop Foto 1:1** pada form Tambah Jurnal menggunakan **Cropper.js** dengan popup modal preview, tombol rotasi, serta pratinjau hasil crop sebelum submit.
+- Penyimpanan foto jurnal hasil crop sebagai **Base64** yang di-decode di server dan disimpan sebagai PNG.
+
+### Fixed
+- Perbaikan fitur **Tanda Tangan Digital** pada halaman Absensi Siswa — skrip `SignaturePad` dan logika JavaScript tidak pernah dieksekusi karena `@stack('scripts')` hilang dari layout utama.
+- Perbaikan JavaScript signature pad: inisialisasi di dalam `DOMContentLoaded`, *debounced resize*, preserve data saat resize, `touch-action: none` untuk mobile, dan error handling geolokasi.
+- Perbaikan bug foto jurnal **tidak tersimpan** — field form `kegiatan` tidak dipetakan ke kolom database `deskripsi_pekerjaan` pada controller `JurnalController@store`.
+
+
 ## [2026-04-16]
 ### Added
 - Implementasi sistem beralih tema (Light, Dark, dan System) secara menyeluruh menggunakan Alpine.js.
