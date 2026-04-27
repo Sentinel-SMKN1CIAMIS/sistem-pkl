@@ -36,9 +36,9 @@ class UserSeeder extends Seeder
         ]);
 
         // Create a DUDI first
-        $rpl = KonsentrasiKeahlian::where('kode', 'RPL')->first();
+        $pplg = KonsentrasiKeahlian::where('kode', 'PPLG')->first();
         $dudi = Dudi::create([
-            'konsentrasi_keahlian_id' => $rpl->id,
+            'konsentrasi_keahlian_id' => $pplg->id,
             'nama' => 'PT Teknologi Nusantara',
             'alamat' => 'Jl. Digital No. 101',
             'kota' => 'Bandung',
@@ -55,7 +55,7 @@ class UserSeeder extends Seeder
         ]);
         $pembimbingSekolah = PembimbingSekolah::create([
             'user_id' => $guruUser->id,
-            'konsentrasi_keahlian_id' => $rpl->id,
+            'konsentrasi_keahlian_id' => $pplg->id,
             'nip' => '198701012010011001',
             'nama_lengkap' => 'Budi Santoso, S.Kom',
         ]);
@@ -85,13 +85,13 @@ class UserSeeder extends Seeder
         ]);
         Siswa::create([
             'user_id' => $siswaUser->id,
-            'konsentrasi_keahlian_id' => $rpl->id,
+            'konsentrasi_keahlian_id' => $pplg->id,
             'dudi_id' => $dudi->id,
             'pembimbing_sekolah_id' => $pembimbingSekolah->id,
             'pembimbing_dudi_id' => $pembimbingDudi->id,
             'nis' => '2223101',
             'nama_lengkap' => 'Rizky Pratama',
-            'kelas' => 'XII RPL 1',
+            'kelas' => 'XII PPLG 1',
             'jenis_kelamin' => 'L',
             'tahun_ajaran' => '2025/2026',
             'status_pkl' => 'sedang_pkl',

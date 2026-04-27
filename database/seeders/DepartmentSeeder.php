@@ -11,65 +11,58 @@ class DepartmentSeeder extends Seeder
 {
     public function run(): void
     {
+        // Truncate existing data to avoid duplicates
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        Kompetensi::truncate();
+        KonsentrasiKeahlian::truncate();
+        ProgramKeahlian::truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+
         // 7 Program Keahlian
         $programs = [
-            ['kode' => 'TJKT', 'nama' => 'Teknik Jaringan Komputer dan Telekomunikasi'],
-            ['kode' => 'PPLG', 'nama' => 'Pengembangan Perangkat Lunak dan Gim'],
+            ['kode' => 'AKL', 'nama' => 'Akuntansi'],
+            ['kode' => 'MPLB', 'nama' => 'Managemen Bisnis'],
+            ['kode' => 'PBR', 'nama' => 'Pemasaran Ritel'],
+            ['kode' => 'HOTEL', 'nama' => 'Perhotelan'],
             ['kode' => 'DKV', 'nama' => 'Desain Komunikasi Visual'],
-            ['kode' => 'KUL', 'nama' => 'Kuliner'],
-            ['kode' => 'PH', 'nama' => 'Perhotelan'],
-            ['kode' => 'TO', 'nama' => 'Teknik Otomotif'],
-            ['kode' => 'TE', 'nama' => 'Teknik Elektronika'],
+            ['kode' => 'PPLG', 'nama' => 'Pengembangan Perangkat Lunak dan Gim'],
+            ['kode' => 'KLN', 'nama' => 'Kuliner'],
         ];
 
         foreach ($programs as $prog) {
             $p = ProgramKeahlian::create($prog);
 
-            // 9 Konsentrasi Keahlian (example mapping)
-            if ($prog['kode'] == 'PPLG') {
-                $k = KonsentrasiKeahlian::create([
-                    'program_keahlian_id' => $p->id,
-                    'kode' => 'RPL',
-                    'nama' => 'Rekayasa Perangkat Lunak',
-                    'durasi_pkl_bulan' => 4,
-                ]);
-
-                Kompetensi::create(['konsentrasi_keahlian_id' => $k->id, 'nama' => 'Membuat program', 'kategori' => 'Programming']);
-                Kompetensi::create(['konsentrasi_keahlian_id' => $k->id, 'nama' => 'Debugging', 'kategori' => 'Programming']);
-                Kompetensi::create(['konsentrasi_keahlian_id' => $k->id, 'nama' => 'Testing', 'kategori' => 'Programming']);
-            } elseif ($prog['kode'] == 'TJKT') {
-                $k = KonsentrasiKeahlian::create([
-                    'program_keahlian_id' => $p->id,
-                    'kode' => 'TKJ',
-                    'nama' => 'Teknik Komputer dan Jaringan',
-                    'durasi_pkl_bulan' => 4,
-                ]);
-
-                Kompetensi::create(['konsentrasi_keahlian_id' => $k->id, 'nama' => 'Instalasi jaringan', 'kategori' => 'Network']);
-                Kompetensi::create(['konsentrasi_keahlian_id' => $k->id, 'nama' => 'Konfigurasi router', 'kategori' => 'Network']);
-            } elseif ($prog['kode'] == 'DKV') {
-                $k = KonsentrasiKeahlian::create([
-                    'program_keahlian_id' => $p->id,
-                    'kode' => 'DKV',
-                    'nama' => 'Desain Komunikasi Visual',
-                    'durasi_pkl_bulan' => 4,
-                ]);
-
-                Kompetensi::create(['konsentrasi_keahlian_id' => $k->id, 'nama' => 'Desain poster', 'kategori' => 'Design']);
-                Kompetensi::create(['konsentrasi_keahlian_id' => $k->id, 'nama' => 'Editing gambar', 'kategori' => 'Design']);
-            } elseif ($prog['kode'] == 'KUL' || $prog['kode'] == 'PH') {
-                $k = KonsentrasiKeahlian::create([
-                    'program_keahlian_id' => $p->id,
-                    'kode' => $prog['kode'],
-                    'nama' => $prog['nama'],
-                    'durasi_pkl_bulan' => 5, // Hotel dan Kuliner 5 bulan
-                ]);
+            // Mapping Concentrations
+            $concentrations = [];
+            if ($prog['kode'] == 'AKL') {
+                $concentrations = [
+                    ['kode' => 'AKL', 'nama' => 'Akuntansi'],
+                    ['kode' => 'PBR', 'nama' => 'Perbankan Syariah'],
+                ];
+            } elseif ($prog['kode'] == 'PR') {
+                $concentrations = [
+                    ['kode' => 'PR', 'nama' => 'Pemasaran Ritel'],
+                    ['kode' => 'PD', 'nama' => 'Pemasaran Digital'],
+                ];
             } else {
-                 KonsentrasiKeahlian::create([
+                $concentrations = [
+                    ['kode' => $prog['kode'], 'nama' => $prog['nama']],
+                ];
+            }
+
+            foreach ($concentrations as $con) {
+                $k = KonsentrasiKeahlian::create([
                     'program_keahlian_id' => $p->id,
-                    'kode' => $prog['kode'],
-                    'nama' => $prog['nama'],
-                    'durasi_pkl_bulan' => 4,
+                    'kode' => $con['kode'],
+                    'nama' => $con['nama'],
+                    'durasi_pkl_bulan' => ($prog['kode'] == 'PH' || $prog['kode'] == 'KLN') ? 5 : 4,
+                ]);
+
+                // Dummy Competencies
+                Kompetensi::create([
+                    'konsentrasi_keahlian_id' => $k->id,
+                    'nama' => 'Kompetensi Dasar ' . $con['nama'],
+                    'kategori' => 'Umum'
                 ]);
             }
         }

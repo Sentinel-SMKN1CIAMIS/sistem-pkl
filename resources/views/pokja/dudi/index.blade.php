@@ -2,7 +2,7 @@
     <x-slot name="header">Kelola Data DUDI</x-slot>
 
     <div class="mb-6 flex justify-between items-center">
-        <p class="text-slate-600 dark:text-slate-400">Dunia Usaha & Dunia Industri (DUDI) per Jurusan.</p>
+        <p class="text-slate-600 dark:text-slate-400">Dunia Usaha & Dunia Industri (DUDI) per Konsentrasi Keahlian.</p>
         <a href="{{ route('pokja.dudi.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
             <i data-lucide="plus-circle" class="w-5 h-5"></i>
             Tambah DUDI
@@ -22,7 +22,7 @@
                 <thead>
                     <tr class="border-b border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-800/30">
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Nama Industri</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Jurusan</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Konsentrasi Keahlian</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Lokasi</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Pimpinan</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right">Aksi</th>

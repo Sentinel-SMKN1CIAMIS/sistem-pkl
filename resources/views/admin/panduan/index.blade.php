@@ -23,7 +23,7 @@
                     <tr class="bg-white dark:bg-slate-800/30 border-b border-slate-200/50 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
                         <th class="px-6 py-4">Judul Panduan</th>
                         <th class="px-6 py-4">Tipe / Sasaran</th>
-                        <th class="px-6 py-4">Jurusan</th>
+                        <th class="px-6 py-4">Konsentrasi Keahlian</th>
                         <th class="px-6 py-4">Tgl Upload</th>
                         <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
@@ -45,7 +45,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-slate-600 dark:text-slate-400">
-                                {{ $item->konsentrasiKeahlian->nama ?? 'Semua Jurusan' }}
+                                {{ $item->konsentrasiKeahlian->nama ?? 'Semua Konsentrasi Keahlian' }}
                             </td>
                             <td class="px-6 py-4 text-slate-500 dark:text-slate-400">
                                 {{ $item->created_at->format('d M Y') }}
