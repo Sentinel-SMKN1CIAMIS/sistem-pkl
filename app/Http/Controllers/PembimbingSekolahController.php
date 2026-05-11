@@ -30,6 +30,7 @@ class PembimbingSekolahController extends Controller
             'username' => 'required|unique:users,username',
             'password' => 'required|min:6',
             'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
+            'tipe' => 'required|in:normatif,adaptif,produktif',
             'no_hp' => 'nullable|string',
         ]);
 
@@ -47,6 +48,12 @@ class PembimbingSekolahController extends Controller
             ->with('success', 'Pembimbing sekolah berhasil ditambahkan.');
     }
 
+    public function show(\App\Models\PembimbingSekolah $pembimbing_sekolah)
+    {
+        $students = $pembimbing_sekolah->siswa()->with(['konsentrasiKeahlian', 'dudi'])->get();
+        return view('pokja.pembimbing-sekolah.show', compact('pembimbing_sekolah', 'students'));
+    }
+
     public function edit(\App\Models\PembimbingSekolah $pembimbing_sekolah)
     {
         $concentrations = \App\Models\KonsentrasiKeahlian::all();
@@ -59,6 +66,7 @@ class PembimbingSekolahController extends Controller
             'nip' => 'nullable|unique:pembimbing_sekolahs,nip,' . $pembimbing_sekolah->id,
             'nama_lengkap' => 'required|string|max:255',
             'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
+            'tipe' => 'required|in:normatif,adaptif,produktif',
             'no_hp' => 'nullable|string',
         ]);
 

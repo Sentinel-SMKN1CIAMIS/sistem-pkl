@@ -75,7 +75,7 @@
                             <label for="nama_pimpinan" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nama Pimpinan / HRD</label>
                             <input type="text" name="nama_pimpinan" id="nama_pimpinan" value="{{ old('nama_pimpinan') }}"
                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all"
-                                   placeholder="Nama pimpinan">
+                                   placeholder="Nama pimpinan (Opsional)">
                         </div>
                         <div>
                             <label for="bidang_usaha" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Bidang Usaha</label>

@@ -29,12 +29,15 @@ Route::middleware('auth')->group(function () {
         Route::post('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'store'])->name('laporan.store');
         Route::get('panduan', [\App\Http\Controllers\Siswa\PanduanController::class, 'index'])->name('panduan.index');
         Route::get('jurnal/export', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'export'])->name('jurnal.export');
+        Route::get('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('profile.index');
+        Route::patch('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'update'])->name('profile.update');
     });
 
     // Verification Routes (Review by Mentors)
     Route::middleware('role:pembimbing_sekolah')->prefix('pembimbing_sekolah')->name('pembimbing_sekolah.')->group(function () {
         Route::get('siswa', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'index'])->name('siswa.index');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'index'])->name('jurnal.index');
+        Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'update'])->name('jurnal.update');
         Route::get('absensi', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'index'])->name('absensi.index');
         Route::get('laporan', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'index'])->name('laporan.index');
         Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
@@ -43,7 +46,6 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:pembimbing_dudi')->prefix('pembimbing_dudi')->name('pembimbing_dudi.')->group(function () {
         Route::get('siswa', [\App\Http\Controllers\PembimbingDudi\SiswaController::class, 'index'])->name('siswa.index');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'index'])->name('jurnal.index');
-        Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'update'])->name('jurnal.update');
         Route::get('absensi', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'index'])->name('absensi.index');
     });
     

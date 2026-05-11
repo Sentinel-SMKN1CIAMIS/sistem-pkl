@@ -24,4 +24,28 @@ class JurnalController extends Controller
 
         return view('pembimbing-sekolah.jurnal.index', compact('jurnals'));
     }
+
+    public function update(Request $request, Jurnal $jurnal)
+    {
+        $request->validate([
+            'status' => 'required|in:valid,invalid',
+            'catatan_pembimbing' => 'nullable|string'
+        ]);
+
+        $jurnal->update([
+            'status' => $request->status,
+            'catatan_pembimbing' => $request->catatan_pembimbing
+        ]);
+
+        // Notify Student
+        \App\Models\Notifikasi::create([
+            'from_user_id' => auth()->id(),
+            'to_user_id' => $jurnal->siswa->user_id,
+            'judul' => 'Jurnal ' . ($request->status == 'valid' ? 'Divalidasi' : 'Ditolak'),
+            'pesan' => 'Jurnal kegiatan Anda pada tanggal ' . $jurnal->tanggal . ' telah ' . ($request->status == 'valid' ? 'disetujui' : 'ditolak') . ' oleh pembimbing sekolah.',
+            'tipe' => $request->status == 'valid' ? 'success' : 'warning'
+        ]);
+
+        return back()->with('success', 'Status jurnal berhasil diperbarui.');
+    }
 }

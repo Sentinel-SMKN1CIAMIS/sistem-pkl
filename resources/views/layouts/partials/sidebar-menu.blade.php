@@ -9,6 +9,7 @@
             ['name' => 'Daftar Hadir', 'route' => 'siswa.absensi.index', 'icon' => 'calendar-check'],
             ['name' => 'Laporan PKL', 'route' => 'siswa.laporan.index', 'icon' => 'file-text'],
             ['name' => 'Buku Panduan', 'route' => 'siswa.panduan.index', 'icon' => 'library'],
+            ['name' => 'Profil Saya', 'route' => 'siswa.profile.index', 'icon' => 'user-circle'],
         ];
     } elseif ($role === 'pembimbing_sekolah') {
         $navItems = [

@@ -23,8 +23,8 @@
                     <tr class="border-b border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-800/30">
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Nama Lengkap</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">NIP / Username</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Tipe Pembimbing</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Konsentrasi Keahlian</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">No. HP</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -50,15 +50,27 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-xs text-blue-400">
+                                @php
+                                    $tipeColors = [
+                                        'produktif' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                                        'normatif' => 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+                                        'adaptif' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                                    ];
+                                @endphp
+                                <span class="px-2.5 py-1 rounded-md border text-[10px] uppercase font-bold {{ $tipeColors[$item->tipe] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20' }}">
+                                    {{ $item->tipe }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs text-slate-600 dark:text-slate-400">
                                     {{ $item->konsentrasiKeahlian->nama }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                                {{ $item->no_hp ?? '-' }}
-                            </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <a href="{{ route('pokja.pembimbing_sekolah.show', $item) }}" class="p-2 text-slate-600 dark:text-slate-400 hover:text-emerald-400 transition-colors" title="Lihat Siswa">
+                                        <i data-lucide="eye" class="w-4 h-4"></i>
+                                    </a>
                                     <a href="{{ route('pokja.pembimbing_sekolah.edit', $item) }}" class="p-2 text-slate-600 dark:text-slate-400 hover:text-blue-400 transition-colors" title="Edit">
                                         <i data-lucide="edit-2" class="w-4 h-4"></i>
                                     </a>

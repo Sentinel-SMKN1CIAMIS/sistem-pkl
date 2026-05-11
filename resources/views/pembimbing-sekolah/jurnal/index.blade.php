@@ -38,12 +38,39 @@
                         <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">{{ $item->deskripsi_pekerjaan }}</h3>
                         <p class="text-slate-600 dark:text-slate-400 text-sm italic mb-4">{{ $item->catatan }}</p>
 
-                        @if($item->catatan_pembimbing)
-                            <div class="p-3 rounded-lg bg-blue-500/5 border border-blue-500/10 text-xs text-blue-300/80">
-                                <span class="font-bold opacity-100">Feedback Mentor Industri:</span> {{ $item->catatan_pembimbing }}
+                        @if($item->foto_path)
+                            <div class="mb-4">
+                                <a href="{{ asset('storage/' . $item->foto_path) }}" target="_blank" class="inline-flex items-center gap-2 text-xs text-blue-400 hover:underline">
+                                    <i data-lucide="image" class="w-4 h-4"></i> Lihat Foto Bukti
+                                </a>
                             </div>
                         @endif
                     </div>
+                </div>
+
+                <!-- Sidebar Action Validation -->
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-4 border-t border-slate-100 dark:border-slate-700/50">
+                    <form action="{{ route('pembimbing_sekolah.jurnal.update', $item) }}" method="POST" class="flex flex-col md:flex-row items-start md:items-center gap-4">
+                        @csrf
+                        @method('PATCH')
+                        
+                        <div class="flex-grow w-full">
+                            <textarea name="catatan_pembimbing" rows="1" 
+                                      class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-blue-500"
+                                      placeholder="Berikan saran atau alasan penolakan...">{{ $item->catatan_pembimbing }}</textarea>
+                        </div>
+                        
+                        <div class="flex gap-2 w-full md:w-auto shrink-0">
+                            <button type="submit" name="status" value="valid" 
+                                    class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all {{ $item->status == 'valid' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white' }}">
+                                VALIDASI
+                            </button>
+                            <button type="submit" name="status" value="invalid" 
+                                    class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all {{ $item->status == 'invalid' ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-red-500 hover:text-white' }}">
+                                TOLAK
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         @empty
