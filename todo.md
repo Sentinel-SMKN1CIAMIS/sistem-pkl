@@ -16,5 +16,5 @@ Tambahkan tombol untuk validasi semua, tetapi disebunyikan di role pembimbing se
 16. di role dan halaman Pembimbing dudi hanya bisa views jurnal, yang melakukan validasi hanya role pembimbing sekolah✅
 tambahkan fitur feedback oleh pembimbing dudi di role pembimbing dudi feedback nya berdasarkan rekap selama 1 minggu,1 bulan dst (feedbacknya bersifat opsional)
 feedbacknya untuk keseluruhan, bukan per siswa, tapi untuk sekolahnya format feedback nya ditanyakan ke pa acah
-tambahkan filter dan pagination di halaman manapun yang terdapat table
-tambahkan rekapan kehadiran siswa dan bisa di ekspor pdf berdasarkan filter di halaman /pembimbing_sekolah/absensi
+19. tambahkan filter dan pagination di halaman manapun yang terdapat table✅
+20. tambahkan rekapan kehadiran siswa dan bisa di ekspor pdf berdasarkan filter di halaman /pembimbing_sekolah/absensi✅

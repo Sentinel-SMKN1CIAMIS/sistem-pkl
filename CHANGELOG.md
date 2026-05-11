@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## [2026-05-11]
+### Added
+- Implementasi sistem **Tipe Pembimbing Sekolah** (Enum: Normatif, Adaptif, Produktif) pada tabel `pembimbing_sekolahs` untuk kategorisasi guru bimbingan.
+- Pembuatan fitur **Profil Siswa** (`Siswa\ProfileController`) yang memungkinkan siswa menginput secara manual nama dan jabatan **Pembimbing Industri (DUDI)** jika belum terdaftar di sistem.
+- Penambahan fitur **Filter Pencarian** (Nama/NIS) dan **Filter Konsentrasi Keahlian** pada halaman daftar siswa dan DUDI di role Pokja.
+- Implementasi fitur **Rekapitulasi Kehadiran** pada role Pembimbing Sekolah dengan fitur filter (rentang tanggal & nama siswa) serta fitur **Ekspor PDF** menggunakan DomPDF.
+- Penambahan menu "Lihat Siswa" pada daftar pembimbing sekolah untuk memudahkan Pokja memantau ploting siswa bimbingan.
+- Integrasi **Buku Pedoman PKL 2025-2026** langsung ke dalam dashboard siswa menggunakan `<iframe>` dengan proteksi toolbar.
+
+### Changed
+- Field **Nama Pimpinan/HRD** pada data DUDI kini bersifat opsional (`nullable`) untuk fleksibilitas input data.
+- Relokasi hak akses **Validasi Jurnal** harian siswa: kini hanya dapat dilakukan oleh **Pembimbing Sekolah** (Guru), sementara Pembimbing DUDI hanya diberikan akses *view-only* (Review).
+- Pemindahan rute dan logika notifikasi validasi jurnal dari controller Pembimbing DUDI ke `PembimbingSekolah\JurnalController`.
+
+### Fixed
+- Sinkronisasi status kehadiran harian ("Masuk Kerja", "Pulang Kerja") agar muncul secara real-time di seluruh tabel monitoring siswa berdasarkan aktivitas absensi terbaru.
+- Perbaikan query pagination pada tabel-tabel utama agar tetap mempertahankan parameter filter saat berpindah halaman (`withQueryString`).
+
 ## [2026-04-22]
 ### Changed
 - Perubahan nama aplikasi dari **Simbiosis** menjadi **MAS-PKL** di seluruh sistem (Konfigurasi, Halaman Login, dan Layout Utama).

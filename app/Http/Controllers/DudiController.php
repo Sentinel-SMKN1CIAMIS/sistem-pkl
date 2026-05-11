@@ -9,10 +9,27 @@ class DudiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $dudis = \App\Models\Dudi::with('konsentrasiKeahlian')->latest()->paginate(10);
-        return view('pokja.dudi.index', compact('dudis'));
+        $query = \App\Models\Dudi::with('konsentrasiKeahlian');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('kota', 'like', "%{$search}%")
+                  ->orWhere('bidang_usaha', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('konsentrasi')) {
+            $query->where('konsentrasi_keahlian_id', $request->konsentrasi);
+        }
+
+        $dudis = $query->latest()->paginate(10)->withQueryString();
+        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+
+        return view('pokja.dudi.index', compact('dudis', 'concentrations'));
     }
 
     public function create()

@@ -12,6 +12,25 @@
         </div>
     @endif
 
+    <!-- Search -->
+    <div class="glass-card p-4 mb-6">
+        <form action="{{ route('pembimbing_sekolah.siswa.index') }}" method="GET" class="flex gap-4">
+            <div class="flex-1 relative">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama atau NIS..." 
+                       class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+            </div>
+            <button type="submit" class="px-6 py-2 bg-slate-800 dark:bg-slate-700 text-white font-medium rounded-xl hover:bg-slate-700 transition-all text-sm">
+                Cari
+            </button>
+            @if(request('search'))
+                <a href="{{ route('pembimbing_sekolah.siswa.index') }}" class="px-4 py-2 text-slate-500 hover:text-red-400 text-sm flex items-center gap-2 transition-colors">
+                    <i data-lucide="x-circle" class="w-4 h-4"></i> Reset
+                </a>
+            @endif
+        </form>
+    </div>
+
     <div class="glass-card overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">

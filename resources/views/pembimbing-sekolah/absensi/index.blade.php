@@ -1,8 +1,47 @@
 <x-app-layout>
     <x-slot name="header">Kehadiran Siswa Bimbingan</x-slot>
 
-    <div class="mb-6">
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <p class="text-slate-600 dark:text-slate-400">Monitoring absensi harian siswa bimbingan Anda selama PKL.</p>
+        <a href="{{ route('pembimbing_sekolah.absensi.export', request()->all()) }}" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2">
+            <i data-lucide="download-cloud" class="w-5 h-5"></i>
+            Ekspor Rekapan (PDF)
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="glass-card p-6 mb-8">
+        <form action="{{ route('pembimbing_sekolah.absensi.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase">Dari Tanggal</label>
+                <input type="date" name="start_date" value="{{ request('start_date') }}" 
+                       class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase">Sampai Tanggal</label>
+                <input type="date" name="end_date" value="{{ request('end_date') }}" 
+                       class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase">Pilih Siswa</label>
+                <select name="siswa_id" class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                    <option value="">Semua Siswa</option>
+                    @foreach($students as $s)
+                        <option value="{{ $s->id }}" {{ request('siswa_id') == $s->id ? 'selected' : '' }}>{{ $s->nama_lengkap }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex items-end gap-2">
+                <button type="submit" class="flex-1 px-6 py-2 bg-slate-800 dark:bg-slate-700 text-white font-medium rounded-xl hover:bg-slate-700 transition-all text-sm">
+                    Filter
+                </button>
+                @if(request()->anyFilled(['start_date', 'end_date', 'siswa_id']))
+                    <a href="{{ route('pembimbing_sekolah.absensi.index') }}" class="p-2 text-slate-500 hover:text-red-400 transition-colors" title="Reset Filter">
+                        <i data-lucide="x-circle" class="w-6 h-6"></i>
+                    </a>
+                @endif
+            </div>
+        </form>
     </div>
 
     <div class="glass-card overflow-hidden">

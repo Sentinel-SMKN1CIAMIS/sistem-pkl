@@ -8,7 +8,7 @@ use App\Models\Siswa;
 
 class SiswaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $teacher = auth()->user()->pembimbingSekolah;
         
@@ -16,10 +16,19 @@ class SiswaController extends Controller
             return redirect()->back()->with('error', 'Profil pembimbing sekolah tidak ditemukan.');
         }
 
-        $students = Siswa::where('pembimbing_sekolah_id', $teacher->id)
+        $query = Siswa::where('pembimbing_sekolah_id', $teacher->id)
             ->with(['konsentrasiKeahlian', 'dudi'])
-            ->withCount(['jurnal', 'absensi'])
-            ->get();
+            ->withCount(['jurnal', 'absensi']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        $students = $query->get();
 
         return view('pembimbing-sekolah.siswa.index', compact('students'));
     }

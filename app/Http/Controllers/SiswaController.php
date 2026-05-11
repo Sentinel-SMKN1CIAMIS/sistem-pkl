@@ -9,10 +9,26 @@ class SiswaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $students = \App\Models\Siswa::with(['user', 'konsentrasiKeahlian', 'dudi', 'pembimbingSekolah'])->latest()->paginate(10);
-        return view('pokja.siswa.index', compact('students'));
+        $query = \App\Models\Siswa::with(['user', 'konsentrasiKeahlian', 'dudi', 'pembimbingSekolah']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('konsentrasi')) {
+            $query->where('konsentrasi_keahlian_id', $request->konsentrasi);
+        }
+
+        $students = $query->latest()->paginate(10)->withQueryString();
+        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        
+        return view('pokja.siswa.index', compact('students', 'concentrations'));
     }
 
     public function create()
