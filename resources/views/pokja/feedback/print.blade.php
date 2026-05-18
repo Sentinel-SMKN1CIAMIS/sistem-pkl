@@ -81,7 +81,6 @@
         .title-container h3 {
             font-size: 16px;
             font-weight: bold;
-            text-decoration: underline;
             margin: 0 0 5px 0;
             text-transform: uppercase;
         }
@@ -116,33 +115,32 @@
         }
         
         .col-dudi {
-            width: 25%;
+            width: 22%;
         }
         
         .col-evaluasi {
-            width: 45%;
+            width: 44%;
         }
         
         .col-saran {
-            width: 30%;
+            width: 34%;
         }
         
         /* Signature Styles */
         .ttd-container {
             float: right;
-            width: 250px;
+            width: 280px;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 30px;
             font-size: 14px;
         }
         
         .ttd-space {
-            height: 80px;
+            height: 70px;
         }
         
         .ttd-nama {
             font-weight: bold;
-            text-decoration: underline;
         }
         
         /* Print Button Utility */
@@ -205,34 +203,33 @@
     <!-- Kop Surat -->
     <div class="kop-surat">
         <div class="logo-container">
-            <!-- Jawa Barat / SMKN 1 Ciamis Logo crest (Base64 or external official link fallback) -->
             <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Lambang_Pemerintah_Daerah_Provinsi_Jawa_Barat.svg" alt="Logo Jawa Barat">
         </div>
         <div class="kop-text">
-            <h2>Pemerintah Daerah Provinsi Jawa Barat</h2>
-            <h1>Dinas Pendidikan</h1>
-            <h2>Cabang Dinas Pendidikan Wilayah XIII</h2>
-            <h1 style="font-size: 22px;">SMK Negeri 1 Ciamis</h1>
-            <p class="alamat">Jalan Jl. Jenderal Sudirman Nomor : 269 Telepon : (0265) 771204</p>
-            <p>Faksimile : (0265) 771204/777719 Website : www.smkn1ciamis.sch.id E-mail : surat@smkn1cms.net</p>
-            <p style="font-weight: bold; font-style: normal; font-size: 12px; margin-top: 4px;">Ciamis - 46215</p>
+            <h2>PEMERINTAH DAERAH PROVINSI JAWA BARAT</h2>
+            <h1>DINAS PENDIDIKAN</h1>
+            <h2>CABANG DINAS PENDIDIKAN WILAYAH XIII</h2>
+            <h1 style="font-size: 22px;">SMK NEGERI 1 CIAMIS</h1>
+            <p class="alamat" style="font-style: normal; font-size: 11px;">Jalan : Jl. Jenderal Sudirman Nomor : 269 Telepon : (0265) 771204</p>
+            <p style="font-style: normal; font-size: 11px;">Faksimile : (0265) 771204/777719 Website : www.smkn1ciamis.sch.id E-mail : surat@smkn1cms.net</p>
+            <p style="font-weight: bold; font-style: normal; font-size: 12px; margin-top: 4px; text-transform: uppercase;">Ciamis – 46215</p>
         </div>
     </div>
 
     <!-- Title -->
     <div class="title-container">
-        <h3>Feedback / Evaluasi</h3>
-        <p>Kegiatan Praktek Kerja Lapangan (PKL)</p>
-        <p>Tahun Pelajaran {{ $feedback->created_at->format('Y') }}/{{ $feedback->created_at->format('Y') + 1 }}</p>
+        <h3>FEEDBACK</h3>
+        <p>KEGIATAN PRAKTEK KERJA LAPANGAN (PKL)</p>
+        <p>TAHUN PELAJARAN {{ $feedback->created_at->format('Y') }}/{{ $feedback->created_at->format('Y') + 1 }}</p>
     </div>
 
     <!-- Data Table -->
     <table>
         <thead>
             <tr>
-                <th class="col-dudi">Nama DU/DI</th>
-                <th class="col-evaluasi">Uraian Evaluasi PKL</th>
-                <th class="col-saran">Saran</th>
+                <th class="col-dudi">NAMA DU/DI</th>
+                <th class="col-evaluasi">URAIAN EVALUASI PKL</th>
+                <th class="col-saran">SARAN</th>
             </tr>
         </thead>
         <tbody>
@@ -252,11 +249,11 @@
 
     <!-- Signature -->
     <div class="ttd-container">
-        <p>Ciamis, {{ $feedback->created_at->translatedFormat('d F Y') }}</p>
+        <p>{{ $feedback->pembimbingDudi->dudi->kota ?? 'Ciamis' }}, {{ $feedback->created_at->translatedFormat('d F Y') }}</p>
         <p style="margin-top: 5px;">Pembimbing PKL DU/DI,</p>
         <div class="ttd-space"></div>
-        <p class="ttd-nama">{{ $feedback->pembimbingDudi->nama_lengkap }}</p>
-        <p style="margin: 0; font-size: 12px;">{{ $feedback->pembimbingDudi->jabatan }}</p>
+        <p class="ttd-nama" style="text-decoration: underline; font-weight: bold;">{{ $feedback->pembimbingDudi->nama_lengkap }}</p>
+        <p style="margin: 0; font-size: 12px; font-weight: normal;">{{ $feedback->pembimbingDudi->jabatan }}</p>
     </div>
 
 </body>
