@@ -9,6 +9,8 @@
     font-family: 'Outfit', sans-serif;
     background: #fff; overflow: hidden;
 }
+.dark .dl { background: #0f172a; }
+
 .dl-left {
     width: 42%; height: 100%;
     background: linear-gradient(160deg, #2563eb 0%, #1e3a8a 55%, #0f172a 100%);
@@ -17,32 +19,84 @@
     align-items: center; justify-content: center;
     padding: 56px 40px; text-align: center; flex-shrink: 0;
 }
+
+/* Animated glowing orbs (from Swift reference) */
 .dl-orb {
     position: absolute; border-radius: 50%;
-    filter: blur(70px); opacity: 0.35; pointer-events: none; z-index: 0;
+    filter: blur(80px); pointer-events: none; z-index: 0;
 }
-.dl-orb-a { width:280px; height:280px; background:#3b82f6; top:-80px; left:-60px; animation: oa 20s ease-in-out infinite alternate; }
-.dl-orb-b { width:320px; height:320px; background:#6366f1; bottom:-100px; left:10%; animation: ob 24s ease-in-out infinite alternate; }
-@keyframes oa { 100%{transform:translate(60px,100px) scale(1.2)} }
-@keyframes ob { 100%{transform:translate(-60px,-80px) scale(1.3)} }
+.dl-orb-a {
+    width: 350px; height: 350px;
+    background: #3b82f6; opacity: 0.5;
+    top: -100px; left: -100px;
+    animation: orbA 18s ease-in-out infinite alternate;
+}
+.dl-orb-b {
+    width: 400px; height: 400px;
+    background: #6366f1; opacity: 0.5;
+    bottom: -150px; right: -150px;
+    animation: orbB 22s ease-in-out infinite alternate;
+}
+.dl-orb-c {
+    width: 300px; height: 300px;
+    background: #818cf8; opacity: 0.3;
+    top: 30%; left: -50px;
+    animation: orbC 20s ease-in-out infinite alternate;
+}
+@keyframes orbA {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(200px, 250px) scale(1.2); }
+    66%  { transform: translate(350px, 50px) scale(0.8); }
+    100% { transform: translate(150px, 350px) scale(1.1); }
+}
+@keyframes orbB {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(-250px, -200px) scale(1.1); }
+    66%  { transform: translate(-400px, 100px) scale(1.3); }
+    100% { transform: translate(-150px, -400px) scale(0.9); }
+}
+@keyframes orbC {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(150px, -250px) scale(1.4); }
+    66%  { transform: translate(250px, 150px) scale(0.7); }
+    100% { transform: translate(50px, -150px) scale(1.2); }
+}
 
-/* Desktop cloud: vertical fluffy cloud on right edge */
+/* Desktop cloud divider: 3-layer, big smooth bumps like Spacer */
 .dl-cloud {
-    position: absolute; right: -1px; top: 0; bottom: 0; width: 120px; z-index: 10;
+    position: absolute; right: -1px; top: 0; bottom: 0;
+    width: 160px; z-index: 10;
 }
 .dl-cloud svg { width: 100%; height: 100%; }
 
-.dl-logo { width:66px; height:66px; background:#fff; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; box-shadow:0 6px 24px rgba(0,0,0,0.22); padding:8px; position:relative; z-index:1; }
-.dl-brand { position:relative; z-index:1; }
-.dl-feats { margin-top:32px; display:flex; flex-direction:column; gap:14px; text-align:left; }
-.dl-feat { display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.72); font-size:13px; font-weight:500; }
-.dl-feat-icon { width:32px; height:32px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-
-.dl-right {
-    flex:1; height:100%; background:#fff; overflow-y:auto;
-    display:flex; align-items:center; justify-content:center; padding:56px 64px;
+/* Logo box */
+.dl-logo {
+    width: 72px; height: 72px;
+    background: white; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    padding: 10px; position: relative; z-index: 1;
 }
-.dark .dl-right { background:#1e293b; }
+
+/* Brand content */
+.dl-brand { position: relative; z-index: 1; }
+.dl-feats { margin-top: 36px; display: flex; flex-direction: column; gap: 16px; text-align: left; }
+.dl-feat { display: flex; align-items: center; gap: 14px; color: rgba(255,255,255,0.75); font-size: 13.5px; font-weight: 500; }
+.dl-feat-icon {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+/* Right panel */
+.dl-right {
+    flex: 1; height: 100%; background: #fff; overflow-y: auto;
+    display: flex; align-items: center; justify-content: center; padding: 56px 64px;
+}
+.dark .dl-right { background: #1e293b; }
 
 /* ====== MOBILE LOGIN ====== */
 .ml {
@@ -53,61 +107,62 @@
     display: flex; flex-direction: column;
 }
 .ml-header {
-    width: 100%;
-    padding: 52px 24px 0;
+    width: 100%; padding: 52px 24px 0;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    text-align: center;
-    flex-shrink: 0;
-    min-height: 200px;
+    text-align: center; flex-shrink: 0; min-height: 200px;
 }
-/* Mobile cloud: horizontal fluffy cloud between blue and white */
+/* Mobile cloud: horizontal multi-layer */
 .ml-cloud {
     width: 100%; flex-shrink: 0;
     line-height: 0; margin-top: -10px;
     position: relative; z-index: 2;
 }
 .ml-cloud svg { display: block; width: 100%; }
-
 .ml-sheet {
-    flex: 1;
-    background: #fff;
+    flex: 1; background: #fff;
     padding: 28px 28px 48px;
-    position: relative; z-index: 2;
-    min-height: 400px;
+    position: relative; z-index: 2; min-height: 400px;
 }
-.dark .ml-sheet { background:#1e293b; }
+.dark .ml-sheet { background: #1e293b; }
 
 /* Show/hide */
 @media (min-width: 1024px) { .dl{display:flex} .ml{display:none} }
 @media (max-width: 1023px) { .dl{display:none} .ml{display:flex} }
 
-/* ====== FORM STYLES (shared) ====== */
-.lp-title { font-size:26px; font-weight:800; color:#0f172a; margin-bottom:6px; }
-.dark .lp-title { color:#f1f5f9; }
-.lp-sub { font-size:13px; color:#94a3b8; margin-bottom:28px; }
-.lp-form { width:100%; max-width:380px; }
-.ul-group { margin-bottom:22px; }
-.ul-label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#64748b; margin-bottom:8px; }
-.dark .ul-label { color:#94a3b8; }
-.ul-wrap { position:relative; border-bottom:1.5px solid #cbd5e1; transition:border-color .2s; display:flex; align-items:center; }
-.ul-wrap:focus-within { border-bottom-color:#2563eb; }
-.ul-icon { color:#94a3b8; flex-shrink:0; padding:0 8px 0 2px; }
-.ul-input { flex:1; border:none; outline:none; background:transparent; padding:10px 0; font-size:14px; color:#0f172a; font-family:'Outfit',sans-serif; }
-.dark .ul-input { color:#f1f5f9; }
-.ul-input::placeholder { color:#cbd5e1; }
-.ul-right { color:#94a3b8; cursor:pointer; border:none; background:transparent; padding:4px 2px; flex-shrink:0; }
-.lp-btn { width:100%; background:linear-gradient(90deg,#2563eb,#4f46e5); color:#fff; border:none; border-radius:50px; padding:14px; font-size:15px; font-weight:700; font-family:'Outfit',sans-serif; cursor:pointer; transition:all .25s; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 20px rgba(37,99,235,0.35); margin-top:8px; }
-.lp-btn:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(37,99,235,0.45); }
-.lp-row { display:flex; align-items:center; justify-content:space-between; margin:18px 0 26px; }
-.lp-remember { display:flex; align-items:center; gap:8px; font-size:12px; color:#64748b; cursor:pointer; }
-.lp-forgot { font-size:12px; font-weight:700; color:#2563eb; text-decoration:none; }
-.lp-forgot:hover { color:#1d4ed8; }
-.lp-footer { margin-top:24px; font-size:11px; color:#94a3b8; }
-.lp-error { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; border-radius:10px; padding:12px 16px; font-size:12px; margin-bottom:18px; }
+/* ====== SHARED FORM STYLES ====== */
+.lp-title { font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+.dark .lp-title { color: #f1f5f9; }
+.lp-sub { font-size: 13px; color: #94a3b8; margin-bottom: 28px; }
+.lp-form { width: 100%; max-width: 380px; }
+.ul-group { margin-bottom: 22px; }
+.ul-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin-bottom: 8px; }
+.dark .ul-label { color: #94a3b8; }
+.ul-wrap { position: relative; border-bottom: 1.5px solid #cbd5e1; transition: border-color .2s; display: flex; align-items: center; }
+.ul-wrap:focus-within { border-bottom-color: #2563eb; }
+.ul-icon { color: #94a3b8; flex-shrink: 0; padding: 0 8px 0 2px; }
+.ul-input { flex: 1; border: none; outline: none; background: transparent; padding: 10px 0; font-size: 14px; color: #0f172a; font-family: 'Outfit', sans-serif; }
+.dark .ul-input { color: #f1f5f9; }
+.ul-input::placeholder { color: #cbd5e1; }
+.ul-right { color: #94a3b8; cursor: pointer; border: none; background: transparent; padding: 4px 2px; flex-shrink: 0; }
+.lp-btn {
+    width: 100%; background: linear-gradient(90deg, #2563eb, #4f46e5);
+    color: #fff; border: none; border-radius: 50px; padding: 14px;
+    font-size: 15px; font-weight: 700; font-family: 'Outfit', sans-serif;
+    cursor: pointer; transition: all .25s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 20px rgba(37,99,235,0.35); margin-top: 8px;
+}
+.lp-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,99,235,0.45); }
+.lp-row { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 26px; }
+.lp-remember { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #64748b; cursor: pointer; }
+.lp-forgot { font-size: 12px; font-weight: 700; color: #2563eb; text-decoration: none; }
+.lp-forgot:hover { color: #1d4ed8; }
+.lp-footer { margin-top: 24px; font-size: 11px; color: #94a3b8; }
+.lp-error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 10px; padding: 12px 16px; font-size: 12px; margin-bottom: 18px; }
 
 /* Stagger */
-.si { opacity:0; animation:fadeUp .55s cubic-bezier(.2,.8,.2,1) forwards; }
+.si { opacity: 0; animation: fadeUp .55s cubic-bezier(.2,.8,.2,1) forwards; }
 .d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}.d4{animation-delay:.4s}.d5{animation-delay:.5s}
 @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 </style>
@@ -117,107 +172,97 @@
      ============================ --}}
 <div class="dl">
     <div class="dl-left">
+        {{-- Animated orbs (Swift-style) --}}
         <div class="dl-orb dl-orb-a"></div>
         <div class="dl-orb dl-orb-b"></div>
+        <div class="dl-orb dl-orb-c"></div>
 
-        {{-- 3-layer vertical fluffy cloud on right edge (Spacer-style depth) --}}
+        {{-- 3-layer cloud divider on right edge (Spacer-style big smooth bumps) --}}
         <div class="dl-cloud">
-            <svg viewBox="0 0 120 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <svg viewBox="0 0 160 1000" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
 
-                {{-- Layer 1: BACK — most transparent, extends furthest left --}}
+                {{-- Layer 1: BACK — most transparent, widest bumps --}}
                 <path d="
-                    M120,0 L120,800 L20,800
-                    C20,775 45,762 42,740
-                    C39,718 15,708 18,685
-                    C21,662 48,650 45,628
-                    C42,606 12,595 15,572
-                    C18,549 50,540 47,518
-                    C44,496 10,482 14,460
-                    C18,438 46,428 43,406
-                    C40,384 14,372 17,350
-                    C20,328 52,318 48,296
-                    C44,274 10,260 14,238
-                    C18,216 50,208 46,186
-                    C42,164 12,150 16,128
-                    C20,106 48,96 44,74
-                    C40,52 16,40 20,18
-                    C22,8 30,2 30,0
-                    L120,0 Z
-                " fill="white" opacity="0.15"/>
+                    M160,0 L160,1000
+                    L40,1000
+                    C40,1000 40,960 55,930
+                    C70,900 25,880 25,840
+                    C25,800 65,780 65,740
+                    C65,700 20,680 20,640
+                    C20,600 60,575 60,535
+                    C60,495 15,475 15,435
+                    C15,395 55,370 55,330
+                    C55,290 25,270 25,230
+                    C25,190 60,170 60,130
+                    C60,90 30,70 30,40
+                    C30,15 45,5 50,0
+                    L160,0 Z
+                " fill="white" opacity="0.12"/>
 
                 {{-- Layer 2: MIDDLE — semi-transparent --}}
                 <path d="
-                    M120,0 L120,800 L40,800
-                    C40,778 62,768 60,748
-                    C58,728 32,720 35,698
-                    C38,676 65,665 62,645
-                    C59,625 28,615 32,593
-                    C36,571 66,562 63,540
-                    C60,518 30,506 34,484
-                    C38,462 64,452 60,432
-                    C56,412 28,400 32,378
-                    C36,356 68,346 64,326
-                    C60,306 30,292 34,270
-                    C38,248 66,240 62,220
-                    C58,200 28,188 32,166
-                    C36,144 64,135 60,115
-                    C56,95 34,82 38,60
-                    C42,38 52,25 50,10
-                    C49,4 55,1 55,0
-                    L120,0 Z
-                " fill="white" opacity="0.35"/>
+                    M160,0 L160,1000
+                    L60,1000
+                    C60,1000 55,955 72,920
+                    C89,885 48,860 48,815
+                    C48,770 85,748 85,705
+                    C85,662 42,640 42,595
+                    C42,550 82,530 82,488
+                    C82,446 38,425 38,382
+                    C38,339 78,318 78,275
+                    C78,232 45,212 45,170
+                    C45,128 80,108 80,68
+                    C80,38 60,15 65,0
+                    L160,0 Z
+                " fill="white" opacity="0.3"/>
 
                 {{-- Layer 3: FRONT — solid white, main cloud shape --}}
                 <path d="
-                    M120,0 L120,800 L60,800
-                    C60,780 80,770 80,750
-                    C80,730 50,725 50,705
-                    C50,685 75,678 75,660
-                    C75,640 45,632 45,612
-                    C45,592 78,585 78,565
-                    C78,545 42,535 42,515
-                    C42,495 72,488 72,470
-                    C72,450 40,442 40,422
-                    C40,402 75,395 75,375
-                    C75,355 48,348 48,328
-                    C48,308 80,298 80,278
-                    C80,258 44,248 44,228
-                    C44,208 76,200 76,180
-                    C76,160 46,150 46,130
-                    C46,110 74,102 74,82
-                    C74,62 50,52 50,32
-                    C50,12 65,5 65,0
-                    L120,0 Z
+                    M160,0 L160,1000
+                    L80,1000
+                    C80,1000 75,950 90,912
+                    C105,874 70,848 70,805
+                    C70,762 102,738 102,695
+                    C102,652 65,630 65,588
+                    C65,546 98,522 98,480
+                    C98,438 60,416 60,374
+                    C60,332 96,310 96,268
+                    C96,226 64,204 64,162
+                    C64,120 95,100 95,62
+                    C95,30 78,10 82,0
+                    L160,0 Z
                 " fill="white"/>
 
             </svg>
         </div>
 
+        {{-- Brand content — all white text --}}
         <div class="dl-brand si d1">
             <div class="dl-logo">
                 <img src="{{ asset('logo.png') }}" alt="Logo" class="w-full h-full object-contain">
             </div>
-            <p class="text-blue-200/60 text-[10px] tracking-[0.2em] uppercase font-bold mb-1">SMKN 1 Ciamis</p>
+            <p class="text-white/50 text-[10px] tracking-[0.2em] uppercase font-bold mb-1">SMKN 1 Ciamis</p>
             <h1 class="text-white font-extrabold text-2xl tracking-wide">SISTEM PKL</h1>
-            <p class="text-blue-100/55 text-sm mt-3 leading-relaxed max-w-xs">Monitoring administrasi, jurnal harian, dan absensi siswa PKL terintegrasi.</p>
+            <p class="text-white/60 text-sm mt-3 leading-relaxed max-w-xs">Monitoring administrasi, jurnal harian, dan absensi siswa PKL terintegrasi.</p>
 
             <div class="dl-feats si d2">
                 <div class="dl-feat">
                     <span class="dl-feat-icon"><i data-lucide="shield-check" class="w-4 h-4 text-white"></i></span>
-                    Akses Aman Terenkripsi
+                    <span class="text-white/75">Akses Aman Terenkripsi</span>
                 </div>
                 <div class="dl-feat">
                     <span class="dl-feat-icon"><i data-lucide="activity" class="w-4 h-4 text-white"></i></span>
-                    Monitoring Harian Real-Time
+                    <span class="text-white/75">Monitoring Harian Real-Time</span>
                 </div>
                 <div class="dl-feat">
                     <span class="dl-feat-icon"><i data-lucide="briefcase" class="w-4 h-4 text-white"></i></span>
-                    Evaluasi Bimbingan DUDI
+                    <span class="text-white/75">Evaluasi Bimbingan DUDI</span>
                 </div>
             </div>
         </div>
     </div>
 
+    {{-- Right white panel --}}
     <div class="dl-right">
         <div class="lp-form si d1">
             <h2 class="lp-title">Selamat datang kembali</h2>
@@ -260,57 +305,58 @@
      MOBILE LAYOUT (<1024px)
      ============================ --}}
 <div class="ml">
-    {{-- Blue header --}}
     <div class="ml-header">
         <h1 class="text-white font-extrabold text-3xl tracking-wide mb-1">MAS-PKL</h1>
-        <p class="text-blue-100 text-sm font-medium opacity-85">Monitoring & Administrasi Siswa PKL</p>
+        <p class="text-white/80 text-sm font-medium">Monitoring & Administrasi Siswa PKL</p>
     </div>
 
-    {{-- Horizontal fluffy cloud SVG between blue and white --}}
+    {{-- Horizontal multi-layer cloud (Spacer-style big smooth bumps) --}}
     <div class="ml-cloud">
-        <svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-            {{-- Multi-layered fluffy cloud bumps exactly like Spacer reference --}}
-            {{-- Back layer: softer, wider bumps --}}
+        <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+
+            {{-- Layer 1: BACK — most transparent --}}
             <path d="
-                M0,120 L0,80
-                C0,80 8,78 15,70
-                C22,62 18,50 30,45
-                C42,40 48,55 60,52
-                C72,49 70,35 85,30
-                C100,25 105,42 118,40
-                C131,38 128,22 145,20
-                C162,18 168,38 182,35
-                C196,32 192,15 210,12
-                C228,9 235,30 250,28
-                C265,26 260,10 280,8
-                C300,6 308,28 322,25
-                C336,22 332,8 350,10
-                C368,12 372,32 385,30
-                C394,28 397,40 400,40
-                L400,120 Z
-            " fill="white" opacity="0.4"/>
-            {{-- Front layer: main cloud shape --}}
+                M0,140 L400,140 L400,50
+                C400,50 380,30 350,35
+                C320,40 310,65 280,60
+                C250,55 245,30 215,25
+                C185,20 178,48 148,45
+                C118,42 115,20 85,18
+                C55,16 48,42 20,38
+                C8,36 0,28 0,28
+                L0,140 Z
+            " fill="white" opacity="0.12"/>
+
+            {{-- Layer 2: MIDDLE — semi-transparent --}}
             <path d="
-                M0,120 L0,90
-                C0,90 10,88 18,80
-                C26,72 20,60 35,55
-                C50,50 58,68 72,62
-                C86,56 82,42 100,38
-                C118,34 125,52 140,48
-                C155,44 150,30 170,28
-                C190,26 198,46 212,42
-                C226,38 222,22 242,20
-                C262,18 270,38 285,35
-                C300,32 296,18 318,16
-                C340,14 345,35 360,32
-                C375,29 378,45 390,42
-                C398,40 400,50 400,50
-                L400,120 Z
+                M0,140 L400,140 L400,65
+                C400,65 385,48 358,52
+                C331,56 322,78 295,72
+                C268,66 260,42 232,38
+                C204,34 195,58 168,55
+                C141,52 135,32 108,30
+                C81,28 72,52 45,48
+                C25,45 10,38 0,40
+                L0,140 Z
+            " fill="white" opacity="0.3"/>
+
+            {{-- Layer 3: FRONT — solid white --}}
+            <path d="
+                M0,140 L400,140 L400,82
+                C400,82 388,62 365,68
+                C342,74 335,95 310,88
+                C285,81 278,58 252,55
+                C226,52 218,72 192,68
+                C166,64 160,45 135,42
+                C110,39 102,62 78,58
+                C54,54 45,72 22,65
+                C10,61 0,55 0,55
+                L0,140 Z
             " fill="white"/>
+
         </svg>
     </div>
 
-    {{-- White form sheet --}}
     <div class="ml-sheet">
         <h2 class="lp-title mb-1">Sign in</h2>
         <p class="lp-sub">Masuk menggunakan akun MAS-PKL Anda</p>
