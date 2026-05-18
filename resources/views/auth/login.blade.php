@@ -120,15 +120,56 @@
         <div class="dl-orb dl-orb-a"></div>
         <div class="dl-orb dl-orb-b"></div>
 
-        {{-- Vertical fluffy cloud on right edge --}}
+        {{-- 3-layer vertical fluffy cloud on right edge (Spacer-style depth) --}}
         <div class="dl-cloud">
             <svg viewBox="0 0 120 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                {{-- Large fluffy cloud bumps going down the right edge --}}
-                <path d="
-                    M120,0
-                    L120,800
-                    L60,800
 
+                {{-- Layer 1: BACK — most transparent, extends furthest left --}}
+                <path d="
+                    M120,0 L120,800 L20,800
+                    C20,775 45,762 42,740
+                    C39,718 15,708 18,685
+                    C21,662 48,650 45,628
+                    C42,606 12,595 15,572
+                    C18,549 50,540 47,518
+                    C44,496 10,482 14,460
+                    C18,438 46,428 43,406
+                    C40,384 14,372 17,350
+                    C20,328 52,318 48,296
+                    C44,274 10,260 14,238
+                    C18,216 50,208 46,186
+                    C42,164 12,150 16,128
+                    C20,106 48,96 44,74
+                    C40,52 16,40 20,18
+                    C22,8 30,2 30,0
+                    L120,0 Z
+                " fill="white" opacity="0.15"/>
+
+                {{-- Layer 2: MIDDLE — semi-transparent --}}
+                <path d="
+                    M120,0 L120,800 L40,800
+                    C40,778 62,768 60,748
+                    C58,728 32,720 35,698
+                    C38,676 65,665 62,645
+                    C59,625 28,615 32,593
+                    C36,571 66,562 63,540
+                    C60,518 30,506 34,484
+                    C38,462 64,452 60,432
+                    C56,412 28,400 32,378
+                    C36,356 68,346 64,326
+                    C60,306 30,292 34,270
+                    C38,248 66,240 62,220
+                    C58,200 28,188 32,166
+                    C36,144 64,135 60,115
+                    C56,95 34,82 38,60
+                    C42,38 52,25 50,10
+                    C49,4 55,1 55,0
+                    L120,0 Z
+                " fill="white" opacity="0.35"/>
+
+                {{-- Layer 3: FRONT — solid white, main cloud shape --}}
+                <path d="
+                    M120,0 L120,800 L60,800
                     C60,780 80,770 80,750
                     C80,730 50,725 50,705
                     C50,685 75,678 75,660
@@ -146,9 +187,9 @@
                     C46,110 74,102 74,82
                     C74,62 50,52 50,32
                     C50,12 65,5 65,0
-
                     L120,0 Z
                 " fill="white"/>
+
             </svg>
         </div>
 
