@@ -1,282 +1,292 @@
 <x-guest-layout>
 <style>
-:root {
-    --slate-bg: #f8fafc;
-    --dark-bg: #090d16;
-    --card-light: #ffffff;
-    --card-dark: #1e293b;
-    --border-light: #e2e8f0;
-    --border-dark: #334155;
-}
+/* =============================================
+   LOGIN PAGE — "Spacer" style
+   Desktop: blue left panel + white right form (split)
+   Mobile: full-page blue top + cloud-wave + white bottom form (no card)
+   ============================================= */
 
-.login-wrapper {
+* { box-sizing: border-box; }
+
+.login-wrap {
     position: fixed;
     inset: 0;
     z-index: 9999;
     display: flex;
-    flex-direction: row;
-    background: var(--slate-bg);
     font-family: 'Outfit', sans-serif;
     overflow: hidden;
 }
-.dark .login-wrapper { background: var(--dark-bg); }
 
-/* ===== LEFT SIDEBAR (Desktop) ===== */
-.login-sidebar {
-    width: 420px;
+/* ---- DESKTOP: Side-by-side ---- */
+.lp-blue {
+    width: 42%;
     height: 100%;
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 40%, #0f172a 100%);
+    background: linear-gradient(160deg, #2563eb 0%, #1e3a8a 60%, #0f172a 100%);
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 48px;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    border-right: 1px solid rgba(255,255,255,0.05);
+    padding: 48px 40px;
+    text-align: center;
 }
 
-/* Glowing Orbs */
+.lp-white {
+    flex: 1;
+    height: 100%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 56px 48px;
+    overflow-y: auto;
+    position: relative;
+}
+.dark .lp-white { background: #1e293b; }
+
+/* Cloud wave divider (right edge of blue panel) */
+.lp-cloud-right {
+    position: absolute;
+    right: -1px;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    z-index: 10;
+}
+.lp-cloud-right svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Glowing orbs */
 .orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.4;
-    z-index: 0;
+    filter: blur(70px);
+    opacity: 0.35;
     pointer-events: none;
 }
-.orb-1 { width:350px; height:350px; background:#2563eb; top:-100px; left:-100px; animation: orbMove1 18s ease-in-out infinite alternate; }
-.orb-2 { width:400px; height:400px; background:#4f46e5; bottom:-150px; right:-150px; animation: orbMove2 22s ease-in-out infinite alternate; }
-.orb-3 { width:300px; height:300px; background:#3b82f6; top:30%; left:-50px; animation: orbMove3 20s ease-in-out infinite alternate; }
+.orb-a { width:300px; height:300px; background:#3b82f6; top:-80px; left:-80px; animation: oa 20s ease-in-out infinite alternate; }
+.orb-b { width:350px; height:350px; background:#6366f1; bottom:-120px; left:20%; animation: ob 24s ease-in-out infinite alternate; }
+@keyframes oa { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(60px,100px) scale(1.2)} }
+@keyframes ob { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(-80px,-80px) scale(1.3)} }
 
-@keyframes orbMove1 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(120px,150px) scale(1.2)} 100%{transform:translate(80px,180px) scale(1.1)} }
-@keyframes orbMove2 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(-150px,-120px) scale(1.1)} 100%{transform:translate(-100px,-200px) scale(0.9)} }
-@keyframes orbMove3 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(100px,-150px) scale(1.4)} 100%{transform:translate(30px,-100px) scale(1.2)} }
-
-/* Brand features */
-.brand-features { margin-top: 40px; display:flex; flex-direction:column; gap:16px; }
-.brand-feature { display:flex; align-items:center; gap:14px; color:rgba(255,255,255,0.75); font-size:13.5px; font-weight:500; }
-.feature-icon-box {
-    width:36px; height:36px;
-    background:rgba(255,255,255,0.1);
-    border:1px solid rgba(255,255,255,0.15);
-    border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    flex-shrink:0;
-}
-
-/* ===== RIGHT MAIN (Desktop) ===== */
-.login-main {
-    flex: 1;
-    height: 100%;
-    background: var(--slate-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 48px;
-    overflow-y: auto;
-}
-.dark .login-main { background: var(--dark-bg); }
-
-/* Login Card */
-.login-card {
-    width: 100%;
-    max-width: 420px;
-    background: var(--card-light);
-    border: 1px solid var(--border-light);
+/* Logo icon box */
+.logo-box {
+    width: 64px; height: 64px;
+    background: #ffffff;
     border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06);
-    padding: 40px;
-    position: relative;
-    z-index: 20;
-    opacity: 0;
-    animation: cardIn 0.8s cubic-bezier(0.2,0.8,0.2,1) forwards;
-}
-.dark .login-card { background:var(--card-dark); border-color:var(--border-dark); box-shadow:none; }
-
-@keyframes cardIn {
-    from { opacity:0; transform:perspective(1000px) translateY(40px) rotateX(-8deg) scale(0.96); }
-    to   { opacity:1; transform:perspective(1000px) translateY(0) rotateX(0deg) scale(1); }
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    padding: 8px;
 }
 
-/* Staggered animation */
-.si { opacity:0; animation: fadeUp 0.6s cubic-bezier(0.2,0.8,0.2,1) forwards; }
-.d1{animation-delay:.1s} .d2{animation-delay:.2s} .d3{animation-delay:.3s}
-.d4{animation-delay:.4s} .d5{animation-delay:.5s} .d6{animation-delay:.6s}
-@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+/* Brand feature list */
+.feat-list { margin-top: 40px; display: flex; flex-direction: column; gap: 14px; text-align: left; width: 100%; }
+.feat-item { display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.7); font-size:13px; font-weight:500; }
+.feat-icon { width:32px; height:32px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 
-/* Input overrides */
-.login-input  { padding-left:44px !important; padding-right:16px !important; }
-.login-input-pw { padding-left:44px !important; padding-right:44px !important; }
+/* Form styles (no card — flat on white) */
+.lp-form-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+.dark .lp-form-title { color: #f1f5f9; }
+.lp-form-sub { font-size: 13.5px; color: #94a3b8; margin-bottom: 36px; }
+.dark .lp-form-sub { color: #64748b; }
 
-/* ===== MOBILE LAYOUT ===== */
+.lp-form { width: 100%; max-width: 380px; }
+
+/* Underline inputs like reference */
+.ul-group { margin-bottom: 24px; }
+.ul-label { display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #475569; margin-bottom: 8px; }
+.dark .ul-label { color: #94a3b8; }
+.ul-input-wrap { position: relative; border-bottom: 1.5px solid #cbd5e1; transition: border-color .2s; }
+.ul-input-wrap:focus-within { border-bottom-color: #2563eb; }
+.ul-icon { position: absolute; left: 0; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+.ul-input {
+    width: 100%; border: none; outline: none; background: transparent;
+    padding: 10px 36px 10px 28px;
+    font-size: 14px; color: #0f172a; font-family: 'Outfit', sans-serif;
+}
+.dark .ul-input { color: #f1f5f9; }
+.ul-input::placeholder { color: #cbd5e1; }
+.ul-input-right { position: absolute; right: 0; top: 50%; transform: translateY(-50%); color: #94a3b8; cursor: pointer; border: none; background: transparent; padding: 4px; }
+
+/* Submit button */
+.lp-btn {
+    width: 100%;
+    background: linear-gradient(90deg, #2563eb, #4f46e5);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all .25s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+    margin-top: 8px;
+}
+.lp-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,99,235,0.45); }
+
+/* Remember + forgot */
+.lp-row { display: flex; align-items: center; justify-content: space-between; margin: 20px 0 28px; }
+.lp-remember { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #64748b; cursor: pointer; }
+.lp-forgot { font-size: 12.5px; font-weight: 700; color: #2563eb; text-decoration: none; }
+.lp-forgot:hover { color: #1d4ed8; }
+
+/* Footer */
+.lp-footer { margin-top: 32px; font-size: 11.5px; color: #94a3b8; }
+
+/* Error box */
+.lp-error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 10px; padding: 12px 16px; font-size: 12px; margin-bottom: 20px; }
+
+/* =============================================
+   MOBILE OVERRIDES (≤ 1023px)
+   Full page: blue top + cloud blob + white bottom, NO card
+   ============================================= */
 @media (max-width: 1023px) {
-    .login-wrapper { flex-direction: column; overflow-y: auto; }
+    .login-wrap {
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
 
-    /* Top section: full blue bg with topographic pattern */
-    .login-sidebar {
+    /* Blue top section */
+    .lp-blue {
         width: 100%;
         height: auto;
-        min-height: 280px;
-        padding: 0;
+        min-height: 240px;
+        padding: 48px 24px 100px; /* extra bottom for wave overlap */
         border-right: none;
-        border-bottom: none;
-        justify-content: flex-start;
+    }
+
+    /* Hide cloud right divider on mobile */
+    .lp-cloud-right { display: none; }
+
+    /* Hide desktop-only: logo box, feat list */
+    .lp-desktop-only { display: none !important; }
+
+    /* White bottom section */
+    .lp-white {
+        width: 100%;
+        height: auto;
+        flex: none;
+        padding: 36px 24px 48px;
         align-items: stretch;
         position: relative;
     }
 
-    /* Mobile content area inside sidebar */
-    .mobile-top-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding-top: 48px;
-        padding-bottom: 80px; /* space for wave overlap */
+    /* Mobile cloud wave — sits between blue and white, overlapping blue bottom */
+    .lp-mobile-wave {
+        display: block !important; /* shown on mobile */
         position: relative;
-        z-index: 5;
-        text-align: center;
-    }
-
-    /* Topographic contour lines pattern overlay */
-    .topo-overlay {
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        pointer-events: none;
-        opacity: 0.15;
-    }
-
-    /* The organic blob wave at bottom of mobile header */
-    .mobile-wave-wrap {
-        position: absolute;
-        bottom: -2px;
-        left: 0;
-        right: 0;
-        z-index: 10;
-        line-height: 0;
-    }
-    .mobile-wave-wrap svg {
-        display: block;
         width: 100%;
-        height: 90px;
+        margin-top: -90px; /* pulls it up over the blue section */
+        z-index: 5;
+        line-height: 0;
+        background: #fff;
     }
+    .dark .lp-mobile-wave { background: #1e293b; }
+    .lp-mobile-wave svg { display: block; width: 100%; }
 
-    /* Main area on mobile: only bottom half */
-    .login-main {
-        flex: 1;
-        height: auto;
-        min-height: 0;
-        padding: 32px 20px 40px;
-        background: var(--slate-bg);
-        align-items: flex-start;
-        overflow-y: visible;
-    }
+    /* Form: no card, just flat on white */
+    .lp-form { max-width: 100%; }
+    .lp-form-title { font-size: 26px; }
+    .lp-form-sub { margin-bottom: 28px; }
 
-    .login-card {
-        max-width: 100%;
-        padding: 28px 24px;
-        border-radius: 20px;
-        box-shadow: 0 4px 30px rgba(0,0,0,0.08);
-        margin-top: 0;
-    }
-
-    /* Hide desktop-only blocks on mobile */
-    .desktop-only { display: none !important; }
+    /* Mobile: show logo smaller + title inline */
+    .lp-mobile-brand { display: flex !important; flex-direction: column; align-items: center; }
 }
+/* Hide mobile wave on desktop */
+.lp-mobile-wave { display: none; }
 
-/* Hide mobile-only blocks on desktop */
-@media (min-width: 1024px) {
-    .mobile-only { display: none !important; }
-}
+/* Stagger animations */
+.si { opacity:0; animation: fadeUp .6s cubic-bezier(.2,.8,.2,1) forwards; }
+.d1{animation-delay:.1s} .d2{animation-delay:.2s} .d3{animation-delay:.3s} .d4{animation-delay:.4s} .d5{animation-delay:.5s}
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
 </style>
 
-<div class="login-wrapper">
+<div class="login-wrap">
 
-    <!-- ===== LEFT / TOP : BRAND PANEL ===== -->
-    <div class="login-sidebar">
-        <!-- Orbs (desktop only, mobile uses solid gradient) -->
-        <div class="orb orb-1 desktop-only"></div>
-        <div class="orb orb-2 desktop-only"></div>
-        <div class="orb orb-3 desktop-only"></div>
+    <!-- ========== BLUE PANEL ========== -->
+    <div class="lp-blue">
+        <div class="orb orb-a"></div>
+        <div class="orb orb-b"></div>
 
-        <!-- MOBILE: topographic SVG pattern overlay -->
-        <svg class="topo-overlay mobile-only" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-            <!-- Topographic contour lines, like the reference design's organic squiggly lines -->
-            <path d="M-20,150 C40,120 80,180 140,140 C200,100 240,170 300,130 C360,90 390,160 440,140" fill="none" stroke="white" stroke-width="1.5"/>
-            <path d="M-20,170 C30,140 90,200 150,160 C210,120 250,185 310,150 C370,115 400,175 450,155" fill="none" stroke="white" stroke-width="1.5"/>
-            <path d="M-20,190 C50,155 100,215 160,178 C220,140 260,198 320,165 C380,132 405,192 455,172" fill="none" stroke="white" stroke-width="1.2"/>
-            <path d="M-20,210 C60,175 110,228 170,195 C230,162 270,212 330,182 C390,152 410,208 460,188" fill="none" stroke="white" stroke-width="1.2"/>
-            <path d="M-20,120 C55,90 100,155 160,115 C220,75 270,148 330,108 C390,68 420,135 450,110" fill="none" stroke="white" stroke-width="1.5"/>
-            <path d="M-20,95 C45,65 95,130 155,92 C215,54 265,125 325,88 C385,50 415,118 460,90" fill="none" stroke="white" stroke-width="1.2"/>
-            <path d="M-20,70 C35,42 90,105 148,70 C206,35 260,100 320,65 C380,30 410,95 455,68" fill="none" stroke="white" stroke-width="1"/>
-            <path d="M-20,230 C70,198 118,240 180,212 C240,182 285,228 345,200 C400,172 420,225 460,205" fill="none" stroke="white" stroke-width="1"/>
-            <!-- Sparkle-like star accents -->
-            <path d="M320,80 L322,74 L324,80 L330,82 L324,84 L322,90 L320,84 L314,82 Z" fill="white" opacity="0.6"/>
-            <path d="M60,110 L62,104 L64,110 L70,112 L64,114 L62,120 L60,114 L54,112 Z" fill="white" opacity="0.5"/>
-            <path d="M200,60 L201,56 L202,60 L206,61 L202,62 L201,66 L200,62 L196,61 Z" fill="white" opacity="0.5"/>
-        </svg>
-
-        <!-- DESKTOP: Top header with logo -->
-        <div class="desktop-only flex items-center gap-3 relative z-10 si d1">
-            <div class="p-2.5 bg-white rounded-xl shadow-lg">
-                <img src="{{ asset('logo.png') }}" alt="Logo" class="w-9 h-9 object-contain">
-            </div>
-            <div>
-                <h2 class="text-lg font-black text-white leading-none">MAS-PKL</h2>
-                <span class="text-[10px] text-slate-400 tracking-wider font-semibold uppercase">SMKN 1 Ciamis</span>
-            </div>
-        </div>
-
-        <!-- DESKTOP: Center block -->
-        <div class="desktop-only relative z-10 my-auto si d2">
-            <h1 class="text-white font-extrabold text-3xl tracking-wide mb-3">SISTEM PKL</h1>
-            <p class="text-slate-400 text-sm leading-relaxed max-w-sm">Monitoring administrasi, jurnal harian, dan absensi siswa SMK Negeri 1 Ciamis terintegrasi.</p>
-            <div class="brand-features">
-                <div class="brand-feature">
-                    <span class="feature-icon-box"><i data-lucide="shield-check" class="w-4 h-4 text-white"></i></span>
-                    <span>Akses Aman Terenkripsi</span>
-                </div>
-                <div class="brand-feature">
-                    <span class="feature-icon-box"><i data-lucide="activity" class="w-4 h-4 text-white"></i></span>
-                    <span>Monitoring Harian Real-Time</span>
-                </div>
-                <div class="brand-feature">
-                    <span class="feature-icon-box"><i data-lucide="briefcase" class="w-4 h-4 text-white"></i></span>
-                    <span>Evaluasi Bimbingan DUDI</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- DESKTOP: Footer -->
-        <div class="desktop-only relative z-10 text-slate-500 text-xs si d5">
-            Protected admin area — MAS-PKL © {{ date('Y') }}
-        </div>
-
-        <!-- MOBILE: Top content (no logo, text only) -->
-        <div class="mobile-only mobile-top-content">
-            <h1 class="text-3xl font-black text-white tracking-wide mb-1">MAS-PKL</h1>
-            <p class="text-sm text-blue-100 font-medium opacity-90">Monitoring & Administrasi Siswa PKL</p>
-        </div>
-
-        <!-- MOBILE: Organic blob wave (matches reference photo motif) -->
-        <div class="mobile-only mobile-wave-wrap">
-            <svg viewBox="0 0 390 90" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                <!-- Organic blob wave: dips deep on left, rises on right, matches reference -->
-                <path d="M0,55 C30,10 80,70 140,35 C200,0 250,55 320,30 C355,17 375,45 390,35 L390,90 L0,90 Z" fill="white"/>
+        <!-- DESKTOP: Cloud wave on right edge -->
+        <div class="lp-cloud-right">
+            <svg viewBox="0 0 80 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                <path d="M80,0 C40,80 70,160 30,240 C0,300 50,360 20,420 C-10,480 50,540 30,600 C10,660 50,720 40,800 L80,800 L80,0 Z" fill="white"/>
             </svg>
+        </div>
+
+        <!-- Mobile wave (bumpy clouds, shown only on mobile via CSS) -->
+        <div class="lp-mobile-wave">
+            <svg viewBox="0 0 390 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                <!-- Bumpy cloud-like wave exactly like Spacer reference -->
+                <path d="
+                    M0,70
+                    C15,70 15,45 30,45
+                    C45,45 45,60 60,55
+                    C75,50 75,30 95,30
+                    C115,30 115,50 135,48
+                    C155,46 158,25 178,22
+                    C198,19 200,40 220,38
+                    C240,36 242,15 265,15
+                    C288,15 290,38 310,36
+                    C330,34 332,18 355,20
+                    C375,22 378,45 390,45
+                    L390,100 L0,100 Z
+                " fill="white"/>
+            </svg>
+        </div>
+
+        <!-- Desktop: logo + brand + features -->
+        <div class="lp-desktop-only flex flex-col items-center text-center si d1">
+            <div class="logo-box">
+                <img src="{{ asset('logo.png') }}" alt="Logo" class="w-full h-full object-contain">
+            </div>
+            <p class="text-blue-200/70 text-[10px] tracking-[0.2em] uppercase font-bold mb-1">SMKN 1 Ciamis</p>
+            <h1 class="text-white font-extrabold text-2xl tracking-wide leading-tight">SISTEM PKL</h1>
+            <p class="text-blue-100/60 text-sm mt-3 leading-relaxed max-w-xs">Monitoring administrasi, jurnal harian, dan absensi siswa PKL terintegrasi.</p>
+
+            <div class="feat-list si d2">
+                <div class="feat-item">
+                    <span class="feat-icon"><i data-lucide="shield-check" class="w-4 h-4 text-white"></i></span>
+                    Akses Aman Terenkripsi
+                </div>
+                <div class="feat-item">
+                    <span class="feat-icon"><i data-lucide="activity" class="w-4 h-4 text-white"></i></span>
+                    Monitoring Harian Real-Time
+                </div>
+                <div class="feat-item">
+                    <span class="feat-icon"><i data-lucide="briefcase" class="w-4 h-4 text-white"></i></span>
+                    Evaluasi Bimbingan DUDI
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile: only text brand (no logo, no features) -->
+        <div class="lp-mobile-brand hidden text-center si d1">
+            <h1 class="text-white font-extrabold text-3xl tracking-wide mb-1">MAS-PKL</h1>
+            <p class="text-blue-100 text-sm opacity-90">Monitoring & Administrasi Siswa PKL</p>
         </div>
     </div>
 
-    <!-- ===== RIGHT / BOTTOM: FORM PANEL ===== -->
-    <div class="login-main">
-        <div class="login-card">
-            <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white mb-1.5 si d1">Selamat datang kembali</h2>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mb-8 si d2">Silakan masuk menggunakan akun MAS-PKL Anda</p>
+    <!-- ========== WHITE PANEL (form — no card box) ========== -->
+    <div class="lp-white">
+        <div class="lp-form si d2">
+
+            <h2 class="lp-form-title">Sign in</h2>
+            <p class="lp-form-sub">Masuk menggunakan akun MAS-PKL Anda</p>
 
             @if ($errors->any())
-                <div class="bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl p-3.5 mb-6 text-xs font-semibold">
+                <div class="lp-error">
                     <ul class="list-disc list-inside space-y-1">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -285,60 +295,62 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login') }}" class="space-y-5 si d3"
+            <form method="POST" action="{{ route('login') }}"
                   x-data="{ username: '{{ old('username') }}', password: '', showPassword: false }">
                 @csrf
 
                 <!-- Username -->
-                <div class="space-y-2">
-                    <label for="username" class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Username / NIS / NIP</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                <div class="ul-group">
+                    <label class="ul-label">Username / NIS / NIP</label>
+                    <div class="ul-input-wrap">
+                        <span class="ul-icon">
                             <i data-lucide="user" class="w-4 h-4"></i>
-                        </div>
-                        <input id="username" name="username" type="text" value="{{ old('username') }}" required autofocus x-model="username"
-                               class="login-input w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 transition-all shadow-sm"
+                        </span>
+                        <input id="username" name="username" type="text"
+                               value="{{ old('username') }}"
+                               x-model="username" required autofocus
+                               class="ul-input"
                                placeholder="Username / NIS / NIP">
                     </div>
                 </div>
 
                 <!-- Password -->
-                <div class="space-y-2">
-                    <label for="password" class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Password</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                <div class="ul-group">
+                    <label class="ul-label">Password</label>
+                    <div class="ul-input-wrap">
+                        <span class="ul-icon">
                             <i data-lucide="lock" class="w-4 h-4"></i>
-                        </div>
-                        <input id="password" name="password" :type="showPassword ? 'text' : 'password'" required x-model="password"
-                               class="login-input-pw w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 transition-all shadow-sm"
-                               placeholder="Password">
-                        <button type="button" @click="showPassword = !showPassword"
-                                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
+                        </span>
+                        <input id="password" name="password"
+                               :type="showPassword ? 'text' : 'password'"
+                               x-model="password" required
+                               class="ul-input"
+                               placeholder="Password Anda">
+                        <button type="button" class="ul-input-right" @click="showPassword = !showPassword">
                             <i data-lucide="eye" x-show="!showPassword" class="w-4 h-4"></i>
                             <i data-lucide="eye-off" x-show="showPassword" class="w-4 h-4" x-cloak></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Remember Me -->
-                <div class="flex items-center justify-between pt-1">
-                    <label class="flex items-center gap-2 cursor-pointer select-none">
-                        <input type="checkbox" name="remember" class="w-4 h-4 rounded border-slate-200 dark:border-slate-800 text-blue-600 focus:ring-blue-500 cursor-pointer">
-                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Ingat Saya</span>
+                <!-- Remember + Forgot -->
+                <div class="lp-row">
+                    <label class="lp-remember">
+                        <input type="checkbox" name="remember" class="w-4 h-4 accent-blue-600 cursor-pointer rounded">
+                        Ingat Saya
                     </label>
-                    <a href="#" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-500 transition-colors">Lupa Password?</a>
+                    <a href="#" class="lp-forgot">Lupa Password?</a>
                 </div>
 
                 <!-- Submit -->
-                <x-button class="w-full py-3 text-sm font-bold shadow-md shadow-blue-500/10 dark:shadow-none" icon="arrow-right-circle"
-                          x-bind:error-text="!username && !password ? 'Isi username dan password' : (!username ? 'Isi username/NIS/NIP' : 'Isi Password')">
-                    Masuk Ke Akun
-                </x-button>
+                <button type="submit" class="lp-btn"
+                        x-bind:style="(!username || !password) ? 'background: linear-gradient(90deg,#94a3b8,#a5b4fc); box-shadow:none; cursor:not-allowed' : ''">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    Masuk
+                </button>
             </form>
 
-            <div class="text-center mt-6 text-xs text-slate-400 dark:text-slate-500 si d5">
-                Protected admin area — MAS-PKL © {{ date('Y') }}
-            </div>
+            <p class="lp-footer">Protected admin area — MAS-PKL © {{ date('Y') }}</p>
         </div>
     </div>
 
