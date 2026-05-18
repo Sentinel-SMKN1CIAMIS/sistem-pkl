@@ -236,67 +236,93 @@
             </svg>
         </div>
 
-        {{-- Brand content — all white text --}}
-        <div class="dl-brand si d1">
-            <div class="dl-logo">
-                <img src="{{ asset('logo.png') }}" alt="Logo" class="w-full h-full object-contain">
+        {{-- Brand content — perfectly matching Spacer layout --}}
+        <div class="dl-brand si d1" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; width: 100%;">
+            {{-- Top: Welcome to --}}
+            <div style="margin-top: 20px;">
+                <p style="color: white; font-size: 20px; font-weight: 500; letter-spacing: 0.5px;">Welcome to</p>
             </div>
-            <p class="text-white/50 text-[10px] tracking-[0.2em] uppercase font-bold mb-1">SMKN 1 Ciamis</p>
-            <h1 class="text-white font-extrabold text-2xl tracking-wide">SISTEM PKL</h1>
-            <p class="text-white/60 text-sm mt-3 leading-relaxed max-w-xs">Monitoring administrasi, jurnal harian, dan absensi siswa PKL terintegrasi.</p>
 
-            <div class="dl-feats si d2">
-                <div class="dl-feat">
-                    <span class="dl-feat-icon"><i data-lucide="shield-check" class="w-4 h-4 text-white"></i></span>
-                    <span class="text-white/75">Akses Aman Terenkripsi</span>
+            {{-- Middle: Logo and Titles --}}
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div class="dl-logo" style="width: 100px; height: 100px; border-radius: 50%; padding: 15px; margin-bottom: 24px;">
+                    <img src="{{ asset('logo.png') }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
-                <div class="dl-feat">
-                    <span class="dl-feat-icon"><i data-lucide="activity" class="w-4 h-4 text-white"></i></span>
-                    <span class="text-white/75">Monitoring Harian Real-Time</span>
-                </div>
-                <div class="dl-feat">
-                    <span class="dl-feat-icon"><i data-lucide="briefcase" class="w-4 h-4 text-white"></i></span>
-                    <span class="text-white/75">Evaluasi Bimbingan DUDI</span>
-                </div>
+                <p style="color: rgba(255,255,255,0.7); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px;">SMKN 1 Ciamis</p>
+                <h1 style="color: white; font-size: 32px; font-weight: 800; letter-spacing: 1px; margin-bottom: 24px;">SISTEM PKL</h1>
+                
+                <p style="color: rgba(255,255,255,0.8); font-size: 13px; line-height: 1.6; max-width: 280px;">
+                    Monitoring administrasi, jurnal harian, dan absensi siswa PKL terintegrasi.
+                </p>
+            </div>
+
+            {{-- Bottom: Footer --}}
+            <div style="margin-bottom: 20px; display: flex; justify-content: center; gap: 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); text-transform: uppercase;">
+                <span>SMKN 1 CIAMIS</span>
+                <span>|</span>
+                <span>MAS-PKL</span>
             </div>
         </div>
     </div>
 
     {{-- Right white panel --}}
     <div class="dl-right">
-        <div class="lp-form si d1">
-            <h2 class="lp-title">Selamat datang kembali</h2>
-            <p class="lp-sub">Silakan masuk menggunakan akun MAS-PKL Anda</p>
+        <div class="lp-form si d1" style="width: 100%; max-width: 400px; padding: 0 20px;">
+            <h2 style="font-size: 24px; font-weight: 700; color: #1e293b; text-align: center; margin-bottom: 48px;">Masuk ke akun Anda</h2>
+            
             @if ($errors->any())
-                <div class="lp-error"><ul class="list-disc list-inside space-y-1">@foreach($errors->all() as $e)<li>{{$e}}</li>@endforeach</ul></div>
+                <div class="lp-error" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 12px; padding: 12px 16px; font-size: 13px; margin-bottom: 24px;">
+                    <ul style="list-style-type: disc; padding-left: 20px;">
+                        @foreach($errors->all() as $e)
+                            <li>{{$e}}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
+            
             <form method="POST" action="{{ route('login') }}" x-data="{ un:'{{ old('username') }}', pw:'', show:false }">
                 @csrf
-                <div class="ul-group">
-                    <label class="ul-label">Username / NIS / NIP</label>
-                    <div class="ul-wrap">
-                        <span class="ul-icon"><i data-lucide="user" class="w-4 h-4"></i></span>
-                        <input id="username" name="username" type="text" value="{{ old('username') }}" x-model="un" required autofocus class="ul-input" placeholder="Username / NIS / NIP">
+                
+                {{-- Spacer style input: Label above, full underline, validation checkmark --}}
+                <div style="margin-bottom: 32px;">
+                    <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Username / NIS / NIP</label>
+                    <div style="position: relative; border-bottom: 2px solid #93c5fd; padding-bottom: 8px; display: flex; align-items: center;">
+                        <input id="username" name="username" type="text" value="{{ old('username') }}" x-model="un" required autofocus 
+                               style="flex: 1; border: none; outline: none; background: transparent; font-size: 14px; color: #0f172a; padding: 0;" 
+                               placeholder="Masukkan username anda">
+                        <i data-lucide="check" style="width: 16px; height: 16px; color: #7dd3fc; flex-shrink: 0;"></i>
                     </div>
                 </div>
-                <div class="ul-group">
-                    <label class="ul-label">Password</label>
-                    <div class="ul-wrap">
-                        <span class="ul-icon"><i data-lucide="lock" class="w-4 h-4"></i></span>
-                        <input id="password" name="password" :type="show?'text':'password'" x-model="pw" required class="ul-input" placeholder="Password Anda">
-                        <button type="button" class="ul-right" @click="show=!show">
-                            <i data-lucide="eye" x-show="!show" class="w-4 h-4"></i>
-                            <i data-lucide="eye-off" x-show="show" class="w-4 h-4" x-cloak></i>
+                
+                <div style="margin-bottom: 32px;">
+                    <label style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">Password</label>
+                    <div style="position: relative; border-bottom: 2px solid #93c5fd; padding-bottom: 8px; display: flex; align-items: center;">
+                        <input id="password" name="password" :type="show?'text':'password'" x-model="pw" required 
+                               style="flex: 1; border: none; outline: none; background: transparent; font-size: 14px; color: #0f172a; padding: 0;" 
+                               placeholder="Masukkan password anda">
+                        <button type="button" @click="show=!show" style="background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;">
+                            <i data-lucide="eye" x-show="!show" style="width: 16px; height: 16px; color: #94a3b8;"></i>
+                            <i data-lucide="eye-off" x-show="show" style="width: 16px; height: 16px; color: #94a3b8;" x-cloak></i>
                         </button>
                     </div>
                 </div>
-                <div class="lp-row">
-                    <label class="lp-remember"><input type="checkbox" name="remember" class="w-4 h-4 accent-blue-600 rounded"> Ingat Saya</label>
-                    <a href="#" class="lp-forgot">Lupa Password?</a>
+                
+                <div style="display: flex; align-items: center; margin-bottom: 40px; font-size: 12px; color: #64748b;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="remember" style="width: 16px; height: 16px; accent-color: #2563eb; border-radius: 4px; border: 1px solid #cbd5e1;">
+                        Ingat Saya untuk akses selanjutnya
+                    </label>
                 </div>
-                <button type="submit" class="lp-btn"><i data-lucide="log-in" class="w-4 h-4"></i> Masuk</button>
+                
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    <button type="submit" style="background: #2563eb; color: white; border: none; border-radius: 50px; padding: 12px 32px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.3); transition: all 0.2s;">
+                        Masuk
+                    </button>
+                    <a href="#" style="color: #64748b; font-size: 14px; text-decoration: none; font-weight: 500; border: 1px solid #cbd5e1; border-radius: 50px; padding: 11px 24px; transition: all 0.2s;">
+                        Lupa Password
+                    </a>
+                </div>
             </form>
-            <p class="lp-footer">Protected admin area — MAS-PKL © {{ date('Y') }}</p>
         </div>
     </div>
 </div>
