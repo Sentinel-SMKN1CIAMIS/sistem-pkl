@@ -251,7 +251,7 @@
                 left: 0;
                 right: 0;
                 width: 100%;
-                height: 48px;
+                height: 40px;
                 overflow: hidden;
                 pointer-events: none;
                 z-index: 10;
@@ -327,8 +327,8 @@
                 
                 <!-- Bottom SVG curve for Mobile -->
                 <div class="wave-container">
-                    <svg class="wave-svg" viewBox="0 0 1440 74" preserveAspectRatio="none">
-                        <path d="M0,32L120,42.7C240,53,480,75,720,74.7C960,75,1200,53,1320,42.7L1440,32L1440,74L1320,74C1200,74,960,74,720,74C480,74,240,74,120,74L0,74Z"></path>
+                    <svg class="wave-svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
+                        <path d="M0,0 C480,80 960,80 1440,0 L1440,120 L0,120 Z"></path>
                     </svg>
                 </div>
             </div>
