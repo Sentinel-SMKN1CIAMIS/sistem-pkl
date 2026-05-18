@@ -12,7 +12,6 @@ class Feedback extends Model
         'pembimbing_dudi_id',
         'periode',
         'isi_feedback',
-        'saran',
     ];
 
     public function pembimbingDudi()
