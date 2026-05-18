@@ -176,37 +176,48 @@
             }
         }
 
-        /* Brand Features */
+        /* Brand Features & Icon box */
         .brand-features {
             margin-top: 48px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 18px;
         }
 
         .brand-feature {
             display: flex;
             align-items: center;
             gap: 14px;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.75);
             font-size: 13.5px;
             font-weight: 500;
         }
 
-        .brand-feature i {
+        .feature-icon-box {
             width: 36px;
             height: 36px;
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255, 255, 255, 0.9);
             flex-shrink: 0;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
         }
 
-        /* Wave SVG for Mobile */
+        /* Bulletproof Input Padding Overrides (Fixes icon overlaps) */
+        .login-input {
+            padding-left: 44px !important;
+            padding-right: 16px !important;
+        }
+
+        .login-input-password {
+            padding-left: 44px !important;
+            padding-right: 44px !important;
+        }
+
+        /* Wave SVG for Mobile (Perfect wave with no gaps) */
         .wave-container {
             display: none;
         }
@@ -236,17 +247,18 @@
             .wave-container {
                 display: block;
                 position: absolute;
-                bottom: 0;
+                bottom: -1px; /* Overlaps content background by 1px to prevent hairline pixel gaps */
                 left: 0;
                 right: 0;
                 width: 100%;
-                height: 32px;
+                height: 48px;
                 overflow: hidden;
                 pointer-events: none;
                 z-index: 10;
             }
 
             .wave-svg {
+                display: block; /* Eliminates the default inline baseline margin gap */
                 width: 100%;
                 height: 100%;
                 fill: var(--slate-bg);
@@ -287,16 +299,22 @@
                 <!-- Brand Features -->
                 <div class="brand-features">
                     <div class="brand-feature">
-                        <i class="bi bi-shield-check"><i data-lucide="shield-check" class="w-4 h-4 text-white"></i></i>
-                        Akses Aman Terenkripsi
+                        <span class="feature-icon-box">
+                            <i data-lucide="shield-check" class="w-4.5 h-4.5 text-white"></i>
+                        </span>
+                        <span>Akses Aman Terenkripsi</span>
                     </div>
                     <div class="brand-feature">
-                        <i class="bi bi-activity"><i data-lucide="activity" class="w-4 h-4 text-white"></i></i>
-                        Monitoring Harian Real-Time
+                        <span class="feature-icon-box">
+                            <i data-lucide="activity" class="w-4.5 h-4.5 text-white"></i>
+                        </span>
+                        <span>Monitoring Harian Real-Time</span>
                     </div>
                     <div class="brand-feature">
-                        <i class="bi bi-briefcase"><i data-lucide="briefcase" class="w-4 h-4 text-white"></i></i>
-                        Evaluasi Bimbingan DUDI
+                        <span class="feature-icon-box">
+                            <i data-lucide="briefcase" class="w-4.5 h-4.5 text-white"></i>
+                        </span>
+                        <span>Evaluasi Bimbingan DUDI</span>
                     </div>
                 </div>
             </div>
@@ -350,7 +368,7 @@
                                 <i data-lucide="user" class="w-4.5 h-4.5"></i>
                             </div>
                             <input id="username" name="username" type="text" value="{{ old('username') }}" required autofocus x-model="username"
-                                   class="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-sm"
+                                   class="login-input w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-sm"
                                    placeholder="Username / NIS / NIP">
                         </div>
                     </div>
@@ -365,7 +383,7 @@
                                 <i data-lucide="lock" class="w-4.5 h-4.5"></i>
                             </div>
                             <input id="password" name="password" :type="showPassword ? 'text' : 'password'" required x-model="password"
-                                   class="w-full pl-11 pr-11 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-sm"
+                                   class="login-input-password w-full pl-11 pr-11 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 transition-all shadow-sm"
                                    placeholder="Password">
                             <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                                 <i data-lucide="eye" x-show="!showPassword" class="w-4.5 h-4.5"></i>
