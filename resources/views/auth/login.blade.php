@@ -331,91 +331,82 @@
      MOBILE LAYOUT (<1024px)
      ============================ --}}
 <div class="ml">
-    <div class="ml-header">
-        <h1 class="text-white font-extrabold text-3xl tracking-wide mb-1">MAS-PKL</h1>
-        <p class="text-white/80 text-sm font-medium">Monitoring & Administrasi Siswa PKL</p>
+    {{-- Top blue section --}}
+    <div style="background: linear-gradient(170deg, #1d4ed8 0%, #1e3a8a 45%, #0f172a 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 50px; padding-bottom: 30px;">
+        <div style="width: 72px; height: 72px; background: white; border-radius: 50%; padding: 12px; margin-bottom: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+            <img src="{{ asset('logo.png') }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <h1 style="color: white; font-weight: 800; font-size: 24px; letter-spacing: 1px;">SISTEM PKL</h1>
     </div>
 
     {{-- Horizontal multi-layer cloud (Spacer-style big smooth bumps) --}}
-    <div class="ml-cloud">
-        <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-
-            {{-- Layer 1: BACK — most transparent --}}
-            <path d="
-                M0,140 L400,140 L400,50
-                C400,50 380,30 350,35
-                C320,40 310,65 280,60
-                C250,55 245,30 215,25
-                C185,20 178,48 148,45
-                C118,42 115,20 85,18
-                C55,16 48,42 20,38
-                C8,36 0,28 0,28
-                L0,140 Z
-            " fill="white" opacity="0.12"/>
-
-            {{-- Layer 2: MIDDLE — semi-transparent --}}
-            <path d="
-                M0,140 L400,140 L400,65
-                C400,65 385,48 358,52
-                C331,56 322,78 295,72
-                C268,66 260,42 232,38
-                C204,34 195,58 168,55
-                C141,52 135,32 108,30
-                C81,28 72,52 45,48
-                C25,45 10,38 0,40
-                L0,140 Z
-            " fill="white" opacity="0.3"/>
-
-            {{-- Layer 3: FRONT — solid white --}}
-            <path d="
-                M0,140 L400,140 L400,82
-                C400,82 388,62 365,68
-                C342,74 335,95 310,88
-                C285,81 278,58 252,55
-                C226,52 218,72 192,68
-                C166,64 160,45 135,42
-                C110,39 102,62 78,58
-                C54,54 45,72 22,65
-                C10,61 0,55 0,55
-                L0,140 Z
-            " fill="white"/>
-
+    <div class="ml-cloud" style="background: transparent;">
+        <svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            {{-- Layer 1: BACK --}}
+            <path d="M0,100 L400,100 L400,40 C380,20 350,25 320,30 C310,55 280,50 250,45 C245,20 215,15 185,10 C178,38 148,35 118,32 C115,10 85,8 55,6 C48,32 20,28 0,28 L0,100 Z" fill="white" opacity="0.12"/>
+            {{-- Layer 2: MIDDLE --}}
+            <path d="M0,100 L400,100 L400,55 C385,38 358,42 331,46 C322,68 295,62 268,56 C260,32 232,28 204,24 C195,48 168,45 141,42 C135,22 108,20 81,18 C72,42 45,38 25,35 C10,28 0,30 0,30 L0,100 Z" fill="white" opacity="0.3"/>
+            {{-- Layer 3: FRONT --}}
+            <path d="M0,100 L400,100 L400,72 C388,52 365,58 342,64 C335,85 310,78 285,71 C278,48 252,45 226,42 C218,62 192,58 166,54 C160,35 135,32 110,29 C102,52 78,48 54,44 C45,62 22,55 0,55 L0,100 Z" fill="white"/>
         </svg>
     </div>
 
-    <div class="ml-sheet">
-        <h2 class="lp-title mb-1">Sign in</h2>
-        <p class="lp-sub">Masuk menggunakan akun MAS-PKL Anda</p>
+    {{-- Bottom white form sheet --}}
+    <div class="ml-sheet" style="padding: 20px 24px 48px;">
+        <h2 style="font-size: 20px; font-weight: 700; color: #1e293b; text-align: center; margin-bottom: 32px;">Masuk ke akun Anda</h2>
+        
         @if ($errors->any())
-            <div class="lp-error"><ul class="list-disc list-inside space-y-1">@foreach($errors->all() as $e)<li>{{$e}}</li>@endforeach</ul></div>
+            <div class="lp-error" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 12px; padding: 12px 16px; font-size: 13px; margin-bottom: 24px;">
+                <ul style="list-style-type: disc; padding-left: 20px;">
+                    @foreach($errors->all() as $e)
+                        <li>{{$e}}</li>
+                    @endforeach
+                </ul>
+            </div>
         @endif
+        
         <form method="POST" action="{{ route('login') }}" x-data="{ un:'{{ old('username') }}', pw:'', show:false }">
             @csrf
-            <div class="ul-group">
-                <label class="ul-label">Username / NIS / NIP</label>
-                <div class="ul-wrap">
-                    <span class="ul-icon"><i data-lucide="user" class="w-4 h-4"></i></span>
-                    <input name="username" type="text" value="{{ old('username') }}" x-model="un" required autofocus class="ul-input" placeholder="Username / NIS / NIP">
+            
+            <div style="margin-bottom: 28px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Username / NIS / NIP</label>
+                <div style="position: relative; border-bottom: 2px solid #93c5fd; padding-bottom: 8px; display: flex; align-items: center;">
+                    <input name="username" type="text" value="{{ old('username') }}" x-model="un" required autofocus 
+                           style="flex: 1; border: none; outline: none; background: transparent; font-size: 14px; color: #0f172a; padding: 0;" 
+                           placeholder="Masukkan username anda">
+                    <i data-lucide="check" style="width: 16px; height: 16px; color: #7dd3fc; flex-shrink: 0;"></i>
                 </div>
             </div>
-            <div class="ul-group">
-                <label class="ul-label">Password</label>
-                <div class="ul-wrap">
-                    <span class="ul-icon"><i data-lucide="lock" class="w-4 h-4"></i></span>
-                    <input name="password" :type="show?'text':'password'" x-model="pw" required class="ul-input" placeholder="Password Anda">
-                    <button type="button" class="ul-right" @click="show=!show">
-                        <i data-lucide="eye" x-show="!show" class="w-4 h-4"></i>
-                        <i data-lucide="eye-off" x-show="show" class="w-4 h-4" x-cloak></i>
+            
+            <div style="margin-bottom: 28px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Password</label>
+                <div style="position: relative; border-bottom: 2px solid #93c5fd; padding-bottom: 8px; display: flex; align-items: center;">
+                    <input name="password" :type="show?'text':'password'" x-model="pw" required 
+                           style="flex: 1; border: none; outline: none; background: transparent; font-size: 14px; color: #0f172a; padding: 0;" 
+                           placeholder="Masukkan password anda">
+                    <button type="button" @click="show=!show" style="background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;">
+                        <i data-lucide="eye" x-show="!show" style="width: 16px; height: 16px; color: #94a3b8;"></i>
+                        <i data-lucide="eye-off" x-show="show" style="width: 16px; height: 16px; color: #94a3b8;" x-cloak></i>
                     </button>
                 </div>
             </div>
-            <div class="lp-row">
-                <label class="lp-remember"><input type="checkbox" name="remember" class="w-4 h-4 accent-blue-600 rounded"> Ingat Saya</label>
-                <a href="#" class="lp-forgot">Lupa Password?</a>
+            
+            <div style="display: flex; align-items: center; margin-bottom: 32px; font-size: 12px; color: #64748b;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" name="remember" style="width: 16px; height: 16px; accent-color: #2563eb; border-radius: 4px; border: 1px solid #cbd5e1;">
+                    Ingat Saya
+                </label>
             </div>
-            <button type="submit" class="lp-btn"><i data-lucide="log-in" class="w-4 h-4"></i> Masuk</button>
+            
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button type="submit" style="background: #2563eb; color: white; border: none; border-radius: 50px; padding: 12px 28px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.3); transition: all 0.2s;">
+                    Masuk
+                </button>
+                <a href="#" style="color: #64748b; font-size: 13px; text-decoration: none; font-weight: 500; border: 1px solid #cbd5e1; border-radius: 50px; padding: 11px 20px; transition: all 0.2s;">
+                    Lupa Password
+                </a>
+            </div>
         </form>
-        <p class="lp-footer">Protected admin area — MAS-PKL © {{ date('Y') }}</p>
     </div>
 </div>
 
