@@ -28,6 +28,7 @@ class FeedbackController extends Controller
         $request->validate([
             'periode' => 'required|string|max:100',
             'isi_feedback' => 'required|string',
+            'saran' => 'nullable|string',
         ]);
 
         $pembimbingDudi = auth()->user()->pembimbingDudi;
@@ -36,6 +37,7 @@ class FeedbackController extends Controller
             'pembimbing_dudi_id' => $pembimbingDudi->id,
             'periode' => $request->periode,
             'isi_feedback' => $request->isi_feedback,
+            'saran' => $request->saran,
         ]);
 
         return redirect()->route('pembimbing_dudi.feedback.index')

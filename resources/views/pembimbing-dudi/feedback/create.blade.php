@@ -32,9 +32,17 @@
                 </div>
 
                 <div>
-                    <label for="isi_feedback" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Isi Masukan / Evaluasi Program PKL</label>
-                    <textarea name="isi_feedback" id="isi_feedback" rows="6" required class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all" placeholder="Tuliskan masukan untuk program PKL di sekolah kami, perkembangan kompetensi siswa bimbingan secara umum, kendala yang dihadapi industri, atau usulan perbaikan..."></textarea>
+                    <label for="isi_feedback" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Uraian Evaluasi PKL</label>
+                    <textarea name="isi_feedback" id="isi_feedback" rows="5" required class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all" placeholder="Tuliskan uraian evaluasi program PKL, perkembangan kompetensi siswa bimbingan secara umum, kendala yang dihadapi industri..."></textarea>
                     @error('isi_feedback')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="saran" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Saran</label>
+                    <textarea name="saran" id="saran" rows="4" class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all" placeholder="Tuliskan saran perbaikan untuk pelaksanaan PKL berikutnya (Opsional)..."></textarea>
+                    @error('saran')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>

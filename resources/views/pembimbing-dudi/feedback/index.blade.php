@@ -29,7 +29,7 @@
                     <tr class="border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/30">
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Tanggal Kirim</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Periode Rekap</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Feedback</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Uraian Evaluasi & Saran</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200/30 dark:divide-slate-700/50">
@@ -43,8 +43,17 @@
                                     {{ $item->periode }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
-                                {{ $item->isi_feedback }}
+                            <td class="px-6 py-4 text-sm text-slate-800 dark:text-slate-200">
+                                <div class="mb-2">
+                                    <span class="text-xs font-bold text-slate-500 uppercase block mb-1">Evaluasi:</span>
+                                    <p class="whitespace-pre-wrap">{{ $item->isi_feedback }}</p>
+                                </div>
+                                @if($item->saran)
+                                    <div>
+                                        <span class="text-xs font-bold text-slate-500 uppercase block mb-1">Saran:</span>
+                                        <p class="whitespace-pre-wrap italic">{{ $item->saran }}</p>
+                                    </div>
+                                @endif
                             </td>
                         </tr>
                     @empty

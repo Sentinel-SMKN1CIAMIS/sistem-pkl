@@ -26,4 +26,10 @@ class FeedbackController extends Controller
 
         return view('pokja.feedback.index', compact('feedbacks'));
     }
+
+    public function print(Feedback $feedback)
+    {
+        $feedback->load(['pembimbingDudi.dudi']);
+        return view('pokja.feedback.print', compact('feedback'));
+    }
 }

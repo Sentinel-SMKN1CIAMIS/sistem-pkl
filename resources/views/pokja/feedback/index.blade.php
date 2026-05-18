@@ -39,17 +39,29 @@
                             </span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
                         <span class="px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-xs text-blue-400 font-bold uppercase tracking-wider">
                             {{ $item->periode }}
                         </span>
                         <span class="text-xs text-slate-400 dark:text-slate-500 font-mono">
                             {{ $item->created_at->translatedFormat('d F Y, H:i') }}
                         </span>
+                        <a href="{{ route('pokja.feedback.print', $item->id) }}" target="_blank" class="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-500 transition-all" title="Cetak Feedback Resmi">
+                            <i data-lucide="printer" class="w-4 h-4"></i>
+                        </a>
                     </div>
                 </div>
-                <div class="text-sm text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl whitespace-pre-wrap leading-relaxed">
-                    {{ $item->isi_feedback }}
+                <div class="text-sm text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl space-y-3">
+                    <div>
+                        <span class="text-xs font-bold text-slate-500 uppercase block mb-1">Uraian Evaluasi PKL:</span>
+                        <p class="whitespace-pre-wrap leading-relaxed">{{ $item->isi_feedback }}</p>
+                    </div>
+                    @if($item->saran)
+                        <div class="border-t border-slate-200/50 dark:border-slate-700/50 pt-2 mt-2">
+                            <span class="text-xs font-bold text-slate-500 uppercase block mb-1">Saran:</span>
+                            <p class="whitespace-pre-wrap leading-relaxed italic">{{ $item->saran }}</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         @empty
