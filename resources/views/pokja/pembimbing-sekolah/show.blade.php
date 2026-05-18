@@ -25,30 +25,30 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50 dark:bg-slate-800/30">
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Nama Siswa</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">NIS</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Industri (DUDI)</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Status PKL</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase whitespace-nowrap">Nama Siswa</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase whitespace-nowrap">NIS</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase whitespace-nowrap">Industri (DUDI)</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase whitespace-nowrap">Status PKL</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200/50 dark:divide-slate-700/50">
                     @forelse($students as $siswa)
                         <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-800/20 transition-colors">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-medium text-slate-900 dark:text-slate-100 block">{{ $siswa->nama_lengkap }}</span>
                                 <span class="text-xs text-slate-500 dark:text-slate-400">{{ $siswa->kelas }}</span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300 font-mono">
+                            <td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300 font-mono whitespace-nowrap">
                                 {{ $siswa->nis }}
                             </td>
-                            <td class="px-6 py-4 text-sm">
+                            <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 @if($siswa->dudi)
                                     <span class="text-slate-900 dark:text-slate-200 font-medium">{{ $siswa->dudi->nama }}</span>
                                 @else
                                     <span class="text-slate-400 italic">Belum ditempatkan</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 @php
                                     $statusColors = [
                                         'belum_pkl' => 'bg-slate-500/10 text-slate-500 border-slate-500/20',

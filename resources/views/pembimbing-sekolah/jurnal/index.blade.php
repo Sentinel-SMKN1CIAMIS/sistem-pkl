@@ -1,8 +1,22 @@
 <x-app-layout>
     <x-slot name="header">Monitoring Jurnal Siswa</x-slot>
 
-    <div class="mb-6">
+    <div class="mb-6 flex justify-between items-start">
         <p class="text-slate-600 dark:text-slate-400">Pantau aktivitas harian siswa bimbingan Anda di industri.</p>
+        
+        <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" @click.away="open = false" class="p-2 rounded-lg text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" title="Opsi Lainnya">
+                <i data-lucide="more-vertical" class="w-5 h-5"></i>
+            </button>
+            <div x-show="open" x-transition.opacity.duration.200ms class="absolute right-0 mt-2 w-48 glass-card border border-slate-200/50 dark:border-slate-700/50 py-1 rounded-xl text-sm z-10" x-cloak>
+                <form action="{{ route('pembimbing_sekolah.jurnal.validasi_semua') }}" method="POST" onsubmit="return confirm('PERHATIAN: Anda yakin ingin memvalidasi SEMUA jurnal yang berstatus pending tanpa membacanya satu per satu?');">
+                    @csrf
+                    <button type="submit" class="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/50 text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-2 transition-colors">
+                        <i data-lucide="check-check" class="w-4 h-4"></i> Validasi Semua Jurnal
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 gap-6">

@@ -12,7 +12,7 @@ template yang nomor 7 ditempatkan di halaman pemetaan
 format di halaman absensi ditanyakan lagi apakah harus foto/tanda tangan
 13. laporan akhir mencantumkan link juga✅
 14. status "sedang pkl" diubah jadi masuk kerja atau pulang kerja, nyambung juga sama si absensi jika melakukan absensi di siswa = masuk kerja jika pencet pulang = pulang kerja✅
-Tambahkan tombol untuk validasi semua, tetapi disebunyikan di role pembimbing sekolah
+15. Tambahkan tombol untuk validasi semua, tetapi   disebunyikan di role pembimbing sekolah✅
 16. di role dan halaman Pembimbing dudi hanya bisa views jurnal, yang melakukan validasi hanya role pembimbing sekolah✅
 tambahkan fitur feedback oleh pembimbing dudi di role pembimbing dudi feedback nya berdasarkan rekap selama 1 minggu,1 bulan dst (feedbacknya bersifat opsional)
 feedbacknya untuk keseluruhan, bukan per siswa, tapi untuk sekolahnya format feedback nya ditanyakan ke pa acah

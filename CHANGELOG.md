@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [2026-05-18]
+### Fixed
+- Perbaikan layout halaman secara menyeluruh (*responsive design*) untuk dukungan optimal sebagai *Progressive Web App* (PWA) di perangkat *mobile*.
+- Penambahan class `whitespace-nowrap` pada seluruh sel tabel (`<th>` dan `<td>`) di semua halaman untuk mencegah teks turun (*wrap*) dan merusak struktur kontainer saat diakses dari layar kecil.
+- Memastikan seluruh tabel data dibungkus dalam kontainer `overflow-x-auto` yang memungkinkan pengguliran horizontal (*scrollable*) di perangkat *mobile*.
 ## [2026-05-11]
 ### Added
 - Implementasi sistem **Tipe Pembimbing Sekolah** (Enum: Normatif, Adaptif, Produktif) pada tabel `pembimbing_sekolahs` untuk kategorisasi guru bimbingan.

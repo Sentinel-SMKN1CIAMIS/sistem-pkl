@@ -17,19 +17,19 @@
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-white dark:bg-slate-800/30 border-b border-slate-200/50 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
-                        <th class="px-6 py-4">Username</th>
-                        <th class="px-6 py-4">Role</th>
-                        <th class="px-6 py-4">Terdaftar</th>
-                        <th class="px-6 py-4 text-right">Aksi</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Username</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Role</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Terdaftar</th>
+                        <th class="px-6 py-4 text-right whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-700/50 text-sm italic">
                     @foreach($users as $user)
                         <tr class="hover:bg-white dark:bg-slate-800/10 transition-colors group">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-slate-800 dark:text-slate-200 font-bold not-italic font-mono">{{ $user->username }}</span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 @php
                                     $roleClasses = [
                                         'super_admin' => 'bg-red-500/10 text-red-400 border-red-500/20',
@@ -46,8 +46,8 @@
                             <td class="px-6 py-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                 {{ $user->created_at->format('d M Y') }}
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <div class="flex justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                     <a href="{{ route('admin.users.edit', $user) }}" class="p-2 text-slate-600 dark:text-slate-400 hover:text-blue-400 transition-colors">
                                         <i data-lucide="edit-3" class="w-4 h-4"></i>
                                     </a>

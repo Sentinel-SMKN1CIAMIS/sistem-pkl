@@ -21,17 +21,17 @@
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-white dark:bg-slate-800/30 border-b border-slate-200/50 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
-                        <th class="px-6 py-4">Judul Panduan</th>
-                        <th class="px-6 py-4">Tipe / Sasaran</th>
-                        <th class="px-6 py-4">Konsentrasi Keahlian</th>
-                        <th class="px-6 py-4">Tgl Upload</th>
-                        <th class="px-6 py-4 text-right">Aksi</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Judul Panduan</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Tipe / Sasaran</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Konsentrasi Keahlian</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Tgl Upload</th>
+                        <th class="px-6 py-4 text-right whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-700/50 text-sm">
                     @forelse($panduans as $item)
                         <tr class="hover:bg-white dark:bg-slate-800/10 transition-colors group">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-3">
                                     <div class="p-2 bg-red-500/10 rounded-lg">
                                         <i data-lucide="file-text" class="w-5 h-5 text-red-400"></i>
@@ -39,19 +39,19 @@
                                     <span class="text-slate-800 dark:text-slate-200 font-medium">{{ $item->judul }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
                                     {{ $item->tipe }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400">
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">
                                 {{ $item->konsentrasiKeahlian->nama ?? 'Semua Konsentrasi Keahlian' }}
                             </td>
-                            <td class="px-6 py-4 text-slate-500 dark:text-slate-400">
+                            <td class="px-6 py-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                 {{ $item->created_at->format('d M Y') }}
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <div class="flex justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                     <a href="{{ asset('storage/' . $item->file_path) }}" target="_blank" class="p-2 text-slate-600 dark:text-slate-400 hover:text-blue-400 transition-colors">
                                         <i data-lucide="eye" class="w-4 h-4"></i>
                                     </a>
