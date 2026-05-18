@@ -1,6 +1,12 @@
 # CHANGELOG
 
 ## [2026-05-18]
+### Added
+- Implementasi fitur **Multi-select Konsentrasi Keahlian** pada form tambah/edit DUDI di role Pokja menggunakan tampilan daftar *checkbox* yang responsif.
+- Pembuatan tabel pivot `dudi_konsentrasi_keahlian` untuk memetakan hubungan *Many-to-Many* antara DUDI dengan Konsentrasi Keahlian.
+- Penambahan fitur **Feedback Pembimbing DUDI** yang memungkinkan Pembimbing DUDI memberikan masukan/evaluasi umum (bersifat opsional) per periode rekap (mingguan/bulanan) kepada sekolah.
+- Halaman **Feedback DUDI** di role Pokja untuk memantau masukan/evaluasi yang masuk dari mitra industri.
+
 ### Fixed
 - Perbaikan layout halaman secara menyeluruh (*responsive design*) untuk dukungan optimal sebagai *Progressive Web App* (PWA) di perangkat *mobile*.
 - Penambahan class `whitespace-nowrap` pada seluruh sel tabel (`<th>` dan `<td>`) di semua halaman untuk mencegah teks turun (*wrap*) dan merusak struktur kontainer saat diakses dari layar kecil.

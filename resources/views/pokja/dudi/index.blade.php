@@ -64,9 +64,19 @@
                                 <span class="text-xs text-slate-500 dark:text-slate-400 italic">{{ $item->bidang_usaha ?? 'Bidang usaha -' }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-xs text-blue-400">
-                                    {{ $item->konsentrasiKeahlian->nama }}
-                                </span>
+                                <div class="flex flex-wrap gap-1 max-w-xs">
+                                    @if($item->konsentrasiKeahlians->isNotEmpty())
+                                        @foreach($item->konsentrasiKeahlians as $k)
+                                            <span class="px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-xs text-blue-400">
+                                                {{ $k->nama }}
+                                            </span>
+                                        @endforeach
+                                    @else
+                                        <span class="px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-xs text-blue-400">
+                                            {{ $item->konsentrasiKeahlian->nama }}
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 {{ $item->kota }}

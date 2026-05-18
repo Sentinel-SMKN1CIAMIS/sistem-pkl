@@ -24,4 +24,9 @@ class PembimbingDudi extends Model
     {
         return $this->hasMany(Siswa::class, 'pembimbing_dudi_id');
     }
+
+    public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class, 'pembimbing_dudi_id');
+    }
 }
