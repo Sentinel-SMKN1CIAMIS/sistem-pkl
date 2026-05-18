@@ -1,6 +1,51 @@
 <x-guest-layout>
     <style>
-        /* Premium Background Orbs Animations */
+        /* Custom Colors & Layout Variables */
+        :root {
+            --primary-blue: #2563eb;
+            --primary-blue-dark: #1d4ed8;
+            --primary-blue-light: #eff6ff;
+            --slate-bg: #f8fafc;
+            --dark-bg: #090d16;
+            --card-light: #ffffff;
+            --card-dark: #1e293b;
+            --border-light: #e2e8f0;
+            --border-dark: #334155;
+        }
+
+        /* Full Screen Wrapper */
+        .login-wrapper {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: row;
+            background: var(--slate-bg);
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+        }
+
+        .dark .login-wrapper {
+            background: var(--dark-bg);
+        }
+
+        /* Left Sidebar (Desktop) */
+        .login-sidebar {
+            width: 420px;
+            height: 100%;
+            background-color: #0f172a;
+            background-image: linear-gradient(to bottom right, #1e3a8a, #0f172a);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 48px;
+            flex-shrink: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Glowing Orbs */
         .orb {
             position: absolute;
             border-radius: 50%;
@@ -13,7 +58,7 @@
         .orb-1 {
             width: 350px;
             height: 350px;
-            background: #2563eb; /* Blue 600 */
+            background: #2563eb;
             top: -100px;
             left: -100px;
             animation: moveOrb1 18s ease-in-out infinite alternate;
@@ -22,7 +67,7 @@
         .orb-2 {
             width: 400px;
             height: 400px;
-            background: #4f46e5; /* Indigo 600 */
+            background: #4f46e5;
             bottom: -150px;
             right: -150px;
             animation: moveOrb2 22s ease-in-out infinite alternate;
@@ -31,7 +76,7 @@
         .orb-3 {
             width: 300px;
             height: 300px;
-            background: #3b82f6; /* Blue 500 */
+            background: #3b82f6;
             top: 30%;
             left: -50px;
             animation: moveOrb3 20s ease-in-out infinite alternate;
@@ -39,26 +84,63 @@
 
         @keyframes moveOrb1 {
             0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(150px, 180px) scale(1.2); }
-            66% { transform: translate(220px, 40px) scale(0.8); }
-            100% { transform: translate(100px, 220px) scale(1.1); }
+            33% { transform: translate(120px, 150px) scale(1.2); }
+            66% { transform: translate(180px, 40px) scale(0.8); }
+            100% { transform: translate(80px, 180px) scale(1.1); }
         }
 
         @keyframes moveOrb2 {
             0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(-180px, -150px) scale(1.1); }
-            66% { transform: translate(-300px, 80px) scale(1.3); }
-            100% { transform: translate(-120px, -280px) scale(0.9); }
+            33% { transform: translate(-150px, -120px) scale(1.1); }
+            66% { transform: translate(-250px, 80px) scale(1.3); }
+            100% { transform: translate(-100px, -200px) scale(0.9); }
         }
 
         @keyframes moveOrb3 {
             0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(120px, -180px) scale(1.4); }
-            66% { transform: translate(200px, 120px) scale(0.7); }
-            100% { transform: translate(40px, -120px) scale(1.2); }
+            33% { transform: translate(100px, -150px) scale(1.4); }
+            66% { transform: translate(150px, 100px) scale(0.7); }
+            100% { transform: translate(30px, -100px) scale(1.2); }
         }
 
-        /* 3D Staggered Entrance Animations */
+        /* Right Content Area */
+        .login-main {
+            flex: 1;
+            height: 100%;
+            background: var(--slate-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .dark .login-main {
+            background: var(--dark-bg);
+        }
+
+        /* Login Card */
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            position: relative;
+            z-index: 20;
+            opacity: 0;
+            animation: cardEntrance3D 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        .dark .login-card {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+            box-shadow: none;
+        }
+
         @keyframes cardEntrance3D {
             0% {
                 opacity: 0;
@@ -69,6 +151,19 @@
                 transform: perspective(1000px) translateY(0) rotateX(0deg) scale(1);
             }
         }
+
+        /* Staggered Items Animation */
+        .animate-stagger-item {
+            opacity: 0;
+            animation: fadeUpStagger 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+        .delay-600 { animation-delay: 0.6s; }
 
         @keyframes fadeUpStagger {
             0% {
@@ -81,96 +176,161 @@
             }
         }
 
-        .animate-card {
-            animation: cardEntrance3D 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        /* Brand Features */
+        .brand-features {
+            margin-top: 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        .animate-stagger-item {
-            opacity: 0;
-            animation: fadeUpStagger 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        .brand-feature {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13.5px;
+            font-weight: 500;
         }
 
-        /* Set delayed animation offsets */
-        .delay-100 { animation-delay: 0.1s; }
-        .delay-200 { animation-delay: 0.2s; }
-        .delay-300 { animation-delay: 0.3s; }
-        .delay-400 { animation-delay: 0.4s; }
-        .delay-500 { animation-delay: 0.5s; }
-        .delay-600 { animation-delay: 0.6s; }
-        .delay-700 { animation-delay: 0.7s; }
+        .brand-feature i {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.9);
+            flex-shrink: 0;
+        }
+
+        /* Wave SVG for Mobile */
+        .wave-container {
+            display: none;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1023px) {
+            .login-wrapper {
+                flex-direction: column;
+            }
+
+            .login-sidebar {
+                width: 100%;
+                height: 35vh;
+                padding: 24px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                justify-content: center;
+                align-items: center;
+            }
+
+            .login-main {
+                width: 100%;
+                height: 65vh;
+                padding: 24px;
+            }
+
+            .wave-container {
+                display: block;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: 32px;
+                overflow: hidden;
+                pointer-events: none;
+                z-index: 10;
+            }
+
+            .wave-svg {
+                width: 100%;
+                height: 100%;
+                fill: var(--slate-bg);
+            }
+
+            .dark .wave-svg {
+                fill: var(--dark-bg);
+            }
+        }
     </style>
 
-    <!-- Main Responsive Layout Container -->
-    <div class="fixed inset-0 z-30 flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden">
+    <!-- Main Full-Screen Layout Wrapper -->
+    <div class="login-wrapper">
         
-        <!-- ==================== LEFT BRAND SIDEBAR (Desktop) / TOP PANEL (Mobile) ==================== -->
-        <div class="relative w-full md:w-[420px] h-[35vh] md:h-full bg-slate-900 flex flex-col justify-between p-6 md:p-12 overflow-hidden shrink-0 border-r border-slate-800/40">
+        <!-- ==================== LEFT BRAND PANEL (Desktop) / TOP PANEL (Mobile) ==================== -->
+        <div class="login-sidebar">
             <!-- Background Orbs -->
             <div class="orb orb-1"></div>
             <div class="orb orb-2"></div>
             <div class="orb orb-3"></div>
 
-            <!-- Brand Block (Desktop) -->
-            <div class="hidden md:block brand-block relative z-10 text-center my-auto animate-stagger-item delay-100">
-                <div class="w-[72px] h-[72px] bg-white rounded-[18px] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-black/30 p-2">
-                    <img src="{{ asset('logo.png') }}" alt="Logo" class="w-full h-full object-contain">
+            <!-- Top Header (Desktop only) -->
+            <div class="hidden lg:flex items-center gap-3 relative z-10 animate-stagger-item delay-100">
+                <div class="p-2 bg-white rounded-xl shadow-md">
+                    <img src="{{ asset('logo.png') }}" alt="Logo" class="w-8 h-8 object-contain">
                 </div>
-                <h1 class="text-white font-extrabold text-3xl tracking-wider mb-2">MAS-PKL</h1>
-                <p class="text-xs tracking-[0.15em] text-slate-400 font-semibold uppercase">Monitoring & Administrasi</p>
+                <div>
+                    <h2 class="text-lg font-black text-white leading-none">MAS-PKL</h2>
+                    <span class="text-[10px] text-slate-400 tracking-wider font-semibold uppercase">SMKN 1 CIAMIS</span>
+                </div>
+            </div>
+
+            <!-- Center Block (Desktop only) -->
+            <div class="hidden lg:block relative z-10 my-auto animate-stagger-item delay-200">
+                <h1 class="text-white font-extrabold text-3xl tracking-wider mb-2">SISTEM PKL</h1>
+                <p class="text-slate-400 text-sm leading-relaxed max-w-sm">Monitoring administrasi, jurnal harian, dan absensi siswa SMK Negeri 1 Ciamis terintegrasi.</p>
                 
-                <!-- Brand Features (exactly like Swift in Foto 2 but branded for MAS-PKL) -->
-                <div class="brand-features mt-12 flex flex-col gap-4 text-left">
-                    <div class="brand-feature flex items-center gap-3.5 text-slate-300/80 text-[13px] font-medium animate-stagger-item delay-400">
-                        <i class="w-9 h-9 rounded-[10px] bg-white/10 border border-white/10 flex items-center justify-center text-white/80 shrink-0 shadow-inner">
-                            <i data-lucide="shield-check" class="w-4.5 h-4.5"></i>
-                        </i>
+                <!-- Brand Features -->
+                <div class="brand-features">
+                    <div class="brand-feature">
+                        <i class="bi bi-shield-check"><i data-lucide="shield-check" class="w-4 h-4 text-white"></i></i>
                         Akses Aman Terenkripsi
                     </div>
-                    <div class="brand-feature flex items-center gap-3.5 text-slate-300/80 text-[13px] font-medium animate-stagger-item delay-500">
-                        <i class="w-9 h-9 rounded-[10px] bg-white/10 border border-white/10 flex items-center justify-center text-white/80 shrink-0 shadow-inner">
-                            <i data-lucide="activity" class="w-4.5 h-4.5"></i>
-                        </i>
+                    <div class="brand-feature">
+                        <i class="bi bi-activity"><i data-lucide="activity" class="w-4 h-4 text-white"></i></i>
                         Monitoring Harian Real-Time
                     </div>
-                    <div class="brand-feature flex items-center gap-3.5 text-slate-300/80 text-[13px] font-medium animate-stagger-item delay-600">
-                        <i class="w-9 h-9 rounded-[10px] bg-white/10 border border-white/10 flex items-center justify-center text-white/80 shrink-0 shadow-inner">
-                            <i data-lucide="briefcase" class="w-4.5 h-4.5"></i>
-                        </i>
-                        Evaluasi Kemitraan DUDI
+                    <div class="brand-feature">
+                        <i class="bi bi-briefcase"><i data-lucide="briefcase" class="w-4 h-4 text-white"></i></i>
+                        Evaluasi Bimbingan DUDI
                     </div>
                 </div>
             </div>
 
-            <!-- Mobile-only Wave Backdrop & Branding Header (exactly matching Foto 1!) -->
-            <div class="md:hidden flex flex-col items-center justify-center h-full w-full relative z-10 pt-4">
+            <!-- Mobile Branding Header (exactly matching Foto 1!) -->
+            <div class="lg:hidden flex flex-col items-center justify-center h-full w-full relative z-10">
                 <img src="{{ asset('logo.png') }}" alt="Logo" class="w-14 h-14 object-contain mb-2 filter drop-shadow">
                 <h1 class="text-2xl font-black text-white tracking-wide">MAS-PKL</h1>
                 <p class="text-xs text-blue-100 font-medium opacity-90">Monitoring & Administrasi Siswa PKL</p>
                 
-                <!-- Bottom SVG organic wave curve for Mobile, exactly matching Foto 1's soft curved divide -->
-                <div class="absolute bottom-0 left-0 right-0 w-full h-8 overflow-hidden pointer-events-none">
-                    <svg class="absolute bottom-0 left-0 w-full h-full text-slate-50 dark:text-slate-950 fill-current" viewBox="0 0 1440 74" preserveAspectRatio="none">
+                <!-- Bottom SVG curve for Mobile -->
+                <div class="wave-container">
+                    <svg class="wave-svg" viewBox="0 0 1440 74" preserveAspectRatio="none">
                         <path d="M0,32L120,42.7C240,53,480,75,720,74.7C960,75,1200,53,1320,42.7L1440,32L1440,74L1320,74C1200,74,960,74,720,74C480,74,240,74,120,74L0,74Z"></path>
                     </svg>
                 </div>
             </div>
 
-            <!-- Footer (Desktop only) -->
-            <div class="hidden md:block relative z-10 text-slate-500 text-xs mt-auto animate-stagger-item delay-700">
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 inline mr-1 text-blue-500"></i> Protected admin area — MAS-PKL © 2026
+            <!-- Bottom Block (Desktop only) -->
+            <div class="hidden lg:block relative z-10 text-slate-500 text-xs animate-stagger-item delay-500">
+                Protected admin area — MAS-PKL © {{ date('Y') }}
             </div>
         </div>
 
         <!-- ==================== RIGHT PANEL (Desktop Form Area) / BOTTOM PANEL (Mobile Form Area) ==================== -->
-        <div class="w-full md:flex-1 bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6 md:p-12 overflow-y-auto relative h-[65vh] md:h-full">
+        <div class="login-main">
             
-            <!-- Login Card (exactly Swift-style but in Blue theme) -->
-            <div class="w-full max-w-[420px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none p-8 md:p-10 animate-card relative z-10">
-                <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white mb-1.5 animate-stagger-item delay-200">Selamat datang kembali</h2>
-                <p class="subtitle text-sm text-slate-500 dark:text-slate-400 mb-8 animate-stagger-item delay-300">Silakan masuk menggunakan akun MAS-PKL Anda</p>
+            <!-- Login Card -->
+            <div class="login-card">
+                <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white mb-1.5 animate-stagger-item delay-100">Selamat datang kembali</h2>
+                <p class="subtitle text-sm text-slate-500 dark:text-slate-400 mb-8 animate-stagger-item delay-200">Silakan masuk menggunakan akun MAS-PKL Anda</p>
 
                 @if ($errors->any())
-                    <div class="alert alert-danger bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl p-3.5 mb-6 text-xs font-semibold animate-stagger-item delay-350">
+                    <div class="alert alert-danger bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl p-3.5 mb-6 text-xs font-semibold animate-stagger-item delay-250">
                         <ul class="list-disc list-inside space-y-1">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -179,7 +339,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('login') }}" class="space-y-5 animate-stagger-item delay-400" x-data="{ username: '{{ old('username') }}', password: '', showPassword: false }">
+                <form method="POST" action="{{ route('login') }}" class="space-y-5 animate-stagger-item delay-300" x-data="{ username: '{{ old('username') }}', password: '', showPassword: false }">
                     @csrf
 
                     <!-- Username -->
@@ -229,7 +389,7 @@
                     </x-button>
                 </form>
 
-                <div class="login-footer text-center mt-6 text-xs text-slate-400 dark:text-slate-500 animate-stagger-item delay-600">
+                <div class="login-footer text-center mt-6 text-xs text-slate-400 dark:text-slate-500 animate-stagger-item delay-500">
                     Protected admin area — MAS-PKL © {{ date('Y') }}
                 </div>
             </div>
