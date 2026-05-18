@@ -3,9 +3,7 @@
         
         <!-- Logo Header -->
         <div class="text-center mb-8">
-            <div class="w-16 h-16 mx-auto bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/40 mb-4">
-                <i data-lucide="briefcase" class="w-8 h-8 text-slate-900 dark:text-white"></i>
-            </div>
+            <img src="{{ asset('logo.png') }}" alt="Logo" class="w-16 h-16 mx-auto object-contain mb-4">
             <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-300">MAS-PKL</h1>
             <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Monitoring & Administrasi Siswa PKL</p>
         </div>

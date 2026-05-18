@@ -52,9 +52,7 @@
         
         <div class="flex items-center justify-center p-6 border-b border-slate-200/50 dark:border-slate-700/50">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-linear-to-br from-blue-600 to-indigo-700 dark:from-blue-500 dark:to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <i data-lucide="briefcase" class="w-6 h-6 text-white"></i>
-                </div>
+                <img src="{{ asset('logo.png') }}" alt="Logo" class="w-10 h-10 object-contain">
                 <h1 class="text-2xl font-bold text-gradient tracking-tight">MAS-PKL</h1>
             </div>
         </div>
