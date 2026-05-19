@@ -12,11 +12,13 @@
         <!-- Sidebar Info -->
         <div class="lg:col-span-1 space-y-6">
             <div class="glass-card p-8 text-center">
-                <div class="relative inline-block mb-4">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($siswa->nama_lengkap) }}&background=3b82f6&color=fff&size=128" 
-                         alt="Avatar" class="w-32 h-32 rounded-3xl object-cover border-4 border-white dark:border-slate-800 shadow-xl">
-                    <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 border-4 border-white dark:border-slate-900 rounded-full flex items-center justify-center">
-                        <i data-lucide="check" class="w-5 h-5 text-white"></i>
+                <div class="relative inline-flex mb-6">
+                    <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100">
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode($siswa->nama_lengkap) }}&background=3b82f6&color=fff&size=200" 
+                             alt="Avatar" class="w-full h-full object-cover">
+                    </div>
+                    <div class="absolute bottom-0 right-0 w-8 h-8 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full flex items-center justify-center shadow-lg transform translate-x-1/4 translate-y-1/4">
+                        <i data-lucide="check" class="w-4 h-4 text-white"></i>
                     </div>
                 </div>
                 <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ $siswa->nama_lengkap }}</h3>

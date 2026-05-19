@@ -62,25 +62,25 @@
     <!-- Quick Actions -->
     <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200 mb-4">Aksi Cepat</h3>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <a href="#" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-blue-600/10 border hover:border-blue-500/30 transition-all group">
+        <a href="{{ route('siswa.jurnal.create') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-blue-600/10 border hover:border-blue-500/30 transition-all group">
             <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
                 <i data-lucide="edit-3" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-blue-400"></i>
             </div>
             <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:text-white">Isi Jurnal</span>
         </a>
-        <a href="#" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-emerald-600/10 border hover:border-emerald-500/30 transition-all group">
+        <a href="{{ route('siswa.absensi.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-emerald-600/10 border hover:border-emerald-500/30 transition-all group">
             <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
                 <i data-lucide="clipboard-check" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-emerald-400"></i>
             </div>
             <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:text-white">Isi Absensi</span>
         </a>
-        <a href="#" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-purple-600/10 border hover:border-purple-500/30 transition-all group">
+        <a href="{{ route('siswa.panduan.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-purple-600/10 border hover:border-purple-500/30 transition-all group">
             <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
                 <i data-lucide="download-cloud" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-purple-400"></i>
             </div>
             <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:text-white">Buku Panduan</span>
         </a>
-        <a href="#" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-amber-600/10 border hover:border-amber-500/30 transition-all group">
+        <a href="{{ route('notifications.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-amber-600/10 border hover:border-amber-500/30 transition-all group">
             <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
                 <i data-lucide="bell" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-amber-400 relative">
                     <span class="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-red-500 border border-slate-900"></span>
