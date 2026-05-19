@@ -64,23 +64,23 @@
 
                 <!-- Sidebar Action Validation -->
                 <div class="bg-slate-50 dark:bg-slate-800/50 p-4 border-t border-slate-100 dark:border-slate-700/50">
-                    <form action="{{ route('pembimbing_sekolah.jurnal.update', $item) }}" method="POST" class="flex flex-col lg:flex-row items-start lg:items-center gap-4 w-full">
+                    <form action="{{ route('pembimbing_sekolah.jurnal.update', $item) }}" method="POST" class="grid grid-cols-1 md:grid-cols-12 gap-4 w-full items-center">
                         @csrf
                         @method('PATCH')
                         
-                        <div class="w-full lg:flex-1">
+                        <div class="md:col-span-7 lg:col-span-8">
                             <textarea name="catatan_pembimbing" rows="1" 
-                                      class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none resize-none transition-all"
+                                      class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none resize-none transition-all block"
                                       placeholder="Berikan saran atau alasan penolakan (opsional)...">{{ $item->catatan_pembimbing }}</textarea>
                         </div>
                         
-                        <div class="flex gap-3 w-full lg:w-auto shrink-0">
+                        <div class="md:col-span-5 lg:col-span-4 flex gap-2 w-full">
                             <button type="submit" name="status" value="valid" 
-                                    class="flex-1 lg:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-xl text-sm font-bold transition-all border {{ $item->status == 'valid' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white' }}">
+                                    class="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-xs font-bold transition-all border {{ $item->status == 'valid' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white' }}">
                                 <i data-lucide="check" class="w-4 h-4"></i> VALIDASI
                             </button>
                             <button type="submit" name="status" value="invalid" 
-                                    class="flex-1 lg:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-xl text-sm font-bold transition-all border {{ $item->status == 'invalid' ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-600/20' : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white' }}">
+                                    class="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-xs font-bold transition-all border {{ $item->status == 'invalid' ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-600/20' : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white' }}">
                                 <i data-lucide="x" class="w-4 h-4"></i> TOLAK
                             </button>
                         </div>
