@@ -1,9 +1,10 @@
 <x-app-layout>
     <x-slot name="header">Validasi Jurnal Siswa</x-slot>
 
-    <div class="mb-6 flex justify-between items-center">
-        <p class="text-slate-600 dark:text-slate-400">Review dan berikan feedback pada laporan harian siswa PKL di perusahaan Anda.</p>
-    </div>
+    <div x-data="{ imageModalOpen: false, modalImageUrl: '' }">
+        <div class="mb-6 flex justify-between items-center">
+            <p class="text-slate-600 dark:text-slate-400">Review dan berikan feedback pada laporan harian siswa PKL di perusahaan Anda.</p>
+        </div>
 
     @if(session('success'))
         <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
@@ -50,9 +51,9 @@
 
                             @if($item->foto_path)
                                 <div class="mb-4">
-                                    <a href="{{ asset('storage/' . $item->foto_path) }}" target="_blank" class="inline-flex items-center gap-2 text-xs text-blue-400 hover:underline">
+                                    <button type="button" @click="modalImageUrl = '{{ asset('storage/' . $item->foto_path) }}'; imageModalOpen = true" class="inline-flex items-center gap-2 text-xs text-blue-400 hover:underline">
                                         <i data-lucide="image" class="w-4 h-4"></i> Lihat Foto Bukti
-                                    </a>
+                                    </button>
                                 </div>
                             @endif
                         </div>
@@ -94,5 +95,16 @@
 
     <div class="mt-8">
         {{ $jurnals->links() }}
+    </div>
+
+    <!-- Image Modal -->
+    <div x-show="imageModalOpen" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+        <div @click.away="imageModalOpen = false" class="relative max-w-4xl max-h-screen">
+            <button @click="imageModalOpen = false" class="absolute -top-4 -right-4 p-2 text-white bg-red-600 rounded-full hover:bg-red-500 shadow-lg">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <img :src="modalImageUrl" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl object-contain">
+        </div>
+    </div>
     </div>
 </x-app-layout>
