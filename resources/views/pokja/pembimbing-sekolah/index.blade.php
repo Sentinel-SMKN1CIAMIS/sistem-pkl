@@ -1,9 +1,33 @@
 <x-app-layout>
     <x-slot name="header">Kelola Pembimbing Sekolah</x-slot>
 
-    <div class="mb-6 flex justify-between items-center">
+    <style>
+        .pokja-header-container {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+        }
+        .pokja-btn {
+            width: 100% !important;
+            display: inline-flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        @media (min-width: 768px) {
+            .pokja-header-container {
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+            .pokja-btn {
+                width: auto !important;
+            }
+        }
+    </style>
+
+    <div class="mb-6 pokja-header-container">
         <p class="text-slate-600 dark:text-slate-400">Daftar guru pembimbing sekolah per konsentrasi keahlian.</p>
-        <a href="{{ route('pokja.pembimbing_sekolah.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+        <a href="{{ route('pokja.pembimbing_sekolah.create') }}" class="pokja-btn px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
             <i data-lucide="user-plus" class="w-5 h-5"></i>
             Tambah Pembimbing
         </a>

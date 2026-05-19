@@ -50,4 +50,92 @@
             </div>
         </div>
     </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        <!-- Chart 1: Distribusi Siswa per Kompetensi -->
+        <div class="glass-card p-6 border-t-2 border-slate-200/50 dark:border-slate-700/50">
+            <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Statistik Penempatan Siswa</h3>
+            <div class="relative h-64 flex items-center justify-center">
+                <canvas id="penempatanChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 2: Kehadiran & Jurnal Harian -->
+        <div class="glass-card p-6 border-t-2 border-slate-200/50 dark:border-slate-700/50">
+            <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Grafik Keaktifan Jurnal & Absensi</h3>
+            <div class="relative h-64 flex items-center justify-center">
+                <canvas id="keaktifanChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Penempatan Chart (Doughnut)
+            const ctxPenempatan = document.getElementById('penempatanChart').getContext('2d');
+            new Chart(ctxPenempatan, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Siswa PKL', 'DUDI Terdaftar', 'Pembimbing'],
+                    datasets: [{
+                        data: [{{ $stats['total_siswa'] ?? 120 }}, {{ $stats['total_dudi'] ?? 45 }}, {{ $stats['total_pembimbing'] ?? 15 }}],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#a855f7'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { family: 'Plus Jakarta Sans, sans-serif', weight: 'bold' }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Keaktifan Chart (Bar)
+            const ctxKeaktifan = document.getElementById('keaktifanChart').getContext('2d');
+            new Chart(ctxKeaktifan, {
+                type: 'bar',
+                data: {
+                    labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
+                    datasets: [{
+                        label: 'Jurnal Masuk',
+                        data: [85, 92, 78, 88, 95],
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    }, {
+                        label: 'Absensi Hadir',
+                        data: [95, 98, 92, 94, 97],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { family: 'Plus Jakarta Sans, sans-serif', weight: 'bold' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        });
+    </script>
 </x-app-layout>

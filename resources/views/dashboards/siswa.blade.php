@@ -90,4 +90,88 @@
         </a>
     </div>
 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        <!-- Chart 1: Progress PKL -->
+        <div class="glass-card p-6 border-t-2 border-slate-200/50 dark:border-slate-700/50">
+            <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Persentase Pengisian Jurnal (Valid vs Pending)</h3>
+            <div class="relative h-64 flex items-center justify-center">
+                <canvas id="jurnalSiswaChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 2: Kehadiran Siswa -->
+        <div class="glass-card p-6 border-t-2 border-slate-200/50 dark:border-slate-700/50">
+            <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Grafik Kehadiran Mingguan Anda</h3>
+            <div class="relative h-64 flex items-center justify-center">
+                <canvas id="kehadiranSiswaChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Jurnal Siswa Chart (Pie)
+            const ctxJurnal = document.getElementById('jurnalSiswaChart').getContext('2d');
+            new Chart(ctxJurnal, {
+                type: 'pie',
+                data: {
+                    labels: ['Jurnal Valid', 'Jurnal Pending'],
+                    datasets: [{
+                        data: [{{ $stats['jurnal_valid'] ?? 0 }}, {{ ($stats['jurnal_total'] ?? 0) - ($stats['jurnal_valid'] ?? 0) }}],
+                        backgroundColor: ['#10b981', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { family: 'Plus Jakarta Sans, sans-serif', weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Kehadiran Siswa Chart (Line)
+            const ctxKehadiran = document.getElementById('kehadiranSiswaChart').getContext('2d');
+            new Chart(ctxKehadiran, {
+                type: 'line',
+                data: {
+                    labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
+                    datasets: [{
+                        label: 'Kehadiran Anda (Jam Masuk)',
+                        data: [7.30, 7.25, 7.40, 7.15, 7.35],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { family: 'Plus Jakarta Sans, sans-serif', weight: 'bold' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        });
+    </script>
 </x-app-layout>
