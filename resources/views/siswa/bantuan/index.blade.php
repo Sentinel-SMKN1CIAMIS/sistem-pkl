@@ -26,7 +26,8 @@
                     <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" 
                        :class="activeAccordion === 1 ? 'rotate-180' : ''"></i>
                 </button>
-                <div x-show="activeAccordion === 1" x-collapse>
+                <div class="overflow-hidden transition-all duration-300 ease-in-out" 
+                     :style="activeAccordion === 1 ? 'max-height: 400px; opacity: 1;' : 'max-height: 0; opacity: 0;'">
                     <div class="p-6 pt-0 text-sm md:text-base text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
                         <ol class="list-decimal list-inside space-y-3 mt-4">
                             <li>Buka menu <strong>Jurnal Kegiatan</strong> di sidebar.</li>
@@ -52,7 +53,8 @@
                     <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" 
                        :class="activeAccordion === 2 ? 'rotate-180' : ''"></i>
                 </button>
-                <div x-show="activeAccordion === 2" x-collapse>
+                <div class="overflow-hidden transition-all duration-300 ease-in-out" 
+                     :style="activeAccordion === 2 ? 'max-height: 400px; opacity: 1;' : 'max-height: 0; opacity: 0;'">
                     <div class="p-6 pt-0 text-sm md:text-base text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
                         <ol class="list-decimal list-inside space-y-3 mt-4">
                             <li>Akses menu <strong>Daftar Hadir</strong> dari sidebar.</li>
@@ -78,7 +80,8 @@
                     <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" 
                        :class="activeAccordion === 3 ? 'rotate-180' : ''"></i>
                 </button>
-                <div x-show="activeAccordion === 3" x-collapse>
+                <div class="overflow-hidden transition-all duration-300 ease-in-out" 
+                     :style="activeAccordion === 3 ? 'max-height: 400px; opacity: 1;' : 'max-height: 0; opacity: 0;'">
                     <div class="p-6 pt-0 text-sm md:text-base text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
                         <ol class="list-decimal list-inside space-y-3 mt-4">
                             <li>Masuk ke menu <strong>Laporan PKL</strong>.</li>
@@ -104,7 +107,8 @@
                     <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" 
                        :class="activeAccordion === 4 ? 'rotate-180' : ''"></i>
                 </button>
-                <div x-show="activeAccordion === 4" x-collapse>
+                <div class="overflow-hidden transition-all duration-300 ease-in-out" 
+                     :style="activeAccordion === 4 ? 'max-height: 400px; opacity: 1;' : 'max-height: 0; opacity: 0;'">
                     <div class="p-6 pt-0 text-sm md:text-base text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
                         <p class="mt-4">Jika pembimbing industri tempat Anda PKL belum terdaftar di sistem secara otomatis, Anda bisa mendaftarkannya secara manual:</p>
                         <ol class="list-decimal list-inside space-y-3 mt-2">
@@ -130,10 +134,6 @@
                     Jika Anda memiliki pertanyaan khusus, mengalami error, atau butuh bantuan lebih lanjut terkait teknis penggunaan sistem ini.
                 </p>
                 <div class="space-y-4">
-                    <a href="#" class="w-full flex items-center justify-center gap-2 px-5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all">
-                        <i data-lucide="phone" class="w-4 h-4"></i>
-                        Hubungi Admin / Pokja
-                    </a>
                     <a href="{{ route('siswa.panduan.index') }}" class="w-full flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all">
                         <i data-lucide="download" class="w-4 h-4"></i>
                         Unduh Buku Pedoman
