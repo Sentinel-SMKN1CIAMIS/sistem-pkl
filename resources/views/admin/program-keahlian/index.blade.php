@@ -1,9 +1,33 @@
 <x-app-layout>
     <x-slot name="header">Kelola Program Keahlian</x-slot>
 
-    <div class="mb-6 flex justify-between items-center">
+    <style>
+        .admin-header-container {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+        }
+        .admin-btn {
+            width: 100% !important;
+            display: inline-flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        @media (min-width: 768px) {
+            .admin-header-container {
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+            .admin-btn {
+                width: auto !important;
+            }
+        }
+    </style>
+
+    <div class="mb-6 admin-header-container">
         <p class="text-slate-600 dark:text-slate-400">Daftar semua program keahlian yang terdaftar di sistem.</p>
-        <a href="{{ route('admin.program_keahlian.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+        <a href="{{ route('admin.program_keahlian.create') }}" class="admin-btn px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
             <i data-lucide="plus-circle" class="w-5 h-5"></i>
             Tambah Program
         </a>
@@ -38,17 +62,32 @@
                                 {{ $program->nama }}
                             </td>
                             <td class="px-6 py-4 text-right whitespace-nowrap">
-                                <div class="flex justify-end gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                                    <a href="{{ route('admin.program_keahlian.edit', $program) }}" class="p-2 text-slate-600 dark:text-slate-400 hover:text-blue-400 transition-colors" title="Edit">
-                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
-                                    </a>
-                                    <form action="{{ route('admin.program_keahlian.destroy', $program) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus program ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="p-2 text-slate-600 dark:text-slate-400 hover:text-red-400 transition-colors" title="Hapus">
-                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                        </button>
-                                    </form>
+                                <div x-data="{ open: false }" class="relative flex justify-end" x-on:click.away="open = false">
+                                    <button x-on:click="open = !open" class="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
+                                        <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                    </button>
+                                    <div x-show="open" 
+                                         x-transition:enter="transition ease-out duration-100"
+                                         x-transition:enter-start="transform opacity-0 scale-95"
+                                         x-transition:enter-end="transform opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="transform opacity-100 scale-100"
+                                         x-transition:leave-end="transform opacity-0 scale-95"
+                                         class="absolute right-0 mt-8 w-32 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 shadow-lg py-1 z-50 text-left" 
+                                         style="display: none;">
+                                        <a href="{{ route('admin.program_keahlian.edit', $program) }}" class="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                            <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
+                                            Edit
+                                        </a>
+                                        <form action="{{ route('admin.program_keahlian.destroy', $program) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus program ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left">
+                                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
