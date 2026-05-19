@@ -8,7 +8,7 @@
                 <i data-lucide="printer" class="w-5 h-5"></i>
                 Cetak Jurnal
             </a>
-            <a href="{{ route('siswa.jurnal.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+            <a href="{{ route('siswa.jurnal.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
                 <i data-lucide="plus-circle" class="w-5 h-5"></i>
                 Tambah Jurnal
             </a>

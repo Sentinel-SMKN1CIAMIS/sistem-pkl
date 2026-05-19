@@ -43,7 +43,7 @@
                 </div>
                 
                 <a href="{{ asset('storage/' . $item->file_path) }}" target="_blank" 
-                   class="w-full flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95">
+                   class="w-full flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95">
                     <i data-lucide="download" class="w-5 h-5"></i>
                     UNDUH PDF
                 </a>

@@ -3,7 +3,7 @@
 
     <div class="mb-6 flex justify-between items-center">
         <p class="text-slate-600 dark:text-slate-400">Unggah dan kelola buku panduan untuk siswa, DUDI, atau umum.</p>
-        <a href="{{ route('admin.panduan.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+        <a href="{{ route('admin.panduan.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
             <i data-lucide="upload-cloud" class="w-5 h-5"></i>
             Unggah Panduan
         </a>

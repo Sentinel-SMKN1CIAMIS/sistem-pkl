@@ -112,7 +112,7 @@
                             </div>
 
                             <div class="pt-4 flex justify-end">
-                                <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 active:scale-95">
+                                <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 active:scale-95">
                                     <i data-lucide="send" class="w-5 h-5"></i>
                                     {{ $laporan ? 'Update Laporan' : 'Kirim Laporan' }}
                                 </button>

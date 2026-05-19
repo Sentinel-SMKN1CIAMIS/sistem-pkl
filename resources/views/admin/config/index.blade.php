@@ -40,7 +40,7 @@
                 </div>
 
                 <div class="pt-6 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end">
-                    <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-black rounded-xl shadow-lg shadow-blue-500/25 transition-all text-xs uppercase tracking-widest flex items-center gap-2">
+                    <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl shadow-lg shadow-blue-500/25 transition-all text-xs uppercase tracking-widest flex items-center gap-2">
                         <i data-lucide="save" class="w-4 h-4"></i>
                         Simpan Semua Pengaturan
                     </button>

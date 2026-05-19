@@ -34,7 +34,7 @@
                 </div>
 
                 <div class="pt-4 flex justify-end">
-                    <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+                    <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
                         <i data-lucide="save" class="w-5 h-5"></i>
                         Simpan Program
                     </button>
