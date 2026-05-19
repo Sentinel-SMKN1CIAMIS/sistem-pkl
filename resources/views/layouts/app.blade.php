@@ -19,6 +19,20 @@
     <style>
         body { font-family: 'Outfit', sans-serif; }
         [x-cloak] { display: none !important; }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
     </style>
     
     <!-- Scripts -->
@@ -144,7 +158,7 @@
 
         <!-- Main Scrollable Area -->
         <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
-            <div class="mx-auto max-w-7xl">
+            <div class="mx-auto max-w-7xl animate-fade-in-up">
                 <!-- Page Header -->
                 @if (isset($header))
                     <header class="mb-8">
