@@ -10,6 +10,7 @@
             ['name' => 'Laporan PKL', 'route' => 'siswa.laporan.index', 'icon' => 'file-text'],
             ['name' => 'Buku Panduan', 'route' => 'siswa.panduan.index', 'icon' => 'library'],
             ['name' => 'Profil Saya', 'route' => 'siswa.profile.index', 'icon' => 'user-circle'],
+            ['name' => 'Pusat Bantuan', 'route' => 'siswa.bantuan.index', 'icon' => 'help-circle'],
         ];
     } elseif ($role === 'pembimbing_sekolah') {
         $navItems = [

@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
         Route::get('jurnal/export', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'export'])->name('jurnal.export');
         Route::get('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('profile.index');
         Route::patch('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'update'])->name('profile.update');
+        Route::get('bantuan', [\App\Http\Controllers\Siswa\BantuanController::class, 'index'])->name('bantuan.index');
     });
 
     // Verification Routes (Review by Mentors)
