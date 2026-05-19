@@ -16,21 +16,21 @@
             <!-- Jurnal -->
             <div class="glass-card rounded-xl overflow-hidden transition-all duration-200">
                 <button @click="activeAccordion === 1 ? activeAccordion = null : activeAccordion = 1" 
-                        class="w-full flex items-center justify-between p-5 text-left bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                            <i data-lucide="book-open" class="w-4 h-4"></i>
+                        class="w-full flex items-center justify-between py-6 px-6 text-left bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                            <i data-lucide="book-open" class="w-5 h-5"></i>
                         </div>
-                        <span class="font-bold text-slate-900 dark:text-slate-100">Bagaimana cara mengisi Jurnal Harian?</span>
+                        <span class="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">Bagaimana cara mengisi Jurnal Harian?</span>
                     </div>
                     <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" 
                        :class="activeAccordion === 1 ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="activeAccordion === 1" x-collapse>
-                    <div class="p-5 pt-0 text-sm text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
-                        <ol class="list-decimal list-inside space-y-2 mt-4">
+                    <div class="p-6 pt-0 text-sm md:text-base text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
+                        <ol class="list-decimal list-inside space-y-3 mt-4">
                             <li>Buka menu <strong>Jurnal Kegiatan</strong> di sidebar.</li>
-                            <li>Klik tombol <strong><i data-lucide="plus" class="w-3 h-3 inline"></i> Tulis Jurnal</strong> berwarna biru di pojok kanan atas.</li>
+                            <li>Klik tombol <strong><i data-lucide="plus" class="w-3 h-3 md:w-4 md:h-4 inline"></i> Tulis Jurnal</strong> berwarna biru di pojok kanan atas.</li>
                             <li>Isi form dengan detail kegiatan Anda: tanggal, waktu, kegiatan, dan unggah foto dokumentasi (wajib).</li>
                             <li>Setelah form terisi, klik <strong>Simpan Jurnal</strong>.</li>
                             <li>Tunggu proses validasi oleh Pembimbing DUDI dan Pembimbing Sekolah. Jurnal yang sudah divalidasi akan memiliki status <span class="text-emerald-500 font-bold">Valid</span>.</li>
@@ -42,19 +42,19 @@
             <!-- Absensi -->
             <div class="glass-card rounded-xl overflow-hidden transition-all duration-200">
                 <button @click="activeAccordion === 2 ? activeAccordion = null : activeAccordion = 2" 
-                        class="w-full flex items-center justify-between p-5 text-left bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                            <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                        class="w-full flex items-center justify-between py-6 px-6 text-left bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                            <i data-lucide="calendar-check" class="w-5 h-5"></i>
                         </div>
-                        <span class="font-bold text-slate-900 dark:text-slate-100">Cara melakukan Absensi (Clock-in / Clock-out)</span>
+                        <span class="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">Cara melakukan Absensi (Clock-in / Clock-out)</span>
                     </div>
                     <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" 
                        :class="activeAccordion === 2 ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="activeAccordion === 2" x-collapse>
-                    <div class="p-5 pt-0 text-sm text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
-                        <ol class="list-decimal list-inside space-y-2 mt-4">
+                    <div class="p-6 pt-0 text-sm md:text-base text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
+                        <ol class="list-decimal list-inside space-y-3 mt-4">
                             <li>Akses menu <strong>Daftar Hadir</strong> dari sidebar.</li>
                             <li>Pastikan Anda memberikan izin akses <strong>Lokasi/GPS</strong> pada browser Anda. Sistem akan mendeteksi koordinat Anda.</li>
                             <li>Isi keterangan jika ada, lalu klik tombol hijau <strong>Absen Masuk (Clock-in)</strong> saat tiba di tempat kerja.</li>
@@ -68,19 +68,19 @@
             <!-- Laporan -->
             <div class="glass-card rounded-xl overflow-hidden transition-all duration-200">
                 <button @click="activeAccordion === 3 ? activeAccordion = null : activeAccordion = 3" 
-                        class="w-full flex items-center justify-between p-5 text-left bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                        class="w-full flex items-center justify-between py-6 px-6 text-left bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
                         </div>
-                        <span class="font-bold text-slate-900 dark:text-slate-100">Syarat Pengumpulan Laporan PKL</span>
+                        <span class="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">Syarat Pengumpulan Laporan PKL</span>
                     </div>
                     <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" 
                        :class="activeAccordion === 3 ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="activeAccordion === 3" x-collapse>
-                    <div class="p-5 pt-0 text-sm text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
-                        <ol class="list-decimal list-inside space-y-2 mt-4">
+                    <div class="p-6 pt-0 text-sm md:text-base text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
+                        <ol class="list-decimal list-inside space-y-3 mt-4">
                             <li>Masuk ke menu <strong>Laporan PKL</strong>.</li>
                             <li>Laporan hanya dapat diunggah dalam format PDF.</li>
                             <li>Isi judul dokumen dengan jelas, tambahkan deskripsi jika diperlukan.</li>
@@ -94,20 +94,20 @@
             <!-- Profil -->
             <div class="glass-card rounded-xl overflow-hidden transition-all duration-200">
                 <button @click="activeAccordion === 4 ? activeAccordion = null : activeAccordion = 4" 
-                        class="w-full flex items-center justify-between p-5 text-left bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                            <i data-lucide="user-cog" class="w-4 h-4"></i>
+                        class="w-full flex items-center justify-between py-6 px-6 text-left bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                            <i data-lucide="user-cog" class="w-5 h-5"></i>
                         </div>
-                        <span class="font-bold text-slate-900 dark:text-slate-100">Mengedit Data Pembimbing Industri</span>
+                        <span class="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">Mengedit Data Pembimbing Industri</span>
                     </div>
                     <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" 
                        :class="activeAccordion === 4 ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="activeAccordion === 4" x-collapse>
-                    <div class="p-5 pt-0 text-sm text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
+                    <div class="p-6 pt-0 text-sm md:text-base text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
                         <p class="mt-4">Jika pembimbing industri tempat Anda PKL belum terdaftar di sistem secara otomatis, Anda bisa mendaftarkannya secara manual:</p>
-                        <ol class="list-decimal list-inside space-y-2 mt-2">
+                        <ol class="list-decimal list-inside space-y-3 mt-2">
                             <li>Buka menu <strong>Profil Saya</strong>.</li>
                             <li>Gulir ke bawah ke bagian "Pembimbing Industri (Manual)".</li>
                             <li>Masukkan nama lengkap dan jabatan mentor Anda.</li>
