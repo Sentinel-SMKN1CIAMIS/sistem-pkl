@@ -110,3 +110,4 @@ class DudiController extends Controller
         return redirect()->route('pokja.dudi.index')
             ->with('success', 'Data DUDI berhasil dihapus.');
     }
+}

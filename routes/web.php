@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:pembimbing_dudi')->prefix('pembimbing_dudi')->name('pembimbing_dudi.')->group(function () {
         Route::get('siswa', [\App\Http\Controllers\PembimbingDudi\SiswaController::class, 'index'])->name('siswa.index');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'index'])->name('jurnal.index');
+        Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'update'])->name('jurnal.update');
         Route::get('absensi', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'index'])->name('absensi.index');
         Route::get('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'index'])->name('feedback.index');
         Route::get('feedback/create', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'create'])->name('feedback.create');

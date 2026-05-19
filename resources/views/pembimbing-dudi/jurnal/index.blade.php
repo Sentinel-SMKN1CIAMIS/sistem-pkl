@@ -57,26 +57,32 @@
                             @endif
                         </div>
 
-                        <!-- Status Jurnal -->
-                        <div class="w-full md:w-80 p-4 rounded-xl bg-slate-100 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/50 flex flex-col justify-center text-center">
-                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Status Saat Ini</label>
-                            @php
-                                $statusClassesSidebar = [
-                                    'pending' => 'bg-amber-500 text-slate-900',
-                                    'valid' => 'bg-emerald-600 text-slate-900 dark:text-white',
-                                    'invalid' => 'bg-red-600 text-slate-900 dark:text-white'
-                                ];
-                                $statusLabel = [
-                                    'pending' => 'MENUNGGU VALIDASI',
-                                    'valid' => 'DIVALIDASI (SEKOLAH)',
-                                    'invalid' => 'DITOLAK (SEKOLAH)'
-                                ];
-                            @endphp
-                            <div class="px-4 py-3 rounded-xl text-sm font-bold shadow-lg {{ $statusClassesSidebar[$item->status] }}">
-                                {{ $statusLabel[$item->status] }}
-                            </div>
-                        </div>
                     </div>
+                </div>
+
+                <!-- Sidebar Action Validation -->
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-4 border-t border-slate-100 dark:border-slate-700/50">
+                    <form action="{{ route('pembimbing_dudi.jurnal.update', $item) }}" method="POST" class="flex flex-col md:flex-row items-start md:items-center gap-4">
+                        @csrf
+                        @method('PATCH')
+                        
+                        <div class="flex-grow w-full">
+                            <textarea name="catatan_pembimbing" rows="1" 
+                                      class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-blue-500"
+                                      placeholder="Berikan saran atau alasan penolakan...">{{ $item->catatan_pembimbing }}</textarea>
+                        </div>
+                        
+                        <div class="flex gap-2 w-full md:w-auto shrink-0">
+                            <button type="submit" name="status" value="valid" 
+                                    class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all {{ $item->status == 'valid' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white' }}">
+                                VALIDASI
+                            </button>
+                            <button type="submit" name="status" value="invalid" 
+                                    class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all {{ $item->status == 'invalid' ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-red-500 hover:text-white' }}">
+                                TOLAK
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         @empty
