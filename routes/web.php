@@ -38,7 +38,6 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:pembimbing_sekolah')->prefix('pembimbing_sekolah')->name('pembimbing_sekolah.')->group(function () {
         Route::get('siswa', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'index'])->name('siswa.index');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'index'])->name('jurnal.index');
-        Route::post('jurnal/validasi-semua', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'validasiSemua'])->name('jurnal.validasi_semua');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'update'])->name('jurnal.update');
         Route::get('absensi', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'index'])->name('absensi.index');
         Route::get('absensi/export', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'export'])->name('absensi.export');
@@ -59,6 +58,14 @@ Route::middleware('auth')->group(function () {
     // General Auth Routes
     Route::get('notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifications.index');
     Route::patch('notifikasi/{notifikasi}/read', [\App\Http\Controllers\NotifikasiController::class, 'markAsRead'])->name('notifications.read');
+
+    // Pesan (Chat) Routes
+    Route::get('pesan', [\App\Http\Controllers\PesanController::class, 'index'])->name('pesan.index');
+    Route::get('pesan/broadcast', [\App\Http\Controllers\PesanController::class, 'index'])->name('pesan.broadcast.form');
+    Route::post('pesan/broadcast', [\App\Http\Controllers\PesanController::class, 'broadcast'])->name('pesan.broadcast');
+    Route::get('pesan/{user}', [\App\Http\Controllers\PesanController::class, 'show'])->name('pesan.show');
+    Route::post('pesan/{user}', [\App\Http\Controllers\PesanController::class, 'store'])->name('pesan.store');
+    Route::get('pesan/{user}/poll', [\App\Http\Controllers\PesanController::class, 'poll'])->name('pesan.poll');
 
     // Super Admin Routes
     Route::middleware('role:super_admin')->prefix('admin')->name('admin.')->group(function () {

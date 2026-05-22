@@ -11,7 +11,7 @@ class Jurnal extends Model
     protected $fillable = [
         'siswa_id', 'kompetensi_id', 'tanggal', 
         'deskripsi_pekerjaan', 'catatan', 'foto_path', 
-        'status', 'catatan_pembimbing'
+        'status', 'catatan_pembimbing', 'catatan_guru'
     ];
 
     public function siswa()

@@ -28,6 +28,16 @@ class JurnalController extends Controller
 
     public function update(Request $request, Jurnal $jurnal)
     {
+        if ($jurnal->status !== 'pending') {
+            $request->validate([
+                'catatan_pembimbing' => 'nullable|string'
+            ]);
+            $jurnal->update([
+                'catatan_pembimbing' => $request->catatan_pembimbing
+            ]);
+            return back()->with('success', 'Saran / Komentar berhasil disimpan.');
+        }
+
         $request->validate([
             'status' => 'required|in:valid,invalid',
             'catatan_pembimbing' => 'nullable|string'

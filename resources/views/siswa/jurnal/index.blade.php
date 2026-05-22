@@ -115,9 +115,18 @@
                         </div>
                     </div>
                     
-                    @if($item->catatan_pembimbing)
-                        <div class="mt-4 p-3 rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 italic text-sm text-slate-600 dark:text-slate-400">
-                            <span class="font-bold text-slate-700 dark:text-slate-300 not-italic">Komentar Pembimbing:</span> {{ $item->catatan_pembimbing }}
+                    @if($item->catatan_pembimbing || $item->catatan_guru)
+                        <div class="mt-4 space-y-2">
+                            @if($item->catatan_pembimbing)
+                                <div class="p-3 rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 italic text-sm text-slate-600 dark:text-slate-400">
+                                    <span class="font-bold text-slate-700 dark:text-slate-300 not-italic">Komentar Pembimbing DUDI:</span> {{ $item->catatan_pembimbing }}
+                                </div>
+                            @endif
+                            @if($item->catatan_guru)
+                                <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-700/50 italic text-sm text-blue-800 dark:text-blue-300">
+                                    <span class="font-bold text-blue-900 dark:text-blue-200 not-italic">Komentar Pembimbing Sekolah:</span> {{ $item->catatan_guru }}
+                                </div>
+                            @endif
                         </div>
                     @endif
                 </div>

@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\Absensi;
 
 
+class AbsensiController extends Controller
+{
     public function index(Request $request)
     {
         $teacher = auth()->user()->pembimbingSekolah;
@@ -61,3 +63,4 @@ use App\Models\Absensi;
 
         return $pdf->download('rekap-absensi-' . now()->format('Y-m-d') . '.pdf');
     }
+}

@@ -75,20 +75,42 @@
             @include('layouts.partials.sidebar-menu')
         </div>
 
-        <div class="p-4 border-t border-slate-200/50 dark:border-slate-700/50">
-            <div class="flex items-center gap-3 glass-card p-3 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
-                <img src="{{ auth()->user()?->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()?->name ?? 'User').'&background=3b82f6&color=fff' }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border border-slate-300 dark:border-slate-600">
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{{ auth()->user()?->name ?? 'Guest User' }}</p>
-                    <p class="text-xs text-slate-600 dark:text-slate-400 truncate capitalize">{{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}</p>
+        <div class="p-4 border-t border-slate-200/50 dark:border-slate-700/50" x-data="{ profileMenuOpen: false }">
+            <div class="relative">
+                <button @click="profileMenuOpen = !profileMenuOpen" @click.away="profileMenuOpen = false" class="w-full flex items-center gap-3 glass-card p-3 rounded-xl border border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors text-left focus:outline-none group">
+                    <img src="{{ auth()->user()?->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()?->name ?? 'User').'&background=3b82f6&color=fff' }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border border-slate-300 dark:border-slate-600 group-hover:scale-105 transition-transform">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{{ auth()->user()?->name ?? 'Guest User' }}</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 truncate capitalize">{{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}</p>
+                    </div>
+                    <i data-lucide="chevron-up" class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="profileMenuOpen ? 'rotate-180' : ''"></i>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div x-show="profileMenuOpen"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-2"
+                     class="absolute left-0 w-full glass-card border border-slate-200/50 dark:border-slate-700/50 rounded-xl overflow-hidden z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+                     style="bottom: 100%; margin-bottom: 0.5rem;" x-cloak>
+                    @if(auth()->user()?->role === 'siswa')
+                        <a href="{{ route('siswa.profile.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-200/50 dark:border-slate-700/50">
+                            <i data-lucide="user-circle" class="w-4 h-4"></i>
+                            Lihat Profil
+                        </a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors focus:outline-none">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                            Logout
+                        </button>
+                    </form>
                 </div>
             </div>
-            <form method="POST" action="{{ route('logout') }}" class="mt-2">
-                @csrf
-                <x-button variant="secondary" class="w-full text-red-400! hover:text-red-300! hover:bg-red-500/10! justify-start" icon="log-out">
-                    Logout
-                </x-button>
-            </form>
         </div>
     </aside>
 
@@ -183,6 +205,31 @@
             }
         });
         
+        // Unsaved changes warning
+        const dirtyForms = new Set();
+        
+        ['input', 'change'].forEach(eventType => {
+            document.addEventListener(eventType, (e) => {
+                const form = e.target.closest('form');
+                if (form && form.method.toUpperCase() === 'POST' && !form.classList.contains('ignore-dirty')) {
+                    dirtyForms.add(form);
+                }
+            });
+        });
+
+        document.addEventListener('submit', (e) => {
+            if (dirtyForms.has(e.target)) {
+                dirtyForms.delete(e.target);
+            }
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (dirtyForms.size > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

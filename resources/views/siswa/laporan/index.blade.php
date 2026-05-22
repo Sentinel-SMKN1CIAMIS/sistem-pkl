@@ -14,49 +14,97 @@
         @endif
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Status Card -->
+            <!-- Left Column (Status & Sertifikat) -->
             <div class="md:col-span-1">
-                <div class="glass-card p-6 sticky top-8">
-                    <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4 font-mono">Status Laporan</h3>
-                    
-                    @if($laporan)
-                        <div class="space-y-4">
+                <div class="sticky top-8 space-y-6">
+                    <!-- Status Card -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4 font-mono">Status Laporan</h3>
+                        
+                        @if($laporan)
+                            <div class="space-y-4">
+                                <div>
+                                    @php
+                                        $statusClasses = [
+                                            'draft' => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
+                                            'submitted' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                                            'approved' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                                            'rejected' => 'bg-red-500/10 text-red-400 border-red-500/20'
+                                        ];
+                                    @endphp
+                                    <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border {{ $statusClasses[$laporan->status] }}">
+                                        {{ $laporan->status }}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400">
+                                    <p>Terakhir diupdate:</p>
+                                    <p class="text-slate-700 dark:text-slate-300 font-medium">{{ \Carbon\Carbon::parse($laporan->updated_at)->isoFormat('LLL') }}</p>
+                                </div>
+                                @if(!empty($laporan->link_media_sosial) && is_array($laporan->link_media_sosial))
+                                    @foreach($laporan->link_media_sosial as $idx => $link)
+                                        @if($link)
+                                            <a href="{{ $link }}" target="_blank" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-lg text-sm transition-all mt-2">
+                                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                                                Lihat Media Sosial {{ count($laporan->link_media_sosial) > 1 ? ($idx + 1) : '' }}
+                                            </a>
+                                        @endif
+                                    @endforeach
+                                @endif
+                            </div>
+                        @else
+                            <div class="text-center py-6">
+                                <div class="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i data-lucide="file-warning" class="w-6 h-6 text-slate-600"></i>
+                                </div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 italic">Belum mengunggah laporan.</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Contoh Sertifikat PKL --}}
+                    <div class="glass-card p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                                <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+                            </div>
                             <div>
-                                @php
-                                    $statusClasses = [
-                                        'draft' => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
-                                        'submitted' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-                                        'approved' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-                                        'rejected' => 'bg-red-500/10 text-red-400 border-red-500/20'
-                                    ];
-                                @endphp
-                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border {{ $statusClasses[$laporan->status] }}">
-                                    {{ $laporan->status }}
-                                </span>
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Contoh Sertifikat PKL</h3>
                             </div>
-                            <div class="text-xs text-slate-500 dark:text-slate-400">
-                                <p>Terakhir diupdate:</p>
-                                <p class="text-slate-700 dark:text-slate-300 font-medium">{{ \Carbon\Carbon::parse($laporan->updated_at)->isoFormat('LLL') }}</p>
-                            </div>
-                            @if(!empty($laporan->link_media_sosial) && is_array($laporan->link_media_sosial))
-                                @foreach($laporan->link_media_sosial as $idx => $link)
-                                    @if($link)
-                                        <a href="{{ $link }}" target="_blank" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-lg text-sm transition-all mt-2">
-                                            <i data-lucide="external-link" class="w-4 h-4"></i>
-                                            Lihat Media Sosial {{ count($laporan->link_media_sosial) > 1 ? ($idx + 1) : '' }}
-                                        </a>
-                                    @endif
-                                @endforeach
-                            @endif
                         </div>
-                    @else
-                        <div class="text-center py-6">
-                            <div class="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <i data-lucide="file-warning" class="w-6 h-6 text-slate-600"></i>
+
+                        <div x-data="{ zoom: false }" @keydown.escape.window="zoom = false">
+                            {{-- Thumbnail --}}
+                            <div class="rounded-xl overflow-hidden border border-slate-200/50 dark:border-slate-700/50 shadow-sm group cursor-zoom-in"
+                                 @click="zoom = true">
+                                <img src="{{ asset('sertifpkl.png') }}" 
+                                     alt="Contoh Sertifikat PKL" 
+                                     class="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-[1.02]">
                             </div>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 italic">Belum mengunggah laporan.</p>
+
+                            {{-- Lightbox Modal --}}
+                            <div x-show="zoom" 
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"
+                                 class="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4"
+                                 @click="zoom = false" x-cloak>
+                                <div class="max-w-4xl w-full relative" @click.stop>
+                                    <button @click="zoom = false" class="absolute -top-4 -right-4 z-10 w-10 h-10 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                        <i data-lucide="x" class="w-5 h-5 text-slate-700 dark:text-slate-300"></i>
+                                    </button>
+                                    <img src="{{ asset('sertifpkl.png') }}" alt="Contoh Sertifikat PKL" class="w-full h-auto rounded-2xl shadow-2xl">
+                                </div>
+                            </div>
                         </div>
-                    @endif
+
+                        <p class="mt-3 text-[10px] text-center text-slate-500 dark:text-slate-400 italic">
+                            <i data-lucide="zoom-in" class="w-3 h-3 inline-block mr-1"></i>
+                            Klik untuk memperbesar gambar.
+                        </p>
+                    </div>
                 </div>
             </div>
 

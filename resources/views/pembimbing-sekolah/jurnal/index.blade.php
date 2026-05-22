@@ -3,22 +3,8 @@
 
     <div x-data="{ imageModalOpen: false, modalImageUrl: '' }">
         <div class="mb-6 flex justify-between items-start">
-            <p class="text-slate-600 dark:text-slate-400">Pantau aktivitas harian siswa bimbingan Anda di industri.</p>
-        
-        <div x-data="{ open: false }" class="relative">
-            <button @click="open = !open" @click.away="open = false" class="p-2 rounded-lg text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" title="Opsi Lainnya">
-                <i data-lucide="more-vertical" class="w-5 h-5"></i>
-            </button>
-            <div x-show="open" x-transition.opacity.duration.200ms class="absolute right-0 mt-2 w-48 glass-card border border-slate-200/50 dark:border-slate-700/50 py-1 rounded-xl text-sm z-10" x-cloak>
-                <form action="{{ route('pembimbing_sekolah.jurnal.validasi_semua') }}" method="POST" onsubmit="return confirm('PERHATIAN: Anda yakin ingin memvalidasi SEMUA jurnal yang berstatus pending tanpa membacanya satu per satu?');">
-                    @csrf
-                    <button type="submit" class="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-700/50 text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-2 transition-colors">
-                        <i data-lucide="check-check" class="w-4 h-4"></i> Validasi Semua Jurnal
-                    </button>
-                </form>
-            </div>
+            <p class="text-slate-600 dark:text-slate-400">Pantau aktivitas harian siswa bimbingan Anda di industri. Anda dapat memberikan saran/komentar pada setiap jurnal siswa.</p>
         </div>
-    </div>
 
     <div class="grid grid-cols-1 gap-6">
         @forelse($jurnals as $item)
@@ -63,26 +49,26 @@
                     </div>
                 </div>
 
-                <!-- Sidebar Action Validation -->
+                <!-- Saran Guru / Komentar -->
                 <div class="bg-slate-50 dark:bg-slate-800/50 p-4 border-t border-slate-100 dark:border-slate-700/50">
-                    <form action="{{ route('pembimbing_sekolah.jurnal.update', $item) }}" method="POST" class="grid grid-cols-1 md:grid-cols-12 gap-4 w-full items-center">
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2">
+                        <span>Status Validasi:</span>
+                        <span class="font-bold uppercase {{ $item->status === 'valid' ? 'text-emerald-500' : ($item->status === 'invalid' ? 'text-red-500' : 'text-amber-500') }}">{{ $item->status }}</span>
+                        <span class="text-slate-300 dark:text-slate-600">|</span>
+                        <span class="italic text-slate-400 dark:text-slate-500">Validasi dilakukan oleh Pembimbing DUDI</span>
+                    </div>
+                    <form action="{{ route('pembimbing_sekolah.jurnal.update', $item) }}" method="POST" class="grid grid-cols-1 md:grid-cols-12 gap-3 w-full items-center">
                         @csrf
                         @method('PATCH')
-                        
-                        <div class="md:col-span-7 lg:col-span-8">
-                            <textarea name="catatan_pembimbing" rows="1" 
+                        <div class="md:col-span-9 lg:col-span-10">
+                            <textarea name="catatan_guru" rows="1" 
                                       class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none resize-none transition-all block"
-                                      placeholder="Berikan saran atau alasan penolakan (opsional)...">{{ $item->catatan_pembimbing }}</textarea>
+                                      placeholder="Tulis saran atau komentar untuk siswa...">{{ $item->catatan_guru }}</textarea>
                         </div>
-                        
-                        <div class="md:col-span-5 lg:col-span-4 flex gap-2 w-full">
-                            <button type="submit" name="status" value="valid" 
-                                    class="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-xs font-bold transition-all border {{ $item->status == 'valid' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white' }}">
-                                <i data-lucide="check" class="w-4 h-4"></i> VALIDASI
-                            </button>
-                            <button type="submit" name="status" value="invalid" 
-                                    class="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-xs font-bold transition-all border {{ $item->status == 'invalid' ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-600/20' : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white' }}">
-                                <i data-lucide="x" class="w-4 h-4"></i> TOLAK
+                        <div class="md:col-span-3 lg:col-span-2">
+                            <button type="submit" 
+                                    class="w-full flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white">
+                                <i data-lucide="send" class="w-4 h-4"></i> KIRIM SARAN
                             </button>
                         </div>
                     </form>

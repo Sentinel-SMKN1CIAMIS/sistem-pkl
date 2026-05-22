@@ -9,7 +9,7 @@
             ['name' => 'Daftar Hadir', 'route' => 'siswa.absensi.index', 'icon' => 'calendar-check'],
             ['name' => 'Laporan PKL', 'route' => 'siswa.laporan.index', 'icon' => 'file-text'],
             ['name' => 'Buku Panduan', 'route' => 'siswa.panduan.index', 'icon' => 'library'],
-            ['name' => 'Profil Saya', 'route' => 'siswa.profile.index', 'icon' => 'user-circle'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
             ['name' => 'Pusat Bantuan', 'route' => 'siswa.bantuan.index', 'icon' => 'help-circle'],
         ];
     } elseif ($role === 'pembimbing_sekolah') {
@@ -19,6 +19,7 @@
             ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
             ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
             ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
     } elseif ($role === 'pembimbing_dudi') {
         $navItems = [
@@ -27,6 +28,7 @@
             ['name' => 'Jurnal Siswa', 'route' => 'pembimbing_dudi.jurnal.index', 'icon' => 'file-check-2'],
             ['name' => 'Validasi Kehadiran', 'route' => 'pembimbing_dudi.absensi.index', 'icon' => 'clipboard-check'],
             ['name' => 'Feedback Sekolah', 'route' => 'pembimbing_dudi.feedback.index', 'icon' => 'message-square-plus'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
     } elseif ($role === 'pokja') {
         $navItems = [
@@ -39,6 +41,7 @@
             ['name' => 'Monitoring Pembimbing', 'route' => 'pokja.monitoring.index', 'icon' => 'eye'],
             ['name' => 'Evaluasi PKL', 'route' => 'pokja.evaluasi.index', 'icon' => 'bar-chart-3'],
             ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
     } elseif ($role === 'super_admin') {
         $navItems = [
@@ -48,6 +51,7 @@
             ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book'],
             ['name' => 'Konsentrasi Keahlian', 'route' => 'admin.konsentrasi_keahlian.index', 'icon' => 'layers'],
             ['name' => 'Kompetensi', 'route' => 'admin.kompetensi.index', 'icon' => 'target'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
             ['name' => 'Log Sistem', 'route' => 'admin.logs.index', 'icon' => 'scroll-text'],
         ];
     }

@@ -14,18 +14,23 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Hanya proses metode GET (hindari error pada POST/PUT/redirect)
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
+    fetch(event.request).catch(() => {
+      return caches.match(event.request).then(response => {
         if (response) {
           return response;
         }
-        return fetch(event.request).catch(() => {
-          // Fallback if offline and network request fails
-          return new Response('Anda sedang offline.');
+        return new Response('Anda sedang offline.', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain' }
         });
-      })
+      });
+    })
   );
 });
 

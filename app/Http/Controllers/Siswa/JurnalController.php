@@ -25,6 +25,26 @@ class JurnalController extends Controller
     public function create()
     {
         $siswa = auth()->user()->siswa;
+        $today = \Carbon\Carbon::today();
+
+        // Cek apakah siswa sudah absen hari ini
+        $hasAbsensiToday = \App\Models\Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', $today)
+            ->exists();
+
+        // Cek apakah siswa sudah mengisi jurnal hari ini
+        $hasJurnalToday = Jurnal::where('siswa_id', $siswa->id)
+            ->where('tanggal', $today)
+            ->exists();
+
+        if ($hasJurnalToday) {
+            return redirect()->route('siswa.jurnal.index')->with('error', 'Anda sudah mengisi jurnal untuk hari ini. Anda hanya dapat mengisi 1 jurnal per hari.');
+        }
+
+        if (!$hasAbsensiToday) {
+            return redirect()->route('siswa.absensi.index')->with('error', 'Anda harus mengisi daftar hadir (Absen Datang) hari ini sebelum dapat mengisi jurnal.');
+        }
+
         $kompetensis = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)->get();
         return view('siswa.jurnal.create', compact('kompetensis'));
     }
@@ -40,6 +60,24 @@ class JurnalController extends Controller
         ]);
 
         $siswa = auth()->user()->siswa;
+
+        // Validasi apakah siswa memiliki absen pada tanggal jurnal yang diinput
+        $hasAbsensiForDate = \App\Models\Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', $request->tanggal)
+            ->exists();
+
+        if (!$hasAbsensiForDate) {
+            return back()->withInput()->with('error', 'Anda belum mengisi daftar hadir pada tanggal ' . \Carbon\Carbon::parse($request->tanggal)->format('d/m/Y') . '. Silakan isi absensi terlebih dahulu sebelum mengisi jurnal.');
+        }
+
+        // Validasi apakah siswa sudah memiliki jurnal pada tanggal tersebut
+        $hasJurnalForDate = Jurnal::where('siswa_id', $siswa->id)
+            ->where('tanggal', $request->tanggal)
+            ->exists();
+
+        if ($hasJurnalForDate) {
+            return back()->withInput()->with('error', 'Anda sudah mengisi jurnal pada tanggal ' . \Carbon\Carbon::parse($request->tanggal)->format('d/m/Y') . '. Satu hari hanya boleh 1 jurnal.');
+        }
 
         $data = [
             'siswa_id' => $siswa->id,

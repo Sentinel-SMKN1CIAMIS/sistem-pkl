@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## [2026-05-22]
+### Changed
+- **Relokasi Hak Validasi Jurnal**: Validasi (Valid/Invalid) jurnal harian kini sepenuhnya menjadi tanggung jawab **Pembimbing DUDI (Mentor Industri)**. Pembimbing Sekolah (Guru) **tidak lagi bisa** memvalidasi jurnal.
+- **Pembimbing Sekolah → Komentar Saja**: Halaman "Monitoring Jurnal" untuk Pembimbing Sekolah diubah total: tombol Validasi/Tolak dihapus, diganti form "Kirim Saran" yang selalu tampil di setiap kartu jurnal (semua status).
+- **Aturan 1 Hari 1 Jurnal**: Siswa kini hanya dapat mengisi 1 jurnal per hari. Jika sudah mengisi, tombol tambah jurnal akan diblokir dengan pesan error yang jelas.
+- Penghapusan fitur "Validasi Semua Jurnal" dari panel Pembimbing Sekolah (route dan method `validasiSemua` dihapus).
+
+## [2026-05-20]
+### Changed
+- Pemindahan menu **Profil Saya** dan tombol **Logout** dari sidebar utama ke dalam *dropdown* (trigger klik pada profil) di bagian bawah sidebar untuk meningkatkan UX dan kerapian navigasi (diimplementasikan untuk semua role).
+- Penambahan validasi "Unsaved Changes" global menggunakan event `beforeunload` untuk mencegah hilangnya input form yang belum disimpan saat berpindah halaman secara tidak sengaja.
+- Penambahan kolom `unit_pekerjaan` di tabel `siswas` dan penambahan *input field* "Unit / Bagian Pekerjaan" di halaman **Profil Saya**, sehingga penentuan unit kerja kini sepenuhnya diisi mandiri oleh siswa.
+- Penambahan section **Contoh Sertifikat PKL** di bagian bawah halaman **Laporan Akhir PKL** (siswa) sebagai referensi visual, lengkap dengan fitur *lightbox* (klik untuk memperbesar) menggunakan Alpine.js.
+- Penambahan validasi absensi pada pengisian jurnal harian: Siswa kini wajib melakukan absen datang (clock-in) sebelum dapat membuka form pengisian jurnal, dan tanggal jurnal harus sesuai dengan tanggal absensi yang valid.
+- Relokasi hak akses **Validasi Jurnal**: Validasi (Valid/Invalid) kini menjadi tanggung jawab penuh **Pembimbing DUDI**, sementara **Pembimbing Sekolah** hanya diberikan akses untuk memberikan komentar (`catatan_guru`) tanpa dapat merubah status jurnal.
+- Penambahan fitur Pembimbing Sekolah dapat memberikan saran/komentar (catatan guru) kepada murid yang dibimbingnya.
+- Penambahan aturan "1 HARI 1 JURNAL": Siswa hanya dapat mengisi jurnal 1 kali per hari, dan harus melakukan absen terlebih dahulu.
+
 ## [2026-05-18]
 ### Added
 - Implementasi fitur **Multi-select Konsentrasi Keahlian** pada form tambah/edit DUDI di role Pokja menggunakan tampilan daftar *checkbox* yang responsif.

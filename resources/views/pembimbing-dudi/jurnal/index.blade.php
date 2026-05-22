@@ -63,27 +63,50 @@
 
                 <!-- Sidebar Action Validation -->
                 <div class="bg-slate-50 dark:bg-slate-800/50 p-4 border-t border-slate-100 dark:border-slate-700/50">
-                    <form action="{{ route('pembimbing_dudi.jurnal.update', $item) }}" method="POST" class="grid grid-cols-1 md:grid-cols-12 gap-4 w-full items-center">
-                        @csrf
-                        @method('PATCH')
-                        
-                        <div class="md:col-span-7 lg:col-span-8">
-                            <textarea name="catatan_pembimbing" rows="1" 
-                                      class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none resize-none transition-all block"
-                                      placeholder="Berikan saran atau alasan penolakan (opsional)...">{{ $item->catatan_pembimbing }}</textarea>
+                    @if($item->status === 'pending')
+                        <form action="{{ route('pembimbing_dudi.jurnal.update', $item) }}" method="POST" class="grid grid-cols-1 md:grid-cols-12 gap-4 w-full items-center">
+                            @csrf
+                            @method('PATCH')
+                            
+                            <div class="md:col-span-7 lg:col-span-8">
+                                <textarea name="catatan_pembimbing" rows="1" 
+                                          class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none resize-none transition-all block"
+                                          placeholder="Berikan saran atau alasan penolakan (opsional)...">{{ $item->catatan_pembimbing }}</textarea>
+                            </div>
+                            
+                            <div class="md:col-span-5 lg:col-span-4 flex gap-2 w-full">
+                                <button type="submit" name="status" value="valid" 
+                                        class="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-xs font-bold transition-all border bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white">
+                                    <i data-lucide="check" class="w-4 h-4"></i> VALIDASI
+                                </button>
+                                <button type="submit" name="status" value="invalid" 
+                                        class="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-xs font-bold transition-all border bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white">
+                                    <i data-lucide="x" class="w-4 h-4"></i> TOLAK
+                                </button>
+                            </div>
+                        </form>
+                    @else
+                        <div class="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                            Status Jurnal: <span class="font-bold uppercase {{ $item->status === 'valid' ? 'text-emerald-500' : 'text-red-500' }}">{{ $item->status }}</span>
                         </div>
-                        
-                        <div class="md:col-span-5 lg:col-span-4 flex gap-2 w-full">
-                            <button type="submit" name="status" value="valid" 
-                                    class="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-xs font-bold transition-all border {{ $item->status == 'valid' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white' }}">
-                                <i data-lucide="check" class="w-4 h-4"></i> VALIDASI
-                            </button>
-                            <button type="submit" name="status" value="invalid" 
-                                    class="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-xs font-bold transition-all border {{ $item->status == 'invalid' ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-600/20' : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white' }}">
-                                <i data-lucide="x" class="w-4 h-4"></i> TOLAK
-                            </button>
-                        </div>
-                    </form>
+                        <form action="{{ route('pembimbing_dudi.jurnal.update', $item) }}" method="POST" class="grid grid-cols-1 md:grid-cols-12 gap-4 w-full items-center">
+                            @csrf
+                            @method('PATCH')
+                            
+                            <div class="md:col-span-9 lg:col-span-10">
+                                <textarea name="catatan_pembimbing" rows="1" 
+                                          class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none resize-none transition-all block"
+                                          placeholder="Tambahkan atau ubah saran Anda...">{{ $item->catatan_pembimbing }}</textarea>
+                            </div>
+                            
+                            <div class="md:col-span-3 lg:col-span-2">
+                                <button type="submit" 
+                                        class="w-full flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white">
+                                    <i data-lucide="save" class="w-4 h-4"></i> SIMPAN SARAN
+                                </button>
+                            </div>
+                        </form>
+                    @endif
                 </div>
             </div>
         @empty

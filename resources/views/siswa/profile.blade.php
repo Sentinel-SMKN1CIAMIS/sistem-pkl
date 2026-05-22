@@ -89,8 +89,15 @@
                                        placeholder="Contoh: HRD / Mentor / Supervisor"
                                        class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
                             </div>
+                            <div class="md:col-span-2">
+                                <label for="unit_pekerjaan" class="block text-xs font-bold text-slate-500 uppercase mb-2">Unit / Bagian Pekerjaan</label>
+                                <input type="text" name="unit_pekerjaan" id="unit_pekerjaan" 
+                                       value="{{ old('unit_pekerjaan', $siswa->unit_pekerjaan) }}"
+                                       placeholder="Contoh: Divisi IT / Front Office / Bengkel Mesin"
+                                       class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                            </div>
                         </div>
-                        <p class="mt-3 text-[11px] text-slate-500 italic">Isi kolom di atas jika pembimbing industri belum terdaftar di sistem.</p>
+                        <p class="mt-3 text-[11px] text-slate-500 italic">Isi kolom di atas jika pembimbing industri belum terdaftar di sistem, serta untuk melengkapi unit kerja Anda.</p>
                     </div>
 
                     <div class="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">

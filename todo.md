@@ -18,3 +18,21 @@ tambahkan fitur feedback oleh pembimbing dudi di role pembimbing dudi feedback n
 feedbacknya untuk keseluruhan, bukan per siswa, tapi untuk sekolahnya format feedback nya ditanyakan ke pa acah✅
 19. tambahkan filter dan pagination di halaman manapun yang terdapat table✅
 20. tambahkan rekapan kehadiran siswa dan bisa di ekspor pdf berdasarkan filter di halaman /pembimbing_sekolah/absensi✅
+NEW TODO:
+1. Pembimbing sekolah bisa kasih saran kepada murid yang dibimbingnya ✅
+2. Bisa komunikasi kayak wa gitu antar Pokja / guru pembimbing dengan murid yang dibimbing ✅
+5. Di pokja buat fitur tambah pdf untuk dilihat di bagian buku panduan PKL di siswa 
+6. tambah togle gelap terang ✅
+7. pindahkan tombol profil saya dan logout ke dalam nama yang di ujung kiri jadi saat di pencet ,masuk ke halaman profil yang di paling bawah ada logout ✅
+9. tambahkan contoh sertifikat PKL yang akan tampil di Dudi nya untuk referensi sertifikat PKL nya ✅
+10. Siswa tidak bisa isi jurnal sebelum isi daftar hadir ✅
+11. unit pekerjaan diisi sama siswa saja ✅
+12. Buat fitur yang dimana apabila ada siswa yang hp nyaa rusak dia harus komunikasi kepada pembimbing sekolah dan pembimbing Dudi bahwa hp dia rusak , dan di halaman pembimbing bisa on off fitur isi catatan ,kalo yang biasanya catatan PKL tuh hanya bisa diisi saat hari itu juga kalo ada masalah mah jadi dari pembimbing tuh bisa di aktifkan lagi dan siswanya bisa isi catatan yang Minggu lalu selama hp nya rusak itu
+
+REVISI BELUM JELAS: (Jangan dulu dikerjain)
+8. tambahkan fitur catatan PKL nya yang ada catatan dari Dudi /mentor (belum terlalu jelas
+mirip yang kegiatan PKL tapi lebih detail)
+
+REVISI EXTERNAL: (Tidak bisa otomatis pake agent)
+3. Nama kepala sekolah dan tanggal nyaa benarkan (sudah ku pa acah)
+4. TTD kepsek nanti tanyakan langsung kepada pa kepsek nanti saat presentasi mau gimana di isinya
