@@ -20,7 +20,7 @@
                     <a href="{{ route('pesan.show', $meta->user) }}"
                        class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800 transition-colors group">
                         {{-- Avatar --}}
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        <div class="w-10 h-10 flex-none aspect-square rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
                             {{ strtoupper(substr($meta->user->name, 0, 1)) }}
                         </div>
                         <div class="flex-1 min-w-0">

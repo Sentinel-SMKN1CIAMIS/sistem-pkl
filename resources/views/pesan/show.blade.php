@@ -19,7 +19,7 @@
                 @forelse($kontakWithMeta as $meta)
                     <a href="{{ route('pesan.show', $meta->user) }}"
                        class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800 transition-colors {{ $meta->user->id === $user->id ? 'bg-blue-50 dark:bg-blue-500/10 border-l-2 border-l-blue-500' : '' }}">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        <div class="w-10 h-10 flex-none aspect-square rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
                             {{ strtoupper(substr($meta->user->name, 0, 1)) }}
                         </div>
                         <div class="flex-1 min-w-0">
@@ -62,7 +62,7 @@
                 <a href="{{ route('pesan.index') }}" class="md:hidden p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
                     <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 </a>
-                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                <div style="min-width: 36px; min-height: 36px; flex-shrink: 0;" class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
                     {{ strtoupper(substr($user->name, 0, 1)) }}
                 </div>
                 <div>
@@ -84,7 +84,7 @@
                             <p class="text-[10px] mt-1 {{ $mine ? 'text-blue-200' : 'text-slate-400' }} text-right flex items-center justify-end gap-1">
                                 {{ $msg->created_at->format('H:i') }}
                                 @if($mine)
-                                    <i data-lucide="{{ $msg->dibaca_at ? 'check-check' : 'check' }}" class="w-3 h-3 {{ $msg->dibaca_at ? 'text-blue-200' : 'text-blue-300' }}"></i>
+                                    <i data-lucide="{{ $msg->dibaca_at ? 'check-check' : 'check' }}" class="w-3 h-3 flex-shrink-0 {{ $msg->dibaca_at ? 'text-blue-200' : 'text-blue-300' }}"></i>
                                 @endif
                             </p>
                         </div>
@@ -180,7 +180,7 @@
                 <p class="whitespace-pre-wrap break-words">${escHtml(msg.isi)}</p>
                 <p class="text-[10px] mt-1 ${mine ? 'text-blue-200' : 'text-slate-400'} text-right">
                     ${msg.time}
-                    ${mine ? '<svg xmlns="http://www.w3.org/2000/svg" class="inline w-3 h-3 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/><polyline points="20 6 9 17 4 12" transform="translate(4,0)"/></svg>' : ''}
+                    ${mine ? `<i data-lucide="${msg.read ? 'check-check' : 'check'}" class="w-3 h-3 flex-shrink-0 ml-0.5 inline ${msg.read ? 'text-blue-200' : 'text-blue-300'}"></i>` : ''}
                 </p>
             </div>`;
         chatBottom.before(wrap);
@@ -208,10 +208,11 @@
 
         if (res.ok) {
             const data = await res.json();
-            // Langsung render tanpa tunggu polling
-            renderBubble({ id: Date.now(), isi, mine: true, time: new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}), read: false });
+            // Langsung render tanpa tunggu polling menggunakan ID asli dari server
+            renderBubble({ id: data.id, isi, mine: true, time: data.time, read: false });
             scrollBottom();
-            // Set lastId setelah polling berikutnya akan sinkron sendiri
+            // Update lastId agar polling tidak menarik pesan ini lagi
+            if (data.id > lastId) lastId = data.id;
         }
     });
 

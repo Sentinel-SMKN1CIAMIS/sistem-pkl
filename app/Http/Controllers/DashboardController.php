@@ -14,6 +14,9 @@ class DashboardController extends Controller
         switch ($role) {
             case 'siswa':
                 $siswa = auth()->user()->siswa;
+                if (!$siswa->dudi_id) {
+                    return redirect()->route('siswa.pengajuan_pkl.create');
+                }
                 $stats = [
                     'jurnal_total' => \App\Models\Jurnal::where('siswa_id', $siswa->id)->count(),
                     'jurnal_valid' => \App\Models\Jurnal::where('siswa_id', $siswa->id)->where('status', 'valid')->count(),
@@ -38,6 +41,13 @@ class DashboardController extends Controller
                     })->where('status', 'pending')->count(),
                 ];
                 return view('dashboards.pembimbing-dudi', compact('stats'));
+            case 'kaprog':
+                $stats = [
+                    'total_siswa' => \App\Models\Siswa::count(),
+                    'total_dudi' => \App\Models\Dudi::count(),
+                    'total_pembimbing' => \App\Models\PembimbingSekolah::count(),
+                ];
+                return view('dashboards.kaprog', compact('stats'));
             case 'pokja':
             case 'super_admin':
                 $stats = [

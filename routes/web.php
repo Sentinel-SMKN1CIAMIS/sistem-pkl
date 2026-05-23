@@ -32,6 +32,11 @@ Route::middleware('auth')->group(function () {
         Route::get('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('profile.index');
         Route::patch('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'update'])->name('profile.update');
         Route::get('bantuan', [\App\Http\Controllers\Siswa\BantuanController::class, 'index'])->name('bantuan.index');
+
+        // Pengajuan PKL
+        Route::get('pengajuan-pkl', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'create'])->name('pengajuan_pkl.create');
+        Route::post('pengajuan-pkl', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'store'])->name('pengajuan_pkl.store');
+        Route::get('pengajuan-pkl/status', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'status'])->name('pengajuan_pkl.status');
     });
 
     // Verification Routes (Review by Mentors)
@@ -43,6 +48,10 @@ Route::middleware('auth')->group(function () {
         Route::get('absensi/export', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'export'])->name('absensi.export');
         Route::get('laporan', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'index'])->name('laporan.index');
         Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
+        
+        // Pengajuan PKL
+        Route::get('pengajuan-pkl', [\App\Http\Controllers\PembimbingSekolah\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
+        Route::patch('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\PembimbingSekolah\PengajuanPklController::class, 'update'])->name('pengajuan_pkl.update');
     });
 
     Route::middleware('role:pembimbing_dudi')->prefix('pembimbing_dudi')->name('pembimbing_dudi.')->group(function () {
@@ -55,6 +64,11 @@ Route::middleware('auth')->group(function () {
         Route::post('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'store'])->name('feedback.store');
     });
     
+    // Kaprog Routes
+    Route::middleware('role:kaprog')->prefix('kaprog')->name('kaprog.')->group(function () {
+        Route::get('laporan', [\App\Http\Controllers\KaprogController::class, 'index'])->name('laporan.index');
+    });
+
     // General Auth Routes
     Route::get('notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifications.index');
     Route::patch('notifikasi/{notifikasi}/read', [\App\Http\Controllers\NotifikasiController::class, 'markAsRead'])->name('notifications.read');

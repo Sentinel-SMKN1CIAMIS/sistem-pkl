@@ -38,6 +38,11 @@ class Siswa extends Model
         return $this->hasMany(Jurnal::class);
     }
 
+    public function pengajuanPkl()
+    {
+        return $this->hasOne(PengajuanPkl::class);
+    }
+
     public function absensi()
     {
         return $this->hasMany(Absensi::class);

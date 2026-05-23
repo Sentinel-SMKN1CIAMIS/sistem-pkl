@@ -36,6 +36,11 @@
                         <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400 mb-2 inline-block">
                             {{ $item->kompetensi->nama }}
                         </span>
+                        @if($item->cp)
+                        <span class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/50 text-[10px] text-blue-600 dark:text-blue-400 mb-2 inline-block ml-1">
+                            CP: {{ $item->cp }}
+                        </span>
+                        @endif
                         <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-2">{{ $item->deskripsi_pekerjaan }}</h3>
                         <p class="text-slate-600 dark:text-slate-400 text-sm italic mb-4">{{ $item->catatan }}</p>
 

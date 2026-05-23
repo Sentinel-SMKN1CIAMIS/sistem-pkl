@@ -32,6 +32,14 @@
                         </select>
                     </div>
 
+                    <div>
+                        <label for="cp" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Capaian Pembelajaran (CP)</label>
+                        <input type="text" name="cp" id="cp" value="{{ old('cp') }}"
+                               class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all"
+                               placeholder="Contoh: Menyajikan makanan Indonesia">
+                        <p class="text-xs text-slate-400 mt-1">Isi CP yang sesuai dengan kegiatan hari ini.</p>
+                    </div>
+
                     <div class="md:col-span-2">
                         <label for="kegiatan" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Unit Kerja / Pekerjaan</label>
                         <input type="text" name="kegiatan" id="kegiatan" required

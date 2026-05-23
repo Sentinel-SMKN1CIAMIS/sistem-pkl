@@ -24,4 +24,9 @@ class PembimbingSekolah extends Model
     {
         return $this->hasMany(Siswa::class, 'pembimbing_sekolah_id');
     }
+
+    public function kelasDiajar()
+    {
+        return $this->hasMany(KelasPembimbing::class, 'pembimbing_sekolah_id');
+    }
 }

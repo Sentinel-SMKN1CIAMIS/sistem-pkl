@@ -77,13 +77,37 @@
                         </div>
                         <div>
                             <label for="tipe" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tipe Pembimbing</label>
-                            <select name="tipe" id="tipe" required
+                            <select name="tipe" id="tipe" required onchange="toggleAdaptifFields()"
                                     class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
                                 <option value="produktif" {{ old('tipe', $pembimbing_sekolah->tipe) == 'produktif' ? 'selected' : '' }}>Guru Produktif</option>
                                 <option value="normatif" {{ old('tipe', $pembimbing_sekolah->tipe) == 'normatif' ? 'selected' : '' }}>Guru Normatif</option>
                                 <option value="adaptif" {{ old('tipe', $pembimbing_sekolah->tipe) == 'adaptif' ? 'selected' : '' }}>Guru Adaptif (Umum)</option>
                             </select>
                         </div>
+
+                        <!-- Adaptif/Normatif specific fields -->
+                        <div id="adaptif-fields" class="md:col-span-2 hidden space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <div>
+                                <label for="mapel_cp" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Mata Pelajaran (Mapel)</label>
+                                <input type="text" name="mapel_cp" id="mapel_cp" value="{{ old('mapel_cp', $pembimbing_sekolah->mapel_cp) }}"
+                                       class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all"
+                                       placeholder="Contoh: Matematika, Bahasa Inggris, dll">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Kelas yang Diajar</label>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/50 dark:border-slate-700/50 max-h-48 overflow-y-auto">
+                                    @php $selectedKelas = old('kelas', $currentClasses ?? []); @endphp
+                                    @foreach($existingClasses as $kelas)
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" name="kelas[]" value="{{ $kelas }}" class="rounded text-blue-600 focus:ring-blue-500" {{ in_array($kelas, $selectedKelas) ? 'checked' : '' }}>
+                                            <span class="text-sm text-slate-700 dark:text-slate-300">{{ $kelas }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -96,4 +120,16 @@
             </div>
         </form>
     </div>
+
+    <script>
+        function toggleAdaptifFields() {
+            const tipe = document.getElementById('tipe').value;
+            const adaptifFields = document.getElementById('adaptif-fields');
+            if(tipe === 'normatif' || tipe === 'adaptif') {
+                adaptifFields.classList.remove('hidden');
+            } else {
+                adaptifFields.classList.add('hidden');
+            }
+        }
+        document.addEventListener('DOMContentLoaded', toggleAdaptifFields);
 </x-app-layout>

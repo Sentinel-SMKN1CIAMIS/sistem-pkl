@@ -14,9 +14,12 @@ class JurnalController extends Controller
     {
         $teacher = auth()->user()->pembimbingSekolah;
         
-        // Find all students assigned to this teacher
-        $jurnals = Jurnal::whereHas('siswa', function($q) use ($teacher) {
-                $q->where('pembimbing_sekolah_id', $teacher->id);
+        $kelasIds = $teacher->kelasDiajar()->pluck('kelas')->toArray();
+
+        // Find all students assigned to this teacher's classes, or directly assigned
+        $jurnals = Jurnal::whereHas('siswa', function($q) use ($teacher, $kelasIds) {
+                $q->where('pembimbing_sekolah_id', $teacher->id)
+                  ->orWhereIn('kelas', $kelasIds);
             })
             ->with(['siswa', 'kompetensi'])
             ->latest('tanggal')

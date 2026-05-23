@@ -170,14 +170,18 @@ class PesanController extends Controller
 
         $request->validate(['isi' => 'required|string|max:2000']);
 
-        Pesan::create([
+        $pesan = Pesan::create([
             'from_user_id' => auth()->id(),
             'to_user_id'   => $user->id,
             'isi'          => $request->isi,
         ]);
 
         if ($request->expectsJson()) {
-            return response()->json(['ok' => true]);
+            return response()->json([
+                'ok' => true, 
+                'id' => $pesan->id,
+                'time' => $pesan->created_at->format('H:i')
+            ]);
         }
 
         return back();
