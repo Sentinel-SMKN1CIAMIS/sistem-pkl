@@ -10,22 +10,47 @@ use App\Models\Jurnal;
 
 class JurnalController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $teacher = auth()->user()->pembimbingSekolah;
-        
-        $kelasIds = $teacher->kelasDiajar()->pluck('kelas')->toArray();
+        $tipe    = $teacher->tipe; // 'produktif', 'normatif', or 'adaptif'
 
-        // Find all students assigned to this teacher's classes, or directly assigned
-        $jurnals = Jurnal::whereHas('siswa', function($q) use ($teacher, $kelasIds) {
+        $query = Jurnal::with(['siswa', 'kompetensi'])
+            ->latest('tanggal');
+
+        if ($tipe === 'produktif') {
+            // Produktif: tampilkan siswa yang langsung dibimbing atau dari kelas yang diajar
+            $kelasIds = $teacher->kelasDiajar()->pluck('kelas')->toArray();
+            $query->whereHas('siswa', function ($q) use ($teacher, $kelasIds) {
                 $q->where('pembimbing_sekolah_id', $teacher->id)
                   ->orWhereIn('kelas', $kelasIds);
-            })
-            ->with(['siswa', 'kompetensi'])
-            ->latest('tanggal')
-            ->paginate(15);
+            });
+        } else {
+            // Normatif / Adaptif: filter berdasarkan CP yang mengandung mapel_cp guru
+            $kelasIds = $teacher->kelasDiajar()->pluck('kelas')->toArray();
+            $query->whereHas('siswa', function ($q) use ($kelasIds) {
+                    $q->whereIn('kelas', $kelasIds);
+                });
 
-        return view('pembimbing-sekolah.jurnal.index', compact('jurnals'));
+            if ($teacher->mapel_cp) {
+                $query->where('cp', 'like', '%' . $teacher->mapel_cp . '%');
+            }
+        }
+
+        // Filter pencarian tambahan (opsional)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('cp', 'like', '%' . $search . '%')
+                  ->orWhere('deskripsi_pekerjaan', 'like', '%' . $search . '%')
+                  ->orWhereHas('siswa', fn($s) => $s->where('nama_lengkap', 'like', '%' . $search . '%')
+                                                      ->orWhere('nis', 'like', '%' . $search . '%'));
+            });
+        }
+
+        $jurnals = $query->paginate(15)->withQueryString();
+
+        return view('pembimbing-sekolah.jurnal.index', compact('jurnals', 'teacher', 'tipe'));
     }
 
     public function update(Request $request, Jurnal $jurnal)

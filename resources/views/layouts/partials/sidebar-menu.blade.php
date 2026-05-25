@@ -16,7 +16,6 @@
         $navItems = [
             ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
             ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
-            ['name' => 'Pengajuan PKL', 'route' => 'pembimbing_sekolah.pengajuan_pkl.index', 'icon' => 'file-plus-2'],
             ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
             ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
             ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
@@ -47,6 +46,7 @@
     } elseif ($role === 'kaprog') {
         $navItems = [
             ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+            ['name' => 'Pengajuan PKL', 'route' => 'kaprog.pengajuan_pkl.index', 'icon' => 'file-plus-2'],
             ['name' => 'Laporan Kaprog', 'route' => 'kaprog.laporan.index', 'icon' => 'file-bar-chart-2'],
             ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];

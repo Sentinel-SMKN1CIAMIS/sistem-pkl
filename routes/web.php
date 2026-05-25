@@ -48,10 +48,6 @@ Route::middleware('auth')->group(function () {
         Route::get('absensi/export', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'export'])->name('absensi.export');
         Route::get('laporan', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'index'])->name('laporan.index');
         Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
-        
-        // Pengajuan PKL
-        Route::get('pengajuan-pkl', [\App\Http\Controllers\PembimbingSekolah\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
-        Route::patch('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\PembimbingSekolah\PengajuanPklController::class, 'update'])->name('pengajuan_pkl.update');
     });
 
     Route::middleware('role:pembimbing_dudi')->prefix('pembimbing_dudi')->name('pembimbing_dudi.')->group(function () {
@@ -67,6 +63,10 @@ Route::middleware('auth')->group(function () {
     // Kaprog Routes
     Route::middleware('role:kaprog')->prefix('kaprog')->name('kaprog.')->group(function () {
         Route::get('laporan', [\App\Http\Controllers\KaprogController::class, 'index'])->name('laporan.index');
+        
+        // Pengajuan PKL
+        Route::get('pengajuan-pkl', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
+        Route::patch('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'update'])->name('pengajuan_pkl.update');
     });
 
     // General Auth Routes

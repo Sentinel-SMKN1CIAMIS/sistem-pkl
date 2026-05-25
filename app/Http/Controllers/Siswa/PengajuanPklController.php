@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\PengajuanPkl;
+use App\Models\Dudi;
 use Illuminate\Http\Request;
 
 class PengajuanPklController extends Controller
@@ -23,15 +24,26 @@ class PengajuanPklController extends Controller
             return redirect()->route('siswa.pengajuan_pkl.status');
         }
 
-        return view('siswa.pengajuan-pkl.create');
+        // Ambil daftar DUDI yang relevan dengan konsentrasi keahlian siswa
+        $dudis = Dudi::where('is_active', true)
+            ->where(function ($q) use ($siswa) {
+                $q->where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($siswa) {
+                      $sub->where('konsentrasi_keahlians.id', $siswa->konsentrasi_keahlian_id);
+                  });
+            })->get();
+
+        return view('siswa.pengajuan-pkl.create', compact('dudis'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
+            'dudi_id'         => 'nullable|exists:dudis,id',
             'nama_perusahaan' => 'required|string|max:255',
             'pimpinan'        => 'nullable|string|max:255',
             'alamat'          => 'nullable|string|max:1000',
+            'kota'            => 'required_without:dudi_id|nullable|string|max:100',
             'no_telp'         => 'nullable|string|max:30',
         ]);
 
@@ -46,9 +58,11 @@ class PengajuanPklController extends Controller
 
         PengajuanPkl::create([
             'siswa_id'        => $siswa->id,
+            'dudi_id'         => $request->dudi_id,
             'nama_perusahaan' => $request->nama_perusahaan,
             'pimpinan'        => $request->pimpinan,
             'alamat'          => $request->alamat,
+            'kota'            => $request->kota,
             'no_telp'         => $request->no_telp,
             'status'          => 'menunggu',
         ]);

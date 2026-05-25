@@ -20,29 +20,32 @@ class DepartmentSeeder extends Seeder
 
         // 7 Program Keahlian
         $programs = [
-            ['kode' => 'AKL', 'nama' => 'Akuntansi'],
-            ['kode' => 'MPLB', 'nama' => 'Managemen Bisnis'],
-            ['kode' => 'PBR', 'nama' => 'Pemasaran Ritel'],
+            ['kode' => 'AKL',   'nama' => 'Akuntansi'],
+            ['kode' => 'MPLB',  'nama' => 'Managemen Bisnis'],
+            ['kode' => 'PBR',   'nama' => 'Pemasaran Ritel'],
             ['kode' => 'HOTEL', 'nama' => 'Perhotelan'],
-            ['kode' => 'DKV', 'nama' => 'Desain Komunikasi Visual'],
-            ['kode' => 'PPLG', 'nama' => 'Pengembangan Perangkat Lunak dan Gim'],
-            ['kode' => 'KLN', 'nama' => 'Kuliner'],
+            ['kode' => 'DKV',   'nama' => 'Desain Komunikasi Visual'],
+            ['kode' => 'PPLG',  'nama' => 'Pengembangan Perangkat Lunak dan Gim'],
+            ['kode' => 'KLN',   'nama' => 'Kuliner'],
         ];
 
         foreach ($programs as $prog) {
-            $p = ProgramKeahlian::create($prog);
+            $p = ProgramKeahlian::firstOrCreate(
+                ['kode' => $prog['kode']],
+                ['nama' => $prog['nama']]
+            );
 
             // Mapping Concentrations
             $concentrations = [];
             if ($prog['kode'] == 'AKL') {
                 $concentrations = [
                     ['kode' => 'AKL', 'nama' => 'Akuntansi'],
-                    ['kode' => 'PBR', 'nama' => 'Perbankan Syariah'],
+                    ['kode' => 'PBS', 'nama' => 'Perbankan Syariah'],
                 ];
-            } elseif ($prog['kode'] == 'PR') {
+            } elseif ($prog['kode'] == 'PBR') {
                 $concentrations = [
-                    ['kode' => 'PR', 'nama' => 'Pemasaran Ritel'],
-                    ['kode' => 'PD', 'nama' => 'Pemasaran Digital'],
+                    ['kode' => 'PBR', 'nama' => 'Pemasaran Ritel'],
+                    ['kode' => 'PDG', 'nama' => 'Pemasaran Digital'],
                 ];
             } else {
                 $concentrations = [
@@ -51,19 +54,20 @@ class DepartmentSeeder extends Seeder
             }
 
             foreach ($concentrations as $con) {
-                $k = KonsentrasiKeahlian::create([
-                    'program_keahlian_id' => $p->id,
-                    'kode' => $con['kode'],
-                    'nama' => $con['nama'],
-                    'durasi_pkl_bulan' => ($prog['kode'] == 'PH' || $prog['kode'] == 'KLN') ? 5 : 4,
-                ]);
+                $k = KonsentrasiKeahlian::firstOrCreate(
+                    ['kode' => $con['kode']],
+                    [
+                        'program_keahlian_id' => $p->id,
+                        'nama'                => $con['nama'],
+                        'durasi_pkl_bulan'    => in_array($prog['kode'], ['HOTEL', 'KLN']) ? 5 : 4,
+                    ]
+                );
 
                 // Dummy Competencies
-                Kompetensi::create([
-                    'konsentrasi_keahlian_id' => $k->id,
-                    'nama' => 'Kompetensi Dasar ' . $con['nama'],
-                    'kategori' => 'Umum'
-                ]);
+                Kompetensi::firstOrCreate(
+                    ['konsentrasi_keahlian_id' => $k->id, 'nama' => 'Kompetensi Dasar ' . $con['nama']],
+                    ['kategori' => 'Umum']
+                );
             }
         }
     }

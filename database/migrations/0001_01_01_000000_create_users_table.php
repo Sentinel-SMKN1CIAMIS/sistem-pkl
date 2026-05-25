@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['siswa', 'pembimbing_sekolah', 'pembimbing_dudi', 'pokja', 'super_admin'])->default('siswa');
+            $table->enum('role', ['siswa', 'pembimbing_sekolah', 'pembimbing_dudi', 'pokja', 'super_admin', 'kaprog'])->default('siswa');
             $table->string('avatar')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_login_at')->nullable();

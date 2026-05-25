@@ -2,8 +2,39 @@
     <x-slot name="header">Monitoring Jurnal Siswa</x-slot>
 
     <div x-data="{ imageModalOpen: false, modalImageUrl: '' }">
-        <div class="mb-6 flex justify-between items-start">
-            <p class="text-slate-600 dark:text-slate-400">Pantau aktivitas harian siswa bimbingan Anda di industri. Anda dapat memberikan saran/komentar pada setiap jurnal siswa.</p>
+        <div class="mb-6 space-y-4">
+            {{-- Info banner berdasarkan tipe guru --}}
+            @if($tipe !== 'produktif')
+            <div class="flex items-start gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
+                <i data-lucide="info" class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"></i>
+                <div class="text-sm">
+                    <p class="font-semibold text-blue-700 dark:text-blue-300">Mode: Guru {{ ucfirst($tipe) }}</p>
+                    <p class="text-blue-600 dark:text-blue-400 text-xs mt-0.5">
+                        Menampilkan jurnal yang memiliki CP mengandung:
+                        <strong>"{{ $teacher->mapel_cp ?? '-' }}"</strong>.
+                        Gunakan pencarian untuk menyaring lebih lanjut.
+                    </p>
+                </div>
+            </div>
+            @endif
+
+            {{-- Search bar --}}
+            <form method="GET" action="{{ route('pembimbing_sekolah.jurnal.index') }}" class="flex gap-3">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" name="search" value="{{ request('search') }}"
+                           placeholder="Cari berdasarkan nama siswa, NIS, atau CP..."
+                           class="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
+                </div>
+                <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-all">
+                    Cari
+                </button>
+                @if(request('search'))
+                <a href="{{ route('pembimbing_sekolah.jurnal.index') }}" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl transition-all flex items-center gap-2">
+                    <i data-lucide="x" class="w-4 h-4"></i> Reset
+                </a>
+                @endif
+            </form>
         </div>
 
     <div class="grid grid-cols-1 gap-6">

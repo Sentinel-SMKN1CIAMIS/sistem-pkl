@@ -26,6 +26,15 @@ class UserSeeder extends Seeder
             'role' => 'super_admin',
         ]);
 
+        // Kaprog
+        User::create([
+            'name' => 'Kepala Program',
+            'username' => 'kaprog',
+            'email' => 'kaprog@gmail.com',
+            'password' => $password,
+            'role' => 'kaprog',
+        ]);
+
         // Pokja
         User::create([
             'name' => 'Ketua Pokja',

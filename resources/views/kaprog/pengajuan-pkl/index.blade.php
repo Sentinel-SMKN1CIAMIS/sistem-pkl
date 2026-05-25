@@ -66,7 +66,7 @@
                                 <div><span class="text-slate-500 block text-xs">Alamat</span> <span class="text-slate-700 dark:text-slate-300">{{ $pengajuan->alamat ?? '-' }}</span></div>
                             </div>
 
-                            <form action="{{ route('pembimbing_sekolah.pengajuan_pkl.update', $pengajuan) }}" method="POST">
+                            <form action="{{ route('kaprog.pengajuan_pkl.update', $pengajuan->id) }}" method="POST">
                                 @csrf
                                 @method('PATCH')
                                 <div class="mb-4">

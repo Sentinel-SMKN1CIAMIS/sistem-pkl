@@ -46,6 +46,7 @@ class DashboardController extends Controller
                     'total_siswa' => \App\Models\Siswa::count(),
                     'total_dudi' => \App\Models\Dudi::count(),
                     'total_pembimbing' => \App\Models\PembimbingSekolah::count(),
+                    'pengajuan_menunggu' => \App\Models\PengajuanPkl::where('status', 'menunggu')->count(),
                 ];
                 return view('dashboards.kaprog', compact('stats'));
             case 'pokja':

@@ -53,10 +53,11 @@ class JurnalController extends Controller
     {
         $request->validate([
             'kompetensi_id' => 'required|exists:kompetensis,id',
-            'tanggal' => 'required|date',
-            'kegiatan' => 'required|string',
-            'catatan' => 'nullable|string',
-            'foto_cropped' => 'nullable|string', // Base64 cropped image
+            'cp'            => 'nullable|string|max:500',
+            'tanggal'       => 'required|date',
+            'kegiatan'      => 'required|string',
+            'catatan'       => 'nullable|string',
+            'foto_cropped'  => 'nullable|string', // Base64 cropped image
         ]);
 
         $siswa = auth()->user()->siswa;
@@ -80,12 +81,13 @@ class JurnalController extends Controller
         }
 
         $data = [
-            'siswa_id' => $siswa->id,
-            'kompetensi_id' => $request->kompetensi_id,
-            'tanggal' => $request->tanggal,
-            'deskripsi_pekerjaan' => $request->kegiatan,
-            'catatan' => $request->catatan,
-            'status' => 'pending',
+            'siswa_id'           => $siswa->id,
+            'kompetensi_id'      => $request->kompetensi_id,
+            'cp'                 => $request->cp,
+            'tanggal'            => $request->tanggal,
+            'deskripsi_pekerjaan'=> $request->kegiatan,
+            'catatan'            => $request->catatan,
+            'status'             => 'pending',
         ];
 
         // Handle cropped base64 image

@@ -9,7 +9,7 @@ class Jurnal extends Model
 {
     use AuditLog;
     protected $fillable = [
-        'siswa_id', 'kompetensi_id', 'tanggal', 
+        'siswa_id', 'kompetensi_id', 'cp', 'tanggal', 
         'deskripsi_pekerjaan', 'catatan', 'foto_path', 
         'status', 'catatan_pembimbing', 'catatan_guru'
     ];
