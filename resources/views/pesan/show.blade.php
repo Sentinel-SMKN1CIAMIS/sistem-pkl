@@ -1,6 +1,25 @@
 <x-app-layout>
     <x-slot name="header">Pesan</x-slot>
 
+    <style>
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translateY(1rem) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .animate-toast-in {
+            animation: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+
+    {{-- Toast Container --}}
+    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
     <div class="flex flex-col md:flex-row gap-0 h-[calc(100vh-12rem)] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
 
         {{-- Panel Kiri: Daftar Kontak --}}
@@ -69,6 +88,15 @@
                     <p class="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-tight">{{ $user->name }}</p>
                     <p class="text-xs text-slate-400 capitalize">{{ str_replace('_', ' ', $user->role) }}</p>
                 </div>
+            </div>
+
+            {{-- Offline / Connection Error Bar --}}
+            <div id="connection-warning" class="hidden bg-amber-500 text-white text-xs px-4 py-2 flex items-center justify-between transition-all duration-300">
+                <span class="flex items-center gap-2">
+                    <i data-lucide="wifi-off" class="w-3.5 h-3.5 animate-pulse"></i>
+                    <span id="connection-warning-text">Koneksi terputus. Mencoba menghubungkan kembali...</span>
+                </span>
+                <button onclick="checkConnectionNow()" class="underline font-semibold hover:text-amber-100 dark:hover:text-amber-200 transition-colors">Coba Sekarang</button>
             </div>
 
             {{-- Area Pesan --}}
@@ -145,6 +173,51 @@
     const authId    = {{ auth()->id() }};
 
     let lastId = {{ $messages->isNotEmpty() ? $messages->last()->id : 0 }};
+    let pollFailures = 0;
+
+    // Toast Notification System
+    function showToast(message, type = 'error') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm max-w-sm transition-all duration-300 transform animate-toast-in
+            ${type === 'error' 
+                ? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30 text-red-800 dark:text-red-200' 
+                : 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-200'}`;
+        
+        const icon = document.createElement('i');
+        icon.dataset.lucide = type === 'error' ? 'alert-triangle' : 'check-circle';
+        icon.className = `w-5 h-5 flex-shrink-0 ${type === 'error' ? 'text-red-500' : 'text-emerald-500'}`;
+        
+        const textSpan = document.createElement('span');
+        textSpan.className = 'font-medium flex-1 leading-tight';
+        textSpan.innerText = message;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors ml-auto flex-shrink-0';
+        closeBtn.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i>';
+        closeBtn.onclick = () => {
+            toast.classList.add('opacity-0', 'translate-y-2');
+            setTimeout(() => toast.remove(), 300);
+        };
+
+        toast.appendChild(icon);
+        toast.appendChild(textSpan);
+        toast.appendChild(closeBtn);
+        container.appendChild(toast);
+
+        if (window.lucide) lucide.createIcons();
+
+        // Auto-remove after time
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, type === 'error' ? 8000 : 4000);
+    }
 
     // Scroll ke bawah
     function scrollBottom() {
@@ -191,30 +264,115 @@
         return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // Kirim pesan via AJAX
+    // Kirim pesan via AJAX dengan Error Handling kuat
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const isi = input.value.trim();
         if (!isi) return;
 
+        // Cek koneksi internet sebelum fetch
+        if (!navigator.onLine) {
+            showToast("Gagal mengirim pesan: Tidak ada koneksi internet. Silakan periksa jaringan Anda.", "error");
+            return;
+        }
+
+        // Simpan pesan di variable untuk direstore jika gagal
         input.value = '';
         input.style.height = 'auto';
 
-        const res = await fetch(SEND_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-            body: JSON.stringify({ isi })
-        });
+        try {
+            const res = await fetch(SEND_URL, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-CSRF-TOKEN': CSRF, 
+                    'Accept': 'application/json' 
+                },
+                body: JSON.stringify({ isi })
+            });
 
-        if (res.ok) {
-            const data = await res.json();
-            // Langsung render tanpa tunggu polling menggunakan ID asli dari server
-            renderBubble({ id: data.id, isi, mine: true, time: data.time, read: false });
-            scrollBottom();
-            // Update lastId agar polling tidak menarik pesan ini lagi
-            if (data.id > lastId) lastId = data.id;
+            if (res.ok) {
+                const data = await res.json();
+                // Langsung render tanpa tunggu polling menggunakan ID asli dari server
+                renderBubble({ id: data.id, isi, mine: true, time: data.time, read: false });
+                scrollBottom();
+                // Update lastId agar polling tidak menarik pesan ini lagi
+                if (data.id > lastId) lastId = data.id;
+            } else {
+                // Restore isi pesan agar tidak hilang diketik ulang
+                input.value = isi;
+                input.style.height = 'auto';
+                input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+
+                if (res.status === 419) {
+                    showToast("Sesi Anda telah berakhir (CSRF Token Kedaluwarsa). Silakan segarkan (refresh) halaman ini.", "error");
+                } else if (res.status === 403) {
+                    showToast("Pengiriman diblokir (403 Forbidden). Kemungkinan diblokir oleh Firewall atau izin akses ditolak.", "error");
+                } else if (res.status === 500) {
+                    showToast("Terjadi kesalahan pada Server (500 Internal Server Error). Silakan hubungi admin.", "error");
+                } else {
+                    showToast(`Gagal mengirim pesan (Kesalahan HTTP ${res.status}). Silakan coba lagi.`, "error");
+                }
+            }
+        } catch (error) {
+            // Restore isi pesan
+            input.value = isi;
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+
+            console.error("Gagal mengirim chat:", error);
+
+            if (error.name === 'TypeError' || error.message.includes('Failed to fetch')) {
+                showToast("Gagal terhubung ke server. Kemungkinan diblokir oleh Firewall, Adblocker, atau masalah jaringan/antarmuka browser.", "error");
+            } else {
+                showToast(`Gagal mengirim pesan: ${error.message || 'Kesalahan Jaringan'}`, "error");
+            }
         }
     });
+
+    // Koneksi & Polling Error Warning
+    function showConnectionWarning(message, isCritical = false) {
+        const warning = document.getElementById('connection-warning');
+        const warningText = document.getElementById('connection-warning-text');
+        const retryBtn = warning.querySelector('button');
+        
+        warningText.innerText = message;
+        warning.classList.remove('hidden');
+        
+        if (isCritical) {
+            warning.classList.remove('bg-amber-500');
+            warning.classList.add('bg-red-500');
+            retryBtn.innerText = "Segarkan Halaman";
+            retryBtn.onclick = () => window.location.reload();
+        } else {
+            warning.classList.remove('bg-red-500');
+            warning.classList.add('bg-amber-500');
+            retryBtn.innerText = "Coba Sekarang";
+            retryBtn.onclick = () => {
+                pollMessages();
+            };
+        }
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function checkConnectionNow() {
+        pollMessages();
+    }
+
+    function updateOnlineStatus() {
+        const warning = document.getElementById('connection-warning');
+        const warningText = document.getElementById('connection-warning-text');
+        if (navigator.onLine) {
+            warning.classList.add('hidden');
+            // Jika kembali online, langsung sync pesan
+            pollMessages();
+        } else {
+            showConnectionWarning("Koneksi internet terputus. Silakan periksa jaringan Anda.");
+        }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
 
     // Polling pesan baru tiap 5 detik
     async function pollMessages() {
@@ -222,7 +380,27 @@
             const res = await fetch(`${POLL_URL}?after=${lastId}`, {
                 headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF }
             });
-            if (!res.ok) return;
+            
+            if (!res.ok) {
+                if (res.status === 419) {
+                    showConnectionWarning("Sesi Anda telah berakhir. Silakan segarkan (refresh) halaman.", true);
+                } else if (res.status === 403) {
+                    showConnectionWarning("Akses ditolak (403). Koneksi diblokir atau Anda tidak diizinkan.", true);
+                } else {
+                    pollFailures++;
+                    if (pollFailures >= 3) {
+                        showConnectionWarning(`Gagal sinkronisasi pesan (HTTP ${res.status}). Menghubungkan kembali...`);
+                    }
+                }
+                return;
+            }
+
+            // Sukses
+            pollFailures = 0;
+            if (navigator.onLine) {
+                document.getElementById('connection-warning').classList.add('hidden');
+            }
+
             const msgs = await res.json();
             msgs.forEach(msg => {
                 // Jangan render pesan yang sudah ada di DOM
@@ -231,10 +409,23 @@
                 renderBubble(msg);
             });
             if (msgs.length > 0) scrollBottom();
-        } catch(e) { /* silent */ }
+        } catch(e) { 
+            pollFailures++;
+            if (pollFailures >= 3) {
+                showConnectionWarning("Gagal menghubungi server. Kemungkinan diblokir oleh Firewall atau jaringan bermasalah.");
+            }
+        }
     }
 
     setInterval(pollMessages, 5000);
+
+    // Render session messages (success/error)
+    @if(session('success'))
+        showToast({!! json_encode(session('success')) !!}, "success");
+    @endif
+    @if(session('error'))
+        showToast({!! json_encode(session('error')) !!}, "error");
+    @endif
 </script>
 @endpush
 
