@@ -15,6 +15,11 @@
         .animate-toast-in {
             animation: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+        .toast-dismiss {
+            opacity: 0 !important;
+            transform: translateY(1rem) scale(0.95) !important;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
     </style>
 
     {{-- Toast Container --}}
@@ -199,7 +204,7 @@
         closeBtn.className = 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors ml-auto flex-shrink-0';
         closeBtn.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i>';
         closeBtn.onclick = () => {
-            toast.classList.add('opacity-0', 'translate-y-2');
+            toast.classList.add('toast-dismiss');
             setTimeout(() => toast.remove(), 300);
         };
 
@@ -210,13 +215,13 @@
 
         if (window.lucide) lucide.createIcons();
 
-        // Auto-remove after time
+        // Auto-remove after time (12s for errors, 6s for success)
         setTimeout(() => {
             if (toast.parentNode) {
-                toast.classList.add('opacity-0', 'translate-y-2');
+                toast.classList.add('toast-dismiss');
                 setTimeout(() => toast.remove(), 300);
             }
-        }, type === 'error' ? 8000 : 4000);
+        }, type === 'error' ? 12000 : 6000);
     }
 
     // Scroll ke bawah
