@@ -45,6 +45,17 @@
                     @error('dudi_id')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
                 </div>
 
+                <div id="pembimbing_dudi_container" class="hidden">
+                    <label for="pembimbing_dudi_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Pembimbing DUDI
+                    </label>
+                    <select name="pembimbing_dudi_id" id="pembimbing_dudi_id"
+                            class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                        <option value="" selected>-- Pilih Pembimbing (Opsional) --</option>
+                    </select>
+                    @error('pembimbing_dudi_id')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+
                 <div id="manual_fields" class="space-y-5 {{ old('dudi_id') ? (old('dudi_id') === 'baru' ? '' : '') : '' }}">
                     <div>
                         <label for="nama_perusahaan" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -122,6 +133,8 @@
         function handleDudiChange() {
             const select = document.getElementById('dudi_id');
             const selected = select.options[select.selectedIndex];
+            const pembimbingContainer = document.getElementById('pembimbing_dudi_container');
+            const pembimbingSelect = document.getElementById('pembimbing_dudi_id');
             
             const fields = {
                 'nama_perusahaan': document.getElementById('nama_perusahaan'),
@@ -143,7 +156,32 @@
                     fields[key].disabled = true;
                     fields[key].classList.add('opacity-70');
                 }
+
+                // Fetch Pembimbing DUDI
+                pembimbingContainer.classList.remove('hidden');
+                pembimbingSelect.innerHTML = '<option value="">Sedang memuat...</option>';
+                
+                fetch(`{{ route('siswa.pengajuan_pkl.pembimbing') }}?dudi_id=${selected.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        pembimbingSelect.innerHTML = '<option value="">-- Pilih Pembimbing (Opsional) --</option>';
+                        if(data.length > 0) {
+                            data.forEach(item => {
+                                pembimbingSelect.innerHTML += `<option value="${item.id}">${item.nama_lengkap}</option>`;
+                            });
+                        } else {
+                            pembimbingSelect.innerHTML = '<option value="">Belum ada pembimbing di industri ini</option>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching pembimbing:', error);
+                        pembimbingSelect.innerHTML = '<option value="">Gagal memuat pembimbing</option>';
+                    });
+
             } else {
+                pembimbingContainer.classList.add('hidden');
+                pembimbingSelect.innerHTML = '<option value="">-- Pilih Pembimbing (Opsional) --</option>';
+
                 // Clear (if switching to 'baru') and enable fields
                 if (selected.value === 'baru') {
                     for (let key in fields) {

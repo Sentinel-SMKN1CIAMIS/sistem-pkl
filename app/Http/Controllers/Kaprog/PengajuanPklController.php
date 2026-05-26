@@ -56,7 +56,10 @@ class PengajuanPklController extends Controller
 
             if ($dudi) {
                 // Assign DUDI to Siswa
-                $pengajuanPkl->siswa->update(['dudi_id' => $dudi->id]);
+                $pengajuanPkl->siswa->update([
+                    'dudi_id' => $dudi->id,
+                    'pembimbing_dudi_id' => $pengajuanPkl->pembimbing_dudi_id
+                ]);
             }
         }
 

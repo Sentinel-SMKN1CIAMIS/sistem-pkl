@@ -39,12 +39,13 @@ class PengajuanPklController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'dudi_id'         => 'nullable|exists:dudis,id',
-            'nama_perusahaan' => 'required|string|max:255',
-            'pimpinan'        => 'nullable|string|max:255',
-            'alamat'          => 'nullable|string|max:1000',
-            'kota'            => 'required_without:dudi_id|nullable|string|max:100',
-            'no_telp'         => 'nullable|string|max:30',
+            'dudi_id'            => 'nullable|exists:dudis,id',
+            'pembimbing_dudi_id' => 'nullable|exists:pembimbing_dudis,id',
+            'nama_perusahaan'    => 'required|string|max:255',
+            'pimpinan'           => 'nullable|string|max:255',
+            'alamat'             => 'nullable|string|max:1000',
+            'kota'               => 'required_without:dudi_id|nullable|string|max:100',
+            'no_telp'            => 'nullable|string|max:30',
         ]);
 
         $siswa = auth()->user()->siswa;
@@ -57,18 +58,29 @@ class PengajuanPklController extends Controller
         $siswa->pengajuanPkl()->delete();
 
         PengajuanPkl::create([
-            'siswa_id'        => $siswa->id,
-            'dudi_id'         => $request->dudi_id,
-            'nama_perusahaan' => $request->nama_perusahaan,
-            'pimpinan'        => $request->pimpinan,
-            'alamat'          => $request->alamat,
-            'kota'            => $request->kota,
-            'no_telp'         => $request->no_telp,
-            'status'          => 'menunggu',
+            'siswa_id'           => $siswa->id,
+            'dudi_id'            => $request->dudi_id,
+            'pembimbing_dudi_id' => $request->pembimbing_dudi_id,
+            'nama_perusahaan'    => $request->nama_perusahaan,
+            'pimpinan'           => $request->pimpinan,
+            'alamat'             => $request->alamat,
+            'kota'               => $request->kota,
+            'no_telp'            => $request->no_telp,
+            'status'             => 'menunggu',
         ]);
 
         return redirect()->route('siswa.pengajuan_pkl.status')
             ->with('success', 'Pengajuan tempat PKL berhasil dikirim! Mohon tunggu konfirmasi dari Guru Pembimbing.');
+    }
+
+    public function getPembimbing(Request $request)
+    {
+        $dudi_id = $request->get('dudi_id');
+        if (!$dudi_id) {
+            return response()->json([]);
+        }
+        $pembimbing = \App\Models\PembimbingDudi::where('dudi_id', $dudi_id)->get();
+        return response()->json($pembimbing);
     }
 
     public function status()

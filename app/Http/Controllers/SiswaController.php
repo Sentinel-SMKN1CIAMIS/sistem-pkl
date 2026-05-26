@@ -52,9 +52,6 @@ class SiswaController extends Controller
             'kelas' => 'required|string',
             'jenis_kelamin' => 'required|in:L,P',
             'tahun_ajaran' => 'required|string',
-            'dudi_id' => 'nullable|exists:dudis,id',
-            'pembimbing_sekolah_id' => 'nullable|exists:pembimbing_sekolahs,id',
-            'pembimbing_dudi_id' => 'nullable|exists:pembimbing_dudis,id',
         ]);
 
         // Create User first
@@ -98,9 +95,6 @@ class SiswaController extends Controller
             'kelas' => 'required|string',
             'jenis_kelamin' => 'required|in:L,P',
             'tahun_ajaran' => 'required|string',
-            'dudi_id' => 'nullable|exists:dudis,id',
-            'pembimbing_sekolah_id' => 'nullable|exists:pembimbing_sekolahs,id',
-            'pembimbing_dudi_id' => 'nullable|exists:pembimbing_dudis,id',
         ]);
 
         $siswa->update($request->all());
