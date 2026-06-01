@@ -11,8 +11,20 @@ use Illuminate\Support\Facades\Storage;
 
 class JurnalController extends Controller
 {
+    private function requirePkl()
+    {
+        $siswa = auth()->user()->siswa;
+        if (!$siswa || !$siswa->dudi_id) {
+            return redirect()->route('siswa.pengajuan_pkl.status')
+                ->with('error', 'Anda belum memiliki tempat PKL yang disetujui. Silakan ajukan terlebih dahulu.');
+        }
+        return null;
+    }
+
     public function index()
     {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
         $siswa = auth()->user()->siswa;
         $jurnals = Jurnal::where('siswa_id', $siswa->id)
             ->with(['kompetensi'])
@@ -24,6 +36,8 @@ class JurnalController extends Controller
 
     public function create()
     {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
         $siswa = auth()->user()->siswa;
         $today = \Carbon\Carbon::today();
 
@@ -51,6 +65,8 @@ class JurnalController extends Controller
 
     public function store(Request $request)
     {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
         $request->validate([
             'kompetensi_id' => 'required|exists:kompetensis,id',
             'cp'            => 'nullable|string|max:500',

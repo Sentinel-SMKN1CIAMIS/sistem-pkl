@@ -10,8 +10,20 @@ use Carbon\Carbon;
 
 class AbsensiController extends Controller
 {
+    private function requirePkl()
+    {
+        $siswa = auth()->user()->siswa;
+        if (!$siswa || !$siswa->dudi_id) {
+            return redirect()->route('siswa.pengajuan_pkl.status')
+                ->with('error', 'Anda belum memiliki tempat PKL yang disetujui. Silakan ajukan terlebih dahulu.');
+        }
+        return null;
+    }
+
     public function index()
     {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
         $siswa = auth()->user()->siswa;
         $today = Carbon::today();
         
@@ -28,6 +40,8 @@ class AbsensiController extends Controller
 
     public function clockIn(Request $request)
     {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
         $request->validate([
             'signature' => 'required', // Base64 signature
             'latitude' => 'nullable',
@@ -65,6 +79,8 @@ class AbsensiController extends Controller
 
     public function clockOut(Request $request)
     {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
         $siswa = auth()->user()->siswa;
         $today = Carbon::today();
 
