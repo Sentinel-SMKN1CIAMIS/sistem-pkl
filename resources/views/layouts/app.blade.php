@@ -220,6 +220,57 @@
                 lucide.createIcons();
             }
         });
+
+        // Dynamic Ellipsis Dropdown positioning (Drop-Up)
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            
+            // Only apply to ellipsis dropdown buttons
+            if (!btn.querySelector('.lucide-more-vertical') && !btn.querySelector('[data-lucide="more-vertical"]')) return;
+            
+            const container = btn.closest('.relative');
+            if (!container) return;
+            
+            const dropdown = container.querySelector('.absolute:not(button)');
+            if (!dropdown) return;
+            
+            // Calculate synchronously based on the button's position to prevent split-second scrollbar flicker
+            const btnRect = btn.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            
+            // Find any scrollable parent container or table that might clip the dropdown
+            const scrollParent = container.closest('.overflow-x-auto') || container.closest('.overflow-y-auto') || container.closest('table');
+            let shouldDropUp = false;
+            const threshold = 160; // Safe estimate for dropdown menu height
+            
+            if (scrollParent) {
+                const parentRect = scrollParent.getBoundingClientRect();
+                const spaceBelowParent = parentRect.bottom - btnRect.bottom;
+                const spaceBelowViewport = viewportHeight - btnRect.bottom;
+                
+                if (spaceBelowParent < threshold || spaceBelowViewport < threshold) {
+                    shouldDropUp = true;
+                }
+            } else {
+                const spaceBelowViewport = viewportHeight - btnRect.bottom;
+                if (spaceBelowViewport < threshold) {
+                    shouldDropUp = true;
+                }
+            }
+            
+            if (shouldDropUp) {
+                dropdown.style.top = 'auto';
+                dropdown.style.bottom = '100%';
+                dropdown.style.marginTop = '0px';
+                dropdown.style.marginBottom = '8px';
+            } else {
+                dropdown.style.top = '';
+                dropdown.style.bottom = '';
+                dropdown.style.marginTop = '';
+                dropdown.style.marginBottom = '';
+            }
+        });
         
         // Unsaved changes warning
         const dirtyForms = new Set();
