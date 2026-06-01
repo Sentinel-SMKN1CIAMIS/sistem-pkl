@@ -74,44 +74,6 @@
         <div class="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-2">
             @include('layouts.partials.sidebar-menu')
         </div>
-
-        <div class="p-4 border-t border-slate-200/50 dark:border-slate-700/50" x-data="{ profileMenuOpen: false }">
-            <div class="relative">
-                <button @click="profileMenuOpen = !profileMenuOpen" @click.away="profileMenuOpen = false" class="w-full flex items-center gap-3 glass-card p-3 rounded-xl border border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors text-left focus:outline-none group">
-                    <img src="{{ auth()->user()?->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()?->name ?? 'User').'&background=3b82f6&color=fff' }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border border-slate-300 dark:border-slate-600 group-hover:scale-105 transition-transform">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{{ auth()->user()?->name ?? 'Guest User' }}</p>
-                        <p class="text-xs text-slate-600 dark:text-slate-400 truncate capitalize">{{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}</p>
-                    </div>
-                    <i data-lucide="chevron-up" class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="profileMenuOpen ? 'rotate-180' : ''"></i>
-                </button>
-
-                <!-- Dropdown Menu -->
-                <div x-show="profileMenuOpen"
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 translate-y-2"
-                     x-transition:enter-end="opacity-100 translate-y-0"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 translate-y-0"
-                     x-transition:leave-end="opacity-0 translate-y-2"
-                     class="absolute left-0 w-full glass-card border border-slate-200/50 dark:border-slate-700/50 rounded-xl overflow-hidden z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
-                     style="bottom: 100%; margin-bottom: 0.5rem;" x-cloak>
-                    @if(auth()->user()?->role === 'siswa')
-                        <a href="{{ route('siswa.profile.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-200/50 dark:border-slate-700/50">
-                            <i data-lucide="user-circle" class="w-4 h-4"></i>
-                            Lihat Profil
-                        </a>
-                    @endif
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors focus:outline-none">
-                            <i data-lucide="log-out" class="w-4 h-4"></i>
-                            Logout
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
     </aside>
 
     <!-- Main Content -->
@@ -174,6 +136,60 @@
                             </span>
                         @endif
                     </a>
+                </div>
+
+                <!-- User Profile Dropdown -->
+                <div class="relative" x-data="{ profileMenuOpen: false }">
+                    <button @click="profileMenuOpen = !profileMenuOpen" @click.away="profileMenuOpen = false" 
+                            class="flex items-center gap-3 p-1.5 pr-3 rounded-full hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors duration-200 focus:outline-none group border border-transparent hover:border-slate-200/50 dark:hover:border-slate-700/50">
+                        <div class="relative">
+                            <img src="{{ auth()->user()?->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()?->name ?? 'User').'&background=3b82f6&color=fff' }}" 
+                                 alt="Avatar" 
+                                 class="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700 group-hover:scale-105 transition-transform duration-200">
+                            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                        </div>
+                        
+                        <div class="hidden md:flex flex-col text-left">
+                            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight truncate max-w-[150px]">{{ auth()->user()?->name ?? 'Guest User' }}</span>
+                            <span class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5">{{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}</span>
+                        </div>
+                        
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform duration-200 group-hover:text-slate-600 dark:group-hover:text-slate-300" :class="profileMenuOpen ? 'rotate-180' : ''"></i>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div x-show="profileMenuOpen"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                         class="absolute right-0 mt-2 w-52 glass-card border border-slate-200/50 dark:border-slate-700/50 rounded-2xl overflow-hidden z-50 shadow-xl shadow-slate-100/50 dark:shadow-none" 
+                         x-cloak>
+                        
+                        <div class="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/20 border-b border-slate-200/50 dark:border-slate-700/50">
+                            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{{ auth()->user()?->name ?? 'Guest User' }}</p>
+                            <p class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5">{{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}</p>
+                        </div>
+
+                        <div class="p-1.5 space-y-1">
+                            @if(auth()->user()?->role === 'siswa')
+                                <a href="{{ route('siswa.profile.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group/item">
+                                    <i data-lucide="user-circle" class="w-4 h-4 text-slate-400 group-hover/item:text-slate-600 dark:group-hover/item:text-slate-300"></i>
+                                    Lihat Profil
+                                </a>
+                            @endif
+                            
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors focus:outline-none group/item">
+                                    <i data-lucide="log-out" class="w-4 h-4 text-red-400 group-hover/item:text-red-500"></i>
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
