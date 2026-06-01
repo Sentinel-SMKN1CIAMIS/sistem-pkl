@@ -17,7 +17,12 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        body { font-family: 'Outfit', sans-serif; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            height: 100dvh !important;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
         [x-cloak] { display: none !important; }
         
         @keyframes fadeInUp {
@@ -47,7 +52,7 @@
         }
     </script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased h-screen overflow-hidden flex" x-data="{ sidebarOpen: false }">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased h-dvh overflow-hidden flex" x-data="{ sidebarOpen: false }">
 
     <!-- Sidebar Backdrop -->
     <div x-show="sidebarOpen" 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mas-pkl-v1';
+const CACHE_NAME = 'mas-pkl-v2';
 const urlsToCache = [
   '/',
   '/manifest.json'
