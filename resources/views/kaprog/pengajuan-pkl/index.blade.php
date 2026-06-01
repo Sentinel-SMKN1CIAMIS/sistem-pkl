@@ -55,8 +55,8 @@
                     </tr>
 
                     <!-- Modal for this pengajuan -->
-                    <dialog id="modal-{{ $pengajuan->id }}" class="bg-transparent m-auto w-full max-w-lg">
-                        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6 border border-slate-200 dark:border-slate-700">
+                    <dialog id="modal-{{ $pengajuan->id }}" class="backdrop:bg-slate-900/40 backdrop:backdrop-blur-sm bg-transparent border-0 outline-none p-0 w-full max-w-lg m-auto">
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
                             <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Tinjau Pengajuan PKL</h3>
                             <div class="space-y-3 mb-6 text-sm">
                                 <div><span class="text-slate-500 block text-xs">Siswa</span> <span class="font-medium text-slate-800 dark:text-slate-200">{{ $pengajuan->siswa->nama_lengkap }} ({{ $pengajuan->siswa->kelas }})</span></div>

@@ -8,6 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['user_id', 'konsentrasi_keahlian_id', 'dudi_id', 'pembimbing_sekolah_id', 'pembimbing_dudi_id', 'nis', 'nama_lengkap', 'kelas', 'jenis_kelamin', 'no_hp', 'alamat', 'tahun_ajaran', 'status_pkl', 'pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'unit_pekerjaan'])]
 class Siswa extends Model
 {
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($siswa) {
+            if ($siswa->dudi_id && $siswa->pembimbing_sekolah_id && $siswa->status_pkl === 'belum_mulai') {
+                $siswa->status_pkl = 'sedang_pkl';
+            }
+        });
+    }
     public function user()
     {
         return $this->belongsTo(User::class);

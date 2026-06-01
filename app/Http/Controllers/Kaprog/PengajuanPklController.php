@@ -60,7 +60,37 @@ class PengajuanPklController extends Controller
                     'dudi_id' => $dudi->id,
                     'pembimbing_dudi_id' => $pengajuanPkl->pembimbing_dudi_id
                 ]);
+
+                // Notify Pokja that a student needs placement mapping
+                $pokjas = \App\Models\User::where('role', 'pokja')->get();
+                foreach ($pokjas as $pokja) {
+                    \App\Models\Notifikasi::create([
+                        'to_user_id' => $pokja->id,
+                        'judul'      => 'Penempatan Baru (Butuh Pemetaan)',
+                        'pesan'      => "Siswa {$pengajuanPkl->siswa->nama_lengkap} telah disetujui di {$dudi->nama}. Silakan lakukan pemetaan pembimbing.",
+                        'link'       => route('pokja.pemetaan.index'),
+                        'is_read'    => false,
+                    ]);
+                }
+
+                // Notify Student
+                \App\Models\Notifikasi::create([
+                    'to_user_id' => $pengajuanPkl->siswa->user_id,
+                    'judul'      => 'Pengajuan PKL Disetujui',
+                    'pesan'      => "Pengajuan tempat PKL Anda di {$dudi->nama} telah disetujui oleh Kepala Program.",
+                    'link'       => route('siswa.pengajuan_pkl.status'),
+                    'is_read'    => false,
+                ]);
             }
+        } else {
+            // Notify Student of rejection
+            \App\Models\Notifikasi::create([
+                'to_user_id' => $pengajuanPkl->siswa->user_id,
+                'judul'      => 'Pengajuan PKL Ditolak',
+                'pesan'      => "Pengajuan tempat PKL Anda di {$pengajuanPkl->nama_perusahaan} ditolak. Alasan: " . ($request->catatan ?? 'Tidak ada catatan.'),
+                'link'       => route('siswa.pengajuan_pkl.status'),
+                'is_read'    => false,
+            ]);
         }
 
         return back()->with('success', 'Status pengajuan berhasil diperbarui.');
