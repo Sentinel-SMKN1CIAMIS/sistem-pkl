@@ -105,5 +105,14 @@ Route::middleware('auth')->group(function () {
         Route::get('evaluasi', [\App\Http\Controllers\Pokja\EvaluasiController::class, 'index'])->name('evaluasi.index');
         Route::get('feedback', [\App\Http\Controllers\Pokja\FeedbackController::class, 'index'])->name('feedback.index');
         Route::get('feedback/{feedback}/print', [\App\Http\Controllers\Pokja\FeedbackController::class, 'print'])->name('feedback.print');
+
+        // Import & Template Routes
+        Route::get('import/panduan', [\App\Http\Controllers\Pokja\ImportController::class, 'showPanduan'])->name('import.panduan');
+        Route::get('import/template/{type}', [\App\Http\Controllers\Pokja\ImportController::class, 'downloadTemplate'])->name('import.template');
+        Route::post('siswa/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importSiswa'])->name('siswa.import');
+        Route::post('dudi/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importDudi'])->name('dudi.import');
+        Route::post('pembimbing-sekolah/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importPembimbingSekolah'])->name('pembimbing_sekolah.import');
+        Route::post('pembimbing-dudi/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importPembimbingDudi'])->name('pembimbing_dudi.import');
     });
 });
+

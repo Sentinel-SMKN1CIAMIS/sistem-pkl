@@ -25,13 +25,130 @@
         }
     </style>
 
-    <div class="mb-6 pokja-header-container">
+    <div class="mb-6 pokja-header-container" x-data="{ importModalOpen: false }">
         <p class="text-slate-600 dark:text-slate-400">Daftar guru pembimbing sekolah per konsentrasi keahlian.</p>
-        <a href="{{ route('pokja.pembimbing_sekolah.create') }}" class="pokja-btn px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
-            <i data-lucide="user-plus" class="w-5 h-5"></i>
-            Tambah Pembimbing
-        </a>
+        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button @click="importModalOpen = true" class="pokja-btn px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
+                <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                Impor Pembimbing
+            </button>
+            <a href="{{ route('pokja.pembimbing_sekolah.create') }}" class="pokja-btn px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
+                <i data-lucide="user-plus" class="w-5 h-5"></i>
+                Tambah Pembimbing
+            </a>
+        </div>
+
+        <!-- Elegant Import Modal -->
+        <template x-teleport="body">
+            <div x-show="importModalOpen" 
+                 class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
+                 x-transition.opacity.duration.300ms x-cloak>
+                
+                <div @click.away="importModalOpen = false" 
+                     class="glass-card w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-900 animate-fade-in-up text-left">
+                    
+                    <!-- Modal Header -->
+                    <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="upload-cloud" class="text-blue-500"></i>
+                            Impor Data Pembimbing Sekolah
+                        </h3>
+                        <button @click="importModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Modal Body -->
+                    <form action="{{ route('pokja.pembimbing_sekolah.import') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                        @csrf
+                        
+                        <!-- Download Template Section -->
+                        <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-start gap-3">
+                            <i data-lucide="file-spreadsheet" class="w-6 h-6 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                            <div>
+                                <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Gunakan Template Resmi</h4>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                                    Pastikan struktur kolom data Anda sesuai dengan template standar kami agar sistem dapat memprosesnya dengan lancar.
+                                </p>
+                                <a href="{{ route('pokja.import.template', 'pembimbing_sekolah') }}" class="inline-flex items-center gap-2 mt-3 text-xs font-bold text-blue-500 hover:text-blue-400 transition-colors bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/30">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    Unduh Template Excel (.xlsx)
+                                </a>
+                                <a href="{{ route('pokja.import.panduan') }}" target="_blank" class="inline-flex items-center gap-2 mt-3 text-xs font-bold text-emerald-500 hover:text-emerald-400 transition-colors bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/30 ml-2">
+                                    <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                                    Buka Panduan Lengkap
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- File Upload Input -->
+                        <div class="space-y-2" x-data="{ localFileName: '' }">
+                            <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Pilih File Excel</label>
+                            <div class="border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all relative group duration-300"
+                                 :class="localFileName ? 'border-emerald-500/50 bg-emerald-500/5 dark:bg-emerald-500/10' : 'border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500'">
+                                <input type="file" name="file" accept=".xlsx, .xls" required 
+                                       @change="localFileName = $event.target.files[0] ? $event.target.files[0].name : ''"
+                                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                
+                                <!-- State: Empty -->
+                                <div class="flex flex-col items-center gap-2 py-4" x-show="!localFileName">
+                                    <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                                    <span class="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:text-white transition-colors">Klik atau Seret file Excel ke sini</span>
+                                    <span class="text-[10px] text-slate-500 dark:text-slate-500">Maksimum ukuran file: 4MB (Format .xlsx, .xls saja)</span>
+                                </div>
+
+                                <!-- State: File Chosen -->
+                                <div class="flex flex-col items-center gap-2 py-4" x-show="localFileName" x-cloak>
+                                    <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-500 animate-bounce"></i>
+                                    <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 block truncate max-w-xs" x-text="localFileName"></span>
+                                    <span class="text-[10px] text-slate-500 dark:text-slate-500">Klik atau seret file lain untuk mengganti berkas</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Important Information List -->
+                        <div class="p-3.5 bg-slate-50 dark:bg-slate-800/20 border border-slate-200/50 dark:border-slate-700/50 rounded-xl">
+                            <h5 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                <i data-lucide="info" class="w-4 h-4 text-amber-500"></i>
+                                Penting Sebelum Mengunggah:
+                            </h5>
+                            <ul class="list-disc pl-5 space-y-1 text-[11px] text-slate-600 dark:text-slate-400 leading-normal">
+                                <li>Isi kolom <strong>konsentrasi_keahlian</strong> sesuai nama jurusan utama di database.</li>
+                                <li>Kolom <strong>tipe</strong> harus bernilai salah satu dari: <code>normatif</code>, <code>adaptif</code>, atau <code>produktif</code>.</li>
+                                <li>Kolom <strong>kelas_diajar</strong> opsional: Pisahkan beberapa kelas dengan koma (contoh: <code>XII RPL 1, XII RPL 2</code>).</li>
+                                <li><strong>Email</strong> dan <strong>Username</strong> akun guru harus unik di sistem.</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="pt-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end gap-3">
+                            <button type="button" @click="importModalOpen = false" class="px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-colors border border-slate-200/50 dark:border-slate-700/50">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+                                <i data-lucide="upload" class="w-4 h-4"></i>
+                                Mulai Impor Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
     </div>
+
+    @if(session('import_errors'))
+        <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm">
+            <h4 class="font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 flex-shrink-0"></i>
+                Gagal Mengimpor Data Guru. Silakan periksa beberapa kesalahan berikut:
+            </h4>
+            <ul class="list-disc pl-5 space-y-1 text-xs">
+                @foreach(session('import_errors') as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     @if(session('success'))
         <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
