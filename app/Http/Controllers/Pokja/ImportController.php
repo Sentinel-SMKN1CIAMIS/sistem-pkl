@@ -34,12 +34,12 @@ class ImportController extends Controller
             $exampleRow = ['12345678', 'Ahmad Fauzi', 'ahmad@example.com', 'password123', 'XII RPL 1', 'L', '2025/2026', '081234567890', 'Jl. Merdeka No. 10 Ciamis', 'Rekayasa Perangkat Lunak'];
             $filename = 'template_siswa.xlsx';
         } elseif ($type === 'dudi') {
-            $headers = ['nama', 'bidang_usaha', 'alamat', 'kota', 'no_telepon', 'email', 'nama_pimpinan', 'konsentrasi_keahlian'];
-            $exampleRow = ['PT Solusi Digital', 'Teknologi Informasi', 'Jl. Asia Afrika No. 45', 'Bandung', '022123456', 'contact@solusidigital.com', 'Budi Santoso', 'Rekayasa Perangkat Lunak, Teknik Komputer Jaringan'];
+            $headers = ['nama', 'bidang_usaha', 'jenis_industri', 'alamat', 'latitude', 'longitude', 'kota', 'no_telepon', 'email', 'nama_pimpinan', 'kontak', 'jabatan', 'konsentrasi_keahlian'];
+            $exampleRow = ['PT Solusi Digital', 'Teknologi Informasi', 'teknologi', 'Jl. Asia Afrika No. 45', '-6.914744', '107.609810', 'Bandung', '022123456', 'contact@solusidigital.com', 'Budi Santoso', 'Ahmad Wijaya', 'HRD Manager', 'Rekayasa Perangkat Lunak, Teknik Komputer Jaringan'];
             $filename = 'template_dudi.xlsx';
         } elseif ($type === 'pembimbing_sekolah') {
             $headers = ['nip', 'nama_lengkap', 'username', 'email', 'password', 'tipe', 'no_hp', 'mapel_cp', 'konsentrasi_keahlian', 'kelas_diajar'];
-            $exampleRow = ['198501012010011002', 'Drs. H. Hendra Wijaya', 'hendrawijaya', 'hendra@example.com', 'pembimbing123', 'produktif', '081398765432', 'Pemrograman Web & Mobile', 'Rekayasa Perangkat Lunak', 'XII RPL 1, XII RPL 2'];
+            $exampleRow = ['198501012010011002', 'Drs. H. Hendra Wijaya', 'hendrawijaya', 'hendra@example.com', 'pembimbing123', 'kejuruan', '081398765432', 'Pemrograman Web & Mobile', 'Rekayasa Perangkat Lunak', 'XII RPL 1, XII RPL 2'];
             $filename = 'template_pembimbing_sekolah.xlsx';
         } elseif ($type === 'pembimbing_dudi') {
             $headers = ['nama_lengkap', 'username', 'email', 'password', 'jabatan', 'no_hp', 'nama_perusahaan'];
@@ -161,7 +161,7 @@ class ImportController extends Controller
     public function importSiswa(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls|max:4096',
+            'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
         $rows = $this->parseExcel($request->file('file'));
@@ -271,7 +271,7 @@ class ImportController extends Controller
     public function importDudi(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls|max:4096',
+            'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
         $rows = $this->parseExcel($request->file('file'));
@@ -297,11 +297,16 @@ class ImportController extends Controller
                 $validator = Validator::make($row, [
                     'nama' => 'required|string|max:255',
                     'bidang_usaha' => 'nullable|string',
+                    'jenis_industri' => 'nullable|in:pemerintahan,industri,layanan,perdagangan,pendidikan,kesehatan,teknologi,pertanian,lainnya',
                     'alamat' => 'required|string',
+                    'latitude' => 'nullable|numeric|between:-90,90',
+                    'longitude' => 'nullable|numeric|between:-180,180',
                     'kota' => 'required|string|max:100',
                     'no_telepon' => 'nullable',
                     'email' => 'nullable|email',
                     'nama_pimpinan' => 'nullable|string',
+                    'kontak' => 'nullable|string|max:255',
+                    'jabatan' => 'nullable|string|max:255',
                     'konsentrasi_keahlian' => 'required',
                 ]);
 
@@ -332,11 +337,16 @@ class ImportController extends Controller
                     $dudi = Dudi::create([
                         'nama' => $row['nama'],
                         'bidang_usaha' => $row['bidang_usaha'] ?: null,
+                        'jenis_industri' => $row['jenis_industri'] ?: null,
                         'alamat' => $row['alamat'],
+                        'latitude' => $row['latitude'] ?: null,
+                        'longitude' => $row['longitude'] ?: null,
                         'kota' => $row['kota'],
                         'no_telepon' => $row['no_telepon'] ?: null,
                         'email' => $row['email'] ?: null,
                         'nama_pimpinan' => $row['nama_pimpinan'] ?: null,
+                        'kontak' => $row['kontak'] ?: null,
+                        'jabatan' => $row['jabatan'] ?: null,
                         'konsentrasi_keahlian_id' => $matchingIds[0], // primary relation
                     ]);
 
@@ -366,7 +376,7 @@ class ImportController extends Controller
     public function importPembimbingSekolah(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls|max:4096',
+            'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
         $rows = $this->parseExcel($request->file('file'));
@@ -394,7 +404,7 @@ class ImportController extends Controller
                     'username' => 'required|alpha_dash|max:50',
                     'email' => 'required|email',
                     'password' => 'required|min:6',
-                    'tipe' => 'required|in:normatif,adaptif,produktif',
+                    'tipe' => 'required|in:kejuruan,umum',
                     'no_hp' => 'nullable',
                     'mapel_cp' => 'nullable',
                     'konsentrasi_keahlian' => 'required',
@@ -481,7 +491,7 @@ class ImportController extends Controller
     public function importPembimbingDudi(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls|max:4096',
+            'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
         $rows = $this->parseExcel($request->file('file'));

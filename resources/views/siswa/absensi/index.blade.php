@@ -31,7 +31,6 @@
                         <x-button type="button" onclick="submitAbsensi()" variant="emerald" class="w-full py-4 !font-black !rounded-2xl shadow-emerald-500/20" icon="log-in">
                             ABSEN DATANG SEKARANG
                         </x-button>
-                        <p class="text-[10px] text-slate-500 dark:text-slate-400 italic">Harap aktifkan GPS perangkat Anda.</p>
                     </form>
                 @elseif(!$absensiToday->waktu_pulang)
                     <!-- Clock Out Form -->
@@ -40,11 +39,18 @@
                         <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">{{ \Carbon\Carbon::parse($absensiToday->waktu_datang)->format('H:i') }}</p>
                     </div>
 
-                    <form action="{{ route('siswa.absensi.clock-out') }}" method="POST">
+                    <form action="{{ route('siswa.absensi.clock-out') }}" method="POST" id="clockout-form">
                         @csrf
-                        <x-button variant="orange" class="w-full py-4 !font-black !rounded-2xl shadow-orange-500/20" icon="log-out">
-                            ABSEN PULANG
-                        </x-button>
+                        <button 
+                            type="submit" 
+                            id="clockout-btn"
+                            disabled
+                            class="w-full px-4 py-4 text-white font-black rounded-2xl shadow-lg cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                            style="background: linear-gradient(135deg, #6b7280, #4b5563) !important; color: white !important;"
+                        >
+                            <span id="button-text">Bisa absen pulang dalam: <span id="countdown-text" class="font-mono">--:--:--</span></span>
+                        </button>
+
                     </form>
                 @else
                     <!-- Finished Today -->
@@ -57,6 +63,51 @@
                     </div>
                 @endif
             </div>
+
+            <!-- T5.3: Absence Request Form -->
+            @if($absensiToday && $absensiToday->waktu_pulang)
+            <div class="glass-card p-6">
+                <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-orange-400"></i>
+                    Tidak Bisa Hadir?
+                </h3>
+                
+                <form action="{{ route('siswa.absensi.submit-absence-request') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Status</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-500/10 cursor-pointer">
+                                <input type="radio" name="status" value="izin" class="w-4 h-4 text-blue-500">
+                                <span class="text-sm">Izin</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-500/10 cursor-pointer">
+                                <input type="radio" name="status" value="sakit" class="w-4 h-4 text-red-500">
+                                <span class="text-sm">Sakit</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-500/10 cursor-pointer">
+                                <input type="radio" name="status" value="alpa" class="w-4 h-4 text-gray-500">
+                                <span class="text-sm">Alpa</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Alasan (minimal 10 karakter)</label>
+                        <textarea name="alasan" rows="3" placeholder="Jelaskan alasan Anda..." class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Tanggal</label>
+                        <input type="date" name="tanggal" value="{{ Carbon::today()->toDateString() }}" max="{{ Carbon::today()->toDateString() }}" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <x-button type="submit" variant="blue" class="w-full" icon="send">
+                        Ajukan Permintaan
+                    </x-button>
+                </form>
+            </div>
+            @endif
             
             @if(session('success'))
                 <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
@@ -89,7 +140,7 @@
                                 <th class="px-6 py-4 whitespace-nowrap">Status</th>
                                 <th class="px-6 py-4 whitespace-nowrap">Datang</th>
                                 <th class="px-6 py-4 whitespace-nowrap">Pulang</th>
-                                <th class="px-6 py-4 whitespace-nowrap">GPS</th>
+                                <th class="px-6 py-4 whitespace-nowrap">Persetujuan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-700/50 text-sm">
@@ -97,18 +148,35 @@
                                 <tr class="hover:bg-white dark:bg-slate-800/10 transition-colors">
                                     <td class="px-6 py-4 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">{{ \Carbon\Carbon::parse($row->tanggal)->format('d M Y') }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Hadir</span>
+                                        @php
+                                            $statusConfig = [
+                                                'hadir' => ['bg' => 'bg-emerald-500/10', 'text' => 'text-emerald-400', 'label' => 'Hadir'],
+                                                'izin' => ['bg' => 'bg-blue-500/10', 'text' => 'text-blue-400', 'label' => 'Izin'],
+                                                'sakit' => ['bg' => 'bg-red-500/10', 'text' => 'text-red-400', 'label' => 'Sakit'],
+                                                'alpa' => ['bg' => 'bg-gray-500/10', 'text' => 'text-gray-400', 'label' => 'Alpa'],
+                                            ];
+                                            $config = $statusConfig[$row->status] ?? $statusConfig['hadir'];
+                                        @endphp
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter {{ $config['bg'] }} {{ $config['text'] }} border {{ $config['text'] }}/20">
+                                            {{ $config['label'] }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ $row->waktu_datang ? \Carbon\Carbon::parse($row->waktu_datang)->format('H:i') : '-' }}</td>
                                     <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ $row->waktu_pulang ? \Carbon\Carbon::parse($row->waktu_pulang)->format('H:i') : '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($row->latitude)
-                                            <a href="https://www.google.com/maps?q={{ $row->latitude }},{{ $row->longitude }}" target="_blank" class="text-blue-400 hover:text-blue-300 flex items-center">
-                                                <i data-lucide="map-pin" class="w-3 h-3"></i>
-                                            </a>
-                                        @else
-                                            -
-                                        @endif
+                                        @php
+                                            $approvalConfig = [
+                                                'pending' => ['bg' => 'bg-yellow-500/10', 'text' => 'text-yellow-400', 'label' => 'Menunggu', 'icon' => 'clock'],
+                                                'approved' => ['bg' => 'bg-emerald-500/10', 'text' => 'text-emerald-400', 'label' => 'Disetujui', 'icon' => 'check'],
+                                                'rejected' => ['bg' => 'bg-red-500/10', 'text' => 'text-red-400', 'label' => 'Ditolak', 'icon' => 'x'],
+                                            ];
+                                            $approvalStatus = $row->approval_status ?? 'pending';
+                                            $approvalConf = $approvalConfig[$approvalStatus] ?? $approvalConfig['pending'];
+                                        @endphp
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $approvalConf['bg'] }} {{ $approvalConf['text'] }} border {{ $approvalConf['text'] }}/20 flex items-center gap-1 w-fit">
+                                            <i data-lucide="{{ $approvalConf['icon'] }}" class="w-3 h-3"></i>
+                                            {{ $approvalConf['label'] }}
+                                        </span>
                                     </td>
                                 </tr>
                             @endforeach
@@ -136,6 +204,66 @@
         }
         setInterval(updateClock, 1000);
         updateClock();
+
+        // T5.2: Countdown Timer for 7-hour requirement
+        @if($absensiToday && !$absensiToday->waktu_pulang)
+        function updateCountdown() {
+            const clockOutBtn = document.getElementById('clockout-btn');
+            const countdownText = document.getElementById('countdown-text');
+            
+            if (!clockOutBtn || !countdownText) return;
+
+            // Parse the clock-in time from database
+            const clockInTimeStr = '{{ $absensiToday->waktu_datang }}';
+            const [inHours, inMinutes, inSeconds] = clockInTimeStr.split(':').map(Number);
+            
+            // Create clock-in datetime (today)
+            let clockInTime = new Date();
+            clockInTime.setHours(inHours, inMinutes, inSeconds, 0);
+            
+            // Calculate 7 hours later
+            const sevenHoursLater = new Date(clockInTime.getTime() + 7 * 60 * 60 * 1000);
+            
+            // Current time
+            const now = new Date();
+            
+            // Calculate remaining time
+            const diff = sevenHoursLater - now;
+
+            if (diff <= 0) {
+                // Time's up - enable button and change text
+                clockOutBtn.disabled = false;
+                clockOutBtn.style.background = 'linear-gradient(135deg, #f97316, #ea580c)';
+                clockOutBtn.style.color = 'white';
+                clockOutBtn.classList.remove('cursor-not-allowed');
+                document.getElementById('button-text').innerHTML = '<i data-lucide="log-out" class="w-5 h-5 inline mr-2"></i>ABSEN PULANG';
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+                return;
+            }
+
+            // Still waiting - keep button disabled and show countdown
+            clockOutBtn.disabled = true;
+            clockOutBtn.style.background = 'linear-gradient(135deg, #6b7280, #4b5563)';
+            clockOutBtn.style.color = 'white';
+            clockOutBtn.classList.add('cursor-not-allowed');
+            
+            // Format countdown
+            const hours = Math.floor(diff / (60 * 60 * 1000));
+            const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+            const seconds = Math.floor((diff % (60 * 1000)) / 1000);
+            
+            const formattedCountdown = `${hours}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+            countdownText.textContent = formattedCountdown;
+        }
+
+        // Run immediately on page load
+        updateCountdown();
+        
+        // Update every second
+        setInterval(updateCountdown, 1000);
+        @endif
 
         // Signature Pad
         @if(!$absensiToday)
@@ -181,7 +309,7 @@
                 signaturePad.clear();
             });
 
-            // Get Geolocation
+            // Get Geolocation (silently, no user notification)
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
@@ -189,7 +317,8 @@
                         document.getElementById('longitude-input').value = position.coords.longitude;
                     },
                     function(error) {
-                        console.warn('Geolocation error:', error.message);
+                        // Silently fail - GPS is captured in background without user knowing
+                        console.warn('GPS not available');
                     },
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );

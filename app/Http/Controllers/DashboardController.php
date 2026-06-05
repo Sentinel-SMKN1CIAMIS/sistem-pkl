@@ -22,7 +22,8 @@ class DashboardController extends Controller
                     'jurnal_valid' => \App\Models\Jurnal::where('siswa_id', $siswa->id)->where('status', 'valid')->count(),
                     'absensi_count' => \App\Models\Absensi::where('siswa_id', $siswa->id)->count(),
                 ];
-                return view('dashboards.siswa', compact('stats'));
+                $forcePasswordChange = auth()->user()->force_password_change;
+                return view('dashboards.siswa', compact('stats', 'forcePasswordChange'));
             case 'pembimbing_sekolah':
                 $teacher = auth()->user()->pembimbingSekolah;
                 $stats = [
@@ -42,6 +43,8 @@ class DashboardController extends Controller
                 ];
                 return view('dashboards.pembimbing-dudi', compact('stats'));
             case 'kaprog':
+                // Temporarily show all stats for demo/presentation
+                // TODO: Proper filter by assigned class later
                 $stats = [
                     'total_siswa' => \App\Models\Siswa::count(),
                     'total_dudi' => \App\Models\Dudi::count(),

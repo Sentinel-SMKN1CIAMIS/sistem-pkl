@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\Jurnal;
+use App\Models\Notifikasi;
 
 
 class JurnalController extends Controller
@@ -15,7 +16,7 @@ class JurnalController extends Controller
         $teacher = auth()->user()->pembimbingSekolah;
         $tipe    = $teacher->tipe; // 'produktif', 'normatif', or 'adaptif'
 
-        $query = Jurnal::with(['siswa', 'kompetensi'])
+        $query = Jurnal::with(['siswa', 'kompetensi', 'tujuanPembelajaran'])
             ->latest('tanggal');
 
         if ($tipe === 'produktif') {
@@ -64,5 +65,53 @@ class JurnalController extends Controller
         ]);
 
         return back()->with('success', 'Saran / Komentar berhasil disimpan.');
+    }
+
+    public function approve(Request $request, Jurnal $jurnal)
+    {
+        $jurnal->update([
+            'approval_status' => 'approved',
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+            'approval_notes' => $request->approval_notes
+        ]);
+
+        // Create notification for student
+        Notifikasi::create([
+            'from_user_id' => auth()->id(),
+            'to_user_id' => $jurnal->siswa->user_id,
+            'judul' => 'Jurnal Disetujui',
+            'pesan' => 'Jurnal Anda pada tanggal ' . \Carbon\Carbon::parse($jurnal->tanggal)->isoFormat('D MMMM YYYY') . ' telah disetujui oleh Guru Pembimbing.',
+            'tipe' => 'jurnal_approved',
+            'is_read' => 0
+        ]);
+
+        return back()->with('success', 'Jurnal berhasil disetujui (ACC).');
+    }
+
+    public function reject(Request $request, Jurnal $jurnal)
+    {
+        $request->validate([
+            'approval_notes' => 'required|string|min:3'
+        ]);
+
+        $jurnal->update([
+            'approval_status' => 'rejected',
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+            'approval_notes' => $request->approval_notes
+        ]);
+
+        // Create notification for student
+        Notifikasi::create([
+            'from_user_id' => auth()->id(),
+            'to_user_id' => $jurnal->siswa->user_id,
+            'judul' => 'Jurnal Ditolak',
+            'pesan' => 'Jurnal Anda pada tanggal ' . \Carbon\Carbon::parse($jurnal->tanggal)->isoFormat('D MMMM YYYY') . ' ditolak. Catatan: ' . $request->approval_notes,
+            'tipe' => 'jurnal_rejected',
+            'is_read' => 0
+        ]);
+
+        return back()->with('success', 'Jurnal berhasil ditolak dengan catatan.');
     }
 }

@@ -13,7 +13,15 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
 });
 
-Route::middleware('auth')->group(function () {
+// Force Change Password Routes - Available during auth but guest on this specific route
+Route::get('/auth/change-password', [\App\Http\Controllers\Auth\ChangePasswordController::class, 'show'])
+    ->middleware('auth')
+    ->name('auth.change-password.show');
+Route::patch('/auth/change-password', [\App\Http\Controllers\Auth\ChangePasswordController::class, 'update'])
+    ->middleware('auth')
+    ->name('auth.change-password.update');
+
+Route::middleware('auth', 'force.password.change')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     
     // Redirects to correct dashboard based on role
@@ -25,6 +33,7 @@ Route::middleware('auth')->group(function () {
         Route::get('absensi', [\App\Http\Controllers\Siswa\AbsensiController::class, 'index'])->name('absensi.index');
         Route::post('absensi/clock-in', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockIn'])->name('absensi.clock-in');
         Route::post('absensi/clock-out', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockOut'])->name('absensi.clock-out');
+        Route::post('absensi/submit-absence-request', [\App\Http\Controllers\Siswa\AbsensiController::class, 'submitAbsenceRequest'])->name('absensi.submit-absence-request');
         Route::get('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'index'])->name('laporan.index');
         Route::post('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'store'])->name('laporan.store');
         Route::get('panduan', [\App\Http\Controllers\Siswa\PanduanController::class, 'index'])->name('panduan.index');
@@ -45,8 +54,13 @@ Route::middleware('auth')->group(function () {
         Route::get('siswa', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'index'])->name('siswa.index');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'index'])->name('jurnal.index');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'update'])->name('jurnal.update');
+        Route::post('jurnal/{jurnal}/approve', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'approve'])->name('jurnal.approve');
+        Route::post('jurnal/{jurnal}/reject', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'reject'])->name('jurnal.reject');
         Route::get('absensi', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'index'])->name('absensi.index');
         Route::get('absensi/export', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'export'])->name('absensi.export');
+        Route::get('absensi/approval', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'index'])->name('absensi.approval.index');
+        Route::patch('absensi/{absensi}/approve', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'approve'])->name('absensi.approve');
+        Route::patch('absensi/{absensi}/reject', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'reject'])->name('absensi.reject');
         Route::get('laporan', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'index'])->name('laporan.index');
         Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
     });
@@ -89,13 +103,16 @@ Route::middleware('auth')->group(function () {
         Route::resource('kompetensi', \App\Http\Controllers\KompetensiController::class);
         Route::resource('panduan', \App\Http\Controllers\Admin\BukuPanduanController::class);
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+        Route::resource('pokja-groups', \App\Http\Controllers\Admin\PokjaGroupController::class);
+        Route::post('pokja-groups/{pokjaGroup}/add-member', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'addMember'])->name('pokja-groups.add-member');
+        Route::post('pokja-groups/{pokjaGroup}/remove-member', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'removeMember'])->name('pokja-groups.remove-member');
         Route::get('logs', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('logs.index');
         Route::get('config', [\App\Http\Controllers\Admin\ConfigController::class, 'index'])->name('config.index');
         Route::post('config', [\App\Http\Controllers\Admin\ConfigController::class, 'update'])->name('config.update');
     });
 
-    // Pokja Routes
-    Route::middleware('role:pokja,super_admin')->prefix('pokja')->name('pokja.')->group(function () {
+    // Pokja Routes - with group membership check
+    Route::middleware('role:pokja,super_admin', 'pokja-group')->prefix('pokja')->name('pokja.')->group(function () {
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);

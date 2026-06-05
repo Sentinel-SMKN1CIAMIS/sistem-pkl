@@ -64,10 +64,12 @@ class AbsensiController extends Controller
         $fileName = 'signatures/in_' . $siswa->id . '_' . time() . '.png';
         Storage::disk('public')->put($fileName, base64_decode($signature));
 
+        // T5.1: Silently capture GPS location without showing to student
         Absensi::create([
             'siswa_id' => $siswa->id,
             'tanggal' => $today,
             'status' => 'hadir',
+            'approval_status' => 'approved', // Auto-approve clock-in
             'waktu_datang' => Carbon::now()->toTimeString(),
             'ttd_siswa_path' => $fileName,
             'latitude' => $request->latitude,
@@ -96,10 +98,56 @@ class AbsensiController extends Controller
             return back()->with('error', 'Anda sudah melakukan absen pulang hari ini.');
         }
 
+        // T5.2: Check if 7 hours have passed since clock-in
+        $clockInTime = Carbon::parse($absensi->tanggal . ' ' . $absensi->waktu_datang);
+        $now = Carbon::now();
+        $sevenHoursLater = $clockInTime->copy()->addHours(7);
+
+        if ($now < $sevenHoursLater) {
+            $diffInMinutes = $now->diffInMinutes($sevenHoursLater);
+            $hours = intdiv($diffInMinutes, 60);
+            $minutes = $diffInMinutes % 60;
+            return back()->with('error', "Anda baru bisa absen pulang setelah 7 jam sejak absen datang. Sisa waktu: $hours jam $minutes menit.");
+        }
+
         $absensi->update([
             'waktu_pulang' => Carbon::now()->toTimeString(),
         ]);
 
         return redirect()->route('siswa.absensi.index')->with('success', 'Berhasil melakukan Absen Pulang.');
+    }
+
+    // T5.3: Submit absence request (izin, sakit, alpa)
+    public function submitAbsenceRequest(Request $request)
+    {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
+        $request->validate([
+            'status' => 'required|in:izin,sakit,alpa',
+            'alasan' => 'required|min:10',
+            'tanggal' => 'required|date',
+        ]);
+
+        $siswa = auth()->user()->siswa;
+        $tanggal = Carbon::parse($request->tanggal);
+
+        // Check if already submitted for today
+        $exists = Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', $tanggal)
+            ->exists();
+
+        if ($exists) {
+            return back()->with('error', 'Anda sudah memiliki absensi untuk tanggal tersebut.');
+        }
+
+        Absensi::create([
+            'siswa_id' => $siswa->id,
+            'tanggal' => $tanggal,
+            'status' => $request->status,
+            'alasan' => $request->alasan,
+            'approval_status' => 'pending',
+        ]);
+
+        return back()->with('success', 'Berhasil mengajukan permintaan ' . $request->status . '. Menunggu persetujuan guru pembimbing.');
     }
 }

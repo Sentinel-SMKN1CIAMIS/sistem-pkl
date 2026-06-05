@@ -12,6 +12,30 @@
         </div>
     @endif
 
+    <!-- Role Filter Tabs -->
+    <div class="mb-6 flex gap-2 border-b border-slate-200/50 dark:border-slate-700/50 overflow-x-auto">
+        <a href="{{ route('admin.users.index', ['filter' => 'all']) }}" 
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'all' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+            Semua
+        </a>
+        <a href="{{ route('admin.users.index', ['filter' => 'super_admin']) }}" 
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'super_admin' ? 'border-b-2 border-red-500 text-red-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+            Super Admin
+        </a>
+        <a href="{{ route('admin.users.index', ['filter' => 'guru']) }}" 
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'guru' ? 'border-b-2 border-purple-500 text-purple-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+            Guru Pembimbing
+        </a>
+        <a href="{{ route('admin.users.index', ['filter' => 'siswa']) }}" 
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'siswa' ? 'border-b-2 border-emerald-500 text-emerald-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+            Siswa
+        </a>
+        <a href="{{ route('admin.users.index', ['filter' => 'other']) }}" 
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'other' ? 'border-b-2 border-amber-500 text-amber-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+            Lainnya
+        </a>
+    </div>
+
     <div class="glass-card overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left">
@@ -23,11 +47,11 @@
                         <th class="px-6 py-4 text-right whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-700/50 text-sm italic">
+                <tbody class="divide-y divide-slate-700/50 text-sm font-normal">
                     @foreach($users as $user)
                         <tr class="hover:bg-white dark:bg-slate-800/10 transition-colors group">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-slate-800 dark:text-slate-200 font-bold not-italic font-mono">{{ $user->username }}</span>
+                                <span class="text-slate-800 dark:text-slate-200 font-bold font-mono">{{ $user->username }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php

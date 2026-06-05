@@ -19,7 +19,7 @@ class JurnalController extends Controller
         $jurnals = Jurnal::whereHas('siswa', function($q) use ($mentor) {
                 $q->where('dudi_id', $mentor->dudi_id);
             })
-            ->with(['siswa', 'kompetensi'])
+            ->with(['siswa', 'kompetensi', 'tujuanPembelajaran'])
             ->latest('tanggal')
             ->paginate(15);
 

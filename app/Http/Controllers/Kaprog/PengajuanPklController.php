@@ -11,14 +11,27 @@ class PengajuanPklController extends Controller
 {
     public function index()
     {
-        // Kaprog sees all pengajuan PKL
-        $pengajuans = PengajuanPkl::with('siswa', 'dudi')->latest()->paginate(10);
+        $user = auth()->user();
+        
+        // Temporarily show all pengajuan PKL for kaprog (for demo/presentation)
+        // TODO: Proper filter by assigned class later
+        $pengajuans = PengajuanPkl::with('siswa', 'dudi')
+            ->latest()
+            ->paginate(10);
 
         return view('kaprog.pengajuan-pkl.index', compact('pengajuans'));
     }
 
     public function update(Request $request, PengajuanPkl $pengajuanPkl)
     {
+        $user = auth()->user();
+
+        // TODO: Re-enable proper authorization check after fixing class assignment
+        // For now, allow all kaprog to update any pengajuan (for demo/presentation)
+        // if ($user->role === 'kaprog' && $pengajuanPkl->siswa->konsentrasi_keahlian_id !== $user->konsentrasi_keahlian_id) {
+        //     abort(403, 'Unauthorized action.');
+        // }
+
         $request->validate([
             'status' => 'required|in:disetujui,ditolak',
             'catatan' => 'nullable|string'

@@ -1,6 +1,9 @@
 <x-app-layout>
     <x-slot name="header">Dashboard Siswa</x-slot>
 
+    <!-- Force Change Password Modal -->
+    <x-force-change-password-modal :forcePasswordChange="$forcePasswordChange ?? false" />
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="glass-card p-6 border-l-4 border-blue-500 relative overflow-hidden group">
             <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>

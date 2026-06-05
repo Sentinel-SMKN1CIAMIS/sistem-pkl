@@ -42,9 +42,16 @@
                             </div>
 
                             <div class="mt-4">
-                                <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400 mb-2 inline-block">
-                                    {{ $item->kompetensi->nama }}
-                                </span>
+                                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                    <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400">
+                                        {{ $item->kompetensi->nama }}
+                                    </span>
+                                    @if($item->tujuanPembelajaran)
+                                        <span class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-[10px] text-blue-600 dark:text-blue-300 font-medium">
+                                            TP: {{ $item->tujuanPembelajaran->tp ?? $item->tujuanPembelajaran->nama }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">{{ $item->deskripsi_pekerjaan }}</h3>
                                 <p class="text-slate-600 dark:text-slate-400 text-sm italic mb-4">{{ $item->catatan }}</p>
                             </div>
