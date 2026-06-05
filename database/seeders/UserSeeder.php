@@ -26,6 +26,15 @@ class UserSeeder extends Seeder
             'role' => 'super_admin',
         ]);
 
+        // Kaprog
+        User::create([
+            'name' => 'Kepala Program',
+            'username' => 'kaprog',
+            'email' => 'kaprog@gmail.com',
+            'password' => $password,
+            'role' => 'kaprog',
+        ]);
+
         // Pokja
         User::create([
             'name' => 'Ketua Pokja',
@@ -95,6 +104,28 @@ class UserSeeder extends Seeder
             'jenis_kelamin' => 'L',
             'tahun_ajaran' => '2025/2026',
             'status_pkl' => 'sedang_pkl',
+        ]);
+
+        // Siswa Demo Flow (Belum PKL / belum mengajukan)
+        $siswaDemoUser = User::create([
+            'name' => 'Siswa Demo Flow',
+            'username' => 'siswa',
+            'email' => 'siswa@gmail.com',
+            'password' => $password,
+            'role' => 'siswa',
+        ]);
+        Siswa::create([
+            'user_id' => $siswaDemoUser->id,
+            'konsentrasi_keahlian_id' => $pplg->id,
+            'dudi_id' => null,
+            'pembimbing_sekolah_id' => null,
+            'pembimbing_dudi_id' => null,
+            'nis' => 'siswa',
+            'nama_lengkap' => 'Siswa Demo Flow',
+            'kelas' => 'XII PPLG 1',
+            'jenis_kelamin' => 'L',
+            'tahun_ajaran' => '2025/2026',
+            'status_pkl' => 'belum_mulai',
         ]);
     }
 }

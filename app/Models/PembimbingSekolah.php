@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'konsentrasi_keahlian_id', 'nip', 'nama_lengkap', 'no_hp'])]
+#[Fillable(['user_id', 'konsentrasi_keahlian_id', 'nip', 'nama_lengkap', 'tipe', 'no_hp', 'kapasitas'])]
 class PembimbingSekolah extends Model
 {
     protected $table = 'pembimbing_sekolahs';
@@ -23,5 +23,10 @@ class PembimbingSekolah extends Model
     public function siswa()
     {
         return $this->hasMany(Siswa::class, 'pembimbing_sekolah_id');
+    }
+
+    public function kelasDiajar()
+    {
+        return $this->hasMany(KelasPembimbing::class, 'pembimbing_sekolah_id');
     }
 }

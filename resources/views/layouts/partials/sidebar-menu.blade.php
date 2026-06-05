@@ -9,6 +9,8 @@
             ['name' => 'Daftar Hadir', 'route' => 'siswa.absensi.index', 'icon' => 'calendar-check'],
             ['name' => 'Laporan PKL', 'route' => 'siswa.laporan.index', 'icon' => 'file-text'],
             ['name' => 'Buku Panduan', 'route' => 'siswa.panduan.index', 'icon' => 'library'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
+            ['name' => 'Pusat Bantuan', 'route' => 'siswa.bantuan.index', 'icon' => 'help-circle'],
         ];
     } elseif ($role === 'pembimbing_sekolah') {
         $navItems = [
@@ -16,7 +18,9 @@
             ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
             ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
             ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
+            ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
             ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
     } elseif ($role === 'pembimbing_dudi') {
         $navItems = [
@@ -24,6 +28,8 @@
             ['name' => 'Siswa PKL', 'route' => 'pembimbing_dudi.siswa.index', 'icon' => 'users'],
             ['name' => 'Jurnal Siswa', 'route' => 'pembimbing_dudi.jurnal.index', 'icon' => 'file-check-2'],
             ['name' => 'Validasi Kehadiran', 'route' => 'pembimbing_dudi.absensi.index', 'icon' => 'clipboard-check'],
+            ['name' => 'Feedback Sekolah', 'route' => 'pembimbing_dudi.feedback.index', 'icon' => 'message-square-plus'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
     } elseif ($role === 'pokja') {
         $navItems = [
@@ -35,6 +41,15 @@
             ['name' => 'Pemetaan', 'route' => 'pokja.pemetaan.index', 'icon' => 'network'],
             ['name' => 'Monitoring Pembimbing', 'route' => 'pokja.monitoring.index', 'icon' => 'eye'],
             ['name' => 'Evaluasi PKL', 'route' => 'pokja.evaluasi.index', 'icon' => 'bar-chart-3'],
+            ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
+        ];
+    } elseif ($role === 'kaprog') {
+        $navItems = [
+            ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+            ['name' => 'Pengajuan PKL', 'route' => 'kaprog.pengajuan_pkl.index', 'icon' => 'file-plus-2'],
+            ['name' => 'Laporan Kaprog', 'route' => 'kaprog.laporan.index', 'icon' => 'file-bar-chart-2'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
     } elseif ($role === 'super_admin') {
         $navItems = [
@@ -44,6 +59,7 @@
             ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book'],
             ['name' => 'Konsentrasi Keahlian', 'route' => 'admin.konsentrasi_keahlian.index', 'icon' => 'layers'],
             ['name' => 'Kompetensi', 'route' => 'admin.kompetensi.index', 'icon' => 'target'],
+            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
             ['name' => 'Log Sistem', 'route' => 'admin.logs.index', 'icon' => 'scroll-text'],
         ];
     }

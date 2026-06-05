@@ -9,10 +9,26 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::latest()->paginate(15);
-        return view('admin.users.index', compact('users'));
+        $filter = $request->get('filter', 'all');
+        
+        $query = User::latest();
+        
+        // Filter berdasarkan role
+        if ($filter === 'super_admin') {
+            $query->where('role', 'super_admin');
+        } elseif ($filter === 'guru') {
+            $query->whereIn('role', ['pembimbing_sekolah', 'pembimbing_dudi']);
+        } elseif ($filter === 'siswa') {
+            $query->where('role', 'siswa');
+        } elseif ($filter === 'other') {
+            $query->whereIn('role', ['pokja', 'kaprog']);
+        }
+        
+        $users = $query->paginate(15);
+        
+        return view('admin.users.index', compact('users', 'filter'));
     }
 
     public function create()

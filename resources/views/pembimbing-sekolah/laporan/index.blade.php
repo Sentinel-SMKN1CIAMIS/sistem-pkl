@@ -17,26 +17,26 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200/50 dark:border-slate-700/50">
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Siswa</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Judul & Deskripsi</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Media & Bukti</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Status</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">Aksi</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Siswa</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Judul & Deskripsi</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Media & Bukti</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Status</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200/50 dark:divide-slate-700/50">
                     @forelse($laporans as $laporan)
                         <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ $laporan->siswa->nama_lengkap }}</p>
                                 <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-wider">{{ $laporan->siswa->nis }}</p>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <p class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ $laporan->judul }}</p>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md truncate" title="{{ $laporan->deskripsi }}">{{ $laporan->deskripsi ?? '-' }}</p>
                                 <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 block">{{ \Carbon\Carbon::parse($laporan->updated_at)->isoFormat('LLL') }}</span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex flex-col gap-2">
                                     @if(!empty($laporan->link_media_sosial) && is_array($laporan->link_media_sosial))
                                         @foreach($laporan->link_media_sosial as $idx => $link)
@@ -52,7 +52,7 @@
                                     @endif
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 @php
                                     $statusClasses = [
                                         'draft' => 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
@@ -65,8 +65,8 @@
                                     {{ $laporan->status }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                     @if($laporan->status !== 'approved')
                                         <form action="{{ route('pembimbing_sekolah.laporan.update', $laporan) }}" method="POST" class="inline-block">
                                             @csrf

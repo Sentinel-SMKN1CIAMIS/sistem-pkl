@@ -3,9 +3,7 @@
         
         <!-- Logo Header -->
         <div class="text-center mb-8">
-            <div class="w-16 h-16 mx-auto bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/40 mb-4">
-                <i data-lucide="briefcase" class="w-8 h-8 text-slate-900 dark:text-white"></i>
-            </div>
+            <img src="{{ asset('logo.png') }}" alt="Logo" class="w-16 h-16 mx-auto object-contain mb-4">
             <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-300">MAS-PKL</h1>
             <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Monitoring & Administrasi Siswa PKL</p>
         </div>
@@ -47,8 +45,8 @@
                            class="w-full pl-10 pr-10 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all"
                            placeholder="••••••••">
                     <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors">
-                        <i data-lucide="eye" x-show="!showPassword" class="h-5 w-5"></i>
-                        <i data-lucide="eye-off" x-show="showPassword" class="h-5 w-5" x-cloak></i>
+                        <i data-lucide="eye" x-show="!showPassword" x-cloak class="h-5 w-5"></i>
+                        <i data-lucide="eye-off" x-show="showPassword" x-cloak class="h-5 w-5"></i>
                     </button>
                 </div>
             </div>

@@ -17,8 +17,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="tanggal" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tanggal Kegiatan</label>
-                        <input type="date" name="tanggal" id="tanggal" value="{{ date('Y-m-d') }}" required
-                               class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                        <div class="relative">
+                            <input type="date" name="tanggal" id="tanggal" 
+                                   value="{{ old('tanggal', date('Y-m-d')) }}"
+                                   min="{{ $minDate }}"
+                                   max="{{ $maxDate }}"
+                                   required
+                                   class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                Anda dapat mengisi jurnal untuk maksimal 7 hari sebelumnya
+                            </p>
+                        </div>
                     </div>
 
                     <div>
@@ -30,6 +39,28 @@
                                 <option value="{{ $item->id }}">{{ $item->nama }}</option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div>
+                        <label for="cp_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tujuan Pembelajaran (TP)</label>
+                        <select name="cp_id" id="cp_id" 
+                                class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                            <option value="">-- Pilih TP (Opsional) --</option>
+                            @foreach($tujuanPembelajaran as $tp)
+                                <option value="{{ $tp->id }}" title="{{ $tp->deskripsi ?? '' }}">
+                                    {{ $tp->tp ?? $tp->nama }} @if($tp->cp) - {{ $tp->cp }} @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-slate-400 mt-1">Pilih TP yang sesuai dengan kegiatan hari ini.</p>
+                    </div>
+
+                    <div>
+                        <label for="cp" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Capaian Pembelajaran (CP)</label>
+                        <input type="text" name="cp" id="cp" value="{{ old('cp') }}"
+                               class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all"
+                               placeholder="Contoh: Menyajikan makanan Indonesia">
+                        <p class="text-xs text-slate-400 mt-1">Isi CP yang sesuai dengan kegiatan hari ini.</p>
                     </div>
 
                     <div class="md:col-span-2">
@@ -84,7 +115,7 @@
                 </div>
 
                 <div class="pt-4 flex justify-end">
-                    <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                    <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-1 flex items-center gap-2">
                         <i data-lucide="save" class="w-5 h-5"></i>
                         Simpan Jurnal
                     </button>

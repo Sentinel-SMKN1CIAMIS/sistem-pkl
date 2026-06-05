@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'username', 'email', 'password', 'role', 'avatar', 'is_active', 'last_login_at'])]
+#[Fillable(['name', 'username', 'email', 'password', 'role', 'avatar', 'is_active', 'last_login_at', 'force_password_change', 'konsentrasi_keahlian_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -30,6 +30,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
+            'force_password_change' => 'boolean',
         ];
     }
 
@@ -46,5 +47,41 @@ class User extends Authenticatable
     public function pembimbingDudi()
     {
         return $this->hasOne(PembimbingDudi::class);
+    }
+
+    public function konsentrasiKeahlian()
+    {
+        return $this->belongsTo(KonsentrasiKeahlian::class);
+    }
+
+    public function kaprog()
+    {
+        return $this->hasOne(Kaprog::class);
+    }
+
+    public function pokjaGroups()
+    {
+        return $this->belongsToMany(PokjaGroup::class, 'pokja_group_user')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if user is member of any active Pokja group
+     */
+    public function hasActivePokjaGroup(): bool
+    {
+        return $this->pokjaGroups()
+            ->where('is_active', true)
+            ->exists();
+    }
+
+    /**
+     * Get the active Pokja group for this user (if member of one)
+     */
+    public function getActivePokjaGroup()
+    {
+        return $this->pokjaGroups()
+            ->where('is_active', true)
+            ->first();
     }
 }

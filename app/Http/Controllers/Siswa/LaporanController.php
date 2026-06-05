@@ -10,8 +10,20 @@ use Carbon\Carbon;
 
 class LaporanController extends Controller
 {
+    private function requirePkl()
+    {
+        $siswa = auth()->user()->siswa;
+        if (!$siswa || !$siswa->dudi_id) {
+            return redirect()->route('siswa.pengajuan_pkl.status')
+                ->with('error', 'Anda belum memiliki tempat PKL yang disetujui. Silakan ajukan terlebih dahulu.');
+        }
+        return null;
+    }
+
     public function index()
     {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
         $siswa = auth()->user()->siswa;
         $laporan = LaporanPkl::where('siswa_id', $siswa->id)->first();
         return view('siswa.laporan.index', compact('laporan'));
@@ -19,6 +31,8 @@ class LaporanController extends Controller
 
     public function store(Request $request)
     {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
         $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',

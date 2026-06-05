@@ -68,28 +68,75 @@
                 <div class="glass-card p-6 md:col-span-2">
                     <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                         <i data-lucide="briefcase" class="w-5 h-5 text-purple-400"></i>
-                        Penugasan Konsentrasi Keahlian
+                        Penugasan
                     </h3>
-                    <div>
-                        <label for="konsentrasi_keahlian_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tugas di Konsentrasi Keahlian</label>
-                        <select name="konsentrasi_keahlian_id" id="konsentrasi_keahlian_id" required
-                                class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
-                            <option value="" disabled selected>Pilih Konsentrasi Keahlian</option>
-                            @foreach($concentrations as $item)
-                                <option value="{{ $item->id }}" {{ old('konsentrasi_keahlian_id') == $item->id ? 'selected' : '' }}>{{ $item->nama }}</option>
-                            @endforeach
-                        </select>
-                        <p class="mt-2 text-xs text-slate-500 dark:text-slate-400 italic">Pembimbing akan mengelola siswa dari konsentrasi keahlian yang dipilih.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="konsentrasi_keahlian_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tugas di Konsentrasi Keahlian</label>
+                            <select name="konsentrasi_keahlian_id" id="konsentrasi_keahlian_id" required
+                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                                <option value="" disabled selected>Pilih Konsentrasi Keahlian</option>
+                                @foreach($concentrations as $item)
+                                    <option value="{{ $item->id }}" {{ old('konsentrasi_keahlian_id') == $item->id ? 'selected' : '' }}>{{ $item->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="tipe" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tipe Pembimbing</label>
+                            <select name="tipe" id="tipe" required onchange="toggleAdaptifFields()"
+                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                                <option value="produktif" {{ old('tipe') == 'produktif' ? 'selected' : '' }}>Guru Produktif</option>
+                                <option value="normatif" {{ old('tipe') == 'normatif' ? 'selected' : '' }}>Guru Normatif</option>
+                                <option value="adaptif" {{ old('tipe') == 'adaptif' ? 'selected' : '' }}>Guru Adaptif (Umum)</option>
+                            </select>
+                        </div>
+
+                        <!-- Adaptif/Normatif specific fields -->
+                        <div id="adaptif-fields" class="md:col-span-2 hidden space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <div>
+                                <label for="mapel_cp" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Mata Pelajaran (Mapel)</label>
+                                <input type="text" name="mapel_cp" id="mapel_cp" value="{{ old('mapel_cp') }}"
+                                       class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all"
+                                       placeholder="Contoh: Matematika, Bahasa Inggris, dll">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Kelas yang Diajar</label>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/50 dark:border-slate-700/50 max-h-48 overflow-y-auto">
+                                    @foreach($existingClasses as $kelas)
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" name="kelas[]" value="{{ $kelas }}" class="rounded text-blue-600 focus:ring-blue-500" {{ is_array(old('kelas')) && in_array($kelas, old('kelas')) ? 'checked' : '' }}>
+                                            <span class="text-sm text-slate-700 dark:text-slate-300">{{ $kelas }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
+                    <p class="mt-4 text-xs text-slate-500 dark:text-slate-400 italic">Pembimbing akan mengelola siswa dari konsentrasi keahlian dan kategori yang dipilih.</p>
                 </div>
             </div>
 
             <div class="pt-4 flex justify-end">
-                <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-1 flex items-center gap-2">
                     <i data-lucide="save" class="w-5 h-5"></i>
                     Simpan Pembimbing
                 </button>
             </div>
         </form>
     </div>
+
+    <script>
+        function toggleAdaptifFields() {
+            const tipe = document.getElementById('tipe').value;
+            const adaptifFields = document.getElementById('adaptif-fields');
+            if(tipe === 'normatif' || tipe === 'adaptif') {
+                adaptifFields.classList.remove('hidden');
+            } else {
+                adaptifFields.classList.add('hidden');
+            }
+        }
+        document.addEventListener('DOMContentLoaded', toggleAdaptifFields);
+    </script>
 </x-app-layout>

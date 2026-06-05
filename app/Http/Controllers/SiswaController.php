@@ -9,10 +9,26 @@ class SiswaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $students = \App\Models\Siswa::with(['user', 'konsentrasiKeahlian', 'dudi', 'pembimbingSekolah'])->latest()->paginate(10);
-        return view('pokja.siswa.index', compact('students'));
+        $query = \App\Models\Siswa::with(['user', 'konsentrasiKeahlian', 'dudi', 'pembimbingSekolah']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('konsentrasi')) {
+            $query->where('konsentrasi_keahlian_id', $request->konsentrasi);
+        }
+
+        $students = $query->latest()->paginate(10)->withQueryString();
+        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        
+        return view('pokja.siswa.index', compact('students', 'concentrations'));
     }
 
     public function create()
@@ -36,25 +52,34 @@ class SiswaController extends Controller
             'kelas' => 'required|string',
             'jenis_kelamin' => 'required|in:L,P',
             'tahun_ajaran' => 'required|string',
-            'dudi_id' => 'nullable|exists:dudis,id',
-            'pembimbing_sekolah_id' => 'nullable|exists:pembimbing_sekolahs,id',
-            'pembimbing_dudi_id' => 'nullable|exists:pembimbing_dudis,id',
         ]);
 
-        // Create User first
-        $user = \App\Models\User::create([
-            'name' => $request->nama_lengkap,
-            'username' => $request->nis,
-            'email' => $request->email,
-            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
-            'role' => 'siswa',
-        ]);
+        try {
+            // Wrap in database transaction for atomicity
+            \Illuminate\Support\Facades\DB::beginTransaction();
 
-        // Create Siswa profile
-        \App\Models\Siswa::create(array_merge($request->all(), ['user_id' => $user->id]));
+            // Create User first
+            $user = \App\Models\User::create([
+                'name' => $request->nama_lengkap,
+                'username' => $request->nis,
+                'email' => $request->email,
+                'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+                'role' => 'siswa',
+            ]);
 
-        return redirect()->route('pokja.siswa.index')
-            ->with('success', 'Data siswa dan akun berhasil dibuat.');
+            // Create Siswa profile
+            \App\Models\Siswa::create(array_merge($request->all(), ['user_id' => $user->id]));
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return redirect()->route('pokja.siswa.index')
+                ->with('success', 'Data siswa dan akun berhasil dibuat.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            
+            return back()->with('error', 'Gagal menambahkan data siswa: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function show(\App\Models\Siswa $siswa)
@@ -82,9 +107,6 @@ class SiswaController extends Controller
             'kelas' => 'required|string',
             'jenis_kelamin' => 'required|in:L,P',
             'tahun_ajaran' => 'required|string',
-            'dudi_id' => 'nullable|exists:dudis,id',
-            'pembimbing_sekolah_id' => 'nullable|exists:pembimbing_sekolahs,id',
-            'pembimbing_dudi_id' => 'nullable|exists:pembimbing_dudis,id',
         ]);
 
         $siswa->update($request->all());

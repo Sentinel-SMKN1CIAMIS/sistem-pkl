@@ -10,10 +10,10 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-white dark:bg-slate-800/30 border-b border-slate-200/50 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
-                        <th class="px-6 py-4">Waktu</th>
-                        <th class="px-6 py-4">Pengguna</th>
-                        <th class="px-6 py-4">Aksi</th>
-                        <th class="px-6 py-4">Deskripsi</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Waktu</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Pengguna</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Aksi</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Deskripsi</th>
                         <th class="px-6 py-4 whitespace-nowrap">IP & Lokasi</th>
                     </tr>
                 </thead>
@@ -23,7 +23,7 @@
                             <td class="px-6 py-4 text-slate-700 dark:text-slate-300 font-mono text-xs whitespace-nowrap">
                                 {{ $log->created_at->format('d M Y, H:i:s') }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
                                     <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
                                         <i data-lucide="user" class="w-3 h-3 text-blue-400"></i>
@@ -31,7 +31,7 @@
                                     <span class="text-slate-800 dark:text-slate-200 font-medium">{{ $log->user->username ?? 'Sistem' }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 @php
                                     $actionClasses = [
                                         'LOGIN' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -45,10 +45,10 @@
                                     {{ $log->action }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400 italic font-medium leading-relaxed">
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400 italic font-medium leading-relaxed whitespace-nowrap">
                                 {{ $log->description }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex flex-col gap-0.5">
                                     <span class="text-slate-500 dark:text-slate-400 font-mono text-[10px]">{{ $log->ip_address }}</span>
                                     <span class="text-slate-600 dark:text-slate-400 font-medium text-[11px] whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]" title="{{ $log->location }}">

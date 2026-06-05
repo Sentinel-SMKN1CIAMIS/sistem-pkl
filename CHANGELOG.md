@@ -1,5 +1,52 @@
 # CHANGELOG
 
+## [2026-05-22]
+### Changed
+- **Relokasi Hak Validasi Jurnal**: Validasi (Valid/Invalid) jurnal harian kini sepenuhnya menjadi tanggung jawab **Pembimbing DUDI (Mentor Industri)**. Pembimbing Sekolah (Guru) **tidak lagi bisa** memvalidasi jurnal.
+- **Pembimbing Sekolah → Komentar Saja**: Halaman "Monitoring Jurnal" untuk Pembimbing Sekolah diubah total: tombol Validasi/Tolak dihapus, diganti form "Kirim Saran" yang selalu tampil di setiap kartu jurnal (semua status).
+- **Aturan 1 Hari 1 Jurnal**: Siswa kini hanya dapat mengisi 1 jurnal per hari. Jika sudah mengisi, tombol tambah jurnal akan diblokir dengan pesan error yang jelas.
+- Penghapusan fitur "Validasi Semua Jurnal" dari panel Pembimbing Sekolah (route dan method `validasiSemua` dihapus).
+
+## [2026-05-20]
+### Changed
+- Pemindahan menu **Profil Saya** dan tombol **Logout** dari sidebar utama ke dalam *dropdown* (trigger klik pada profil) di bagian bawah sidebar untuk meningkatkan UX dan kerapian navigasi (diimplementasikan untuk semua role).
+- Penambahan validasi "Unsaved Changes" global menggunakan event `beforeunload` untuk mencegah hilangnya input form yang belum disimpan saat berpindah halaman secara tidak sengaja.
+- Penambahan kolom `unit_pekerjaan` di tabel `siswas` dan penambahan *input field* "Unit / Bagian Pekerjaan" di halaman **Profil Saya**, sehingga penentuan unit kerja kini sepenuhnya diisi mandiri oleh siswa.
+- Penambahan section **Contoh Sertifikat PKL** di bagian bawah halaman **Laporan Akhir PKL** (siswa) sebagai referensi visual, lengkap dengan fitur *lightbox* (klik untuk memperbesar) menggunakan Alpine.js.
+- Penambahan validasi absensi pada pengisian jurnal harian: Siswa kini wajib melakukan absen datang (clock-in) sebelum dapat membuka form pengisian jurnal, dan tanggal jurnal harus sesuai dengan tanggal absensi yang valid.
+- Relokasi hak akses **Validasi Jurnal**: Validasi (Valid/Invalid) kini menjadi tanggung jawab penuh **Pembimbing DUDI**, sementara **Pembimbing Sekolah** hanya diberikan akses untuk memberikan komentar (`catatan_guru`) tanpa dapat merubah status jurnal.
+- Penambahan fitur Pembimbing Sekolah dapat memberikan saran/komentar (catatan guru) kepada murid yang dibimbingnya.
+- Penambahan aturan "1 HARI 1 JURNAL": Siswa hanya dapat mengisi jurnal 1 kali per hari, dan harus melakukan absen terlebih dahulu.
+
+## [2026-05-18]
+### Added
+- Implementasi fitur **Multi-select Konsentrasi Keahlian** pada form tambah/edit DUDI di role Pokja menggunakan tampilan daftar *checkbox* yang responsif.
+- Pembuatan tabel pivot `dudi_konsentrasi_keahlian` untuk memetakan hubungan *Many-to-Many* antara DUDI dengan Konsentrasi Keahlian.
+- Penambahan fitur **Feedback Pembimbing DUDI** yang memungkinkan Pembimbing DUDI memberikan masukan/evaluasi umum (bersifat opsional) per periode rekap (mingguan/bulanan) kepada sekolah.
+- Halaman **Feedback DUDI** di role Pokja untuk memantau masukan/evaluasi yang masuk dari mitra industri.
+
+### Fixed
+- Perbaikan layout halaman secara menyeluruh (*responsive design*) untuk dukungan optimal sebagai *Progressive Web App* (PWA) di perangkat *mobile*.
+- Penambahan class `whitespace-nowrap` pada seluruh sel tabel (`<th>` dan `<td>`) di semua halaman untuk mencegah teks turun (*wrap*) dan merusak struktur kontainer saat diakses dari layar kecil.
+- Memastikan seluruh tabel data dibungkus dalam kontainer `overflow-x-auto` yang memungkinkan pengguliran horizontal (*scrollable*) di perangkat *mobile*.
+## [2026-05-11]
+### Added
+- Implementasi sistem **Tipe Pembimbing Sekolah** (Enum: Normatif, Adaptif, Produktif) pada tabel `pembimbing_sekolahs` untuk kategorisasi guru bimbingan.
+- Pembuatan fitur **Profil Siswa** (`Siswa\ProfileController`) yang memungkinkan siswa menginput secara manual nama dan jabatan **Pembimbing Industri (DUDI)** jika belum terdaftar di sistem.
+- Penambahan fitur **Filter Pencarian** (Nama/NIS) dan **Filter Konsentrasi Keahlian** pada halaman daftar siswa dan DUDI di role Pokja.
+- Implementasi fitur **Rekapitulasi Kehadiran** pada role Pembimbing Sekolah dengan fitur filter (rentang tanggal & nama siswa) serta fitur **Ekspor PDF** menggunakan DomPDF.
+- Penambahan menu "Lihat Siswa" pada daftar pembimbing sekolah untuk memudahkan Pokja memantau ploting siswa bimbingan.
+- Integrasi **Buku Pedoman PKL 2025-2026** langsung ke dalam dashboard siswa menggunakan `<iframe>` dengan proteksi toolbar.
+
+### Changed
+- Field **Nama Pimpinan/HRD** pada data DUDI kini bersifat opsional (`nullable`) untuk fleksibilitas input data.
+- Relokasi hak akses **Validasi Jurnal** harian siswa: kini hanya dapat dilakukan oleh **Pembimbing Sekolah** (Guru), sementara Pembimbing DUDI hanya diberikan akses *view-only* (Review).
+- Pemindahan rute dan logika notifikasi validasi jurnal dari controller Pembimbing DUDI ke `PembimbingSekolah\JurnalController`.
+
+### Fixed
+- Sinkronisasi status kehadiran harian ("Masuk Kerja", "Pulang Kerja") agar muncul secara real-time di seluruh tabel monitoring siswa berdasarkan aktivitas absensi terbaru.
+- Perbaikan query pagination pada tabel-tabel utama agar tetap mempertahankan parameter filter saat berpindah halaman (`withQueryString`).
+
 ## [2026-04-22]
 ### Changed
 - Perubahan nama aplikasi dari **Simbiosis** menjadi **MAS-PKL** di seluruh sistem (Konfigurasi, Halaman Login, dan Layout Utama).

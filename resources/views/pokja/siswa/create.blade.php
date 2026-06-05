@@ -74,16 +74,6 @@
                             <input type="text" name="tahun_ajaran" id="tahun_ajaran" value="{{ old('tahun_ajaran', '2025/2026') }}" required
                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
                         </div>
-                    </div>
-                </div>
-
-                <!-- Penempatan & Pembimbing -->
-                <div class="glass-card p-6 md:col-span-2">
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
-                        <i data-lucide="map-pin" class="w-5 h-5 text-purple-400"></i>
-                        Penempatan PKL & Pembimbing
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="konsentrasi_keahlian_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Konsentrasi Keahlian</label>
                             <select name="konsentrasi_keahlian_id" id="konsentrasi_keahlian_id" required
@@ -94,42 +84,13 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label for="dudi_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">DUDI / Industri</label>
-                            <select name="dudi_id" id="dudi_id"
-                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
-                                <option value="">Belum Ditentukan</option>
-                                @foreach($dudis as $item)
-                                    <option value="{{ $item->id }}" {{ old('dudi_id') == $item->id ? 'selected' : '' }}>{{ $item->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label for="pembimbing_sekolah_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pembimbing Sekolah</label>
-                            <select name="pembimbing_sekolah_id" id="pembimbing_sekolah_id"
-                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
-                                <option value="">Belum Ditentukan</option>
-                                @foreach($pembimbingSekolah as $item)
-                                    <option value="{{ $item->id }}" {{ old('pembimbing_sekolah_id') == $item->id ? 'selected' : '' }}>{{ $item->nama_lengkap }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label for="pembimbing_dudi_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pembimbing DUDI</label>
-                            <select name="pembimbing_dudi_id" id="pembimbing_dudi_id"
-                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
-                                <option value="">Belum Ditentukan</option>
-                                @foreach($pembimbingDudi as $item)
-                                    <option value="{{ $item->id }}" {{ old('pembimbing_dudi_id') == $item->id ? 'selected' : '' }}>{{ $item->nama_lengkap }}</option>
-                                @endforeach
-                            </select>
-                        </div>
                     </div>
                 </div>
+
             </div>
 
             <div class="pt-4 flex justify-end">
-                <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-1 flex items-center gap-2">
                     <i data-lucide="save" class="w-5 h-5"></i>
                     Simpan Seluruh Data
                 </button>

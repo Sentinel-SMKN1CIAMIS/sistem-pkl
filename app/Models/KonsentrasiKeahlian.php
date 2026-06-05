@@ -23,6 +23,11 @@ class KonsentrasiKeahlian extends Model
         return $this->hasMany(Dudi::class);
     }
 
+    public function dudis()
+    {
+        return $this->belongsToMany(Dudi::class, 'dudi_konsentrasi_keahlian', 'konsentrasi_keahlian_id', 'dudi_id');
+    }
+
     public function siswa()
     {
         return $this->hasMany(Siswa::class);

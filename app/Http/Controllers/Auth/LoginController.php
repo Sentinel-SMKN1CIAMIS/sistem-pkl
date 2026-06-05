@@ -33,6 +33,11 @@ class LoginController extends Controller
                 ]);
             }
 
+            // Check if user needs to change password on first login
+            if ($user->force_password_change) {
+                return redirect()->route('auth.change-password.show');
+            }
+
             return redirect()->intended('dashboard');
         }
 

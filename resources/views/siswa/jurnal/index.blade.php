@@ -1,14 +1,58 @@
 <x-app-layout>
     <x-slot name="header">Jurnal Kegiatan PKL</x-slot>
 
-    <div class="mb-6 flex justify-between items-center">
-        <p class="text-slate-600 dark:text-slate-400">Catat setiap aktivitas pengerjaan atau pembelajaran di industri sesuai format resmi.</p>
-        <div class="flex gap-3">
-            <a href="{{ route('siswa.jurnal.export') }}" class="px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-2">
+    <style>
+        .jurnal-header-container {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+        }
+        .jurnal-btn-container {
+            display: flex !important;
+            gap: 0.75rem !important;
+            width: 100% !important;
+        }
+        .jurnal-btn {
+            width: 100% !important;
+            display: inline-flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        .jurnal-photo-container {
+            width: 100% !important;
+            height: 192px !important;
+            border-radius: 0.75rem !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+        }
+        
+        @media (min-width: 768px) {
+            .jurnal-header-container {
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+            .jurnal-btn-container {
+                width: auto !important;
+            }
+            .jurnal-btn {
+                width: auto !important;
+            }
+            .jurnal-photo-container {
+                width: 192px !important;
+                height: 128px !important;
+            }
+        }
+    </style>
+
+    <div class="mb-6 jurnal-header-container">
+        <p class="text-slate-600 dark:text-slate-400 max-w-xl">Catat setiap aktivitas pengerjaan atau pembelajaran di industri sesuai format resmi.</p>
+        <div class="jurnal-btn-container">
+            <a href="{{ route('siswa.jurnal.export') }}" class="jurnal-btn px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-all gap-2 text-sm md:text-base">
                 <i data-lucide="printer" class="w-5 h-5"></i>
                 Cetak Jurnal
             </a>
-            <a href="{{ route('siswa.jurnal.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+            <a href="{{ route('siswa.jurnal.create') }}" class="jurnal-btn px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2 text-sm md:text-base">
                 <i data-lucide="plus-circle" class="w-5 h-5"></i>
                 Tambah Jurnal
             </a>
@@ -44,16 +88,21 @@
                              <h3 class="text-lg font-black text-slate-900 dark:text-slate-100 mb-2 uppercase tracking-wide decoration-blue-500 underline underline-offset-8 decoration-2">
                                 {{ $item->deskripsi_pekerjaan }}
                              </h3>
-                            <div class="flex items-center gap-2 mb-4">
+                            <div class="flex items-center gap-2 mb-4 flex-wrap">
                                 <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400">
                                     {{ $item->kompetensi->nama }}
                                 </span>
+                                @if($item->tujuanPembelajaran)
+                                    <span class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-[10px] text-blue-600 dark:text-blue-300 font-medium">
+                                        TP: {{ $item->tujuanPembelajaran->tp ?? $item->tujuanPembelajaran->nama }}
+                                    </span>
+                                @endif
                             </div>
                             <p class="text-slate-600 dark:text-slate-400 text-sm line-clamp-2">{{ $item->catatan }}</p>
                         </div>
                         
                         @if($item->foto_path)
-                            <div class="w-full md:w-32 h-32 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                            <div class="jurnal-photo-container border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <img src="{{ asset('storage/' . $item->foto_path) }}" alt="Foto Kegiatan" class="w-full h-full object-cover">
                             </div>
                         @endif
@@ -71,9 +120,18 @@
                         </div>
                     </div>
                     
-                    @if($item->catatan_pembimbing)
-                        <div class="mt-4 p-3 rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 italic text-sm text-slate-600 dark:text-slate-400">
-                            <span class="font-bold text-slate-700 dark:text-slate-300 not-italic">Komentar Pembimbing:</span> {{ $item->catatan_pembimbing }}
+                    @if($item->catatan_pembimbing || $item->catatan_guru)
+                        <div class="mt-4 space-y-2">
+                            @if($item->catatan_pembimbing)
+                                <div class="p-3 rounded-lg bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 italic text-sm text-slate-600 dark:text-slate-400">
+                                    <span class="font-bold text-slate-700 dark:text-slate-300 not-italic">Komentar Pembimbing DUDI:</span> {{ $item->catatan_pembimbing }}
+                                </div>
+                            @endif
+                            @if($item->catatan_guru)
+                                <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-700/50 italic text-sm text-blue-800 dark:text-blue-300">
+                                    <span class="font-bold text-blue-900 dark:text-blue-200 not-italic">Komentar Pembimbing Sekolah:</span> {{ $item->catatan_guru }}
+                                </div>
+                            @endif
                         </div>
                     @endif
                 </div>

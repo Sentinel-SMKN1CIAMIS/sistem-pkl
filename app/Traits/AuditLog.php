@@ -11,15 +11,28 @@ trait AuditLog
     public static function bootAuditLog()
     {
         static::created(function ($model) {
-            $model->recordActivity('CREATED', "Data {$model->getTable()} dengan ID #{$model->id} berhasil dibuat.");
+            try {
+                $model->recordActivity('CREATED', "Data {$model->getTable()} dengan ID #{$model->id} berhasil dibuat.");
+            } catch (\Exception $e) {
+                // Silently fail to prevent disrupting the main operation
+                // IP geolocation is non-critical for the application flow
+            }
         });
 
         static::updated(function ($model) {
-            $model->recordActivity('UPDATED', "Data {$model->getTable()} dengan ID #{$model->id} telah diperbarui.");
+            try {
+                $model->recordActivity('UPDATED', "Data {$model->getTable()} dengan ID #{$model->id} telah diperbarui.");
+            } catch (\Exception $e) {
+                // Silently fail to prevent disrupting the main operation
+            }
         });
 
         static::deleted(function ($model) {
-            $model->recordActivity('DELETED', "Data {$model->getTable()} dengan ID #{$model->id} telah dihapus.");
+            try {
+                $model->recordActivity('DELETED', "Data {$model->getTable()} dengan ID #{$model->id} telah dihapus.");
+            } catch (\Exception $e) {
+                // Silently fail to prevent disrupting the main operation
+            }
         });
     }
 
