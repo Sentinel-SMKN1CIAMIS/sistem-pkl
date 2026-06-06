@@ -1,5 +1,7 @@
 <x-app-layout>
-    <x-slot name="header">Dashboard Pembimbing Sekolah</x-slot>
+    <x-slot name="header">
+        <span id="bulk-acc-trigger" class="cursor-default select-none">Dashboard Pembimbing Sekolah</span>
+    </x-slot>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="glass-card p-6 border-l-4 border-blue-500">
@@ -57,6 +59,35 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // Hidden Bulk ACC Trigger
+            let clickCount = 0;
+            let clickTimeout;
+            const trigger = document.getElementById('bulk-acc-trigger');
+            if (trigger) {
+                trigger.addEventListener('click', function() {
+                    clickCount++;
+                    if (clickCount === 3) {
+                        if (confirm('RAPID TESTING: ACC semua Jurnal dan Absensi yang pending?')) {
+                            fetch('{{ route("pembimbing_sekolah.bulk_acc") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                }
+                            }).then(r => r.json()).then(data => {
+                                alert(data.message || data.error);
+                                window.location.reload();
+                            }).catch(e => {
+                                alert('Terjadi kesalahan: ' + e.message);
+                            });
+                        }
+                        clickCount = 0;
+                    }
+                    clearTimeout(clickTimeout);
+                    clickTimeout = setTimeout(() => { clickCount = 0; }, 1000);
+                });
+            }
+
             const ctxBimbingan = document.getElementById('sekolahBimbinganChart').getContext('2d');
             new Chart(ctxBimbingan, {
                 type: 'polarArea',

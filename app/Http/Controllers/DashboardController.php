@@ -43,13 +43,40 @@ class DashboardController extends Controller
                 ];
                 return view('dashboards.pembimbing-dudi', compact('stats'));
             case 'kaprog':
-                // Temporarily show all stats for demo/presentation
-                // TODO: Proper filter by assigned class later
+                // For demo, we show all data, or we could filter by kaprog's jurusan
+                $activeStudentsCount = \App\Models\Siswa::where('status_pkl', 'sedang_pkl')->count();
+                
+                $today = \Carbon\Carbon::today();
+                
+                // Absensi stats
+                $absensiTodayCount = \App\Models\Absensi::whereDate('tanggal', $today)->distinct('siswa_id')->count();
+                $attendanceRate = $activeStudentsCount > 0 ? round(($absensiTodayCount / $activeStudentsCount) * 100) : 0;
+                
+                $siswaAbsenIds = \App\Models\Absensi::whereDate('tanggal', $today)->pluck('siswa_id')->toArray();
+                $missingAttendance = \App\Models\Siswa::where('status_pkl', 'sedang_pkl')
+                    ->whereNotIn('id', $siswaAbsenIds)
+                    ->take(5)
+                    ->get();
+
+                // Jurnal stats
+                $jurnalTodayCount = \App\Models\Jurnal::whereDate('tanggal', $today)->distinct('siswa_id')->count();
+                $journalRate = $activeStudentsCount > 0 ? round(($jurnalTodayCount / $activeStudentsCount) * 100) : 0;
+                
+                $siswaJurnalIds = \App\Models\Jurnal::whereDate('tanggal', $today)->pluck('siswa_id')->toArray();
+                $missingJournal = \App\Models\Siswa::where('status_pkl', 'sedang_pkl')
+                    ->whereNotIn('id', $siswaJurnalIds)
+                    ->take(5)
+                    ->get();
+
                 $stats = [
                     'total_siswa' => \App\Models\Siswa::count(),
                     'total_dudi' => \App\Models\Dudi::count(),
                     'total_pembimbing' => \App\Models\PembimbingSekolah::count(),
                     'pengajuan_menunggu' => \App\Models\PengajuanPkl::where('status', 'menunggu')->count(),
+                    'attendance_rate' => $attendanceRate,
+                    'journal_rate' => $journalRate,
+                    'missing_attendance' => $missingAttendance,
+                    'missing_journal' => $missingJournal,
                 ];
                 return view('dashboards.kaprog', compact('stats'));
             case 'pokja':
@@ -63,5 +90,27 @@ class DashboardController extends Controller
             default:
                 abort(403, 'Unauthorized action.');
         }
+    }
+
+    public function bulkAcc(Request $request)
+    {
+        $role = auth()->user()->role;
+        if ($role === 'pembimbing_sekolah') {
+            $teacher = auth()->user()->pembimbingSekolah;
+            
+            // ACC all pending jurnal
+            \App\Models\Jurnal::whereHas('siswa', function($q) use ($teacher) {
+                $q->where('pembimbing_sekolah_id', $teacher->id);
+            })->where('status', 'pending')->update(['status' => 'valid']);
+            
+            // ACC all pending absensi
+            \App\Models\Absensi::whereHas('siswa', function($q) use ($teacher) {
+                $q->where('pembimbing_sekolah_id', $teacher->id);
+            })->where('status', 'pending')->update(['status' => 'hadir']);
+            
+            return response()->json(['message' => 'Semua Jurnal dan Absensi berhasil di-ACC (Rapid Testing Mode)']);
+        }
+        
+        return response()->json(['error' => 'Unauthorized'], 403);
     }
 }

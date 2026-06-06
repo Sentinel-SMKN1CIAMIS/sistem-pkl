@@ -13,9 +13,9 @@ class LaporanController extends Controller
     private function requirePkl()
     {
         $siswa = auth()->user()->siswa;
-        if (!$siswa || !$siswa->dudi_id) {
+        if (!$siswa || !$siswa->dudi_id || !in_array($siswa->status_pkl, ['sedang_pkl', 'selesai'])) {
             return redirect()->route('siswa.pengajuan_pkl.status')
-                ->with('error', 'Anda belum memiliki tempat PKL yang disetujui. Silakan ajukan terlebih dahulu.');
+                ->with('error', 'Anda belum dapat mengakses menu ini. Pastikan Surat Pengantar telah di-ACC dan DUDI telah membalas (menerima) Anda.');
         }
         return null;
     }

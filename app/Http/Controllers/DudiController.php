@@ -91,10 +91,20 @@ class DudiController extends Controller
             'email' => 'nullable|email',
             'nama_pimpinan' => 'nullable|string',
             'bidang_usaha' => 'nullable|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ]);
 
         $data = $request->all();
         $data['konsentrasi_keahlian_id'] = $request->konsentrasi_keahlian_ids[0];
+
+        // Auto-detect zona if coordinates are provided
+        if ($request->filled('latitude') && $request->filled('longitude')) {
+            $zona = \App\Models\Zona::detectZona((float) $request->latitude, (float) $request->longitude);
+            $data['zona_id'] = $zona ? $zona->id : null;
+        } else {
+            $data['zona_id'] = null; // Clear zona if coords are removed
+        }
 
         $dudi->update($data);
         $dudi->konsentrasiKeahlians()->sync($request->konsentrasi_keahlian_ids);

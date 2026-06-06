@@ -20,6 +20,7 @@
             ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
             ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
             ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
+            ['name' => 'Peta DUDI', 'route' => 'shared.pemetaan.maps', 'icon' => 'map'],
             ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
     } elseif ($role === 'pembimbing_dudi') {
@@ -39,15 +40,20 @@
             ['name' => 'Pembimbing Sekolah', 'route' => 'pokja.pembimbing_sekolah.index', 'icon' => 'user-check'],
             ['name' => 'Pembimbing DUDI', 'route' => 'pokja.pembimbing_dudi.index', 'icon' => 'user-cog'],
             ['name' => 'Pemetaan', 'route' => 'pokja.pemetaan.index', 'icon' => 'network'],
+            ['name' => 'Peta DUDI', 'route' => 'pokja.pemetaan.maps', 'icon' => 'map'],
+            ['name' => 'Kelola Zona', 'route' => 'pokja.zona.index', 'icon' => 'layers'],
+            ['name' => 'Kelola TP/CP', 'route' => 'pokja.kompetensi.index', 'icon' => 'target'],
             ['name' => 'Monitoring Pembimbing', 'route' => 'pokja.monitoring.index', 'icon' => 'eye'],
             ['name' => 'Evaluasi PKL', 'route' => 'pokja.evaluasi.index', 'icon' => 'bar-chart-3'],
             ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
+            ['name' => 'Pengaturan', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'settings'],
             ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
     } elseif ($role === 'kaprog') {
         $navItems = [
             ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
             ['name' => 'Pengajuan PKL', 'route' => 'kaprog.pengajuan_pkl.index', 'icon' => 'file-plus-2'],
+            ['name' => 'Peta DUDI', 'route' => 'shared.pemetaan.maps', 'icon' => 'map'],
             ['name' => 'Laporan Kaprog', 'route' => 'kaprog.laporan.index', 'icon' => 'file-bar-chart-2'],
             ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];

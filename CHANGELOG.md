@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [2026-06-06] - Modul 4 & 7
+### Added
+- Implementasi fitur **Cetak Sertifikat PKL** pada halaman Jurnal Siswa yang menghasilkan sertifikat dalam format PDF menggunakan DomPDF.
+- Pembuatan halaman **Pengaturan Template Sertifikat** (`PengaturanController`) pada dashboard Pokja yang memungkinkan edit teks paragraf pembuka sertifikat secara dinamis.
+- Penambahan widget **Monitoring Kaprog** pada dashboard Kepala Program untuk memantau metrik kehadiran harian, rasio pengisian jurnal, serta daftar siswa yang belum berpartisipasi.
+- Penambahan fitur tersembunyi **Bulk ACC** (Rapid Testing) pada dashboard Pembimbing Sekolah (diaktifkan dengan *triple-click* pada judul dashboard) yang menyetujui semua jurnal dan absensi tertunda secara massal.
+
+### Changed
+- Perubahan logika pencarian "Siswa PKL" bagi **Pembimbing DUDI**: pencarian siswa kini menggunakan `dudi_id` alih-alih `pembimbing_dudi_id` agar mentor tetap dapat melihat siswa yang belum diplot spesifik ke dirinya namun berada di perusahaan yang sama.
+- Pembaruan mekanisme proteksi akses aplikasi Siswa (Jurnal, Absensi, Laporan): siswa kini diwajibkan untuk berada pada status **Sedang PKL** atau **Selesai** (menandakan Surat Pengantar sudah di-ACC Kaprog dan DUDI membalas terima) sebelum dapat menggunakan fitur.
+
+### Added (Modul 4 - Pemetaan)
+- Implementasi **Peta Sebaran DUDI** menggunakan **Leaflet.js** dan **OpenStreetMap** dengan tampil di halaman `Peta DUDI` untuk role Pokja, Kaprog, dan Pembimbing Sekolah.
+- Integrasi **Leaflet.markercluster** untuk menghindari penumpukan marker saat peta di-zoom out; marker yang berdekatan otomatis menggumpal menjadi satu lingkaran angka.
+- Implementasi **Hover Tooltip** pada setiap marker DUDI yang menampilkan ringkasan jurusan siswa (nama jurusan dan jumlah siswa) saat mouse diarahkan di atas marker tanpa klik.
+- Implementasi **Click Popup** detail lengkap saat marker diklik: Nama DUDI, Alamat, Jenis Industri, Pimpinan, Telepon, Zona, serta daftar rincian nama seluruh siswa yang sedang PKL di sana.
+- Pembedaan warna marker berdasarkan **Jenis Industri** (Pemerintahan=Merah, Industri=Biru, Layanan=Ungu, Perdagangan=Kuning, Pendidikan=Hijau, Kesehatan=Pink, Teknologi=Cyan, Pertanian=Lime, Lainnya=Abu-abu) dilengkapi legenda visual.
+- Pembuatan tabel database **`zonas`** untuk menyimpan data zona wilayah (nama, warna isi, warna border, koordinat GeoJSON polygon, nomor zona).
+- Implementasi halaman **Kelola Zona** untuk Pokja menggunakan plugin **Leaflet Draw**, memungkinkan Pokja menggambar polygon zona langsung di atas peta, memilih warna, dan menyimpan ke database.
+- Rendering **Polygon Zona** di peta sebaran DUDI dengan warna semi-transparan dan garis batas putus-putus (*dashed stroke/border*).
+- Implementasi algoritma **Point-in-Polygon (Ray-Casting)** pada model `Zona` untuk mendeteksi secara otomatis zona wilayah sebuah DUDI berdasarkan koordinatnya.
+- Auto-deteksi zona berjalan otomatis setiap kali koordinat DUDI diperbarui (baik oleh Siswa maupun Pokja).
+- Penambahan fitur **Update Lokasi DUDI via GPS** pada halaman Profil Siswa: siswa cukup memencet tombol "Update Lokasi Saat Ini" dan koordinat GPS ponsel mereka otomatis disimpan sebagai lokasi DUDI tempatnya PKL.
+- Penambahan **Mini-map Interaktif (Leaflet)** pada form Edit DUDI di dashboard Pokja sebagai *fallback* untuk menentukan/menggeser koordinat secara manual dengan klik atau drag marker.
+- Penambahan kolom `zona_id` (FK) pada tabel `dudis` dengan relasi ke tabel `zonas`.
+- Penambahan menu **Peta DUDI** dan **Kelola Zona** pada sidebar Pokja, serta menu **Peta DUDI** pada sidebar Kaprog dan Pembimbing Sekolah.
+
 ## [2026-05-22]
 ### Changed
 - **Relokasi Hak Validasi Jurnal**: Validasi (Valid/Invalid) jurnal harian kini sepenuhnya menjadi tanggung jawab **Pembimbing DUDI (Mentor Industri)**. Pembimbing Sekolah (Guru) **tidak lagi bisa** memvalidasi jurnal.

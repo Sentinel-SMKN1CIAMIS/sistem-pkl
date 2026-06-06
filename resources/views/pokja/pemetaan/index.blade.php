@@ -7,6 +7,9 @@
         </div>
         
         <div class="flex items-center gap-3">
+            <a href="{{ route('shared.pemetaan.maps') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                <i data-lucide="map" class="w-4 h-4"></i> Lihat Peta
+            </a>
             <div class="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                 <p class="text-[10px] text-blue-400 font-black uppercase tracking-widest leading-none mb-1">Terpetakan</p>
                 <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $terpetakan }} / {{ $totalSiswa }}</p>

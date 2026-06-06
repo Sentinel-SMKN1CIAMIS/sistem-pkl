@@ -47,13 +47,23 @@
 
     <div class="mb-6 jurnal-header-container">
         <p class="text-slate-600 dark:text-slate-400 max-w-xl">Catat setiap aktivitas pengerjaan atau pembelajaran di industri sesuai format resmi.</p>
-        <div class="jurnal-btn-container">
-            <a href="{{ route('siswa.jurnal.export') }}" class="jurnal-btn px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-all gap-2 text-sm md:text-base">
+        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+            <a href="{{ route('siswa.jurnal.export') }}" target="_blank" class="w-full sm:w-auto px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-2">
                 <i data-lucide="printer" class="w-5 h-5"></i>
                 Cetak Jurnal
             </a>
-            <a href="{{ route('siswa.jurnal.create') }}" class="jurnal-btn px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2 text-sm md:text-base">
-                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+            <a href="{{ route('siswa.jurnal.portofolio') }}" target="_blank" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="book" class="w-5 h-5"></i>
+                Cetak Portofolio
+            </a>
+            @if(auth()->user()->siswa->status_pkl === 'selesai')
+            <a href="{{ route('siswa.jurnal.sertifikat') }}" target="_blank" class="w-full sm:w-auto px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-xl shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="award" class="w-5 h-5"></i>
+                Cetak Sertifikat
+            </a>
+            @endif
+            <a href="{{ route('siswa.jurnal.create') }}" class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="plus" class="w-5 h-5"></i>
                 Tambah Jurnal
             </a>
         </div>
@@ -109,6 +119,9 @@
 
                         <div class="flex flex-row md:flex-col justify-end gap-2">
                             @if($item->status === 'pending')
+                                <a href="{{ route('siswa.jurnal.edit', $item) }}" class="p-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 transition-colors">
+                                    <i data-lucide="edit-3" class="w-5 h-5"></i>
+                                </a>
                                 <form action="{{ route('siswa.jurnal.destroy', $item) }}" method="POST" onsubmit="return confirm('Hapus jurnal ini?')">
                                     @csrf
                                     @method('DELETE')
