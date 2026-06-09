@@ -1,0 +1,1335 @@
+﻿diff --git a/.idea/deviceManager.xml b/.idea/deviceManager.xml
+new file mode 100644
+index 0000000..91f9558
+--- /dev/null
++++ b/.idea/deviceManager.xml
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="DeviceTable">
++    <option name="columnSorters">
++      <list>
++        <ColumnSorterState>
++          <option name="column" value="Name" />
++          <option name="order" value="ASCENDING" />
++        </ColumnSorterState>
++      </list>
++    </option>
++  </component>
++</project>
+\ No newline at end of file
+diff --git a/admin-woosh/app/Http/Controllers/Admin/AdminController.php b/admin-woosh/app/Http/Controllers/Admin/AdminController.php
+index e58d9f8..bb50866 100644
+--- a/admin-woosh/app/Http/Controllers/Admin/AdminController.php
++++ b/admin-woosh/app/Http/Controllers/Admin/AdminController.php
+@@ -164,11 +164,47 @@ public function storeTicket(Request $request)
+             'total_amount' => 'required|numeric',
+             'payment_method' => 'nullable|string',
+             'payment_status' => 'required|in:pending,paid,expired,failed',
+-            'status' => 'required|in:Active,Used,Batal',
++            'status' => 'required|in:Active,Used,Batal,Refund',
+             'booked_at' => 'required|date',
+         ]);
+ 
+-        Ticket::create($data);
++        $ticket = Ticket::create($data);
++
++        // 1. Update Trip seats
++        $trip = Trip::where('trip_id', $data['trip_id'])->first();
++        if ($trip) {
++            $seatsToBook = explode(',', $data['seats_list']);
++            $currentBooked = $trip->booked_seats ?? [];
++            $trip->booked_seats = array_values(array_unique(array_merge($currentBooked, $seatsToBook)));
++            $trip->save();
++
++            // Sync updated Trip to Firestore
++            $this->firebase->syncTrip($trip->toArray());
++        }
++
++        // 2. Sync Ticket to Firestore
++        $ticketUser = User::find($data['user_id']);
++        if ($ticketUser && !empty($ticketUser->firebase_uid)) {
++            try {
++                $reflection = new \ReflectionClass($this->firebase);
++                $setMethod = $reflection->getMethod('setDocument');
++                $setMethod->setAccessible(true);
++                
++                $ticketData = [
++                    'id' => $ticket->ticket_code,
++                    'trainId' => $ticket->trip_id,
++                    'trainName' => $ticket->trip->train_name ?? 'WOOSH',
++                    'seats' => $ticket->seats_list,
++                    'date' => \Carbon\Carbon::parse($ticket->booked_at)->translatedFormat('d M Y, H:i'),
++                    'totalPrice' => 'Rp ' . number_format($ticket->total_amount, 0, ',', '.'),
++                    'status' => $ticket->status,
++                ];
++                
++                $setMethod->invoke($this->firebase, "users/{$ticketUser->firebase_uid}/tickets", $ticket->ticket_code, $ticketData);
++            } catch (\Exception $e) {
++                \Log::warning('Failed to sync manually created ticket to Firestore: ' . $e->getMessage());
++            }
++        }
+ 
+         return redirect()->route('admin.tickets')->with('success', 'Tiket berhasil ditambahkan');
+     }
+@@ -189,20 +225,53 @@ public function updateTicket(Request $request, Ticket $ticket)
+             'total_amount' => 'required|numeric',
+             'payment_method' => 'nullable|string',
+             'payment_status' => 'required|in:pending,paid,expired,failed',
+-            'status' => 'required|in:Active,Used,Batal',
++            'status' => 'required|in:Active,Used,Batal,Refund',
+             'booked_at' => 'required|date',
+         ]);
+ 
++        $oldSeats = explode(',', $ticket->seats_list);
++        $oldTripId = $ticket->trip_id;
++
+         $ticket->update($data);
+ 
+-        // Sync status tiket ke Firestore
++        // 1. Update Trip seats if changed
++        if ($oldTripId == $data['trip_id'] && $oldSeats != explode(',', $data['seats_list'])) {
++            $trip = Trip::where('trip_id', $data['trip_id'])->first();
++            if ($trip) {
++                $newSeats = explode(',', $data['seats_list']);
++                $currentBooked = $trip->booked_seats ?? [];
++                // Remove old seats
++                $currentBooked = array_diff($currentBooked, $oldSeats);
++                // Add new seats
++                $trip->booked_seats = array_values(array_unique(array_merge($currentBooked, $newSeats)));
++                $trip->save();
++
++                $this->firebase->syncTrip($trip->toArray());
++            }
++        }
++
++        // 2. Sync full ticket to Firestore
+         $ticketUser = $ticket->user;
+         if ($ticketUser && !empty($ticketUser->firebase_uid) && !empty($ticket->firestore_ticket_id)) {
+-            $this->firebase->syncTicketStatus(
+-                $ticketUser->firebase_uid,
+-                $ticket->firestore_ticket_id,
+-                $data['status']
+-            );
++            try {
++                $reflection = new \ReflectionClass($this->firebase);
++                $setMethod = $reflection->getMethod('setDocument');
++                $setMethod->setAccessible(true);
++                
++                $ticketData = [
++                    'id' => $ticket->ticket_code,
++                    'trainId' => $ticket->trip_id,
++                    'trainName' => $ticket->trip->train_name ?? 'WOOSH',
++                    'seats' => $ticket->seats_list,
++                    'date' => \Carbon\Carbon::parse($ticket->booked_at)->translatedFormat('d M Y, H:i'),
++                    'totalPrice' => 'Rp ' . number_format($ticket->total_amount, 0, ',', '.'),
++                    'status' => $ticket->status,
++                ];
++                
++                $setMethod->invoke($this->firebase, "users/{$ticketUser->firebase_uid}/tickets", $ticket->firestore_ticket_id, $ticketData);
++            } catch (\Exception $e) {
++                \Log::warning('Failed to sync updated ticket to Firestore: ' . $e->getMessage());
++            }
+         }
+ 
+         return redirect()->route('admin.tickets')->with('success', 'Tiket berhasil diperbarui');
+@@ -291,20 +360,54 @@ public function destroyUser(User $user)
+     public function refundTicket($ticket_code)
+     {
+         $ticket = Ticket::where('ticket_code', $ticket_code)->firstOrFail();
+-        $ticket->update(['status' => 'Batal']);
++        $ticket->update(['status' => 'Refund']);
++
++        // 1. Release seats in MySQL
++        $trip = Trip::find($ticket->trip_id);
++        if ($trip && $ticket->seats_list) {
++            $seatsToRelease = explode(',', $ticket->seats_list);
++            $currentBooked = $trip->booked_seats ?? [];
++            $trip->booked_seats = array_values(array_diff($currentBooked, $seatsToRelease));
++            $trip->save();
++
++            // Sync updated Trip to Firestore
++            $this->firebase->syncTrip($trip->toArray());
++        }
+ 
+-        // Sync ke Firestore & kirim notifikasi ke user
++        // 2. Deduct Loyalty Points
+         $ticketUser = $ticket->user;
+-        if ($ticketUser && !empty($ticketUser->firebase_uid)) {
+-            if (!empty($ticket->firestore_ticket_id)) {
+-                $this->firebase->syncTicketStatus($ticketUser->firebase_uid, $ticket->firestore_ticket_id, 'Batal');
++        if ($ticketUser) {
++            $pointsDeducted = floor($ticket->total_amount / 10000);
++            $ticketUser->loyalty_points = max(0, $ticketUser->loyalty_points - $pointsDeducted);
++            $ticketUser->save();
++
++            // Sync ke Firestore & kirim notifikasi ke user
++            if (!empty($ticketUser->firebase_uid)) {
++                $this->firebase->syncUserPoints($ticketUser->firebase_uid, $ticketUser->toArray());
++
++                if (!empty($ticket->firestore_ticket_id)) {
++                    $this->firebase->syncTicketStatus($ticketUser->firebase_uid, $ticket->firestore_ticket_id, 'Refund');
++                }
++                $this->firebase->sendNotification(
++                    $ticketUser->firebase_uid,
++                    'Tiket Direfund',
++                    "Tiket {$ticket_code} telah di-refund oleh admin. {$pointsDeducted} poin dikurangi.",
++                    'WARNING'
++                );
++            }
++
++            // 3. Send email notification
++            try {
++                \Mail::send('emails.refund-notification', [
++                    'user'   => $ticketUser,
++                    'ticket' => $ticket,
++                ], function ($message) use ($ticketUser) {
++                    $message->to($ticketUser->email)
++                        ->subject('Refund Confirmation - WOOSH');
++                });
++            } catch (\Exception $e) {
++                \Log::warning('Failed to send refund email: ' . $e->getMessage());
+             }
+-            $this->firebase->sendNotification(
+-                $ticketUser->firebase_uid,
+-                'Tiket Dibatalkan',
+-                "Tiket {$ticket_code} telah dibatalkan oleh admin. Hubungi kami jika ada pertanyaan.",
+-                'WARNING'
+-            );
+         }
+ 
+         return redirect()->route('admin.tickets')->with('success', 'Tiket ' . $ticket_code . ' berhasil direfund/dibatalkan!');
+@@ -359,8 +462,56 @@ public function processRefund(Request $request, \App\Models\RefundRequest $refun
+         ]);
+ 
+         if ($validated['status'] == 'Approved') {
+-            $refund->ticket->update(['status' => 'Batal']);
+-            // Logic to add points back or notify user
++            $ticket = $refund->ticket;
++            $ticket->update(['status' => 'Refund']);
++
++            // 1. Release seats in MySQL
++            $trip = Trip::find($ticket->trip_id);
++            if ($trip && $ticket->seats_list) {
++                $seatsToRelease = explode(',', $ticket->seats_list);
++                $currentBooked = $trip->booked_seats ?? [];
++                $trip->booked_seats = array_values(array_diff($currentBooked, $seatsToRelease));
++                $trip->save();
++
++                // Sync updated Trip to Firestore
++                $this->firebase->syncTrip($trip->toArray());
++            }
++
++            // 2. Deduct Loyalty Points
++            $ticketUser = $ticket->user;
++            if ($ticketUser) {
++                $pointsDeducted = floor($ticket->total_amount / 10000);
++                $ticketUser->loyalty_points = max(0, $ticketUser->loyalty_points - $pointsDeducted);
++                $ticketUser->save();
++
++                // Sync ke Firestore & kirim notifikasi ke user
++                if (!empty($ticketUser->firebase_uid)) {
++                    $this->firebase->syncUserPoints($ticketUser->firebase_uid, $ticketUser->toArray());
++
++                    if (!empty($ticket->firestore_ticket_id)) {
++                        $this->firebase->syncTicketStatus($ticketUser->firebase_uid, $ticket->firestore_ticket_id, 'Refund');
++                    }
++                    $this->firebase->sendNotification(
++                        $ticketUser->firebase_uid,
++                        'Refund Disetujui',
++                        "Permintaan refund tiket {$ticket->ticket_code} telah disetujui. {$pointsDeducted} poin dikurangi.",
++                        'SUCCESS'
++                    );
++                }
++
++                // 3. Send email notification
++                try {
++                    \Mail::send('emails.refund-notification', [
++                        'user'   => $ticketUser,
++                        'ticket' => $ticket,
++                    ], function ($message) use ($ticketUser) {
++                        $message->to($ticketUser->email)
++                            ->subject('Refund Approved - WOOSH');
++                    });
++                } catch (\Exception $e) {
++                    \Log::warning('Failed to send refund email: ' . $e->getMessage());
++                }
++            }
+         }
+ 
+         return redirect()->back()->with('success', 'Permintaan refund berhasil diproses!');
+diff --git a/admin-woosh/app/Http/Controllers/Api/ApiController.php b/admin-woosh/app/Http/Controllers/Api/ApiController.php
+index 132eedc..ad74e94 100644
+--- a/admin-woosh/app/Http/Controllers/Api/ApiController.php
++++ b/admin-woosh/app/Http/Controllers/Api/ApiController.php
+@@ -154,6 +154,12 @@ public function syncUserToMySQL(Request $request)
+                 'phone' => $request->phone ?? $user->phone,
+             ]);
+             
++            // Sync loyalty points from Android
++            if ($request->has('loyalty_points')) {
++                $user->loyalty_points = $request->loyalty_points;
++                $user->save();
++            }
++            
+             // Log activity
+             ActivityLog::create([
+                 'user_id' => $user->id,
+@@ -183,6 +189,7 @@ public function syncUserToMySQL(Request $request)
+                 'phone'        => $request->phone,
+                 'password'     => Hash::make(Str::random(16)),
+                 'role'         => 'user',
++                'loyalty_points' => $request->loyalty_points ?? 0,
+             ]);
+             
+             // Log activity
+@@ -214,7 +221,8 @@ public function syncUser(Request $request)
+         $request->validate([
+             'email' => 'required|email',
+             'name' => 'required|string',
+-            'uid' => 'nullable|string' // Firebase UID
++            'uid' => 'nullable|string', // Firebase UID
++            'loyalty_points' => 'nullable|integer'
+         ]);
+ 
+         $user = User::updateOrCreate(
+@@ -224,9 +232,16 @@ public function syncUser(Request $request)
+                 'password'     => Hash::make(Str::random(16)),
+                 'phone'        => $request->phone ?? null,
+                 'firebase_uid' => $request->uid ?? null, // simpan Firebase UID
++                'loyalty_points' => $request->loyalty_points ?? 0,
+             ]
+         );
+ 
++        // Jika user sudah ada, update loyalty_points jika ada
++        if ($request->has('loyalty_points') && $user->wasRecentlyCreated === false) {
++            $user->loyalty_points = $request->loyalty_points;
++            $user->save();
++        }
++
+         return response()->json([
+             'status' => 'success',
+             'message' => 'User synced successfully',
+@@ -241,9 +256,8 @@ public function bookTicket(Request $request)
+             'user_id'             => 'nullable|integer|exists:users,id',
+             'trip_id'             => 'required|string',
+             'email'               => 'required|email',
+-            'seats'               => 'required|array',
+-            'seats.*'             => 'string',
+-            'total_price'         => 'required|numeric|min:0',
++            'seats_list'          => 'required|string',
++            'total_amount'        => 'required|numeric|min:0',
+             'ticket_code'         => 'nullable|string',
+             'firestore_ticket_id' => 'nullable|string',
+             'payment_method'      => 'nullable|string',
+@@ -281,7 +295,8 @@ public function bookTicket(Request $request)
+             }
+ 
+             // Convert seats array to comma-separated string
+-            $seatsList = implode(',', $request->seats);
++            $seatsList = $request->seats_list;
++            $seatsArray = explode(',', $seatsList);
+ 
+             // Create ticket in MySQL with status "Active"
+             $ticket = Ticket::create([
+@@ -290,7 +305,7 @@ public function bookTicket(Request $request)
+                 'trip_id'             => $request->trip_id,
+                 'user_id'             => $user->id,
+                 'seats_list'          => $seatsList,
+-                'total_amount'        => $request->total_price,
++                'total_amount'        => $request->total_amount,
+                 'payment_method'      => $request->payment_method ?? 'Mobile App',
+                 'payment_status'      => 'paid',
+                 'status'              => 'Aktif',
+@@ -299,12 +314,12 @@ public function bookTicket(Request $request)
+ 
+             // Update seat availability in MySQL
+             $currentBooked = $trip->booked_seats ?? [];
+-            $trip->booked_seats = array_values(array_unique(array_merge($currentBooked, $request->seats)));
++            $trip->booked_seats = array_values(array_unique(array_merge($currentBooked, $seatsArray)));
+             $trip->save();
+ 
+             // Update seat availability in Firestore
+             try {
+-                $this->updateSeatAvailabilityInFirestore($request->trip_id, $request->seats);
++                $this->updateSeatAvailabilityInFirestore($request->trip_id, $seatsArray);
+             } catch (\Throwable $e) {
+                 \Illuminate\Support\Facades\Log::warning(
+                     "[BookTicket] Failed to update seat availability in Firestore: " . $e->getMessage()
+@@ -437,13 +452,13 @@ private function createTicketInFirestore(string $firebaseUid, Ticket $ticket): v
+             $setMethod->setAccessible(true);
+             
+             $ticketData = [
+-                'ticketCode' => $ticket->ticket_code,
+-                'tripId' => $ticket->trip_id,
+-                'seats' => explode(',', $ticket->seats_list),
+-                'totalPrice' => (int) $ticket->total_amount,
+-                'status' => 'Aktif',
+-                'paymentMethod' => $ticket->payment_method,
+-                'bookedAt' => now()->toIso8601String(),
++                'id' => $ticket->ticket_code,
++                'trainId' => $ticket->trip_id,
++                'trainName' => $ticket->trip->train_name ?? 'WOOSH',
++                'seats' => $ticket->seats_list,
++                'date' => \Carbon\Carbon::parse($ticket->booked_at)->translatedFormat('d M Y, H:i'),
++                'totalPrice' => 'Rp ' . number_format($ticket->total_amount, 0, ',', '.'),
++                'status' => $ticket->status,
+             ];
+             
+             $setMethod->invoke($firebaseSync, "users/{$firebaseUid}/tickets", $ticket->ticket_code, $ticketData);
+@@ -517,7 +532,7 @@ public function getUserTickets(Request $request)
+         ]);
+     }
+ 
+-    // Refund tiket dari Mobile ΓÇö update status di MySQL
++    // Refund tiket dari Mobile ΓÇö create refund request
+     public function refundTicket(Request $request)
+     {
+         $request->validate([
+@@ -545,52 +560,29 @@ public function refundTicket(Request $request)
+             return response()->json(['status' => 'error', 'message' => 'Ticket not found'], 404);
+         }
+ 
+-        // Update ticket status
+-        $ticket->update(['status' => 'Batal']);
+-
+-        // Release seats in MySQL and Firestore
+-        if ($ticket->trip_id) {
+-            $seatsToRelease = explode(',', $ticket->seats_list);
+-            
+-            $trip = Trip::find($ticket->trip_id);
+-            if ($trip) {
+-                $currentBooked = $trip->booked_seats ?? [];
+-                $trip->booked_seats = array_values(array_diff($currentBooked, $seatsToRelease));
+-                $trip->save();
+-            }
+-            
+-            $this->releaseSeatsInFirestore($ticket->trip_id, $seatsToRelease);
++        // Check if there is already a pending request
++        $existingRequest = RefundRequest::where('ticket_code', $ticket->ticket_code)
++                                        ->where('status', 'Pending')
++                                        ->first();
++        if ($existingRequest) {
++            return response()->json(['status' => 'error', 'message' => 'Refund request already exists'], 409);
+         }
+ 
+-        // Create refund request record
++        // Create refund request record with Pending status
+         RefundRequest::create([
+             'ticket_code' => $ticket->ticket_code,
+             'user_id'     => $user->id,
+             'reason'      => $request->reason ?? 'User requested refund',
+             'amount'      => $ticket->total_amount,
+-            'status'      => 'Approved',
++            'status'      => 'Pending',
+         ]);
+ 
+-        // Send refund notification email
+-        $this->sendRefundNotificationEmail($user, $ticket);
+-
+-        // Update Firestore
+-        try {
+-            $firestore = app('firebase.firestore')->database();
+-            $firestore->collection('users')->document($user->firebase_uid)
+-                ->collection('tickets')->document($ticket->firestore_ticket_id ?? $ticket->ticket_code)
+-                ->update([
+-                    ['path' => 'status', 'value' => 'Batal'],
+-                    ['path' => 'refundedAt', 'value' => now()->toDateTimeString()]
+-                ]);
+-        } catch (\Exception $e) {
+-            \Log::warning('Firestore update failed for refund: ' . $e->getMessage());
+-        }
+-
+         return response()->json([
+-            'status'  => 'success',
+-            'message' => 'Ticket refunded successfully',
+-            'ticket'  => $ticket,
++            'status' => 'success',
++            'message' => 'Refund request created successfully',
++            'data' => [
++                'ticket_code' => $ticket->ticket_code
++            ]
+         ]);
+     }
+ 
+diff --git a/admin-woosh/resources/views/admin/dashboard.blade.php b/admin-woosh/resources/views/admin/dashboard.blade.php
+index bde03ae..c32a8c0 100644
+--- a/admin-woosh/resources/views/admin/dashboard.blade.php
++++ b/admin-woosh/resources/views/admin/dashboard.blade.php
+@@ -261,7 +261,6 @@
+                     }
+                 }
+             });
+-            });
+ 
+             // Map Initialization
+             const map = L.map('map').setView([-6.9147, 107.6098], 8); // Center on Bandung/Java
+diff --git a/admin-woosh/resources/views/layouts/admin.blade.php b/admin-woosh/resources/views/layouts/admin.blade.php
+index ad26406..f461122 100644
+--- a/admin-woosh/resources/views/layouts/admin.blade.php
++++ b/admin-woosh/resources/views/layouts/admin.blade.php
+@@ -451,7 +451,7 @@
+             <a href="{{ route('admin.refunds') }}" class="nav-link {{ request()->routeIs('admin.refunds') ? 'active' : '' }}">≡ƒÆ╕ Refund Requests</a>
+             <a href="{{ route('admin.logs') }}" class="nav-link {{ request()->routeIs('admin.logs') ? 'active' : '' }}">≡ƒô£ Audit Log</a>
+             @endif
+-            <a href="/test-firebase" class="nav-link" style="margin-top: auto;">≡ƒöÑ Cek Firebase</a>
++            <a href="{{ route('admin.test.firebase') }}" class="nav-link" style="margin-top: auto;">≡ƒöÑ Cek Firebase</a>
+         </nav>
+     </aside>
+ 
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 4eb5e13..f8d331e 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -75,6 +75,7 @@ dependencies {
+     implementation(platform(libs.firebase.bom))
+     implementation(libs.firebase.auth)
+     implementation(libs.firebase.firestore)
++    implementation("com.google.firebase:firebase-messaging-ktx")
+     implementation(libs.play.services.auth)
+     
+     // Ktor (for Email)
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index e253fe2..a6494e3 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -3,13 +3,13 @@
+     xmlns:tools="http://schemas.android.com/tools">
+ 
+     <uses-permission android:name="android.permission.INTERNET" />
++    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+ 
+     <application
+         android:name=".WooshApplication"
+         android:networkSecurityConfig="@xml/network_security_config"
+         android:usesCleartextTraffic="true"
+         android:allowBackup="true"
+-
+         android:dataExtractionRules="@xml/data_extraction_rules"
+         android:fullBackupContent="@xml/backup_rules"
+         android:icon="@mipmap/ic_launcher"
+@@ -17,6 +17,15 @@
+         android:roundIcon="@mipmap/ic_launcher_round"
+         android:supportsRtl="true"
+         android:theme="@style/Theme.Woosh">
++        
++        <service
++            android:name=".services.WooshMessagingService"
++            android:exported="true">
++            <intent-filter>
++                <action android:name="com.google.firebase.MESSAGING_EVENT" />
++            </intent-filter>
++        </service>
++
+         <activity
+             android:name=".MainActivity"
+             android:exported="true"
+@@ -24,7 +33,6 @@
+             android:theme="@style/Theme.Woosh">
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN" />
+-
+                 <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+         </activity>
+diff --git a/app/src/main/java/com/example/woosh/MainActivity.kt b/app/src/main/java/com/example/woosh/MainActivity.kt
+index f0cb624..811db04 100644
+--- a/app/src/main/java/com/example/woosh/MainActivity.kt
++++ b/app/src/main/java/com/example/woosh/MainActivity.kt
+@@ -14,15 +14,42 @@ import dagger.hilt.android.AndroidEntryPoint
+ 
+ @AndroidEntryPoint
+ class MainActivity : FragmentActivity() {
++    private lateinit var navController: androidx.navigation.NavHostController
++
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         FirebaseApp.initializeApp(this)
++        com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("all_users")
++            .addOnCompleteListener { task ->
++                var msg = "Subscribed to all_users topic"
++                if (!task.isSuccessful) {
++                    msg = "Subscribe failed"
++                }
++                Log.d("FCM", msg)
++            }
+         
+         checkBiometricCapability()
+         
+         setContent {
++            navController = androidx.navigation.compose.rememberNavController()
+             WooshTheme {
+-                WooshApp()
++                WooshApp(navController = navController)
++            }
++            
++            androidx.compose.runtime.LaunchedEffect(intent) {
++                if (intent?.getBooleanExtra("open_notifications", false) == true) {
++                    navController.navigate("notification")
++                }
++            }
++        }
++    }
++
++    override fun onNewIntent(intent: android.content.Intent) {
++        super.onNewIntent(intent)
++        setIntent(intent)
++        if (intent.getBooleanExtra("open_notifications", false)) {
++            if (::navController.isInitialized) {
++                navController.navigate("notification")
+             }
+         }
+     }
+diff --git a/app/src/main/java/com/example/woosh/data/EmailService.kt b/app/src/main/java/com/example/woosh/data/EmailService.kt
+index d288f8b..3d6132b 100644
+--- a/app/src/main/java/com/example/woosh/data/EmailService.kt
++++ b/app/src/main/java/com/example/woosh/data/EmailService.kt
+@@ -77,4 +77,46 @@ object EmailService {
+             Pair(false, "Network Error: ${e.message}")
+         }
+     }
++
++    suspend fun sendRefundEmail(
++        toEmail: String, 
++        name: String, 
++        ticketId: String,
++        refundAmount: String,
++        train: String,
++        seats: String,
++        date: String
++    ): Pair<Boolean, String?> {
++        return try {
++            val response: HttpResponse = client.post("https://api.emailjs.com/api/v1.0/email/send") {
++                contentType(ContentType.Application.Json)
++                setBody(EmailJSRequest(
++                    service_id = SERVICE_ID,
++                    template_id = TEMPLATE_ID, 
++                    user_id = PUBLIC_KEY,
++                    accessToken = PRIVATE_KEY,
++                    template_params = mapOf(
++                        "toEmail" to toEmail,
++                        "to_email" to toEmail,
++                        "name" to name,
++                        "ticketId" to ticketId,
++                        "totalPrice" to refundAmount,
++                        "message" to "Permintaan pengembalian dana (refund) untuk tiket Anda sedang diproses. Dana akan dikembalikan dalam 1-3 hari kerja.",
++                        "train" to train,
++                        "seats" to seats,
++                        "date" to date,
++                        "paymentMethod" to "Refund"
++                    )
++                ))
++            }
++            if (response.status == HttpStatusCode.OK) {
++                Pair(true, null)
++            } else {
++                val errorBody = response.bodyAsText()
++                Pair(false, "EmailJS Error (${response.status}): $errorBody")
++            }
++        } catch (e: Exception) {
++            Pair(false, "Network Error: ${e.message}")
++        }
++    }
+ }
+diff --git a/app/src/main/java/com/example/woosh/data/remote/ApiService.kt b/app/src/main/java/com/example/woosh/data/remote/ApiService.kt
+index 3ca8a7e..6d79f06 100644
+--- a/app/src/main/java/com/example/woosh/data/remote/ApiService.kt
++++ b/app/src/main/java/com/example/woosh/data/remote/ApiService.kt
+@@ -12,7 +12,8 @@ interface ApiService {
+      */
+     @GET("api/v1/trips")
+     suspend fun getTrips(
+-        @retrofit2.http.Query("date") date: String? = null
++        @retrofit2.http.Query("date") date: String? = null,
++        @retrofit2.http.Query("arrival") arrival: String? = null
+     ): Response<TripListResponse>
+ 
+     /**
+diff --git a/app/src/main/java/com/example/woosh/data/remote/NetworkModels.kt b/app/src/main/java/com/example/woosh/data/remote/NetworkModels.kt
+index dfaebc5..4bd8093 100644
+--- a/app/src/main/java/com/example/woosh/data/remote/NetworkModels.kt
++++ b/app/src/main/java/com/example/woosh/data/remote/NetworkModels.kt
+@@ -25,7 +25,8 @@ data class TripItem(
+ data class UserSyncRequest(
+     @SerializedName("email") val email: String,
+     @SerializedName("name") val name: String,
+-    @SerializedName("uid") val uid: String
++    @SerializedName("uid") val uid: String,
++    @SerializedName("loyalty_points") val loyaltyPoints: Long? = null
+ )
+ 
+ /**
+diff --git a/app/src/main/java/com/example/woosh/model/Notification.kt b/app/src/main/java/com/example/woosh/model/Notification.kt
+index 7103157..2218337 100644
+--- a/app/src/main/java/com/example/woosh/model/Notification.kt
++++ b/app/src/main/java/com/example/woosh/model/Notification.kt
+@@ -8,5 +8,21 @@ data class Notification(
+     val body: String = "",
+     val type: String = "INFO", // INFO, SUCCESS, ALERT
+     val isRead: Boolean = false,
+-    val timestamp: Timestamp = Timestamp.now()
+-)
++    val timestamp: Any = "" // Changed to Any because Backend sends String
++) {
++    val formattedDate: String
++        get() = try {
++            val sdf = java.text.SimpleDateFormat("dd MMM, HH:mm", java.util.Locale.getDefault())
++            when (timestamp) {
++                is Timestamp -> sdf.format(timestamp.toDate())
++                is String -> {
++                    val input = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
++                    val date = input.parse(timestamp)
++                    if (date != null) sdf.format(date) else timestamp
++                }
++                else -> ""
++            }
++        } catch (e: Exception) {
++            timestamp.toString()
++        }
++}
+diff --git a/app/src/main/java/com/example/woosh/navigation/WooshNavGraph.kt b/app/src/main/java/com/example/woosh/navigation/WooshNavGraph.kt
+index e56f2af..8b315f5 100644
+--- a/app/src/main/java/com/example/woosh/navigation/WooshNavGraph.kt
++++ b/app/src/main/java/com/example/woosh/navigation/WooshNavGraph.kt
+@@ -22,7 +22,7 @@ import com.example.woosh.ui.screens.*
+ import com.example.woosh.ui.theme.*
+ 
+ @Composable
+-fun WooshApp() {
++fun WooshApp(navController: NavHostController = rememberNavController()) {
+     val context = androidx.compose.ui.platform.LocalContext.current
+     val securityManager = remember { com.example.woosh.utils.SecurityManager(context) }
+     
+@@ -42,7 +42,6 @@ fun WooshApp() {
+         AppLanguage.CN -> ChineseStrings
+     }
+ 
+-    val navController = rememberNavController()
+     val navBackStackEntry by navController.currentBackStackEntryAsState()
+     val currentRoute = navBackStackEntry?.destination?.route
+ 
+@@ -64,19 +63,21 @@ fun WooshApp() {
+                     composable("register") { RegisterScreen(navController) }
+                     composable("home") { HomeScreen(navController) }
+                     composable(
+-                        route = "train_list/{dest}/{passengers}/{date}?rescheduleId={rescheduleId}",
++                        route = "train_list/{dest}/{passengers}/{date}?rescheduleId={rescheduleId}&trainName={trainName}",
+                         arguments = listOf(
+                             navArgument("dest") { type = NavType.StringType },
+                             navArgument("passengers") { type = NavType.IntType },
+                             navArgument("date") { type = NavType.LongType },
+-                            navArgument("rescheduleId") { type = NavType.StringType; nullable = true; defaultValue = null }
++                            navArgument("rescheduleId") { type = NavType.StringType; nullable = true; defaultValue = null },
++                            navArgument("trainName") { type = NavType.StringType; nullable = true; defaultValue = null }
+                         )
+                     ) { backStackEntry -> 
+                         val dest = backStackEntry.arguments?.getString("dest") ?: "Halim"
+                         val passengers = backStackEntry.arguments?.getInt("passengers") ?: 1
+                         val date = backStackEntry.arguments?.getLong("date") ?: System.currentTimeMillis()
+                         val rescheduleId = backStackEntry.arguments?.getString("rescheduleId")
+-                        TrainListScreen(navController, dest, passengers, date, rescheduleId = rescheduleId) 
++                        val restrictTrainName = backStackEntry.arguments?.getString("trainName")
++                        TrainListScreen(navController, dest, passengers, date, rescheduleId = rescheduleId, restrictTrainName = restrictTrainName) 
+                     }
+                     composable(
+                         route = "seat_selection/{passengers}/{price}/{trainId}/{trainName}/{date}?rescheduleId={rescheduleId}",
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/CheckoutScreen.kt b/app/src/main/java/com/example/woosh/ui/screens/CheckoutScreen.kt
+index 7cd61b5..9c9235a 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/CheckoutScreen.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/CheckoutScreen.kt
+@@ -133,7 +133,7 @@ fun CheckoutScreen(
+                             Spacer(Modifier.height(16.dp))
+                             HorizontalDivider(color = DividerColor.copy(0.5f))
+                             Spacer(Modifier.height(12.dp))
+-                            Text("Halim ΓåÆ Tegalluar Summarecon", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
++                            Text("Halim - Tegalluar Summarecon", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                         }
+                     }
+                 }
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/HomeScreen.kt b/app/src/main/java/com/example/woosh/ui/screens/HomeScreen.kt
+index 7f1033b..df92a70 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/HomeScreen.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/HomeScreen.kt
+@@ -38,6 +38,10 @@ import com.example.woosh.R
+ import com.example.woosh.ui.theme.*
+ import java.text.SimpleDateFormat
+ import java.util.*
++import android.os.Build
++import android.Manifest
++import androidx.activity.compose.rememberLauncherForActivityResult
++import androidx.activity.result.contract.ActivityResultContracts
+ 
+ @OptIn(ExperimentalMaterial3Api::class)
+ @Composable
+@@ -56,6 +60,22 @@ fun HomeScreen(
+     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = uiState.selectedDate)
+     val isRouteValid = uiState.origin != uiState.destination
+ 
++    val notifications by notificationViewModel.notifications.collectAsState()
++    val unreadCount = notifications.count { !it.isRead }
++
++    // Request Notification Permission for Android 13+
++    val permissionLauncher = rememberLauncherForActivityResult(
++        contract = ActivityResultContracts.RequestPermission()
++    ) { isGranted ->
++        // Handle permission result if needed
++    }
++
++    LaunchedEffect(Unit) {
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
++            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
++        }
++    }
++
+     // Bottom sheet dialogs
+     if (showSheetType != null) {
+         ModalBottomSheet(
+@@ -174,13 +194,38 @@ fun HomeScreen(
+                 // Background red gradient like official app
+                 Box(modifier = Modifier.fillMaxWidth().height(160.dp).background(
+                     Brush.verticalGradient(listOf(WooshRed, WooshRedDark))
+-                ))
++                )) {
++                    Row(
++                        modifier = Modifier
++                            .fillMaxWidth()
++                            .padding(horizontal = 20.dp, vertical = 16.dp),
++                        horizontalArrangement = Arrangement.SpaceBetween,
++                        verticalAlignment = Alignment.Top
++                    ) {
++                        Text("WOOSH", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
++                        
++                        Box {
++                            IconButton(onClick = { navController.navigate("notification") }) {
++                                Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = Color.White)
++                            }
++                            if (unreadCount > 0) {
++                                Box(
++                                    modifier = Modifier
++                                        .align(Alignment.TopEnd)
++                                        .offset(x = (-8).dp, y = 8.dp)
++                                        .size(10.dp)
++                                        .background(Color.Yellow, CircleShape)
++                                )
++                            }
++                        }
++                    }
++                }
+ 
+                 // Image Carousel ΓÇö full width, floating
+                 HorizontalPager(
+                     state = pagerState,
+                     modifier = Modifier
+-                        .padding(top = 20.dp, bottom = 40.dp)
++                        .padding(top = 64.dp, bottom = 40.dp)
+                         .fillMaxWidth()
+                         .height(180.dp)
+                 ) { page ->
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/LoginViewModel.kt b/app/src/main/java/com/example/woosh/ui/screens/LoginViewModel.kt
+index c0b1421..c944c8e 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/LoginViewModel.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/LoginViewModel.kt
+@@ -47,11 +47,14 @@ class LoginViewModel @Inject constructor(
+                 // Sync user ke MySQL saat login agar admin dashboard selalu up-to-date
+                 if (user != null) {
+                     try {
++                        val doc = firestore.collection("users").document(user.uid).get().await()
++                        val points = doc.getLong("loyaltyPoints") ?: 0L
+                         com.example.woosh.data.remote.RetrofitClient.instance.syncUser(
+                             com.example.woosh.data.remote.UserSyncRequest(
+                                 email = user.email ?: email,
+                                 name  = user.displayName ?: "User Woosh",
+-                                uid   = user.uid
++                                uid   = user.uid,
++                                loyaltyPoints = points
+                             )
+                         )
+                     } catch (e: Exception) {
+@@ -101,6 +104,22 @@ class LoginViewModel @Inject constructor(
+                             firestore.collection("users").document(user.uid).set(profile).await()
+                         }
+                     }
++
++                    // Sync user to MySQL after Google login
++                    try {
++                        val currentDoc = firestore.collection("users").document(user.uid).get().await()
++                        val points = currentDoc.getLong("loyaltyPoints") ?: 0L
++                        com.example.woosh.data.remote.RetrofitClient.instance.syncUser(
++                            com.example.woosh.data.remote.UserSyncRequest(
++                                email = user.email ?: "",
++                                name  = user.displayName ?: "User Woosh",
++                                uid   = user.uid,
++                                loyaltyPoints = points
++                            )
++                        )
++                    } catch (e: Exception) {
++                        android.util.Log.w("LoginViewModel", "MySQL sync failed: ${e.message}")
++                    }
+                 }
+                 
+                 _uiState.update { it.copy(isLoading = false, loginResult = LoginResult.Success) }
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/NotificationScreen.kt b/app/src/main/java/com/example/woosh/ui/screens/NotificationScreen.kt
+index 5b23ccc..c54b038 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/NotificationScreen.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/NotificationScreen.kt
+@@ -92,8 +92,7 @@ fun NotificationItem(notification: Notification, onClick: () -> Unit) {
+         else -> Color(0xFF2196F3)
+     }
+ 
+-    val sdf = SimpleDateFormat("dd MMM, HH:mm", Locale.getDefault())
+-    val dateString = sdf.format(notification.timestamp.toDate())
++    val dateString = notification.formattedDate
+ 
+     Surface(
+         modifier = Modifier.fillMaxWidth(),
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/PaymentScreen.kt b/app/src/main/java/com/example/woosh/ui/screens/PaymentScreen.kt
+index 0a44107..64dc944 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/PaymentScreen.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/PaymentScreen.kt
+@@ -64,7 +64,7 @@ fun PaymentScreen(
+         when (val status = uiState.paymentStatus) {
+             is PaymentStatus.Success -> {
+                 Toast.makeText(context, "Berhasil! Tiket dikirim ke ${uiState.userEmail}", Toast.LENGTH_LONG).show()
+-                navController.navigate("ticket/$seats") {
++                navController.navigate("ticket") {
+                     popUpTo("home") { inclusive = false }
+                 }
+                 viewModel.resetStatus()
+@@ -87,13 +87,40 @@ fun PaymentScreen(
+         }
+     ) { padding ->
+         Column(modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp)) {
+-            // Price Details
+-            Column(modifier = Modifier.fillMaxWidth().background(WooshRed.copy(0.05f), RoundedCornerShape(16.dp)).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+-                Text("Total Pembayaran", color = TextSecondary, fontSize = 14.sp)
+-                Text(displayAmount, fontWeight = FontWeight.Black, fontSize = 28.sp, color = WooshRed)
++            // Trip Details Confirmation
++            Card(
++                modifier = Modifier.fillMaxWidth(),
++                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
++                shape = RoundedCornerShape(20.dp),
++                elevation = CardDefaults.cardElevation(2.dp),
++                border = androidx.compose.foundation.BorderStroke(1.dp, OffWhite)
++            ) {
++                Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
++                    Text("Detail Perjalanan", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
++                    Spacer(Modifier.height(16.dp))
++                    
++                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
++                        Text("Kereta", color = TextSecondary, fontSize = 14.sp)
++                        Text(trainName, fontWeight = FontWeight.Bold, color = TextPrimary, fontSize = 14.sp)
++                    }
++                    Spacer(Modifier.height(8.dp))
++                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
++                        Text("Kursi", color = TextSecondary, fontSize = 14.sp)
++                        Text(seats, fontWeight = FontWeight.Bold, color = TextPrimary, fontSize = 14.sp)
++                    }
++                    
++                    Spacer(Modifier.height(16.dp))
++                    HorizontalDivider(color = OffWhite)
++                    Spacer(Modifier.height(16.dp))
++                    
++                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
++                        Text("Total Pembayaran", color = TextSecondary, fontSize = 14.sp)
++                        Text(displayAmount, fontWeight = FontWeight.Black, fontSize = 20.sp, color = WooshRed)
++                    }
++                }
+             }
+ 
+-            Spacer(Modifier.height(32.dp))
++            Spacer(Modifier.height(24.dp))
+             Text("Pilih Metode Pembayaran", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+             Spacer(Modifier.height(16.dp))
+ 
+@@ -156,7 +183,7 @@ fun PaymentScreen(
+                 confirmButton = {
+                     TextButton(onClick = { 
+                         viewModel.resetStatus()
+-                        navController.navigate("ticket/$seats") {
++                        navController.navigate("ticket") {
+                             popUpTo("home") { inclusive = false }
+                         }
+                     }) {
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/PaymentViewModel.kt b/app/src/main/java/com/example/woosh/ui/screens/PaymentViewModel.kt
+index 4a167ea..04d97dd 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/PaymentViewModel.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/PaymentViewModel.kt
+@@ -146,6 +146,18 @@ class PaymentViewModel @Inject constructor(
+                             paymentMethod     = selectedMethod
+                         )
+                     )
++                    
++                    // Sync user to update loyalty points in MySQL
++                    val currentDoc = db.collection("users").document(uid).get().await()
++                    val totalPoints = currentDoc.getLong("loyaltyPoints") ?: 0L
++                    RetrofitClient.instance.syncUser(
++                        com.example.woosh.data.remote.UserSyncRequest(
++                            email = userEmail,
++                            name = userName,
++                            uid = uid,
++                            loyaltyPoints = totalPoints
++                        )
++                    )
+                 } catch (e: Exception) {
+                     // Jangan gagalkan transaksi hanya karena sync MySQL gagal
+                     // Tiket sudah tersimpan di Firestore
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/ProfileScreen.kt b/app/src/main/java/com/example/woosh/ui/screens/ProfileScreen.kt
+index 152d1d4..2604ebb 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/ProfileScreen.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/ProfileScreen.kt
+@@ -44,6 +44,7 @@ fun ProfileScreen(
+     
+     var showLogoutDialog by remember { mutableStateOf(false) }
+     var showDeleteAccountDialog by remember { mutableStateOf(false) }
++    var showClearHistoryDialog by remember { mutableStateOf(false) }
+     var showPasswordResetDialog by remember { mutableStateOf(false) }
+     var showLanguageDialog by remember { mutableStateOf(false) }
+     
+@@ -63,8 +64,15 @@ fun ProfileScreen(
+                     onClick = {
+                         showLogoutDialog = false
+                         viewModel.logout()
+-                        navController.navigate("login") {
+-                            popUpTo(0) { inclusive = true }
++                        
++                        // Clear Google Sign In session to prevent auto-login
++                        val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
++                            com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
++                        ).build()
++                        com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(context, gso).signOut().addOnCompleteListener {
++                            navController.navigate("login") {
++                                popUpTo(0) { inclusive = true }
++                            }
+                         }
+                     },
+                     colors = ButtonDefaults.buttonColors(containerColor = WooshRed, contentColor = Color.White)
+@@ -117,6 +125,39 @@ fun ProfileScreen(
+         )
+     }
+ 
++    // Clear History Confirmation
++    if (showClearHistoryDialog) {
++        AlertDialog(
++            onDismissRequest = { showClearHistoryDialog = false },
++            title = { Text("Hapus Semua Riwayat", fontWeight = FontWeight.Bold, color = Color.Red) },
++            text = { Text("Semua data riwayat tiket, notifikasi, dan poin loyalitas akan dihapus dari akun ini untuk keperluan testing.", color = TextSecondary) },
++            confirmButton = {
++                Button(
++                    onClick = {
++                        showClearHistoryDialog = false
++                        viewModel.clearHistory { success ->
++                            if (success) {
++                                scope.launch { snackbarHostState.showSnackbar("Riwayat berhasil dihapus") }
++                            } else {
++                                scope.launch { snackbarHostState.showSnackbar("Gagal menghapus riwayat") }
++                            }
++                        }
++                    },
++                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White)
++                ) {
++                    Text("Hapus Riwayat")
++                }
++            },
++            dismissButton = {
++                TextButton(onClick = { showClearHistoryDialog = false }) {
++                    Text("Batal", color = TextSecondary)
++                }
++            },
++            containerColor = SurfaceWhite,
++            shape = RoundedCornerShape(24.dp)
++        )
++    }
++
+     // Password Reset Confirmation
+     if (showPasswordResetDialog) {
+         AlertDialog(
+@@ -390,6 +431,14 @@ fun ProfileScreen(
+                 }
+             )
+ 
++            ProfileMenuButton(
++                icon = Icons.Default.DeleteSweep,
++                title = "Hapus Riwayat (Testing)",
++                onClick = {
++                    showClearHistoryDialog = true
++                }
++            )
++
+             ProfileMenuButton(
+                 icon = Icons.Default.DeleteForever,
+                 title = strings.delete_account,
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/ProfileViewModel.kt b/app/src/main/java/com/example/woosh/ui/screens/ProfileViewModel.kt
+index 46c9bb1..0d6222a 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/ProfileViewModel.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/ProfileViewModel.kt
+@@ -146,4 +146,40 @@ class ProfileViewModel @Inject constructor(
+                 }
+             }
+     }
++
++    fun clearHistory(onComplete: (Boolean) -> Unit) {
++        val uid = auth.currentUser?.uid ?: run {
++            onComplete(false)
++            return
++        }
++
++        val userDocRef = firestore.collection("users").document(uid)
++        val collectionsToClear = listOf("tickets", "notifications", "point_history")
++        var collectionsCleared = 0
++
++        collectionsToClear.forEach { collectionName ->
++            userDocRef.collection(collectionName).get()
++                .addOnSuccessListener { snapshot ->
++                    val batch = firestore.batch()
++                    snapshot.documents.forEach { doc ->
++                        batch.delete(doc.reference)
++                    }
++                    batch.commit().addOnCompleteListener {
++                        collectionsCleared++
++                        if (collectionsCleared == collectionsToClear.size) {
++                            // Reset local state if needed
++                            _loyaltyPoints.value = 0L
++                            userDocRef.update("loyaltyPoints", 0L)
++                            onComplete(true)
++                        }
++                    }
++                }
++                .addOnFailureListener {
++                    collectionsCleared++
++                    if (collectionsCleared == collectionsToClear.size) {
++                        onComplete(false)
++                    }
++                }
++        }
++    }
+ }
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/TicketScreen.kt b/app/src/main/java/com/example/woosh/ui/screens/TicketScreen.kt
+index 1307d55..567bd6f 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/TicketScreen.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/TicketScreen.kt
+@@ -130,8 +130,9 @@ fun TicketScreen(navController: NavHostController, selectedSeats: String = "", v
+                                     ticket = activeTickets[index],
+                                     onRefundClick = { showRefundDialog = it },
+                                     onRescheduleClick = { ticket ->
+-                                        // Sertakan date (timestamp hari ini) agar route lengkap dan tidak crash
+-                                        navController.navigate("train_list/Halim/1/${System.currentTimeMillis()}?rescheduleId=${ticket.id}")
++                                        // Sertakan date (timestamp hari ini) agar route lengkap dan tidak crash, plus nama kereta agar dilarang ganti
++                                        val trainNameParam = android.net.Uri.encode(ticket.trainName)
++                                        navController.navigate("train_list/Halim/1/${System.currentTimeMillis()}?rescheduleId=${ticket.id}&trainName=$trainNameParam")
+                                     }
+                                 )
+                             }
+@@ -173,7 +174,7 @@ fun TicketScreen(navController: NavHostController, selectedSeats: String = "", v
+                     TextButton(
+                         onClick = {
+                             showRefundDialog?.let { ticket ->
+-                                viewModel.refundTicket(ticket.id) { success ->
++                                viewModel.refundTicket(ticket) { success ->
+                                     if (success) {
+                                         scope.launch {
+                                             snackbarHostState.showSnackbar("Tiket berhasil direfund")
+@@ -226,7 +227,7 @@ fun TicketCard(
+                     val statusColor = when {
+                         isExpiredView && ticket.status == "Aktif" -> TextSecondary
+                         ticket.status == "Aktif" -> Color(0xFF4CAF50)
+-                        ticket.status == "Refunded" -> Color(0xFFF44336)
++                        ticket.status == "Refund" || ticket.status == "Batal" -> Color(0xFFF44336)
+                         ticket.status == "Rescheduled" -> Color(0xFF2196F3)
+                         else -> TextSecondary
+                     }
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/TicketViewModel.kt b/app/src/main/java/com/example/woosh/ui/screens/TicketViewModel.kt
+index 7ea9990..f521ef9 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/TicketViewModel.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/TicketViewModel.kt
+@@ -55,25 +55,40 @@ class TicketViewModel @Inject constructor(
+         }
+     }
+ 
+-    fun refundTicket(ticketId: String, onComplete: (Boolean) -> Unit) {
++    fun refundTicket(ticket: Ticket, onComplete: (Boolean) -> Unit) {
+         val currentUser = auth.currentUser ?: run { onComplete(false); return }
+         val userEmail = currentUser.email ?: run { onComplete(false); return }
++        val userName = currentUser.displayName ?: "Pelanggan Woosh"
+ 
+         // 1. Update Firestore
+         firestore.collection("users")
+             .document(currentUser.uid).collection("tickets")
+-            .document(ticketId)
+-            .update("status", "Refunded")
++            .document(ticket.id)
++            .update("status", "Refund")
+             .addOnSuccessListener {
+                 // 2. Sync ke MySQL (fire and forget)
+                 viewModelScope.launch {
+                     try {
+                         RetrofitClient.instance.refundTicket(
+-                            RefundTicketRequest(ticketCode = ticketId, email = userEmail)
++                            RefundTicketRequest(ticketCode = ticket.id, email = userEmail)
+                         )
+                     } catch (e: Exception) {
+                         android.util.Log.w("TicketViewModel", "MySQL refund sync failed: ${e.message}")
+                     }
++                    
++                    // 3. Send Refund Email
++                    val (isSent, error) = com.example.woosh.data.EmailService.sendRefundEmail(
++                        toEmail = userEmail,
++                        name = userName,
++                        ticketId = ticket.id,
++                        refundAmount = ticket.totalPrice,
++                        train = ticket.trainName,
++                        seats = ticket.seats,
++                        date = ticket.date
++                    )
++                    if (!isSent) {
++                        android.util.Log.w("TicketViewModel", "Gagal kirim email refund: $error")
++                    }
+                 }
+                 onComplete(true)
+             }
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/TrainListScreen.kt b/app/src/main/java/com/example/woosh/ui/screens/TrainListScreen.kt
+index 255d2dd..29487d2 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/TrainListScreen.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/TrainListScreen.kt
+@@ -35,12 +35,13 @@ fun TrainListScreen(
+     passengers: Int = 1,
+     date: Long = System.currentTimeMillis(),
+     rescheduleId: String? = null,
++    restrictTrainName: String? = null,
+     viewModel: TrainListViewModel = hiltViewModel()
+ ) {
+     val uiState by viewModel.uiState.collectAsState()
+ 
+     LaunchedEffect(date) {
+-        viewModel.fetchTrains(date)
++        viewModel.fetchTrains(date, destination)
+     }
+     val classes = listOf("Semua", "First Class", "Business Class", "Premium Economy")
+     val isFeederRoute = destination.contains("BDG", ignoreCase = true) || destination.contains("Bandung", ignoreCase = true) || destination.contains("Padalarang", ignoreCase = true)
+@@ -105,33 +106,45 @@ fun TrainListScreen(
+                             Spacer(Modifier.height(8.dp))
+                             Text(errorMsg, fontSize = 13.sp, color = TextSecondary)
+                             Spacer(Modifier.height(16.dp))
+-                            Button(onClick = { viewModel.fetchTrains(date) }, colors = ButtonDefaults.buttonColors(containerColor = WooshRed)) {
++                            Button(onClick = { viewModel.fetchTrains(date, destination) }, colors = ButtonDefaults.buttonColors(containerColor = WooshRed)) {
+                                 Text("Coba Lagi")
+                             }
+                         }
+                     }
+-                } else if (uiState.filteredTrains.isEmpty()) {
+-                    item {
+-                        Column(
+-                            modifier = Modifier.fillMaxWidth().padding(vertical = 64.dp),
+-                            horizontalAlignment = Alignment.CenterHorizontally
+-                        ) {
+-                            Icon(Icons.Default.Train, null, modifier = Modifier.size(64.dp), tint = TextSecondary.copy(0.3f))
+-                            Spacer(Modifier.height(16.dp))
+-                            Text("Tidak ada jadwal tersedia", fontWeight = FontWeight.Bold, color = TextPrimary)
+-                            Text("Silakan pilih tanggal atau kelas lain", color = TextSecondary, fontSize = 14.sp)
+-                        }
+-                    }
+                 } else {
+-                    item { Text("Tersedia ${uiState.filteredTrains.size} Kereta", fontSize = 14.sp, color = TextSecondary, modifier = Modifier.padding(vertical = 16.dp)) }
+-                    items(uiState.filteredTrains) { train ->
+-                        TrainItem(train, isFeederRoute) { 
+-                            // Gunakan tripId asli dari MySQL, fallback ke nama jika kosong
+-                            val trainId = train.tripId.ifEmpty { train.name.replace(" ", "") }
+-                            val route = "seat_selection/$passengers/${android.net.Uri.encode(train.price)}/${android.net.Uri.encode(trainId)}/${android.net.Uri.encode(train.name)}/$date" + if (rescheduleId != null) "?rescheduleId=$rescheduleId" else ""
+-                            navController.navigate(route) 
++                    val finalTrains = if (restrictTrainName != null) {
++                        uiState.filteredTrains.filter { it.name == restrictTrainName }
++                    } else {
++                        uiState.filteredTrains
++                    }
++                    
++                    if (finalTrains.isEmpty()) {
++                        item {
++                            Column(
++                                modifier = Modifier.fillMaxWidth().padding(vertical = 64.dp),
++                                horizontalAlignment = Alignment.CenterHorizontally
++                            ) {
++                                Icon(Icons.Default.Train, null, modifier = Modifier.size(64.dp), tint = TextSecondary.copy(0.3f))
++                                Spacer(Modifier.height(16.dp))
++                                Text("Tidak ada jadwal tersedia", fontWeight = FontWeight.Bold, color = TextPrimary)
++                                if (restrictTrainName != null) {
++                                    Text("Kereta $restrictTrainName tidak tersedia", color = TextSecondary, fontSize = 14.sp)
++                                } else {
++                                    Text("Silakan pilih tanggal atau kelas lain", color = TextSecondary, fontSize = 14.sp)
++                                }
++                            }
++                        }
++                    } else {
++                        item { Text("Tersedia ${finalTrains.size} Kereta", fontSize = 14.sp, color = TextSecondary, modifier = Modifier.padding(vertical = 16.dp)) }
++                        items(finalTrains) { train ->
++                            TrainItem(train, destination, isFeederRoute) { 
++                                // Gunakan tripId asli dari MySQL, fallback ke nama jika kosong
++                                val trainId = train.tripId.ifEmpty { train.name.replace(" ", "") }
++                                val route = "seat_selection/$passengers/${android.net.Uri.encode(train.price)}/${android.net.Uri.encode(trainId)}/${android.net.Uri.encode(train.name)}/$date" + if (rescheduleId != null) "?rescheduleId=$rescheduleId" else ""
++                                navController.navigate(route) 
++                            }
++                            Spacer(Modifier.height(12.dp))
+                         }
+-                        Spacer(Modifier.height(12.dp))
+                     }
+                 }
+             }
+@@ -141,7 +154,7 @@ fun TrainListScreen(
+ 
+ 
+ @Composable
+-fun TrainItem(train: TrainData, isFeeder: Boolean, onClick: () -> Unit) {
++fun TrainItem(train: TrainData, destination: String, isFeeder: Boolean, onClick: () -> Unit) {
+     Card(
+         onClick = onClick, 
+         modifier = Modifier.fillMaxWidth(), 
+@@ -173,7 +186,7 @@ fun TrainItem(train: TrainData, isFeeder: Boolean, onClick: () -> Unit) {
+                 
+                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) { 
+                     Text(train.arr, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+-                    Text("Tegalluar", fontSize = 12.sp, color = TextSecondary) 
++                    Text(destination, fontSize = 12.sp, color = TextSecondary) 
+                 }
+             }
+             
+diff --git a/app/src/main/java/com/example/woosh/ui/screens/TrainListViewModel.kt b/app/src/main/java/com/example/woosh/ui/screens/TrainListViewModel.kt
+index d92cea8..845c42d 100644
+--- a/app/src/main/java/com/example/woosh/ui/screens/TrainListViewModel.kt
++++ b/app/src/main/java/com/example/woosh/ui/screens/TrainListViewModel.kt
+@@ -30,12 +30,12 @@ class TrainListViewModel @Inject constructor() : ViewModel() {
+     private val _uiState = MutableStateFlow(TrainListUiState())
+     val uiState: StateFlow<TrainListUiState> = _uiState.asStateFlow()
+ 
+-    fun fetchTrains(date: Long) {
++    fun fetchTrains(date: Long, destination: String? = null) {
+         _uiState.update { it.copy(isLoading = true, errorMessage = null, selectedDate = date) }
+         viewModelScope.launch {
+             try {
+                 val targetDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(date))
+-                val response = RetrofitClient.instance.getTrips(targetDate)
++                val response = RetrofitClient.instance.getTrips(date = targetDate, arrival = destination)
+                 
+                 if (response.isSuccessful) {
+                     val body = response.body()
+diff --git a/app/src/main/res/values-v31/themes.xml b/app/src/main/res/values-v31/themes.xml
+index ab37d1b..e160b42 100644
+--- a/app/src/main/res/values-v31/themes.xml
++++ b/app/src/main/res/values-v31/themes.xml
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+-    <style name="Theme.Woosh" parent="android:Theme.Material.Light.NoActionBar">
++    <style name="Theme.Woosh" parent="Theme.AppCompat.Light.NoActionBar">
+         <!-- Menghilangkan logo dari startup window Android 12+ -->
+         <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+         <item name="android:windowSplashScreenBackground">@android:color/white</item>
+diff --git a/app/src/main/res/values/themes.xml b/app/src/main/res/values/themes.xml
+index 815043b..a001f6e 100644
+--- a/app/src/main/res/values/themes.xml
++++ b/app/src/main/res/values/themes.xml
+@@ -1,5 +1,4 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+-
+-    <style name="Theme.Woosh" parent="android:Theme.Material.Light.NoActionBar" />
++    <style name="Theme.Woosh" parent="Theme.AppCompat.Light.NoActionBar" />
+ </resources>
+\ No newline at end of file

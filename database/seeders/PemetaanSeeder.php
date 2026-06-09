@@ -7,6 +7,7 @@ use App\Models\Zona;
 use App\Models\Dudi;
 use App\Models\Siswa;
 use App\Models\KonsentrasiKeahlian;
+use App\Models\User;
 
 class PemetaanSeeder extends Seeder
 {
@@ -107,8 +108,27 @@ class PemetaanSeeder extends Seeder
         // Asumsi ada siswa di database, jika tidak buat dummy
         $siswas = Siswa::limit(10)->get();
         if ($siswas->count() < 10) {
-            $this->command->info('Membutuhkan minimal 10 siswa untuk simulasi. Menjalankan SiswaSeeder...');
-            $this->call(SiswaSeeder::class); // Asumsi SiswaSeeder ada
+            $this->command->info('Membutuhkan minimal 10 siswa untuk simulasi. Membuat dummy Siswa...');
+            $kekurangan = 10 - $siswas->count();
+            for ($j = 0; $j < $kekurangan; $j++) {
+                $user = User::create([
+                    'name' => 'Siswa Dummy ' . $j,
+                    'username' => 'dummy' . $j . rand(100,999),
+                    'email' => 'dummy' . $j . rand(100,999) . '@gmail.com',
+                    'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                    'role' => 'siswa',
+                ]);
+                Siswa::create([
+                    'user_id' => $user->id,
+                    'konsentrasi_keahlian_id' => $rpl->id,
+                    'nis' => 'DUMMY' . $j . rand(100,999),
+                    'nama_lengkap' => 'Siswa Dummy ' . $j,
+                    'kelas' => 'XII RPL 1',
+                    'jenis_kelamin' => 'L',
+                    'tahun_ajaran' => '2025/2026',
+                    'status_pkl' => 'belum_mulai',
+                ]);
+            }
             $siswas = Siswa::limit(10)->get();
         }
 

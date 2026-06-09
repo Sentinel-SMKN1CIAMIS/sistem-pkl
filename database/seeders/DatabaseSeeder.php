@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             DepartmentSeeder::class,
             UserSeeder::class,
             ActivityLogSeeder::class,
+            PemetaanSeeder::class,
         ]);
     }
 }

@@ -101,12 +101,19 @@ class DashboardController extends Controller
             // ACC all pending jurnal
             \App\Models\Jurnal::whereHas('siswa', function($q) use ($teacher) {
                 $q->where('pembimbing_sekolah_id', $teacher->id);
-            })->where('status', 'pending')->update(['status' => 'valid']);
+            })->where('approval_status', 'pending')->update([
+                'approval_status' => 'approved',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
             
             // ACC all pending absensi
             \App\Models\Absensi::whereHas('siswa', function($q) use ($teacher) {
                 $q->where('pembimbing_sekolah_id', $teacher->id);
-            })->where('status', 'pending')->update(['status' => 'hadir']);
+            })->where('approval_status', 'pending')->update([
+                'approval_status' => 'approved',
+                'approved_by' => auth()->id(),
+            ]);
             
             return response()->json(['message' => 'Semua Jurnal dan Absensi berhasil di-ACC (Rapid Testing Mode)']);
         }

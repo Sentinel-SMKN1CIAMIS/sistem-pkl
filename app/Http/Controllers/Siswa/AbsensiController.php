@@ -125,7 +125,10 @@ class AbsensiController extends Controller
         $request->validate([
             'status' => 'required|in:izin,sakit,alpa',
             'alasan' => 'required|min:10',
-            'tanggal' => 'required|date',
+            'tanggal' => 'required|date|before_or_equal:today|after_or_equal:-7 days',
+        ], [
+            'tanggal.before_or_equal' => 'Tanggal tidak boleh melebihi hari ini.',
+            'tanggal.after_or_equal' => 'Tanggal tidak boleh lebih dari 7 hari yang lalu.',
         ]);
 
         $siswa = auth()->user()->siswa;

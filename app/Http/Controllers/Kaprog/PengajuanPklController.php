@@ -26,11 +26,10 @@ class PengajuanPklController extends Controller
     {
         $user = auth()->user();
 
-        // TODO: Re-enable proper authorization check after fixing class assignment
-        // For now, allow all kaprog to update any pengajuan (for demo/presentation)
-        // if ($user->role === 'kaprog' && $pengajuanPkl->siswa->konsentrasi_keahlian_id !== $user->konsentrasi_keahlian_id) {
-        //     abort(403, 'Unauthorized action.');
-        // }
+        // Re-enabled proper authorization check
+        if ($user->role === 'kaprog' && $pengajuanPkl->siswa->konsentrasi_keahlian_id !== $user->konsentrasi_keahlian_id) {
+            abort(403, 'Unauthorized action.');
+        }
 
         $request->validate([
             'status' => 'required|in:disetujui,ditolak',

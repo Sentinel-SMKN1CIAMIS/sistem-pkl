@@ -24,7 +24,7 @@ class Zona extends Model
     public function containsPoint(float $lat, float $lng): bool
     {
         $polygon = $this->koordinat_geojson;
-        if (!$polygon || count($polygon) < 3) {
+        if (!is_array($polygon) || count($polygon) < 3) {
             return false;
         }
 
@@ -32,6 +32,10 @@ class Zona extends Model
         $inside = false;
 
         for ($i = 0, $j = $n - 1; $i < $n; $j = $i++) {
+            if (!is_array($polygon[$i]) || !is_array($polygon[$j]) || !isset($polygon[$i][0], $polygon[$i][1], $polygon[$j][0], $polygon[$j][1])) {
+                return false;
+            }
+
             $xi = $polygon[$i][1]; // lat
             $yi = $polygon[$i][0]; // lng
             $xj = $polygon[$j][1]; // lat

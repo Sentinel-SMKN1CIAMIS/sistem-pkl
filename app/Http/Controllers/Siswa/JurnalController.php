@@ -120,6 +120,9 @@ class JurnalController extends Controller
         // Handle cropped base64 image
         if ($request->filled('foto_cropped')) {
             $imageData = $request->foto_cropped;
+            if (!preg_match('/^data:image\/(jpeg|png|jpg);base64,/', $imageData)) {
+                return back()->withInput()->with('error', 'Format foto tidak valid. Harus berupa gambar JPEG atau PNG.');
+            }
             $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
             $imageData = str_replace(' ', '+', $imageData);
             $fileName = 'jurnal/' . $siswa->id . '_' . time() . '.png';
@@ -227,6 +230,9 @@ class JurnalController extends Controller
 
         if ($request->filled('foto_cropped')) {
             $imageData = $request->foto_cropped;
+            if (!preg_match('/^data:image\/(jpeg|png|jpg);base64,/', $imageData)) {
+                return back()->withInput()->with('error', 'Format foto tidak valid. Harus berupa gambar JPEG atau PNG.');
+            }
             $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
             $imageData = str_replace(' ', '+', $imageData);
             $fileName = 'jurnal/' . $siswa->id . '_' . time() . '.png';
