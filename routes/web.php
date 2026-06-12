@@ -128,6 +128,7 @@ Route::middleware('auth', 'force.password.change')->group(function () {
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);
         Route::resource('pembimbing_dudi', \App\Http\Controllers\PembimbingDudiController::class);
+        Route::resource('kaprog', \App\Http\Controllers\Pokja\KaprogController::class);
         Route::get('pemetaan', [\App\Http\Controllers\Pokja\PemetaanController::class, 'index'])->name('pemetaan.index');
         Route::get('pemetaan/maps', [\App\Http\Controllers\Pokja\PemetaanController::class, 'maps'])->name('pemetaan.maps');
         Route::get('pemetaan/maps/data', [\App\Http\Controllers\Pokja\PemetaanController::class, 'mapsData'])->name('pemetaan.maps.data');
@@ -155,6 +156,7 @@ Route::middleware('auth', 'force.password.change')->group(function () {
         Route::post('dudi/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importDudi'])->name('dudi.import');
         Route::post('pembimbing-sekolah/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importPembimbingSekolah'])->name('pembimbing_sekolah.import');
         Route::post('pembimbing-dudi/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importPembimbingDudi'])->name('pembimbing_dudi.import');
+        Route::post('kaprog/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importKaprog'])->name('kaprog.import');
     });
 });
 

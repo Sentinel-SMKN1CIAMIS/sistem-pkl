@@ -39,6 +39,7 @@
             ['name' => 'Data DUDI', 'route' => 'pokja.dudi.index', 'icon' => 'building-2'],
             ['name' => 'Pembimbing Sekolah', 'route' => 'pokja.pembimbing_sekolah.index', 'icon' => 'user-check'],
             ['name' => 'Pembimbing DUDI', 'route' => 'pokja.pembimbing_dudi.index', 'icon' => 'user-cog'],
+            ['name' => 'Akun Kaprog', 'route' => 'pokja.kaprog.index', 'icon' => 'award'],
             ['name' => 'Pemetaan', 'route' => 'pokja.pemetaan.index', 'icon' => 'network'],
             ['name' => 'Peta DUDI', 'route' => 'pokja.pemetaan.maps', 'icon' => 'map'],
             ['name' => 'Kelola Zona', 'route' => 'pokja.zona.index', 'icon' => 'layers'],

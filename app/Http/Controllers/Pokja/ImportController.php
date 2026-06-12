@@ -45,6 +45,10 @@ class ImportController extends Controller
             $headers = ['nama_lengkap', 'username', 'email', 'password', 'jabatan', 'no_hp', 'nama_perusahaan'];
             $exampleRow = ['Eko Prasetyo', 'ekoprasetyo', 'eko@example.com', 'mentor123', 'Senior Developer', '085712345678', 'PT Solusi Digital'];
             $filename = 'template_pembimbing_dudi.xlsx';
+        } elseif ($type === 'kaprog') {
+            $headers = ['nama_lengkap', 'username', 'email', 'password', 'konsentrasi_keahlian'];
+            $exampleRow = ['Drs. Ahmad Yusuf, M.T.', 'ahmadyusuf', 'ahmad@example.com', 'kaprog123', 'Rekayasa Perangkat Lunak'];
+            $filename = 'template_kaprog.xlsx';
         } else {
             abort(404);
         }
@@ -573,6 +577,91 @@ class ImportController extends Controller
 
             DB::commit();
             return back()->with('success', "Berhasil mengimpor {$importCount} data pembimbing DUDI.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan sistem saat mengimpor data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Import Kaprog (Head of Program) Data.
+     */
+    public function importKaprog(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        $rows = $this->parseExcel($request->file('file'));
+        if (empty($rows)) {
+            return back()->with('error', 'File Excel kosong atau tidak valid.');
+        }
+
+        $errors = [];
+        $importCount = 0;
+
+        $concentrations = KonsentrasiKeahlian::pluck('id', 'nama')
+            ->mapWithKeys(fn($id, $nama) => [strtolower(trim($nama)) => $id]);
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($rows as $index => $row) {
+                $lineNumber = $index + 2;
+
+                if (empty(array_filter($row))) continue;
+
+                $validator = Validator::make($row, [
+                    'nama_lengkap' => 'required|string|max:255',
+                    'username' => 'required|alpha_dash|max:50',
+                    'email' => 'required|email',
+                    'password' => 'required|min:6',
+                    'konsentrasi_keahlian' => 'required',
+                ]);
+
+                if ($validator->fails()) {
+                    $errors[] = "Baris {$lineNumber}: " . implode(', ', $validator->errors()->all());
+                    continue;
+                }
+
+                if (User::where('email', $row['email'])->exists()) {
+                    $errors[] = "Baris {$lineNumber}: Email '{$row['email']}' sudah terdaftar.";
+                    continue;
+                }
+                if (User::where('username', $row['username'])->exists()) {
+                    $errors[] = "Baris {$lineNumber}: Username '{$row['username']}' sudah terdaftar.";
+                    continue;
+                }
+
+                $konName = strtolower(trim($row['konsentrasi_keahlian']));
+                if (!isset($concentrations[$konName])) {
+                    $errors[] = "Baris {$lineNumber}: Konsentrasi keahlian '{$row['konsentrasi_keahlian']}' tidak ditemukan.";
+                    continue;
+                }
+
+                if (empty($errors)) {
+                    User::create([
+                        'name' => $row['nama_lengkap'],
+                        'username' => $row['username'],
+                        'email' => $row['email'],
+                        'password' => Hash::make($row['password']),
+                        'role' => 'kaprog',
+                        'konsentrasi_keahlian_id' => $concentrations[$konName],
+                        'is_active' => true,
+                    ]);
+
+                    $importCount++;
+                }
+            }
+
+            if (!empty($errors)) {
+                DB::rollBack();
+                return back()->with('import_errors', $errors);
+            }
+
+            DB::commit();
+            return back()->with('success', "Berhasil mengimpor {$importCount} data Kaprog.");
 
         } catch (\Exception $e) {
             DB::rollBack();
