@@ -14,6 +14,7 @@ class PokjaKaprogManagementTest extends TestCase
     use RefreshDatabase;
 
     private $pokjaUser;
+    private $program;
     private $concentration;
 
     protected function setUp(): void
@@ -22,13 +23,13 @@ class PokjaKaprogManagementTest extends TestCase
         $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
 
         // Create a program and concentration keahlian
-        $program = ProgramKeahlian::create([
+        $this->program = ProgramKeahlian::create([
             'kode' => 'PPLG',
             'nama' => 'Pengembangan Perangkat Lunak'
         ]);
 
         $this->concentration = KonsentrasiKeahlian::create([
-            'program_keahlian_id' => $program->id,
+            'program_keahlian_id' => $this->program->id,
             'kode' => 'PPLG',
             'nama' => 'Rekayasa Perangkat Lunak',
             'durasi_pkl_bulan' => 6
@@ -65,7 +66,7 @@ class PokjaKaprogManagementTest extends TestCase
             'email' => 'kaprog_rpl@example.com',
             'password' => bcrypt('password'),
             'role' => 'kaprog',
-            'konsentrasi_keahlian_id' => $this->concentration->id,
+            'program_keahlian_id' => $this->program->id,
             'is_active' => true,
             'force_password_change' => false,
         ]);
@@ -89,7 +90,7 @@ class PokjaKaprogManagementTest extends TestCase
                 'username' => 'new_kaprog',
                 'email' => 'new_kaprog@example.com',
                 'password' => 'password123',
-                'konsentrasi_keahlian_id' => $this->concentration->id,
+                'program_keahlian_id' => $this->program->id,
             ]);
 
         $response->assertRedirect(route('pokja.kaprog.index'));
@@ -100,7 +101,7 @@ class PokjaKaprogManagementTest extends TestCase
             'username' => 'new_kaprog',
             'email' => 'new_kaprog@example.com',
             'role' => 'kaprog',
-            'konsentrasi_keahlian_id' => $this->concentration->id,
+            'program_keahlian_id' => $this->program->id,
         ]);
     }
 
@@ -115,7 +116,7 @@ class PokjaKaprogManagementTest extends TestCase
             'email' => 'old_kaprog@example.com',
             'password' => bcrypt('password'),
             'role' => 'kaprog',
-            'konsentrasi_keahlian_id' => $this->concentration->id,
+            'program_keahlian_id' => $this->program->id,
             'is_active' => true,
             'force_password_change' => false,
         ]);
@@ -125,7 +126,7 @@ class PokjaKaprogManagementTest extends TestCase
                 'name' => 'Updated Kaprog',
                 'username' => 'updated_kaprog',
                 'email' => 'updated_kaprog@example.com',
-                'konsentrasi_keahlian_id' => $this->concentration->id,
+                'program_keahlian_id' => $this->program->id,
             ]);
 
         $response->assertRedirect(route('pokja.kaprog.index'));
@@ -136,6 +137,7 @@ class PokjaKaprogManagementTest extends TestCase
             'name' => 'Updated Kaprog',
             'username' => 'updated_kaprog',
             'email' => 'updated_kaprog@example.com',
+            'program_keahlian_id' => $this->program->id,
         ]);
     }
 
@@ -150,7 +152,7 @@ class PokjaKaprogManagementTest extends TestCase
             'email' => 'delete_me@example.com',
             'password' => bcrypt('password'),
             'role' => 'kaprog',
-            'konsentrasi_keahlian_id' => $this->concentration->id,
+            'program_keahlian_id' => $this->program->id,
             'is_active' => true,
             'force_password_change' => false,
         ]);

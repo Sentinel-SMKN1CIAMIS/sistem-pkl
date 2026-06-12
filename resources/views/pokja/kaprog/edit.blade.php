@@ -57,15 +57,15 @@
                             @error('name') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label for="konsentrasi_keahlian_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Konsentrasi Keahlian</label>
-                            <select name="konsentrasi_keahlian_id" id="konsentrasi_keahlian_id" required
+                            <label for="program_keahlian_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Program Keahlian</label>
+                            <select name="program_keahlian_id" id="program_keahlian_id" required
                                     class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
-                                <option value="" disabled>Pilih Konsentrasi Keahlian</option>
-                                @foreach($concentrations as $item)
-                                    <option value="{{ $item->id }}" {{ old('konsentrasi_keahlian_id', $kaprog->konsentrasi_keahlian_id) == $item->id ? 'selected' : '' }}>{{ $item->nama }}</option>
+                                <option value="" disabled>Pilih Program Keahlian</option>
+                                @foreach($programs as $item)
+                                    <option value="{{ $item->id }}" {{ old('program_keahlian_id', $kaprog->program_keahlian_id) == $item->id ? 'selected' : '' }}>{{ $item->nama }}</option>
                                 @endforeach
                             </select>
-                            @error('konsentrasi_keahlian_id') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
+                            @error('program_keahlian_id') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </div>

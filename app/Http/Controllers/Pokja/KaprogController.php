@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Pokja;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\KonsentrasiKeahlian;
+use App\Models\ProgramKeahlian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,7 +15,7 @@ class KaprogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::where('role', 'kaprog')->with('konsentrasiKeahlian');
+        $query = User::where('role', 'kaprog')->with('programKeahlian');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -26,14 +26,14 @@ class KaprogController extends Controller
             });
         }
 
-        if ($request->filled('konsentrasi')) {
-            $query->where('konsentrasi_keahlian_id', $request->konsentrasi);
+        if ($request->filled('program')) {
+            $query->where('program_keahlian_id', $request->program);
         }
 
         $kaprogs = $query->latest()->paginate(10)->withQueryString();
-        $concentrations = KonsentrasiKeahlian::all();
+        $programs = ProgramKeahlian::all();
 
-        return view('pokja.kaprog.index', compact('kaprogs', 'concentrations'));
+        return view('pokja.kaprog.index', compact('kaprogs', 'programs'));
     }
 
     /**
@@ -41,8 +41,8 @@ class KaprogController extends Controller
      */
     public function create()
     {
-        $concentrations = KonsentrasiKeahlian::all();
-        return view('pokja.kaprog.create', compact('concentrations'));
+        $programs = ProgramKeahlian::all();
+        return view('pokja.kaprog.create', compact('programs'));
     }
 
     /**
@@ -55,7 +55,7 @@ class KaprogController extends Controller
             'username' => 'required|alpha_dash|max:50|unique:users,username',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
+            'program_keahlian_id' => 'required|exists:program_keahlians,id',
         ]);
 
         User::create([
@@ -64,7 +64,7 @@ class KaprogController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'kaprog',
-            'konsentrasi_keahlian_id' => $request->konsentrasi_keahlian_id,
+            'program_keahlian_id' => $request->program_keahlian_id,
             'is_active' => true,
         ]);
 
@@ -82,8 +82,8 @@ class KaprogController extends Controller
             abort(404);
         }
 
-        $concentrations = KonsentrasiKeahlian::all();
-        return view('pokja.kaprog.edit', compact('kaprog', 'concentrations'));
+        $programs = ProgramKeahlian::all();
+        return view('pokja.kaprog.edit', compact('kaprog', 'programs'));
     }
 
     /**
@@ -100,13 +100,13 @@ class KaprogController extends Controller
             'username' => 'required|alpha_dash|max:50|unique:users,username,' . $kaprog->id,
             'email' => 'required|email|unique:users,email,' . $kaprog->id,
             'password' => 'nullable|string|min:6',
-            'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
+            'program_keahlian_id' => 'required|exists:program_keahlians,id',
         ]);
 
         $kaprog->name = $request->name;
         $kaprog->username = $request->username;
         $kaprog->email = $request->email;
-        $kaprog->konsentrasi_keahlian_id = $request->konsentrasi_keahlian_id;
+        $kaprog->program_keahlian_id = $request->program_keahlian_id;
 
         if ($request->filled('password')) {
             $kaprog->password = Hash::make($request->password);

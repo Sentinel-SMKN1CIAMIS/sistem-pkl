@@ -106,10 +106,14 @@ Route::middleware('auth', 'force.password.change')->group(function () {
     Route::post('pesan/{user}', [\App\Http\Controllers\PesanController::class, 'store'])->name('pesan.store');
     Route::get('pesan/{user}/poll', [\App\Http\Controllers\PesanController::class, 'poll'])->name('pesan.poll');
 
-    // Super Admin Routes
-    Route::middleware('role:super_admin')->prefix('admin')->name('admin.')->group(function () {
+    // Shared Admin Routes (Super Admin & Pokja)
+    Route::middleware('role:super_admin,pokja')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('program_keahlian', \App\Http\Controllers\ProgramKeahlianController::class);
         Route::resource('konsentrasi_keahlian', \App\Http\Controllers\KonsentrasiKeahlianController::class);
+    });
+
+    // Super Admin Routes
+    Route::middleware('role:super_admin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('kompetensi', \App\Http\Controllers\KompetensiController::class);
         Route::resource('panduan', \App\Http\Controllers\Admin\BukuPanduanController::class);
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);

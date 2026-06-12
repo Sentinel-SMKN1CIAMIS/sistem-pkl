@@ -46,8 +46,8 @@ class ImportController extends Controller
             $exampleRow = ['Eko Prasetyo', 'ekoprasetyo', 'eko@example.com', 'mentor123', 'Senior Developer', '085712345678', 'PT Solusi Digital'];
             $filename = 'template_pembimbing_dudi.xlsx';
         } elseif ($type === 'kaprog') {
-            $headers = ['nama_lengkap', 'username', 'email', 'password', 'konsentrasi_keahlian'];
-            $exampleRow = ['Drs. Ahmad Yusuf, M.T.', 'ahmadyusuf', 'ahmad@example.com', 'kaprog123', 'Rekayasa Perangkat Lunak'];
+            $headers = ['nama_lengkap', 'username', 'email', 'password', 'program_keahlian'];
+            $exampleRow = ['Drs. Ahmad Yusuf, M.T.', 'ahmadyusuf', 'ahmad@example.com', 'kaprog123', 'Pengembangan Perangkat Lunak dan Gim'];
             $filename = 'template_kaprog.xlsx';
         } else {
             abort(404);
@@ -601,7 +601,7 @@ class ImportController extends Controller
         $errors = [];
         $importCount = 0;
 
-        $concentrations = KonsentrasiKeahlian::pluck('id', 'nama')
+        $programs = \App\Models\ProgramKeahlian::pluck('id', 'nama')
             ->mapWithKeys(fn($id, $nama) => [strtolower(trim($nama)) => $id]);
 
         DB::beginTransaction();
@@ -617,7 +617,7 @@ class ImportController extends Controller
                     'username' => 'required|alpha_dash|max:50',
                     'email' => 'required|email',
                     'password' => 'required|min:6',
-                    'konsentrasi_keahlian' => 'required',
+                    'program_keahlian' => 'required',
                 ]);
 
                 if ($validator->fails()) {
@@ -634,9 +634,9 @@ class ImportController extends Controller
                     continue;
                 }
 
-                $konName = strtolower(trim($row['konsentrasi_keahlian']));
-                if (!isset($concentrations[$konName])) {
-                    $errors[] = "Baris {$lineNumber}: Konsentrasi keahlian '{$row['konsentrasi_keahlian']}' tidak ditemukan.";
+                $progName = strtolower(trim($row['program_keahlian']));
+                if (!isset($programs[$progName])) {
+                    $errors[] = "Baris {$lineNumber}: Program keahlian '{$row['program_keahlian']}' tidak ditemukan.";
                     continue;
                 }
 
@@ -647,7 +647,7 @@ class ImportController extends Controller
                         'email' => $row['email'],
                         'password' => Hash::make($row['password']),
                         'role' => 'kaprog',
-                        'konsentrasi_keahlian_id' => $concentrations[$konName],
+                        'program_keahlian_id' => $programs[$progName],
                         'is_active' => true,
                     ]);
 

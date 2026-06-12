@@ -27,7 +27,7 @@
 
     <div x-data="{ importPanelOpen: false, guideModalOpen: false }">
         <div class="mb-6 pokja-header-container">
-            <p class="text-slate-600 dark:text-slate-400">Daftar Kepala Program Keahlian (Kaprog) per konsentrasi keahlian.</p>
+            <p class="text-slate-600 dark:text-slate-400">Daftar Kepala Program Keahlian (Kaprog) per program keahlian.</p>
             <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
                     <i data-lucide="upload-cloud" class="w-5 h-5"></i>
@@ -207,9 +207,9 @@
                                               <td class="px-4 py-2.5 text-right font-mono text-blue-500">kaprog123</td>
                                           </tr>
                                           <tr>
-                                              <td class="px-4 py-2.5 font-semibold text-slate-900 dark:text-slate-100">konsentrasi_keahlian</td>
-                                              <td class="px-4 py-2.5"><strong>Wajib.</strong> Harus cocok persis dengan salah satu nama Konsentrasi Keahlian di database sekolah.</td>
-                                              <td class="px-4 py-2.5 text-right font-mono text-blue-500">Rekayasa Perangkat Lunak</td>
+                                              <td class="px-4 py-2.5 font-semibold text-slate-900 dark:text-slate-100">program_keahlian</td>
+                                              <td class="px-4 py-2.5"><strong>Wajib.</strong> Harus cocok persis dengan salah satu nama Program Keahlian di database sekolah.</td>
+                                              <td class="px-4 py-2.5 text-right font-mono text-blue-500">Pengembangan Perangkat Lunak dan Gim</td>
                                           </tr>
                                       </tbody>
                                   </table>
@@ -220,21 +220,21 @@
                           <div class="space-y-3 p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
                               <h4 class="text-xs font-bold text-slate-950 dark:text-white flex items-center gap-1.5">
                                   <i data-lucide="layers" class="w-4.5 h-4.5 text-emerald-500"></i>
-                                  Daftar Nama Jurusan Resmi di Database (Klik Salin):
+                                  Daftar Nama Program Keahlian Resmi di Database (Klik Salin):
                               </h4>
                               <p class="text-[11px] text-slate-500">
-                                  Kolom <strong>konsentrasi_keahlian</strong> pada berkas Excel Anda harus diisi sama persis menggunakan nama di bawah ini:
+                                  Kolom <strong>program_keahlian</strong> pada berkas Excel Anda harus diisi sama persis menggunakan nama di bawah ini:
                               </p>
                               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                                  @forelse($concentrations as $jur)
+                                  @forelse($programs as $jur)
                                       <div class="flex items-center justify-between p-2 bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200">
                                           <span class="truncate">{{ $jur->nama }}</span>
-                                          <button type="button" onclick="navigator.clipboard.writeText('{{ $jur->nama }}'); alert('Berhasil menyalin nama jurusan!')" class="p-1 text-slate-400 hover:text-emerald-500 rounded transition-colors" title="Salin">
+                                          <button type="button" onclick="navigator.clipboard.writeText('{{ $jur->nama }}'); alert('Berhasil menyalin nama program keahlian!')" class="p-1 text-slate-400 hover:text-emerald-500 rounded transition-colors" title="Salin">
                                               <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                                           </button>
                                       </div>
                                   @empty
-                                      <span class="text-xs text-amber-500 italic">Belum ada jurusan yang terdaftar.</span>
+                                      <span class="text-xs text-amber-500 italic">Belum ada program keahlian yang terdaftar.</span>
                                   @endforelse
                               </div>
                           </div>
@@ -287,11 +287,11 @@
             </div>
             
             <div>
-                <label for="konsentrasi" class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Konsentrasi Keahlian</label>
-                <select name="konsentrasi" id="konsentrasi" class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all">
-                    <option value="">Semua Konsentrasi Keahlian</option>
-                    @foreach($concentrations as $con)
-                        <option value="{{ $con->id }}" {{ request('konsentrasi') == $con->id ? 'selected' : '' }}>{{ $con->nama }}</option>
+                <label for="program" class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Program Keahlian</label>
+                <select name="program" id="program" class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all">
+                    <option value="">Semua Program Keahlian</option>
+                    @foreach($programs as $prog)
+                        <option value="{{ $prog->id }}" {{ request('program') == $prog->id ? 'selected' : '' }}>{{ $prog->nama }}</option>
                     @endforeach
                 </select>
             </div>
@@ -301,7 +301,7 @@
                     <i data-lucide="filter" class="w-4 h-4"></i>
                     Terapkan
                 </button>
-                @if(request()->anyFilled(['search', 'konsentrasi']))
+                @if(request()->anyFilled(['search', 'program']))
                     <a href="{{ route('pokja.kaprog.index') }}" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl transition-all text-sm flex items-center justify-center" title="Reset filter">
                         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
                     </a>
@@ -318,7 +318,7 @@
                     <tr class="border-b border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-800/30">
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Lengkap</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Username</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Konsentrasi Keahlian</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Program Keahlian</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
@@ -344,7 +344,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-xs text-slate-600 dark:text-slate-400">
-                                    {{ $item->konsentrasiKeahlian->nama ?? 'Belum Ditentukan' }}
+                                    {{ $item->programKeahlian->nama ?? 'Belum Ditentukan' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right whitespace-nowrap">

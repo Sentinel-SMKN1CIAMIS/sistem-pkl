@@ -11,8 +11,8 @@ class KaprogController extends Controller
     {
         $user = auth()->user();
         
-        // If user is kaprog without assigned class, show no data
-        if (!$user->konsentrasi_keahlian_id) {
+        // If user is kaprog without assigned program, show no data
+        if (!$user->program_keahlian_id) {
             $siswas = Siswa::with(['dudi', 'pembimbingSekolah', 'konsentrasiKeahlian'])
                 ->where('konsentrasi_keahlian_id', -1) // Non-existent ID to return empty paginated result
                 ->latest()
@@ -26,15 +26,17 @@ class KaprogController extends Controller
             ]);
         }
 
-        // Filter siswas by Kaprog's assigned konsentrasi keahlian
+        // Filter siswas by Kaprog's assigned program keahlian (all concentrations under it)
+        $allowedIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id')->toArray();
+
         $siswas = Siswa::with(['dudi', 'pembimbingSekolah', 'konsentrasiKeahlian'])
-            ->where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id)
+            ->whereIn('konsentrasi_keahlian_id', $allowedIds)
             ->latest()
             ->paginate(15);
             
-        // Stats for Kaprog's class only
-        $totalSiswa = Siswa::where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id)->count();
-        $siswaPkl = Siswa::where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id)
+        // Stats for Kaprog's program only
+        $totalSiswa = Siswa::whereIn('konsentrasi_keahlian_id', $allowedIds)->count();
+        $siswaPkl = Siswa::whereIn('konsentrasi_keahlian_id', $allowedIds)
             ->whereNotNull('dudi_id')
             ->count();
         $siswaBelumPkl = $totalSiswa - $siswaPkl;

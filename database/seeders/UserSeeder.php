@@ -27,12 +27,14 @@ class UserSeeder extends Seeder
         ]);
 
         // Kaprog
+        $pplgProgram = \App\Models\ProgramKeahlian::where('kode', 'PPLG')->first();
         User::create([
             'name' => 'Kepala Program',
             'username' => 'kaprog',
             'email' => 'kaprog@gmail.com',
             'password' => $password,
             'role' => 'kaprog',
+            'program_keahlian_id' => $pplgProgram ? $pplgProgram->id : null,
         ]);
 
         // Pokja

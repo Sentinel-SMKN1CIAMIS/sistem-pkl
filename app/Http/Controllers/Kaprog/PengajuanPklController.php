@@ -12,12 +12,16 @@ class PengajuanPklController extends Controller
     public function index()
     {
         $user = auth()->user();
+        $query = PengajuanPkl::with('siswa', 'dudi');
         
-        // Temporarily show all pengajuan PKL for kaprog (for demo/presentation)
-        // TODO: Proper filter by assigned class later
-        $pengajuans = PengajuanPkl::with('siswa', 'dudi')
-            ->latest()
-            ->paginate(10);
+        if ($user->role === 'kaprog') {
+            $allowedIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id')->toArray();
+            $query->whereHas('siswa', function($q) use ($allowedIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $allowedIds);
+            });
+        }
+        
+        $pengajuans = $query->latest()->paginate(10);
 
         return view('kaprog.pengajuan-pkl.index', compact('pengajuans'));
     }
@@ -27,8 +31,11 @@ class PengajuanPklController extends Controller
         $user = auth()->user();
 
         // Re-enabled proper authorization check
-        if ($user->role === 'kaprog' && $pengajuanPkl->siswa->konsentrasi_keahlian_id !== $user->konsentrasi_keahlian_id) {
-            abort(403, 'Unauthorized action.');
+        if ($user->role === 'kaprog') {
+            $allowedIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id')->toArray();
+            if (!in_array($pengajuanPkl->siswa->konsentrasi_keahlian_id, $allowedIds)) {
+                abort(403, 'Unauthorized action.');
+            }
         }
 
         $request->validate([

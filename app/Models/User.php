@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'username', 'email', 'password', 'role', 'avatar', 'is_active', 'last_login_at', 'force_password_change', 'konsentrasi_keahlian_id'])]
+#[Fillable(['name', 'username', 'email', 'password', 'role', 'avatar', 'is_active', 'last_login_at', 'force_password_change', 'konsentrasi_keahlian_id', 'program_keahlian_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -52,6 +52,11 @@ class User extends Authenticatable
     public function konsentrasiKeahlian()
     {
         return $this->belongsTo(KonsentrasiKeahlian::class);
+    }
+
+    public function programKeahlian()
+    {
+        return $this->belongsTo(ProgramKeahlian::class);
     }
 
     public function kaprog()
