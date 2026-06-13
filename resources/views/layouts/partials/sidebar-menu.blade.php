@@ -102,6 +102,7 @@
             ['name' => 'Log Sistem', 'route' => 'admin.logs.index', 'icon' => 'scroll-text'],
         ];
     }
+    $navItems[] = ['name' => 'Panduan Interaktif', 'route' => 'panduan.interaktif', 'icon' => 'sparkles'];
 @endphp
 
 <nav class="space-y-2">

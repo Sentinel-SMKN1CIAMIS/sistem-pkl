@@ -97,6 +97,7 @@ Route::middleware('auth', 'force.password.change')->group(function () {
     // General Auth Routes
     Route::get('notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifications.index');
     Route::patch('notifikasi/{notifikasi}/read', [\App\Http\Controllers\NotifikasiController::class, 'markAsRead'])->name('notifications.read');
+    Route::get('panduan-interaktif', [\App\Http\Controllers\PanduanInteraktifController::class, 'index'])->name('panduan.interaktif');
 
     // Pesan (Chat) Routes
     Route::get('pesan', [\App\Http\Controllers\PesanController::class, 'index'])->name('pesan.index');
