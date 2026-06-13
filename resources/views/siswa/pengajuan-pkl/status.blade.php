@@ -2,8 +2,18 @@
     <x-slot name="header">Status Pengajuan PKL</x-slot>
 
     <div class="max-w-2xl mx-auto">
+        @if(session('error'))
+            <div class="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl text-sm text-red-700 dark:text-red-400 flex items-start gap-3 shadow-sm">
+                <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+                <div>
+                    <span class="block font-bold">Peringatan Akses</span>
+                    <span class="block mt-1">{{ session('error') }}</span>
+                </div>
+            </div>
+        @endif
+
         @if(session('success'))
-            <div class="mb-6 p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl text-sm text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+            <div class="mb-6 p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl text-sm text-emerald-700 dark:text-emerald-400 flex items-center gap-2 shadow-sm">
                 <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i> {{ session('success') }}
             </div>
         @endif
@@ -74,6 +84,22 @@
                         <div><span class="text-slate-400 text-xs block">Diajukan pada</span><span class="text-slate-700 dark:text-slate-200">{{ $pengajuan->created_at->format('d M Y, H:i') }}</span></div>
                     </div>
                 </div>
+
+                @if($pengajuan->status === 'disetujui' && auth()->user()->siswa->status_pkl === 'belum_mulai')
+                    <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl shadow-sm">
+                        <div class="flex items-start gap-3">
+                            <i data-lucide="info" class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <h3 class="text-sm font-bold text-blue-800 dark:text-blue-300 mb-1">Menunggu Pemetaan Guru Pembimbing</h3>
+                                <p class="text-sm text-blue-700 dark:text-blue-400/90 leading-relaxed">
+                                    Pengajuan Tempat PKL Anda telah <strong>disetujui</strong> oleh Kaprog. 
+                                    Saat ini, mohon menunggu Tim Pokja memetakan <strong>Guru Pembimbing Sekolah</strong> untuk Anda. 
+                                    Anda baru dapat mengakses fitur Jurnal, Absensi, dan Laporan setelah proses pemetaan ini selesai.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
                 @if($pengajuan->status === 'ditolak')
                     @if($pengajuan->catatan)

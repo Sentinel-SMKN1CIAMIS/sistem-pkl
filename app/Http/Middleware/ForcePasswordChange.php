@@ -26,20 +26,10 @@ class ForcePasswordChange
             return $next($request);
         }
 
-        if (Auth::check() && Auth::user()->force_password_change) {
+        if (Auth::check() && Auth::user()->role === 'siswa' && Auth::user()->force_password_change) {
             // Allow logout, change password, and notification routes
             if (!$request->routeIs('auth.change-password.*', 'logout', 'notifications.*')) {
-                // Prevent redirect loop - check if we already redirected in this session
-                if ($request->session()->get('_force_password_redirect_attempted', false)) {
-                    // Already tried redirecting, let it through to avoid loop
-                    return $next($request);
-                }
-                
-                $request->session()->put('_force_password_redirect_attempted', true);
                 return redirect()->route('auth.change-password.show');
-            } else {
-                // Clear the flag when on allowed routes
-                $request->session()->forget('_force_password_redirect_attempted');
             }
         }
 

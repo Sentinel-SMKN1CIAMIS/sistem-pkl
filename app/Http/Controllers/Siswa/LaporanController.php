@@ -13,10 +13,21 @@ class LaporanController extends Controller
     private function requirePkl()
     {
         $siswa = auth()->user()->siswa;
-        if (!$siswa || !$siswa->dudi_id || !in_array($siswa->status_pkl, ['sedang_pkl', 'selesai'])) {
+        if (!$siswa || !$siswa->dudi_id) {
+            return redirect()->route('siswa.pengajuan_pkl.status')
+                ->with('error', 'Anda belum dapat mengakses menu ini. Pastikan pengajuan PKL telah disetujui.');
+        }
+
+        if ($siswa->status_pkl === 'belum_mulai') {
+            return redirect()->route('siswa.pengajuan_pkl.status')
+                ->with('error', 'Tempat PKL Anda sudah disetujui, namun Anda belum bisa mengakses menu ini karena menunggu Tim Pokja memetakan Guru Pembimbing Sekolah.');
+        }
+
+        if (!in_array($siswa->status_pkl, ['sedang_pkl', 'selesai'])) {
             return redirect()->route('siswa.pengajuan_pkl.status')
                 ->with('error', 'Anda belum dapat mengakses menu ini. Pastikan Surat Pengantar telah di-ACC dan DUDI telah membalas (menerima) Anda.');
         }
+
         return null;
     }
 

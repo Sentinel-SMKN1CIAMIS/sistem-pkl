@@ -58,7 +58,7 @@
                     </li>
                     <li class="flex items-center gap-2">
                         <span class="inline-block w-1 h-1 bg-slate-400 rounded-full"></span>
-                        Mengandung karakter spesial (@$!%*?&)
+                        Mengandung karakter spesial (contoh: @$!%*?&#-_)
                     </li>
                 </ul>
             </div>

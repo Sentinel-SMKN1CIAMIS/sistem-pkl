@@ -44,13 +44,13 @@ class ChangePasswordController extends Controller
                 'required',
                 'string',
                 'min:8',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]/',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#\-_])[a-zA-Z\d@$!%*?&#\-_]+$/',
                 'confirmed'
             ],
         ], [
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password harus minimal 8 karakter.',
-            'password.regex' => 'Password harus mengandung huruf besar, huruf kecil, angka, dan karakter spesial (@$!%*?&).',
+            'password.regex' => 'Password harus mengandung huruf besar, huruf kecil, angka, dan karakter spesial (@$!%*?&#-_).',
             'password.confirmed' => 'Konfirmasi password tidak sesuai.',
         ]);
 

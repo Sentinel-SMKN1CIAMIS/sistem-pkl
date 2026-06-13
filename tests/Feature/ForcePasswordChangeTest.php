@@ -81,19 +81,16 @@ class ForcePasswordChangeTest extends TestCase
         }
     }
 
-    public function test_siswa_can_access_dashboard_with_modal_when_force_change()
+    public function test_siswa_cannot_access_dashboard_when_force_change()
     {
         $user = User::factory()->create([
             'force_password_change' => true,
             'role' => 'siswa',
         ]);
 
-        // Siswa sekarang bisa akses dashboard (middleware allows dashboard route)
-        // Modal akan ditampilkan di dashboard
         $response = $this->actingAs($user)->get('/dashboard');
         
-        // Should NOT redirect anymore - dashboard is accessible now
-        $response->assertStatus(200);
+        $response->assertRedirect(route('auth.change-password.show'));
     }
 
     public function test_user_can_access_dashboard_after_password_change()
