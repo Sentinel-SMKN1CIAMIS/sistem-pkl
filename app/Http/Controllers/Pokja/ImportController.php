@@ -193,7 +193,7 @@ class ImportController extends Controller
                 $validator = Validator::make($row, [
                     'nis' => 'required|numeric',
                     'nama_lengkap' => 'required|string|max:255',
-                    'email' => 'required|email',
+                    'email' => 'nullable|email',
                     'password' => 'required|min:6',
                     'kelas' => 'required|string',
                     'jenis_kelamin' => 'required|in:L,P,l,p',
@@ -209,7 +209,7 @@ class ImportController extends Controller
                 }
 
                 // Check duplicates in database
-                if (User::where('email', $row['email'])->exists()) {
+                if (!empty($row['email']) && User::where('email', $row['email'])->exists()) {
                     $errors[] = "Baris {$lineNumber}: Email '{$row['email']}' sudah terdaftar di sistem.";
                     continue;
                 }
@@ -231,7 +231,7 @@ class ImportController extends Controller
                     $user = User::create([
                         'name' => $row['nama_lengkap'],
                         'username' => $row['nis'],
-                        'email' => $row['email'],
+                        'email' => empty($row['email']) ? null : $row['email'],
                         'password' => Hash::make($row['password']),
                         'role' => 'siswa',
                         'is_active' => true,
