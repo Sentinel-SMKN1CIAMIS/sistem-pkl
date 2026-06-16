@@ -9,7 +9,12 @@
             </a>
             <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ $pembimbing_sekolah->nama_lengkap }}</h2>
             <p class="text-sm text-slate-500 dark:text-slate-400 uppercase tracking-widest font-semibold mt-1">
-                {{ $pembimbing_sekolah->tipe }} — {{ $pembimbing_sekolah->konsentrasiKeahlian->nama }}
+                @if($pembimbing_sekolah->tipe === 'keduanya')
+                    Kejuruan & Umum (Keduanya)
+                @else
+                    {{ $pembimbing_sekolah->tipe }}
+                @endif
+                — {{ $pembimbing_sekolah->konsentrasiKeahlian->nama }}
             </p>
         </div>
     </div>

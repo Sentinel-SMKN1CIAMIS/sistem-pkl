@@ -26,6 +26,16 @@ class RoleMiddleware
             return $next($request);
         }
 
+        // Check if route requires 'pembimbing_sekolah' and user has a pembimbingSekolah profile
+        if (in_array('pembimbing_sekolah', $roles) && $user->pembimbingSekolah()->exists()) {
+            return $next($request);
+        }
+
+        // Check if route requires 'pembimbing_dudi' and user has a pembimbingDudi profile
+        if (in_array('pembimbing_dudi', $roles) && $user->pembimbingDudi()->exists()) {
+            return $next($request);
+        }
+
         abort(403, 'Unauthorized action.');
     }
 }

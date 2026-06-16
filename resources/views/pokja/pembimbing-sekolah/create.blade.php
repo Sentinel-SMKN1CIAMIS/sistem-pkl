@@ -36,22 +36,55 @@
                         <i data-lucide="key" class="w-5 h-5 text-blue-400"></i>
                         Akses Login
                     </h3>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pilih Tipe Akun</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="account_type" value="new" checked onchange="toggleAccountType()" class="text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Buat Baru</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="account_type" value="existing" onchange="toggleAccountType()" class="text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Akun Terdaftar</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="space-y-4">
-                        <div>
-                            <label for="username" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Username</label>
-                            <input type="text" name="username" id="username" value="{{ old('username') }}" required
-                                   class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all font-mono">
-                            @error('username') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
+                        <!-- Dropdown Akun Terdaftar -->
+                        <div id="existing-account-field" class="hidden">
+                            <label for="user_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pilih Akun Pengguna</label>
+                            <select name="user_id" id="user_id" onchange="fillNameFromExistingUser()"
+                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                                <option value="" selected disabled>-- Pilih Pengguna --</option>
+                                @foreach($existingUsers as $u)
+                                    <option value="{{ $u->id }}" data-name="{{ $u->name }}">{{ $u->name }} ({{ strtoupper($u->role) }} - {{ $u->username }})</option>
+                                @endforeach
+                            </select>
+                            @error('user_id') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
                         </div>
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email</label>
-                            <input type="email" name="email" id="email" value="{{ old('email') }}" required
-                                   class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
-                        </div>
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Password</label>
-                            <input type="password" name="password" id="password" required
-                                   class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+
+                        <!-- Form Akun Baru -->
+                        <div id="new-account-fields" class="space-y-4">
+                            <div>
+                                <label for="username" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Username</label>
+                                <input type="text" name="username" id="username" value="{{ old('username') }}" required
+                                       class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all font-mono">
+                                @error('username') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email</label>
+                                <input type="email" name="email" id="email" value="{{ old('email') }}" required
+                                       class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                                @error('email') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Password</label>
+                                <input type="password" name="password" id="password" required
+                                       class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                                @error('password') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -104,6 +137,7 @@
                                     class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
                                 <option value="kejuruan" {{ old('tipe') == 'kejuruan' ? 'selected' : '' }}>Guru Kejuruan (Produktif)</option>
                                 <option value="umum" {{ old('tipe') == 'umum' ? 'selected' : '' }}>Guru Umum (Normatif / Adaptif)</option>
+                                <option value="keduanya" {{ old('tipe') == 'keduanya' ? 'selected' : '' }}>Guru Kejuruan & Umum (Produktif + Adaptif)</option>
                             </select>
                         </div>
 
@@ -258,10 +292,52 @@
         function toggleAdaptifFields() {
             const tipe = document.getElementById('tipe').value;
             const adaptifFields = document.getElementById('adaptif-fields');
-            if(tipe === 'umum') {
+            if(tipe === 'umum' || tipe === 'keduanya') {
                 adaptifFields.classList.remove('hidden');
             } else {
                 adaptifFields.classList.add('hidden');
+            }
+        }
+
+        function toggleAccountType() {
+            const accountType = document.querySelector('input[name="account_type"]:checked').value;
+            const existingField = document.getElementById('existing-account-field');
+            const newFields = document.getElementById('new-account-fields');
+            
+            const usernameInput = document.getElementById('username');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const userIdSelect = document.getElementById('user_id');
+
+            if (accountType === 'existing') {
+                existingField.classList.remove('hidden');
+                newFields.classList.add('hidden');
+                
+                if (usernameInput) usernameInput.removeAttribute('required');
+                if (emailInput) emailInput.removeAttribute('required');
+                if (passwordInput) passwordInput.removeAttribute('required');
+                if (userIdSelect) userIdSelect.setAttribute('required', 'required');
+            } else {
+                existingField.classList.add('hidden');
+                newFields.classList.remove('hidden');
+                
+                if (usernameInput) usernameInput.setAttribute('required', 'required');
+                if (emailInput) emailInput.setAttribute('required', 'required');
+                if (passwordInput) passwordInput.setAttribute('required', 'required');
+                if (userIdSelect) userIdSelect.removeAttribute('required');
+            }
+        }
+
+        function fillNameFromExistingUser() {
+            const select = document.getElementById('user_id');
+            if (select) {
+                const selectedOption = select.options[select.selectedIndex];
+                if (selectedOption) {
+                    const name = selectedOption.getAttribute('data-name');
+                    if (name) {
+                        document.getElementById('nama_lengkap').value = name;
+                    }
+                }
             }
         }
 
@@ -275,6 +351,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             toggleAdaptifFields();
+            toggleAccountType();
             updateSelectedCount();
 
             const searchInput = document.getElementById('filter-search');

@@ -408,7 +408,7 @@ class ImportController extends Controller
                     'username' => 'required|alpha_dash|max:50',
                     'email' => 'required|email',
                     'password' => 'required|min:6',
-                    'tipe' => 'required|in:kejuruan,umum',
+                    'tipe' => 'required|in:kejuruan,umum,keduanya',
                     'no_hp' => 'nullable',
                     'mapel_cp' => 'nullable',
                     'konsentrasi_keahlian' => 'required',

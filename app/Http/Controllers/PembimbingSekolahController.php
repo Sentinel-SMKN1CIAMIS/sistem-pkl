@@ -20,29 +20,49 @@ class PembimbingSekolahController extends Controller
         $concentrations = \App\Models\KonsentrasiKeahlian::all();
         $existingClasses = \App\Models\Siswa::distinct('kelas')->pluck('kelas')->filter()->values();
         $students = \App\Models\Siswa::with(['konsentrasiKeahlian', 'pembimbingSekolah'])->get();
-        return view('pokja.pembimbing-sekolah.create', compact('concentrations', 'existingClasses', 'students'));
+        
+        // Fetch users who can be connected as a PembimbingSekolah but don't have a profile yet
+        $existingUsers = \App\Models\User::whereIn('role', ['kaprog', 'pokja', 'super_admin'])
+            ->whereDoesntHave('pembimbingSekolah')
+            ->orderBy('name')
+            ->get();
+
+        return view('pokja.pembimbing-sekolah.create', compact('concentrations', 'existingClasses', 'students', 'existingUsers'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $rules = [
             'nip' => 'nullable|unique:pembimbing_sekolahs,nip',
             'nama_lengkap' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'username' => 'required|unique:users,username',
-            'password' => 'required|min:6',
             'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
-            'tipe' => 'required|in:kejuruan,umum',
+            'tipe' => 'required|in:kejuruan,umum,keduanya',
             'no_hp' => 'nullable|string',
-        ]);
+            'mapel_cp' => 'nullable|string',
+        ];
 
-        $user = \App\Models\User::create([
-            'name' => $request->nama_lengkap,
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
-            'role' => 'pembimbing_sekolah',
-        ]);
+        if ($request->filled('user_id')) {
+            $rules['user_id'] = 'required|exists:users,id';
+        } else {
+            $rules['email'] = 'required|email|unique:users,email';
+            $rules['username'] = 'required|unique:users,username';
+            $rules['password'] = 'required|min:6';
+        }
+
+        $request->validate($rules);
+
+        if ($request->filled('user_id')) {
+            $user = \App\Models\User::findOrFail($request->user_id);
+            $user->update(['name' => $request->nama_lengkap]);
+        } else {
+            $user = \App\Models\User::create([
+                'name' => $request->nama_lengkap,
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+                'role' => 'pembimbing_sekolah',
+            ]);
+        }
 
         $pembimbing = \App\Models\PembimbingSekolah::create([
             'user_id' => $user->id,
@@ -93,8 +113,9 @@ class PembimbingSekolahController extends Controller
             'nip' => 'nullable|unique:pembimbing_sekolahs,nip,' . $pembimbing_sekolah->id,
             'nama_lengkap' => 'required|string|max:255',
             'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
-            'tipe' => 'required|in:kejuruan,umum',
+            'tipe' => 'required|in:kejuruan,umum,keduanya',
             'no_hp' => 'nullable|string',
+            'mapel_cp' => 'nullable|string',
         ]);
 
         $pembimbing_sekolah->update([
@@ -106,7 +127,9 @@ class PembimbingSekolahController extends Controller
             'mapel_cp' => $request->mapel_cp,
         ]);
         
-        $pembimbing_sekolah->user->update(['name' => $request->nama_lengkap]);
+        if ($pembimbing_sekolah->user) {
+            $pembimbing_sekolah->user->update(['name' => $request->nama_lengkap]);
+        }
 
         // Sync classes
         \App\Models\KelasPembimbing::where('pembimbing_sekolah_id', $pembimbing_sekolah->id)->delete();
@@ -141,7 +164,7 @@ class PembimbingSekolahController extends Controller
     {
         $user = $pembimbing_sekolah->user;
         $pembimbing_sekolah->delete();
-        if ($user) {
+        if ($user && $user->role === 'pembimbing_sekolah') {
             $user->delete();
         }
         return redirect()->route('pokja.pembimbing_sekolah.index')

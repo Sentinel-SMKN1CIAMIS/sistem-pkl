@@ -15,12 +15,11 @@ class PesanController extends Controller
     {
         $user = auth()->user();
         $role = $user->role;
+        $kontak = collect();
 
+        // 1. If has siswa profile
         if ($role === 'siswa') {
             $siswa = $user->siswa;
-            $kontak = collect();
-
-            // Tambahkan Pembimbing Sekolah
             if ($siswa && $siswa->pembimbing_sekolah_id) {
                 $guru = \App\Models\PembimbingSekolah::with('user')
                     ->find($siswa->pembimbing_sekolah_id);
@@ -29,7 +28,6 @@ class PesanController extends Controller
                 }
             }
 
-            // Tambahkan Pembimbing DUDI
             if ($siswa && $siswa->pembimbing_dudi_id) {
                 $mentor = \App\Models\PembimbingDudi::with('user')
                     ->find($siswa->pembimbing_dudi_id);
@@ -41,35 +39,37 @@ class PesanController extends Controller
             return $kontak;
         }
 
-        if ($role === 'pembimbing_sekolah') {
+        // 2. If has pembimbingSekolah profile
+        if ($user->pembimbingSekolah) {
             $guru = $user->pembimbingSekolah;
-            if (!$guru) return collect();
-
-            return \App\Models\Siswa::with('user')
+            $students = \App\Models\Siswa::with('user')
                 ->where('pembimbing_sekolah_id', $guru->id)
                 ->get()
                 ->pluck('user')
                 ->filter();
+            $kontak = $kontak->merge($students);
         }
 
-        if ($role === 'pembimbing_dudi') {
+        // 3. If has pembimbingDudi profile
+        if ($user->pembimbingDudi) {
             $mentor = $user->pembimbingDudi;
-            if (!$mentor) return collect();
-
-            return \App\Models\Siswa::with('user')
+            $students = \App\Models\Siswa::with('user')
                 ->where('dudi_id', $mentor->dudi_id)
                 ->get()
                 ->pluck('user')
                 ->filter();
+            $kontak = $kontak->merge($students);
         }
 
-        if (in_array($role, ['pokja', 'super_admin'])) {
-            return User::where('id', '!=', $user->id)
+        // 4. If admin, pokja, or kaprog (general roles)
+        if (in_array($role, ['pokja', 'super_admin', 'kaprog'])) {
+            $others = User::where('id', '!=', $user->id)
                 ->where('is_active', true)
                 ->get();
+            $kontak = $kontak->merge($others);
         }
 
-        return collect();
+        return $kontak->unique('id')->values();
     }
 
     /**
@@ -252,8 +252,8 @@ class PesanController extends Controller
         $kontak = $this->getKontak();
         $allowed = $kontak->pluck('id')->contains($targetUser->id);
 
-        // Pokja / admin bisa chat dengan siapa saja
-        if (in_array(auth()->user()->role, ['pokja', 'super_admin'])) return;
+        // Pokja / admin / kaprog bisa chat dengan siapa saja
+        if (in_array(auth()->user()->role, ['pokja', 'super_admin', 'kaprog'])) return;
 
         if (!$allowed) {
             abort(403, 'Anda tidak memiliki akses untuk menghubungi pengguna ini.');
