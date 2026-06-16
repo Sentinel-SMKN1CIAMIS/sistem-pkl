@@ -87,9 +87,11 @@
             </div>
 
             <!-- Error Code -->
-            <h1 class="text-7xl sm:text-8xl font-black tracking-wider bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 mb-4 select-none">
+            @hasSection('code')
+            <h1 class="text-7xl sm:text-8xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 mb-4 select-none">
                 @yield('code')
             </h1>
+            @endif
 
             <!-- Title -->
             <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">

@@ -1,7 +1,6 @@
 @extends('errors.layout')
 
 @section('title', __('Layanan Sedang Pemeliharaan'))
-@section('code', '503')
 @section('icon')
     <i data-lucide="wrench" class="w-12 h-12"></i>
 @endsection
@@ -26,6 +25,30 @@
         <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
         Mulai Ulang
     </button>
+</div>
+
+<!-- Custom Modal for Game Completion -->
+<div id="game-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-card max-w-sm w-full rounded-2xl p-6 shadow-2xl border border-slate-200/50 dark:border-slate-800/50 text-center transform scale-95 transition-transform duration-300">
+        <div class="inline-flex p-3 rounded-full bg-green-500/10 text-green-500 mb-4 animate-bounce">
+            <i data-lucide="party-popper" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Selamat! 🎉</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">
+            Semua kartu berhasil dipasangkan dalam <span id="modal-moves" class="font-bold text-blue-600 dark:text-blue-400">0</span> langkah!
+        </p>
+        <div class="flex gap-3 justify-center">
+            <button onclick="closeModal()" 
+                    class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium text-xs hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200 cursor-pointer">
+                Tutup
+            </button>
+            <button onclick="restartFromModal()" 
+                    class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition-colors duration-200 shadow-md shadow-blue-500/10 flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                Main Lagi
+            </button>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -79,7 +102,10 @@
 <script>
     const emojis = ['🐶','🐱','🐼','🐸','🦊','🐯'],
           grid = document.getElementById('memory-grid'),
-          moveEl = document.getElementById('move-count');
+          moveEl = document.getElementById('move-count'),
+          modal = document.getElementById('game-modal'),
+          modalContent = modal.querySelector('.glass-card'),
+          modalMoves = document.getElementById('modal-moves');
     let flipped = [], matched = 0, moves = 0, lock = false;
 
     function shuffle(a) {
@@ -129,7 +155,7 @@
             matched++;
             flipped = [];
             lock = false;
-            if (matched === emojis.length) setTimeout(() => alert('🎉 Selamat! Semua berhasil dipasangkan!'), 400);
+            if (matched === emojis.length) setTimeout(showWinModal, 400);
         } else {
             setTimeout(() => {
                 a.classList.remove('flipped');
@@ -138,6 +164,28 @@
                 lock = false;
             }, 700);
         }
+    }
+
+    function showWinModal() {
+        modalMoves.textContent = moves;
+        modal.classList.remove('hidden');
+        // Trigger reflow to apply transition
+        modal.offsetHeight;
+        modal.classList.remove('opacity-0');
+        modalContent.classList.remove('scale-95');
+    }
+
+    function closeModal() {
+        modal.classList.add('opacity-0');
+        modalContent.classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    function restartFromModal() {
+        closeModal();
+        setTimeout(resetGame, 300);
     }
 
     function resetGame() { initGame(); }
