@@ -1,4 +1,21 @@
 <x-app-layout>
+    @php
+        $getUniqueBadgeClass = function($name) {
+            if (!$name) return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+            $palettes = [
+                'bg-blue-500/10 text-blue-500 dark:text-blue-400 border-blue-500/20',
+                'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20',
+                'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border-indigo-500/20',
+                'bg-purple-500/10 text-purple-500 dark:text-purple-400 border-purple-500/20',
+                'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20',
+                'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20',
+                'bg-sky-500/10 text-sky-500 dark:text-sky-400 border-sky-500/20',
+                'bg-teal-500/10 text-teal-500 dark:text-teal-400 border-teal-500/20',
+            ];
+            $hash = crc32($name);
+            return $palettes[abs($hash) % count($palettes)];
+        };
+    @endphp
     <x-slot name="header">Edit Pembimbing Sekolah</x-slot>
 
     <div class="mb-6">
@@ -205,7 +222,7 @@
                                                         Dibimbing guru ini
                                                     </span>
                                                 @elseif($hasOtherAdvisor)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
                                                         {{ $siswa->pembimbingSekolah->nama_lengkap }}
                                                     </span>
                                                 @else
