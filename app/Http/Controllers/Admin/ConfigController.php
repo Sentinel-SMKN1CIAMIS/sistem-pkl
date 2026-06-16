@@ -45,10 +45,51 @@ class ConfigController extends Controller
 
     public function update(Request $request)
     {
-        foreach ($request->except('_token') as $key => $value) {
+        $request->validate([
+            'app_name' => 'nullable|string|max:255',
+            'tahun_ajaran' => 'nullable|string|max:50',
+            'kontak_admin' => 'nullable|string|max:20',
+            'app_logo' => 'nullable|image|mimes:png,jpg,jpeg|max:4096',
+        ], [
+            'app_logo.image' => 'Berkas yang diunggah harus berupa gambar.',
+            'app_logo.mimes' => 'Format gambar yang diperbolehkan hanya PNG, JPG, dan JPEG.',
+            'app_logo.max' => 'Ukuran gambar maksimal adalah 4 Megabyte.',
+        ]);
+
+        // Simpan input teks biasa
+        $textFields = $request->only(['app_name', 'tahun_ajaran', 'kontak_admin']);
+        foreach ($textFields as $key => $value) {
+            if ($request->has($key)) {
+                KonfigurasiSistem::updateOrCreate(
+                    ['key' => $key],
+                    ['value' => $value]
+                );
+            }
+        }
+
+        // Tangani unggahan logo jika ada
+        if ($request->hasFile('app_logo')) {
+            $file = $request->file('app_logo');
+            $fileName = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Simpan file ke disk 'public' di folder 'logos/'
+            $path = $file->storeAs('logos', $fileName, 'public');
+            $logoUrl = '/storage/' . $path;
+
+            // Cari logo lama dan hapus berkasnya dari server jika menggunakan disk 'public'
+            $oldConfig = KonfigurasiSistem::where('key', 'app_logo_url')->first();
+            if ($oldConfig && $oldConfig->value) {
+                // Konversi URL '/storage/logos/logo_xxxx.png' menjadi relative path 'logos/logo_xxxx.png'
+                $oldPath = str_replace('/storage/', '', $oldConfig->value);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+
+            // Simpan path URL baru ke database
             KonfigurasiSistem::updateOrCreate(
-                ['key' => $key],
-                ['value' => $value]
+                ['key' => 'app_logo_url'],
+                ['value' => $logoUrl]
             );
         }
 

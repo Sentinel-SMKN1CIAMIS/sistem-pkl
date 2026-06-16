@@ -21,7 +21,7 @@
         @endif
 
         <div class="glass-card p-8 shadow-2xl shadow-blue-500/10">
-            <form action="{{ route('admin.config.update') }}" method="POST" class="space-y-8">
+            <form action="{{ route('admin.config.update') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
                 @csrf
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -29,7 +29,6 @@
                         $defaultConfigs = [
                             ['key' => 'app_name', 'label' => 'Nama Aplikasi', 'placeholder' => 'Contoh: Sistem Informasi PKL SMKN 1 Ciamis'],
                             ['key' => 'tahun_ajaran', 'label' => 'Tahun Ajaran Aktif', 'placeholder' => 'Contoh: 2023/2024'],
-                            ['key' => 'app_logo_url', 'label' => 'URL Logo Aplikasi', 'placeholder' => 'https://path-to-your-logo.png'],
                             ['key' => 'kontak_admin', 'label' => 'Kontak Pokja (WA)', 'placeholder' => '0812XXXXXXXX'],
                         ];
                     @endphp
@@ -44,6 +43,28 @@
                                    class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
                         </div>
                     @endforeach
+
+                    <!-- Logo Upload Field with Preview -->
+                    @php
+                        $logoUrl = $configs->where('key', 'app_logo_url')->first()?->value;
+                    @endphp
+                    <div>
+                        <label class="block text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Logo Aplikasi</label>
+                        <div class="flex items-center gap-4 p-3 bg-slate-100/50 dark:bg-slate-900/30 border border-slate-200/30 dark:border-slate-700/30 rounded-2xl">
+                            <div class="relative w-16 h-16 rounded-xl bg-slate-200 dark:bg-slate-800 border border-slate-300/50 dark:border-slate-700/50 overflow-hidden flex items-center justify-center shrink-0">
+                                @if($logoUrl)
+                                    <img src="{{ $logoUrl }}" alt="Logo Aplikasi" class="w-full h-full object-cover">
+                                @else
+                                    <i data-lucide="image" class="w-6 h-6 text-slate-400"></i>
+                                @endif
+                            </div>
+                            <div class="space-y-1.5 w-full">
+                                <input type="file" name="app_logo" id="app_logo" accept="image/png, image/jpeg, image/jpg"
+                                       class="block w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-black file:uppercase file:tracking-wider file:bg-blue-500/10 file:text-blue-400 hover:file:bg-blue-500/20 transition-all cursor-pointer">
+                                <p class="text-[9px] text-slate-400 dark:text-slate-500">Mendukung format PNG, JPG, JPEG (Maks. 2MB)</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="pt-6 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end">

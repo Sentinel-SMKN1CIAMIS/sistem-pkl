@@ -74,8 +74,8 @@
         
         <div class="flex items-center justify-center p-6 border-b border-slate-200/50 dark:border-slate-700/50">
             <div class="flex items-center gap-3">
-                <img src="{{ asset('logo.png') }}" alt="Logo" class="w-10 h-10 object-contain rounded-xl">
-                <h1 class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600 dark:from-blue-300 dark:to-blue-500 drop-shadow-sm transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-md cursor-default">MAS-PKL</h1>
+                <img src="{{ $appLogoActive ?: asset('logo.png') }}" alt="Logo" class="w-10 h-10 object-contain rounded-xl">
+                <h1 class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600 dark:from-blue-300 dark:to-blue-500 drop-shadow-sm transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-md cursor-default">{{ $appName }}</h1>
             </div>
         </div>
 
@@ -91,6 +91,11 @@
             <button @click="sidebarOpen = true" class="lg:hidden text-slate-700 hover:text-slate-900 dark:text-white focus:outline-none">
                 <i data-lucide="menu" class="w-6 h-6"></i>
             </button>
+            
+            <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 dark:text-blue-400 text-xs font-black uppercase tracking-wider ml-4">
+                <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                TA: {{ $tahunAjaranActive }}
+            </div>
             
             <div class="ml-auto flex items-center gap-4">
                 <!-- Theme Toggle -->
