@@ -109,7 +109,9 @@ Route::middleware('auth', 'force.password.change')->group(function () {
 
     // Shared Admin Routes (Super Admin & Pokja)
     Route::middleware('role:super_admin,pokja')->prefix('admin')->name('admin.')->group(function () {
+        Route::post('program_keahlian/reorder', [\App\Http\Controllers\ProgramKeahlianController::class, 'reorder'])->name('program_keahlian.reorder');
         Route::resource('program_keahlian', \App\Http\Controllers\ProgramKeahlianController::class);
+        Route::post('konsentrasi_keahlian/reorder', [\App\Http\Controllers\KonsentrasiKeahlianController::class, 'reorder'])->name('konsentrasi_keahlian.reorder');
         Route::resource('konsentrasi_keahlian', \App\Http\Controllers\KonsentrasiKeahlianController::class);
     });
 

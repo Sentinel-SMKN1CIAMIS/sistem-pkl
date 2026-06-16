@@ -11,7 +11,7 @@ class ProgramKeahlianController extends Controller
      */
     public function index()
     {
-        $programs = \App\Models\ProgramKeahlian::latest()->paginate(10);
+        $programs = \App\Models\ProgramKeahlian::orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
         return view('admin.program-keahlian.index', compact('programs'));
     }
 
@@ -62,5 +62,23 @@ class ProgramKeahlianController extends Controller
 
         return redirect()->route('admin.program_keahlian.index')
             ->with('success', 'Program Keahlian berhasil dihapus.');
+    }
+
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:program_keahlians,id',
+        ]);
+
+        $ids = $request->input('ids');
+        foreach ($ids as $index => $id) {
+            \App\Models\ProgramKeahlian::where('id', $id)->update(['sort_order' => $index]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Urutan program keahlian berhasil diperbarui.',
+        ]);
     }
 }

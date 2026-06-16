@@ -11,7 +11,7 @@ class KonsentrasiKeahlianController extends Controller
      */
     public function index()
     {
-        $concentrations = \App\Models\KonsentrasiKeahlian::with('programKeahlian')->latest()->paginate(10);
+        $concentrations = \App\Models\KonsentrasiKeahlian::with('programKeahlian')->orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
         return view('admin.konsentrasi-keahlian.index', compact('concentrations'));
     }
 
@@ -72,5 +72,23 @@ class KonsentrasiKeahlianController extends Controller
 
         return redirect()->route('admin.konsentrasi_keahlian.index')
             ->with('success', 'Konsentrasi Keahlian berhasil dihapus.');
+    }
+
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:konsentrasi_keahlians,id',
+        ]);
+
+        $ids = $request->input('ids');
+        foreach ($ids as $index => $id) {
+            \App\Models\KonsentrasiKeahlian::where('id', $id)->update(['sort_order' => $index]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Urutan konsentrasi keahlian berhasil diperbarui.',
+        ]);
     }
 }
