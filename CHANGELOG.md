@@ -6,6 +6,14 @@
 - Memperbaiki penanganan error logging pada `ChangePasswordController` dengan memindahkan `$request->validate()` ke dalam blok `try` utama dan menangkap `ValidationException` secara eksplisit untuk memastikan kegagalan validasi password dicatat sebagai aktivitas `Password Change Failed` di database log.
 - Memperbaiki test setup pada `KaprogAccessControlTest` dengan menambahkan properti `program_keahlian_id` saat pembuatan user Kaprog bimbingan agar sinkron dengan logika filter relasi program keahlian pada controller `KaprogController` dan `PengajuanPklController`.
 
+### Added
+- Integrasi library **SweetAlert2** secara global pada layout aplikasi (`app.blade.php` dan `guest.blade.php`).
+- Implementasi global override untuk `window.alert(...)` agar menampilkan dialog modal info yang modern dan premium dengan tema warna yang sesuai.
+- Implementasi interceptor dinamis untuk `confirm(...)` pada form `onsubmit` dan tombol/tautan `onclick` guna menggantikan dialog konfirmasi bawaan browser dengan modal SweetAlert2 interaktif.
+- Implementasi rendering otomatis untuk notifikasi Laravel (`session('success')`, `session('error')`, `$errors->any()`) menjadi toast notification melayang di pojok kanan atas layar.
+- Penambahan konfirmasi keluar sistem (logout) menggunakan SweetAlert2 saat user menekan tombol Logout.
+- Penambahan mekanisme anti-BFCache global via event listener 'pageshow' pada layout utama dan guest untuk mendeteksi navigasi tombol back/forward browser, memaksa reload halaman, dan memicu proteksi rute middleware Laravel (auth & guest) secara dinamis.
+
 ## [2026-06-06] - Modul 4 & 7
 ### Added
 - Implementasi fitur **Cetak Sertifikat PKL** pada halaman Jurnal Siswa yang menghasilkan sertifikat dalam format PDF menggunakan DomPDF.
