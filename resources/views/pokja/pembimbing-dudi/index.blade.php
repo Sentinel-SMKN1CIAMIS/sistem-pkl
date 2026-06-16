@@ -70,7 +70,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Template -->
                         <div class="p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl flex items-start gap-3">
-                            <i data-lucide="file-spreadsheet" class="w-6 h-6 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                            <i data-lucide="file-spreadsheet" class="w-6 h-6 text-blue-400 shrink-0 mt-0.5"></i>
                             <div>
                                 <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100">Gunakan Template Resmi</h4>
                                 <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
@@ -85,7 +85,7 @@
 
                         <!-- Guide Toggle -->
                         <div class="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl flex items-start gap-3">
-                            <i data-lucide="book-open" class="w-6 h-6 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                            <i data-lucide="book-open" class="w-6 h-6 text-emerald-400 shrink-0 mt-0.5"></i>
                             <div>
                                 <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100">Butuh Panduan Kolom?</h4>
                                 <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
@@ -111,7 +111,7 @@
                             <!-- State: Empty -->
                             <div class="flex flex-col items-center gap-2 py-4" x-show="!localFileName">
                                 <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
-                                <span class="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:text-white transition-colors">Klik atau Seret file Excel ke sini</span>
+                                <span class="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Klik atau Seret file Excel ke sini</span>
                                 <span class="text-[10px] text-slate-500 dark:text-slate-500">Format file yang didukung: .xlsx, .xls saja</span>
                             </div>
 
@@ -149,7 +149,7 @@
                       x-data="{ searchQuery: '' }">
                       
                       <!-- Modal Header -->
-                      <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 flex-shrink-0">
+                      <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
                           <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                               <i data-lucide="book-open" class="text-emerald-500"></i>
                               Panduan Impor Data Pembimbing DUDI
@@ -247,7 +247,7 @@
                                   @forelse($dudis as $d)
                                       <div x-show="searchQuery === '' || '{{ strtolower(addslashes($d)) }}'.includes(searchQuery.toLowerCase())" class="flex items-center justify-between p-2 bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200">
                                           <span class="truncate">{{ $d }}</span>
-                                          <button type="button" onclick="navigator.clipboard.writeText('{{ addslashes($d) }}'); alert('Berhasil menyalin nama DUDI!')" class="p-1 text-slate-400 hover:text-emerald-500 rounded transition-colors flex-shrink-0" title="Salin">
+                                           <button type="button" onclick="navigator.clipboard.writeText('{{ addslashes($d) }}'); alert('Berhasil menyalin nama DUDI!')" class="p-1 text-slate-400 hover:text-emerald-500 rounded transition-colors shrink-0" title="Salin">
                                               <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                                           </button>
                                       </div>
@@ -259,7 +259,7 @@
                       </div>
 
                       <!-- Modal Footer -->
-                      <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end bg-slate-50/50 dark:bg-slate-800/30 flex-shrink-0">
+                      <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
                           <button type="button" @click="guideModalOpen = false" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer">
                               Mengerti & Tutup
                           </button>
@@ -272,7 +272,7 @@
     @if(session('import_errors'))
         <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm">
             <h4 class="font-bold mb-2 flex items-center gap-2">
-                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 flex-shrink-0"></i>
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 shrink-0"></i>
                 Gagal Mengimpor Data Pembimbing DUDI. Silakan periksa beberapa kesalahan berikut:
             </h4>
             <ul class="list-disc pl-5 space-y-1 text-xs">

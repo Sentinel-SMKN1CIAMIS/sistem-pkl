@@ -21,7 +21,7 @@ Route::patch('/auth/change-password', [\App\Http\Controllers\Auth\ChangePassword
     ->middleware('auth')
     ->name('auth.change-password.update');
 
-Route::middleware('auth', 'force.password.change')->group(function () {
+Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     
     // Redirects to correct dashboard based on role
@@ -54,7 +54,7 @@ Route::middleware('auth', 'force.password.change')->group(function () {
 
     // Verification Routes (Review by Mentors)
     Route::middleware('role:pembimbing_sekolah')->prefix('pembimbing_sekolah')->name('pembimbing_sekolah.')->group(function () {
-        Route::post('bulk-acc', [\App\Http\Controllers\DashboardController::class, 'bulkAcc'])->name('bulk_acc');
+        Route::post('bulk-acc', [DashboardController::class, 'bulkAcc'])->name('bulk_acc');
         Route::get('siswa', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'index'])->name('siswa.index');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'index'])->name('jurnal.index');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'update'])->name('jurnal.update');
@@ -130,7 +130,7 @@ Route::middleware('auth', 'force.password.change')->group(function () {
     });
 
     // Pokja Routes - with group membership check
-    Route::middleware('role:pokja,super_admin', 'pokja-group')->prefix('pokja')->name('pokja.')->group(function () {
+    Route::middleware(['role:pokja,super_admin', 'pokja-group'])->prefix('pokja')->name('pokja.')->group(function () {
         Route::resource('kompetensi', \App\Http\Controllers\Pokja\KompetensiController::class);
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);

@@ -12,7 +12,10 @@ class RoleMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response)  $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  string  ...$roles
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
@@ -20,6 +23,7 @@ class RoleMiddleware
             return redirect('login');
         }
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if (in_array($user->role, $roles)) {

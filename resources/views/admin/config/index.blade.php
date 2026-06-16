@@ -52,7 +52,7 @@
             <div class="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10">
                 <h4 class="text-xs font-black text-blue-400 uppercase tracking-widest mb-1">Backup Data</h4>
                 <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mb-3">Lakukan backup database secara rutin untuk menghindari kehilangan data penting PKL.</p>
-                <button class="text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white flex items-center gap-1 transition-colors">
+                <button class="text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors">
                     <i data-lucide="database" class="w-3.5 h-3.5"></i>
                     Download SQL Backup
                 </button>

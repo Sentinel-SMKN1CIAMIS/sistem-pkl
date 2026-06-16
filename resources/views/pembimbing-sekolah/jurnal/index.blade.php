@@ -6,7 +6,7 @@
             {{-- Info banner berdasarkan tipe guru --}}
             @if($tipe !== 'kejuruan' && $tipe !== 'produktif')
             <div class="flex items-start gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
-                <i data-lucide="info" class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"></i>
+                <i data-lucide="info" class="w-5 h-5 text-blue-500 shrink-0 mt-0.5"></i>
                 <div class="text-sm">
                     <p class="font-semibold text-blue-700 dark:text-blue-300">Mode: Guru {{ $tipe === 'umum' ? 'Umum' : ucfirst($tipe) }}</p>
                     <p class="text-blue-600 dark:text-blue-400 text-xs mt-0.5">
@@ -111,7 +111,7 @@
                         </div>
                     @elseif($item->approval_status === 'rejected')
                         <div class="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg mb-3">
-                            <i data-lucide="x-circle" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"></i>
+                            <i data-lucide="x-circle" class="w-5 h-5 text-red-500 shrink-0 mt-0.5"></i>
                             <div>
                                 <p class="text-sm font-semibold text-red-700 dark:text-red-300">Jurnal Ditolak</p>
                                 <p class="text-xs text-red-600 dark:text-red-400 mb-1">Oleh: {{ $item->approvedBy->name }} • {{ \Carbon\Carbon::parse($item->approved_at)->isoFormat('D MMMM YYYY HH:mm') }}</p>
@@ -136,7 +136,7 @@
                             </div>
 
                             <!-- Reject Modal -->
-                            <div x-show="rejectModalOpen" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+                            <div x-show="rejectModalOpen" style="display: none;" class="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
                                 <div @click.away="rejectModalOpen = false" class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6">
                                     <div class="flex items-center gap-3 mb-4">
                                         <i data-lucide="alert-circle" class="w-6 h-6 text-red-500"></i>
@@ -202,7 +202,7 @@
     </div>
 
     <!-- Image Modal -->
-    <div x-show="imageModalOpen" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+    <div x-show="imageModalOpen" style="display: none;" class="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
         <div @click.away="imageModalOpen = false" class="relative max-w-4xl max-h-screen">
             <button @click="imageModalOpen = false" class="absolute -top-4 -right-4 p-2 text-white bg-red-600 rounded-full hover:bg-red-500 shadow-lg">
                 <i data-lucide="x" class="w-5 h-5"></i>

@@ -28,7 +28,7 @@
 </div>
 
 <!-- Custom Modal for Game Completion -->
-<div id="game-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+<div id="game-modal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
     <div class="glass-card max-w-sm w-full rounded-2xl p-6 shadow-2xl border border-slate-200/50 dark:border-slate-800/50 text-center transform scale-95 transition-transform duration-300">
         <div class="inline-flex p-3 rounded-full bg-green-500/10 text-green-500 mb-4 animate-bounce">
             <i data-lucide="party-popper" class="w-8 h-8"></i>
@@ -169,6 +169,7 @@
     function showWinModal() {
         modalMoves.textContent = moves;
         modal.classList.remove('hidden');
+        modal.classList.add('flex');
         // Trigger reflow to apply transition
         modal.offsetHeight;
         modal.classList.remove('opacity-0');
@@ -180,6 +181,7 @@
         modalContent.classList.add('scale-95');
         setTimeout(() => {
             modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }, 300);
     }
 

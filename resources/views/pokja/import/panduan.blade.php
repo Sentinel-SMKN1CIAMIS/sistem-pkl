@@ -3,7 +3,7 @@
 
     <div class="h-full overflow-y-auto px-4 py-6 md:px-8 space-y-6 max-w-7xl mx-auto animate-fade-in-up" x-data="{ activeTab: 'general', searchQuery: '' }">
         <!-- Premium Hero Header -->
-        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 p-6 md:p-8 text-white shadow-xl shadow-blue-500/10">
+        <div class="relative overflow-hidden rounded-2xl bg-linear-to-r from-blue-600 to-indigo-700 p-6 md:p-8 text-white shadow-xl shadow-blue-500/10">
             <div class="absolute right-0 top-0 translate-x-12 -translate-y-12 opacity-10 blur-sm pointer-events-none">
                 <i data-lucide="file-spreadsheet" class="w-72 h-72"></i>
             </div>
@@ -317,7 +317,7 @@
                     </div>
 
                     <div class="p-4.5 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex gap-3 items-start">
-                        <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5 animate-pulse"></i>
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500 shrink-0 mt-0.5 animate-pulse"></i>
                         <div class="text-xs leading-relaxed text-amber-700 dark:text-amber-300">
                             <strong>Prasyarat Wajib:</strong> Perusahaan/DUDI mentor bersangkutan **wajib sudah terdaftar terlebih dahulu** di sistem. Proses impor pembimbing DUDI akan mencocokkan teks kolom `nama_perusahaan` ke database secara realtime.
                         </div>
@@ -377,7 +377,7 @@
                             @forelse($dudis as $dudi)
                                 <div x-show="searchQuery === '' || '{{ strtolower($dudi) }}'.includes(searchQuery.toLowerCase())" class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200">
                                     <span class="truncate">{{ $dudi }}</span>
-                                    <button onclick="navigator.clipboard.writeText('{{ $dudi }}'); alert('Berhasil menyalin nama DUDI!')" class="p-1 text-slate-400 hover:text-blue-500 rounded transition-colors flex-shrink-0" title="Salin nama DUDI">
+                                    <button onclick="navigator.clipboard.writeText('{{ $dudi }}'); alert('Berhasil menyalin nama DUDI!')" class="p-1 text-slate-400 hover:text-blue-500 rounded transition-colors shrink-0" title="Salin nama DUDI">
                                         <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                                     </button>
                                 </div>

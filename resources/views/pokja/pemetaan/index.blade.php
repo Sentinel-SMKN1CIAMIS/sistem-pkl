@@ -108,7 +108,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-center whitespace-nowrap">
-                                <a href="{{ route('pokja.siswa.edit', $siswa->id) }}" class="inline-flex items-center justify-center p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:bg-slate-700 transition-colors text-slate-600 dark:text-slate-400 hover:text-blue-400">
+                                <a href="{{ route('pokja.siswa.edit', $siswa->id) }}" class="inline-flex items-center justify-center p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-400 hover:text-blue-400">
                                     <i data-lucide="edit-3" class="w-4 h-4"></i>
                                 </a>
                             </td>

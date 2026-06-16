@@ -44,7 +44,7 @@
                     <input id="password" name="password" :type="showPassword ? 'text' : 'password'" required x-model="password"
                            class="w-full pl-10 pr-10 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all"
                            placeholder="••••••••">
-                    <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors">
+                    <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
                         <i data-lucide="eye" x-show="!showPassword" x-cloak class="h-5 w-5"></i>
                         <i data-lucide="eye-off" x-show="showPassword" x-cloak class="h-5 w-5"></i>
                     </button>

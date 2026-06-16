@@ -8,12 +8,14 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $role = auth()->user()->role;
+        /** @var \App\Models\User $user */
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $role = $user->role;
         $stats = [];
 
         switch ($role) {
             case 'siswa':
-                $siswa = auth()->user()->siswa;
+                $siswa = $user->siswa;
                 if (!$siswa->dudi_id) {
                     return redirect()->route('siswa.pengajuan_pkl.create');
                 }
@@ -24,10 +26,10 @@ class DashboardController extends Controller
                         'absensi_count' => \App\Models\Absensi::where('siswa_id', $siswa->id)->count(),
                     ];
                 });
-                $forcePasswordChange = auth()->user()->force_password_change;
+                $forcePasswordChange = $user->force_password_change;
                 return view('dashboards.siswa', compact('stats', 'forcePasswordChange'));
             case 'pembimbing_sekolah':
-                $teacher = auth()->user()->pembimbingSekolah;
+                $teacher = $user->pembimbingSekolah;
                 $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_pembimbing_sekolah_{$teacher->id}", 300, function() use ($teacher) {
                     return [
                         'siswa_count' => \App\Models\Siswa::where('pembimbing_sekolah_id', $teacher->id)->count(),
@@ -38,7 +40,7 @@ class DashboardController extends Controller
                 });
                 return view('dashboards.pembimbing-sekolah', compact('stats'));
             case 'pembimbing_dudi':
-                $mentor = auth()->user()->pembimbingDudi;
+                $mentor = $user->pembimbingDudi;
                 $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_pembimbing_dudi_{$mentor->id}", 300, function() use ($mentor) {
                     return [
                         'siswa_count' => \App\Models\Siswa::where('dudi_id', $mentor->dudi_id)->count(),
@@ -112,16 +114,18 @@ class DashboardController extends Controller
 
     public function bulkAcc(Request $request)
     {
-        $role = auth()->user()->role;
+        /** @var \App\Models\User $user */
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $role = $user->role;
         if ($role === 'pembimbing_sekolah') {
-            $teacher = auth()->user()->pembimbingSekolah;
+            $teacher = $user->pembimbingSekolah;
             
             // ACC all pending jurnal
             \App\Models\Jurnal::whereHas('siswa', function($q) use ($teacher) {
                 $q->where('pembimbing_sekolah_id', $teacher->id);
             })->where('approval_status', 'pending')->update([
                 'approval_status' => 'approved',
-                'approved_by' => auth()->id(),
+                'approved_by' => $user->id,
                 'approved_at' => now(),
             ]);
             
@@ -130,7 +134,7 @@ class DashboardController extends Controller
                 $q->where('pembimbing_sekolah_id', $teacher->id);
             })->where('approval_status', 'pending')->update([
                 'approval_status' => 'approved',
-                'approved_by' => auth()->id(),
+                'approved_by' => $user->id,
             ]);
             
             return response()->json(['message' => 'Semua Jurnal dan Absensi berhasil di-ACC (Rapid Testing Mode)']);
