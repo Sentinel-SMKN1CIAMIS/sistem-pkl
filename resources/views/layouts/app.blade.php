@@ -333,10 +333,10 @@
                 background: isDark ? '#0f172a' : '#ffffff',
                 color: isDark ? '#f1f5f9' : '#1e293b',
                 customClass: {
-                    confirmButton: 'px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-500/25 text-sm focus:outline-none cursor-pointer',
-                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
+                    confirmButton: 'px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-2xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-sm text-sm focus:outline-none cursor-pointer',
+                    popup: 'rounded-3xl border-none font-sans shadow-2xl',
                     title: 'text-lg font-bold text-slate-900 dark:text-slate-100',
-                    htmlContainer: 'text-sm font-medium leading-relaxed'
+                    htmlContainer: 'text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300'
                 }
             });
         };
@@ -362,7 +362,7 @@
                 icon: type,
                 title: message,
                 customClass: {
-                    popup: 'rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-lg font-sans text-sm'
+                    popup: 'rounded-2xl border-none shadow-xl font-sans text-sm font-medium'
                 }
             });
         };
@@ -394,10 +394,10 @@
                                 background: isDark ? '#0f172a' : '#ffffff',
                                 color: isDark ? '#f1f5f9' : '#1e293b',
                                 customClass: {
-                                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500/25 text-sm focus:outline-none cursor-pointer mr-3',
-                                    cancelButton: 'px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-sm focus:outline-none cursor-pointer',
-                                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
-                                    htmlContainer: 'text-sm font-medium leading-relaxed'
+                                    confirmButton: 'px-6 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-2xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-sm text-sm focus:outline-none cursor-pointer mr-3',
+                                    cancelButton: 'px-6 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-semibold rounded-2xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-sm focus:outline-none cursor-pointer',
+                                    popup: 'rounded-3xl border-none font-sans shadow-2xl',
+                                    htmlContainer: 'text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300'
                                 }
                             }).then((result) => {
                                 if (result.isConfirmed) {
@@ -432,10 +432,10 @@
                                 background: isDark ? '#0f172a' : '#ffffff',
                                 color: isDark ? '#f1f5f9' : '#1e293b',
                                 customClass: {
-                                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500/25 text-sm focus:outline-none cursor-pointer mr-3',
-                                    cancelButton: 'px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-sm focus:outline-none cursor-pointer',
-                                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
-                                    htmlContainer: 'text-sm font-medium leading-relaxed'
+                                    confirmButton: 'px-6 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-2xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-sm text-sm focus:outline-none cursor-pointer mr-3',
+                                    cancelButton: 'px-6 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-semibold rounded-2xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-sm focus:outline-none cursor-pointer',
+                                    popup: 'rounded-3xl border-none font-sans shadow-2xl',
+                                    htmlContainer: 'text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300'
                                 }
                             }).then((result) => {
                                 if (result.isConfirmed) {
