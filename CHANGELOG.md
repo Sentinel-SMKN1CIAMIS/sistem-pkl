@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [2026-06-16]
+### Fixed
+- Memperbaiki test case `ExampleTest` agar memvalidasi redirect ke `/login` (302) alih-alih status 200 sukses karena rute `/` di-redirect ke `/login`.
+- Memperbaiki penanganan error logging pada `ChangePasswordController` dengan memindahkan `$request->validate()` ke dalam blok `try` utama dan menangkap `ValidationException` secara eksplisit untuk memastikan kegagalan validasi password dicatat sebagai aktivitas `Password Change Failed` di database log.
+- Memperbaiki test setup pada `KaprogAccessControlTest` dengan menambahkan properti `program_keahlian_id` saat pembuatan user Kaprog bimbingan agar sinkron dengan logika filter relasi program keahlian pada controller `KaprogController` dan `PengajuanPklController`.
+
 ## [2026-06-06] - Modul 4 & 7
 ### Added
 - Implementasi fitur **Cetak Sertifikat PKL** pada halaman Jurnal Siswa yang menghasilkan sertifikat dalam format PDF menggunakan DomPDF.

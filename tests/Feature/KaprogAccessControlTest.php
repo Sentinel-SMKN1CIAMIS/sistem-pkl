@@ -45,6 +45,7 @@ class KaprogAccessControlTest extends TestCase
             'password' => bcrypt('password'),
             'role' => 'kaprog',
             'konsentrasi_keahlian_id' => $konsentrasi1->id,
+            'program_keahlian_id' => $prog1->id,
             'is_active' => true,
         ]);
 
@@ -55,6 +56,7 @@ class KaprogAccessControlTest extends TestCase
             'password' => bcrypt('password'),
             'role' => 'kaprog',
             'konsentrasi_keahlian_id' => $konsentrasi2->id,
+            'program_keahlian_id' => $prog2->id,
             'is_active' => true,
         ]);
 

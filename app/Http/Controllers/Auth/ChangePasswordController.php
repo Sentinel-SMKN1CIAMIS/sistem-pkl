@@ -39,22 +39,22 @@ class ChangePasswordController extends Controller
             return redirect()->route('dashboard')->withErrors(['error' => 'Anda tidak memiliki akses ke fitur ini.']);
         }
 
-        $validated = $request->validate([
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#\-_])[a-zA-Z\d@$!%*?&#\-_]+$/',
-                'confirmed'
-            ],
-        ], [
-            'password.required' => 'Password wajib diisi.',
-            'password.min' => 'Password harus minimal 8 karakter.',
-            'password.regex' => 'Password harus mengandung huruf besar, huruf kecil, angka, dan karakter spesial (@$!%*?&#-_).',
-            'password.confirmed' => 'Konfirmasi password tidak sesuai.',
-        ]);
-
         try {
+            $validated = $request->validate([
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#\-_])[a-zA-Z\d@$!%*?&#\-_]+$/',
+                    'confirmed'
+                ],
+            ], [
+                'password.required' => 'Password wajib diisi.',
+                'password.min' => 'Password harus minimal 8 karakter.',
+                'password.regex' => 'Password harus mengandung huruf besar, huruf kecil, angka, dan karakter spesial (@$!%*?&#-_).',
+                'password.confirmed' => 'Konfirmasi password tidak sesuai.',
+            ]);
+
             // Update password and clear the force_password_change flag
             $user->update([
                 'password' => Hash::make($validated['password']),
@@ -78,6 +78,16 @@ class ChangePasswordController extends Controller
             }
 
             return redirect()->intended('dashboard')->with('success', 'Password berhasil diubah. Selamat datang di dashboard!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log failed password change due to validation
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'action' => 'Password Change Failed',
+                'description' => 'Gagal mengubah password: Validasi gagal. ' . implode(' ', \Illuminate\Support\Arr::flatten($e->errors())),
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+            throw $e;
         } catch (\Exception $e) {
             // Log failed password change attempt
             ActivityLog::create([
