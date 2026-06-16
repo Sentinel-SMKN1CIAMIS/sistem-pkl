@@ -14,6 +14,10 @@
 - Penambahan konfirmasi keluar sistem (logout) menggunakan SweetAlert2 saat user menekan tombol Logout.
 - Penambahan mekanisme anti-BFCache global via event listener 'pageshow' pada layout utama dan guest untuk mendeteksi navigasi tombol back/forward browser, memaksa reload halaman, dan memicu proteksi rute middleware Laravel (auth & guest) secara dinamis.
 
+### Changed
+- Menghapus pembatasan visual ukuran maksimum file 4MB pada semua fitur impor data Excel (Siswa, DUDI, Pembimbing Sekolah, Pembimbing DUDI, dan Kaprog) serta memperbarui teks petunjuk format menjadi "Format file yang didukung: .xlsx, .xls saja".
+
+
 ## [2026-06-06] - Modul 4 & 7
 ### Added
 - Implementasi fitur **Cetak Sertifikat PKL** pada halaman Jurnal Siswa yang menghasilkan sertifikat dalam format PDF menggunakan DomPDF.

@@ -112,7 +112,7 @@
                             <div class="flex flex-col items-center gap-2 py-4" x-show="!localFileName">
                                 <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
                                 <span class="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:text-white transition-colors">Klik atau Seret file Excel ke sini</span>
-                                <span class="text-[10px] text-slate-500 dark:text-slate-500">Maksimum ukuran file: 4MB (Format .xlsx, .xls saja)</span>
+                                <span class="text-[10px] text-slate-500 dark:text-slate-500">Format file yang didukung: .xlsx, .xls saja</span>
                             </div>
 
                             <!-- State: File Chosen -->
