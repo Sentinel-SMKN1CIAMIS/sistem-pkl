@@ -19,6 +19,7 @@
 - Penambahan mekanisme anti-BFCache global via event listener 'pageshow' pada layout utama dan guest untuk mendeteksi navigasi tombol back/forward browser, memaksa reload halaman, dan memicu proteksi rute middleware Laravel (auth & guest) secara dinamis.
 - Implementasi fitur pengurutan data secara drag-and-drop pada halaman kelola **Program Keahlian** dan **Konsentrasi Keahlian** di bawah hak akses Admin/Pokja menggunakan library **Sortable.js** dan penyimpanan urutan via request AJAX ke route baru.
 - Penambahan kolom `sort_order` pada tabel database `program_keahlians` dan `konsentrasi_keahlians` beserta berkas migrasinya.
+- Implementasi fitur **Select All + Bulk Delete** pada halaman **Kelola Pengguna Sistem** (Users) untuk memudahkan administrator menghapus banyak akun secara massal dengan proteksi keamanan (mencegah penghapusan akun diri sendiri).
 
 ### Changed
 - Mengubah tema default website menjadi **Light Mode**. Jika pengguna belum pernah memilih tema secara manual (tidak ada preferensi di `localStorage`), maka website akan memuat tema terang secara default (alih-alih mengikuti settingan dark mode bawaan OS/system). Pilihan tema manual ("Light", "Dark", dan "System") tetap dipertahankan untuk fleksibilitas pengguna.

@@ -119,6 +119,7 @@ Route::middleware('auth', 'force.password.change')->group(function () {
     Route::middleware('role:super_admin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('kompetensi', \App\Http\Controllers\KompetensiController::class);
         Route::resource('panduan', \App\Http\Controllers\Admin\BukuPanduanController::class);
+        Route::post('users/bulk-destroy', [\App\Http\Controllers\Admin\UserController::class, 'bulkDestroy'])->name('users.bulk-destroy');
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
         Route::resource('pokja-groups', \App\Http\Controllers\Admin\PokjaGroupController::class);
         Route::post('pokja-groups/{pokjaGroup}/add-member', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'addMember'])->name('pokja-groups.add-member');
