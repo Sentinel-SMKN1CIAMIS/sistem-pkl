@@ -45,7 +45,13 @@
     }">
     
     <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <p class="text-slate-600 dark:text-slate-400">Total terdaftar: <span class="text-blue-400 font-bold">{{ $users->total() }}</span> akun.</p>
+        <div class="flex flex-wrap items-center gap-4">
+            <p class="text-slate-600 dark:text-slate-400">Total terdaftar: <span class="text-blue-400 font-bold">{{ $users->total() }}</span> akun.</p>
+            <a href="{{ route('admin.users.create') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 shadow-lg shadow-blue-500/20">
+                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                Tambah Pengguna
+            </a>
+        </div>
         
         <!-- Bulk Action Form -->
         <div x-show="selectedIds.length > 0" x-transition.opacity.duration.200ms class="flex items-center gap-3" x-cloak>

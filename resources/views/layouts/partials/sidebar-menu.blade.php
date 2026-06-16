@@ -87,7 +87,18 @@
     } elseif ($role === 'super_admin') {
         $navItems = [
             ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
-            ['name' => 'Kelola Pengguna', 'route' => 'admin.users.index', 'icon' => 'users'],
+            [
+                'name' => 'Kelola Akun',
+                'icon' => 'users',
+                'children' => [
+                    ['name' => 'Data Siswa', 'route' => 'pokja.siswa.index', 'icon' => 'graduation-cap'],
+                    ['name' => 'Pembimbing Sekolah', 'route' => 'pokja.pembimbing_sekolah.index', 'icon' => 'user-check'],
+                    ['name' => 'Pembimbing DUDI', 'route' => 'pokja.pembimbing_dudi.index', 'icon' => 'user-cog'],
+                    ['name' => 'Akun Kaprog', 'route' => 'pokja.kaprog.index', 'icon' => 'award'],
+                    ['name' => 'Data DUDI', 'route' => 'pokja.dudi.index', 'icon' => 'building-2'],
+                    ['name' => 'Akun Sistem', 'route' => 'admin.users.index', 'icon' => 'user'],
+                ]
+            ],
             [
                 'name' => 'Akademik & Jurusan',
                 'icon' => 'book',
