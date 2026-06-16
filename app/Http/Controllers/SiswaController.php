@@ -120,8 +120,11 @@ class SiswaController extends Controller
 
     public function destroy(\App\Models\Siswa $siswa)
     {
-        // User will be deleted automatically due to cascade on delete in DB
+        $user = $siswa->user;
         $siswa->delete();
+        if ($user) {
+            $user->delete();
+        }
 
         return redirect()->route('pokja.siswa.index')
             ->with('success', 'Data siswa dan akun berhasil dihapus.');

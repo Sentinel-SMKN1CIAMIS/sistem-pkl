@@ -71,7 +71,11 @@ class PembimbingDudiController extends Controller
 
     public function destroy(\App\Models\PembimbingDudi $pembimbing_dudi)
     {
+        $user = $pembimbing_dudi->user;
         $pembimbing_dudi->delete();
+        if ($user) {
+            $user->delete();
+        }
         return redirect()->route('pokja.pembimbing_dudi.index')
             ->with('success', 'Data pembimbing DUDI berhasil dihapus.');
     }

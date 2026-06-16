@@ -215,8 +215,8 @@
                                           </tr>
                                           <tr>
                                               <td class="px-4 py-2.5 font-semibold text-slate-900 dark:text-slate-100">tipe</td>
-                                              <td class="px-4 py-2.5"><strong>Wajib.</strong> Harus diisi salah satu dari 3 tipe: <strong>normatif</strong>, <strong>adaptif</strong>, atau <strong>produktif</strong>.</td>
-                                              <td class="px-4 py-2.5 text-right font-mono text-blue-500">produktif</td>
+                                              <td class="px-4 py-2.5"><strong>Wajib.</strong> Harus diisi salah satu dari 2 tipe: <strong>kejuruan</strong> atau <strong>umum</strong>.</td>
+                                              <td class="px-4 py-2.5 text-right font-mono text-blue-500">kejuruan</td>
                                           </tr>
                                           <tr>
                                               <td class="px-4 py-2.5 font-semibold text-slate-900 dark:text-slate-100">konsentrasi_keahlian</td>
@@ -328,6 +328,8 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
                                     $tipeColors = [
+                                        'kejuruan' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                                        'umum' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
                                         'produktif' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
                                         'normatif' => 'bg-amber-500/10 text-amber-500 border-amber-500/20',
                                         'adaptif' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',

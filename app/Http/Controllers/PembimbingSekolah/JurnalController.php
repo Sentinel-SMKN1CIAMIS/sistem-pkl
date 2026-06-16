@@ -14,20 +14,20 @@ class JurnalController extends Controller
     public function index(Request $request)
     {
         $teacher = auth()->user()->pembimbingSekolah;
-        $tipe    = $teacher->tipe; // 'produktif', 'normatif', or 'adaptif'
+        $tipe    = $teacher->tipe; // 'kejuruan' or 'umum' (previously 'produktif', 'normatif', or 'adaptif')
 
         $query = Jurnal::with(['siswa', 'kompetensi', 'tujuanPembelajaran'])
             ->latest('tanggal');
 
-        if ($tipe === 'produktif') {
-            // Produktif: tampilkan siswa yang langsung dibimbing atau dari kelas yang diajar
+        if ($tipe === 'kejuruan' || $tipe === 'produktif') {
+            // Kejuruan / Produktif: tampilkan siswa yang langsung dibimbing atau dari kelas yang diajar
             $kelasIds = $teacher->kelasDiajar()->pluck('kelas')->toArray();
             $query->whereHas('siswa', function ($q) use ($teacher, $kelasIds) {
                 $q->where('pembimbing_sekolah_id', $teacher->id)
                   ->orWhereIn('kelas', $kelasIds);
             });
         } else {
-            // Normatif / Adaptif: filter berdasarkan CP yang mengandung mapel_cp guru
+            // Umum (Normatif / Adaptif): filter berdasarkan CP yang mengandung mapel_cp guru
             $kelasIds = $teacher->kelasDiajar()->pluck('kelas')->toArray();
             $query->whereHas('siswa', function ($q) use ($kelasIds) {
                     $q->whereIn('kelas', $kelasIds);

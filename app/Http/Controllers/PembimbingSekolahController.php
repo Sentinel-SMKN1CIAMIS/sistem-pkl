@@ -19,7 +19,8 @@ class PembimbingSekolahController extends Controller
     {
         $concentrations = \App\Models\KonsentrasiKeahlian::all();
         $existingClasses = \App\Models\Siswa::distinct('kelas')->pluck('kelas')->filter()->values();
-        return view('pokja.pembimbing-sekolah.create', compact('concentrations', 'existingClasses'));
+        $students = \App\Models\Siswa::with(['konsentrasiKeahlian', 'pembimbingSekolah'])->get();
+        return view('pokja.pembimbing-sekolah.create', compact('concentrations', 'existingClasses', 'students'));
     }
 
     public function store(Request $request)
@@ -31,7 +32,7 @@ class PembimbingSekolahController extends Controller
             'username' => 'required|unique:users,username',
             'password' => 'required|min:6',
             'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
-            'tipe' => 'required|in:normatif,adaptif,produktif',
+            'tipe' => 'required|in:kejuruan,umum',
             'no_hp' => 'nullable|string',
         ]);
 
@@ -62,6 +63,11 @@ class PembimbingSekolahController extends Controller
             }
         }
 
+        if ($request->has('siswa_ids') && is_array($request->siswa_ids)) {
+            \App\Models\Siswa::whereIn('id', $request->siswa_ids)
+                ->update(['pembimbing_sekolah_id' => $pembimbing->id]);
+        }
+
         return redirect()->route('pokja.pembimbing_sekolah.index')
             ->with('success', 'Pembimbing sekolah berhasil ditambahkan.');
     }
@@ -77,7 +83,8 @@ class PembimbingSekolahController extends Controller
         $concentrations = \App\Models\KonsentrasiKeahlian::all();
         $existingClasses = \App\Models\Siswa::distinct('kelas')->pluck('kelas')->filter()->values();
         $currentClasses = $pembimbing_sekolah->kelasDiajar()->pluck('kelas')->toArray();
-        return view('pokja.pembimbing-sekolah.edit', compact('pembimbing_sekolah', 'concentrations', 'existingClasses', 'currentClasses'));
+        $students = \App\Models\Siswa::with(['konsentrasiKeahlian', 'pembimbingSekolah'])->get();
+        return view('pokja.pembimbing-sekolah.edit', compact('pembimbing_sekolah', 'concentrations', 'existingClasses', 'currentClasses', 'students'));
     }
 
     public function update(Request $request, \App\Models\PembimbingSekolah $pembimbing_sekolah)
@@ -86,7 +93,7 @@ class PembimbingSekolahController extends Controller
             'nip' => 'nullable|unique:pembimbing_sekolahs,nip,' . $pembimbing_sekolah->id,
             'nama_lengkap' => 'required|string|max:255',
             'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
-            'tipe' => 'required|in:normatif,adaptif,produktif',
+            'tipe' => 'required|in:kejuruan,umum',
             'no_hp' => 'nullable|string',
         ]);
 
@@ -112,13 +119,31 @@ class PembimbingSekolahController extends Controller
             }
         }
 
+        // Sync mentored students
+        $selectedSiswaIds = $request->input('siswa_ids', []);
+
+        // Detach students previously mentored by this advisor but no longer selected
+        \App\Models\Siswa::where('pembimbing_sekolah_id', $pembimbing_sekolah->id)
+            ->whereNotIn('id', $selectedSiswaIds)
+            ->update(['pembimbing_sekolah_id' => null]);
+
+        // Attach newly selected students to this advisor
+        if (!empty($selectedSiswaIds)) {
+            \App\Models\Siswa::whereIn('id', $selectedSiswaIds)
+                ->update(['pembimbing_sekolah_id' => $pembimbing_sekolah->id]);
+        }
+
         return redirect()->route('pokja.pembimbing_sekolah.index')
             ->with('success', 'Data pembimbing sekolah berhasil diperbarui.');
     }
 
     public function destroy(\App\Models\PembimbingSekolah $pembimbing_sekolah)
     {
+        $user = $pembimbing_sekolah->user;
         $pembimbing_sekolah->delete();
+        if ($user) {
+            $user->delete();
+        }
         return redirect()->route('pokja.pembimbing_sekolah.index')
             ->with('success', 'Data pembimbing sekolah berhasil dihapus.');
     }

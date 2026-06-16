@@ -289,8 +289,8 @@
                                 </tr>
                                 <tr>
                                     <td class="px-4 py-3 font-bold text-slate-800 dark:text-slate-200">tipe</td>
-                                    <td class="px-4 py-3 leading-relaxed"><strong>Wajib.</strong> Kategori guru pembimbing. Harus ditulis salah satu dari: <code class="text-blue-500">normatif</code>, <code class="text-blue-500">adaptif</code>, atau <code class="text-blue-500">produktif</code>.</td>
-                                    <td class="px-4 py-3"><code class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded">produktif</code></td>
+                                    <td class="px-4 py-3 leading-relaxed"><strong>Wajib.</strong> Kategori guru pembimbing. Harus ditulis salah satu dari: <code class="text-blue-500">kejuruan</code> atau <code class="text-blue-500">umum</code>.</td>
+                                    <td class="px-4 py-3"><code class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded">kejuruan</code></td>
                                 </tr>
                                 <tr>
                                     <td class="px-4 py-3 font-bold text-slate-800 dark:text-slate-200">kelas_diajar</td>

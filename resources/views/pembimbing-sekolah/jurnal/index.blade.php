@@ -4,11 +4,11 @@
     <div x-data="{ imageModalOpen: false, modalImageUrl: '' }">
         <div class="mb-6 space-y-4">
             {{-- Info banner berdasarkan tipe guru --}}
-            @if($tipe !== 'produktif')
+            @if($tipe !== 'kejuruan' && $tipe !== 'produktif')
             <div class="flex items-start gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
                 <i data-lucide="info" class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"></i>
                 <div class="text-sm">
-                    <p class="font-semibold text-blue-700 dark:text-blue-300">Mode: Guru {{ ucfirst($tipe) }}</p>
+                    <p class="font-semibold text-blue-700 dark:text-blue-300">Mode: Guru {{ $tipe === 'umum' ? 'Umum' : ucfirst($tipe) }}</p>
                     <p class="text-blue-600 dark:text-blue-400 text-xs mt-0.5">
                         Menampilkan jurnal yang memiliki CP mengandung:
                         <strong>"{{ $teacher->mapel_cp ?? '-' }}"</strong>.
