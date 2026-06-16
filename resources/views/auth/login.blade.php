@@ -67,7 +67,7 @@
         </form>
 
         <div class="mt-8 text-center border-t border-slate-200/50 dark:border-slate-700/50 pt-6">
-            <p class="text-xs text-slate-500 dark:text-slate-400">©2026 SMK Negeri 1. All rights reserved.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">©2026 RPL SMKN 1 CIAMIS. All rights reserved.</p>
         </div>
     </div>
 </x-guest-layout>
