@@ -25,7 +25,37 @@ class SiswaController extends Controller
             $query->where('konsentrasi_keahlian_id', $request->konsentrasi);
         }
 
-        $students = $query->latest()->paginate(10)->withQueryString();
+        // Sorting Logic
+        if ($request->filled('sort')) {
+            switch ($request->sort) {
+                case 'oldest':
+                    $query->oldest();
+                    break;
+                case 'name_asc':
+                    $query->orderBy('nama_lengkap', 'asc');
+                    break;
+                case 'name_desc':
+                    $query->orderBy('nama_lengkap', 'desc');
+                    break;
+                case 'nis_asc':
+                    $query->orderBy('nis', 'asc');
+                    break;
+                case 'nis_desc':
+                    $query->orderBy('nis', 'desc');
+                    break;
+                case 'kelas_asc':
+                    $query->orderBy('kelas', 'asc');
+                    break;
+                case 'latest':
+                default:
+                    $query->latest();
+                    break;
+            }
+        } else {
+            $query->latest();
+        }
+
+        $students = $query->paginate(10)->withQueryString();
         $concentrations = \App\Models\KonsentrasiKeahlian::all();
         
         return view('pokja.siswa.index', compact('students', 'concentrations'));
