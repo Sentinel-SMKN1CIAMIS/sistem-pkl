@@ -4,7 +4,7 @@
         <!-- Logo Header -->
         <div class="text-center mb-8">
             <img src="{{ asset('logo.png') }}" alt="Logo" class="w-16 h-16 mx-auto object-contain mb-4 rounded-xl">
-            <h1 class="text-3xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-indigo-500 to-violet-600 dark:from-blue-400 dark:via-indigo-400 dark:to-violet-400 drop-shadow-sm transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-md cursor-default">MAS-PKL</h1>
+            <h1 class="text-3xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600 dark:from-blue-300 dark:to-blue-500 drop-shadow-sm transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-md cursor-default">MAS-PKL</h1>
             <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Monitoring & Administrasi Siswa PKL</p>
         </div>
 

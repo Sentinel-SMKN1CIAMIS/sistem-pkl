@@ -6,9 +6,24 @@
   --color-dark: #0f172a;
   --color-darker: #020617;
   --color-card: rgba(30, 41, 59, 0.7);
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-accent: #10b981;
+  
+  /* Use the new electric blue for primary */
+  --color-primary: var(--color-blue-600);
+  --color-primary-hover: var(--color-blue-700);
+  --color-accent: var(--color-cyan-500);
+
+  /* Override Tailwind's default blue to perfectly match the logo's vibrant electric blue */
+  --color-blue-50: #edf5ff;
+  --color-blue-100: #d6e8ff;
+  --color-blue-200: #b3d3ff;
+  --color-blue-300: #80b6ff;
+  --color-blue-400: #4d93ff;
+  --color-blue-500: #1a6cff;
+  --color-blue-600: #0055ff;
+  --color-blue-700: #0040d6;
+  --color-blue-800: #0033ab;
+  --color-blue-900: #002b8a;
+  --color-blue-950: #001b5c;
 }
 
 @layer utilities {
