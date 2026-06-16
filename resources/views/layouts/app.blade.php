@@ -454,6 +454,81 @@
                     }
                 }
             });
+
+            // Dynamic Password Show/Hide Toggle
+            function initPasswordToggles() {
+                document.querySelectorAll('input[type="password"]').forEach(input => {
+                    if (input.dataset.passwordToggleInitialized) return;
+                    input.dataset.passwordToggleInitialized = 'true';
+
+                    // Check if parent already has a toggle button (e.g. custom layout)
+                    const parent = input.parentElement;
+                    if (parent && parent.querySelector('button')) {
+                        return;
+                    }
+
+                    // Add padding-right to prevent text overlap
+                    input.classList.add('pr-10');
+
+                    // If parent is not relative, wrap input in a relative wrapper
+                    let wrapper = parent;
+                    if (!parent.classList.contains('relative')) {
+                        wrapper = document.createElement('div');
+                        wrapper.className = 'relative w-full';
+                        input.parentNode.insertBefore(wrapper, input);
+                        wrapper.appendChild(input);
+                    }
+
+                    // Create toggle button
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors focus:outline-none';
+                    button.innerHTML = '<i data-lucide="eye" class="h-5 w-5"></i>';
+                    wrapper.appendChild(button);
+
+                    // Click event to toggle type and icon
+                    let show = false;
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        show = !show;
+                        input.type = show ? 'text' : 'password';
+                        button.innerHTML = show 
+                            ? '<i data-lucide="eye-off" class="h-5 w-5"></i>' 
+                            : '<i data-lucide="eye" class="h-5 w-5"></i>';
+                        
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    });
+                });
+
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+
+            initPasswordToggles();
+
+            // Handle dynamically added password fields (e.g., in modals)
+            const observer = new MutationObserver((mutations) => {
+                let hasPassword = false;
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            if (node.matches && node.matches('input[type="password"]')) {
+                                hasPassword = true;
+                            } else if (node.querySelector && node.querySelector('input[type="password"]')) {
+                                hasPassword = true;
+                            }
+                        }
+                    });
+                });
+                if (hasPassword) {
+                    initPasswordToggles();
+                }
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
         });
     </script>
 
