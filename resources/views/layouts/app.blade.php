@@ -72,8 +72,8 @@
         
         <div class="flex items-center justify-center p-6 border-b border-slate-200/50 dark:border-slate-700/50">
             <div class="flex items-center gap-3">
-                <img src="{{ asset('logo.png') }}" alt="Logo" class="w-10 h-10 object-contain">
-                <h1 class="text-2xl font-bold text-gradient tracking-tight">MAS-PKL</h1>
+                <img src="{{ asset('logo.png') }}" alt="Logo" class="w-10 h-10 object-contain rounded-xl">
+                <h1 class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-indigo-500 to-violet-600 dark:from-blue-400 dark:via-indigo-400 dark:to-violet-400 drop-shadow-sm transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-md cursor-default">MAS-PKL</h1>
             </div>
         </div>
 
