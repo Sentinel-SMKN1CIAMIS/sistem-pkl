@@ -46,16 +46,16 @@
     
     <!-- Theme Switcher Script (prevent FOUC) -->
     <script>
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.theme === 'dark' || (localStorage.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
         }
     </script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased h-dvh overflow-hidden flex" x-data="{ sidebarOpen: false }">
-
-    <!-- Sidebar Backdrop -->
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased h-dvh overflow-hidden" x-data="{ sidebarOpen: false }">
+    <div class="flex h-full w-full overflow-hidden">
+        <!-- Sidebar Backdrop -->
     <div x-show="sidebarOpen" 
          x-transition:enter="transition-opacity ease-linear duration-300"
          x-transition:enter-start="opacity-0"
@@ -68,7 +68,7 @@
 
     <!-- Sidebar -->
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-           class="fixed inset-y-0 left-0 z-50 w-72 glass transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-slate-200/50 dark:border-slate-700/50 flex flex-col">
+           class="fixed inset-y-0 left-0 z-50 w-72 shrink-0 glass transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-slate-200/50 dark:border-slate-700/50 flex flex-col">
         
         <div class="flex items-center justify-center p-6 border-b border-slate-200/50 dark:border-slate-700/50">
             <div class="flex items-center gap-3">
@@ -93,7 +93,7 @@
             <div class="ml-auto flex items-center gap-4">
                 <!-- Theme Toggle -->
                 <div x-data="{
-                    theme: localStorage.theme || 'system',
+                    theme: localStorage.theme || 'light',
                     open: false,
                     setTheme(val) {
                         this.theme = val;
@@ -103,7 +103,6 @@
                         } else {
                             document.documentElement.classList.remove('dark');
                         }
-                        if(val === 'system') localStorage.removeItem('theme');
                         this.open = false;
                     }
                 }" class="relative">
@@ -215,6 +214,7 @@
                 {{ $slot }}
             </div>
         </main>
+    </div>
     </div>
 
     <!-- Scripts -->
@@ -333,8 +333,8 @@
                 background: isDark ? '#0f172a' : '#ffffff',
                 color: isDark ? '#f1f5f9' : '#1e293b',
                 customClass: {
-                    confirmButton: 'px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 text-sm focus:outline-none cursor-pointer',
-                    popup: 'rounded-2xl border border-slate-200/50 dark:border-slate-700/50 font-sans shadow-xl',
+                    confirmButton: 'px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-500/25 text-sm focus:outline-none cursor-pointer',
+                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
                     title: 'text-lg font-bold text-slate-900 dark:text-slate-100',
                     htmlContainer: 'text-sm font-medium leading-relaxed'
                 }
@@ -362,7 +362,7 @@
                 icon: type,
                 title: message,
                 customClass: {
-                    popup: 'rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-lg font-sans text-sm'
+                    popup: 'rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-lg font-sans text-sm'
                 }
             });
         };
@@ -394,9 +394,9 @@
                                 background: isDark ? '#0f172a' : '#ffffff',
                                 color: isDark ? '#f1f5f9' : '#1e293b',
                                 customClass: {
-                                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-600/20 text-sm focus:outline-none cursor-pointer mr-3',
-                                    cancelButton: 'px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl transition-all text-sm focus:outline-none cursor-pointer',
-                                    popup: 'rounded-2xl border border-slate-200/50 dark:border-slate-700/50 font-sans shadow-xl',
+                                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500/25 text-sm focus:outline-none cursor-pointer mr-3',
+                                    cancelButton: 'px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-sm focus:outline-none cursor-pointer',
+                                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
                                     htmlContainer: 'text-sm font-medium leading-relaxed'
                                 }
                             }).then((result) => {
@@ -432,9 +432,9 @@
                                 background: isDark ? '#0f172a' : '#ffffff',
                                 color: isDark ? '#f1f5f9' : '#1e293b',
                                 customClass: {
-                                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-600/20 text-sm focus:outline-none cursor-pointer mr-3',
-                                    cancelButton: 'px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl transition-all text-sm focus:outline-none cursor-pointer',
-                                    popup: 'rounded-2xl border border-slate-200/50 dark:border-slate-700/50 font-sans shadow-xl',
+                                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500/25 text-sm focus:outline-none cursor-pointer mr-3',
+                                    cancelButton: 'px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-sm focus:outline-none cursor-pointer',
+                                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
                                     htmlContainer: 'text-sm font-medium leading-relaxed'
                                 }
                             }).then((result) => {

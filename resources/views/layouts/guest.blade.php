@@ -26,7 +26,7 @@
     
     <!-- Theme Switcher Script (prevent FOUC) -->
     <script>
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.theme === 'dark' || (localStorage.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
@@ -38,7 +38,7 @@
     <!-- Theme Toggle -->
     <div class="absolute top-6 right-6 z-50">
         <div x-data="{
-            theme: localStorage.theme || 'system',
+            theme: localStorage.theme || 'light',
             open: false,
             setTheme(val) {
                 this.theme = val;
@@ -48,7 +48,6 @@
                 } else {
                     document.documentElement.classList.remove('dark');
                 }
-                if(val === 'system') localStorage.removeItem('theme');
                 this.open = false;
             }
         }" class="relative">
@@ -102,8 +101,8 @@
                 background: isDark ? '#0f172a' : '#ffffff',
                 color: isDark ? '#f1f5f9' : '#1e293b',
                 customClass: {
-                    confirmButton: 'px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 text-sm focus:outline-none cursor-pointer',
-                    popup: 'rounded-2xl border border-slate-200/50 dark:border-slate-700/50 font-sans shadow-xl',
+                    confirmButton: 'px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-500/25 text-sm focus:outline-none cursor-pointer',
+                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
                     title: 'text-lg font-bold text-slate-900 dark:text-slate-100',
                     htmlContainer: 'text-sm font-medium leading-relaxed'
                 }
@@ -131,7 +130,7 @@
                 icon: type,
                 title: message,
                 customClass: {
-                    popup: 'rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-lg font-sans text-sm'
+                    popup: 'rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-lg font-sans text-sm'
                 }
             });
         };
@@ -163,9 +162,9 @@
                                 background: isDark ? '#0f172a' : '#ffffff',
                                 color: isDark ? '#f1f5f9' : '#1e293b',
                                 customClass: {
-                                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-600/20 text-sm focus:outline-none cursor-pointer mr-3',
-                                    cancelButton: 'px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl transition-all text-sm focus:outline-none cursor-pointer',
-                                    popup: 'rounded-2xl border border-slate-200/50 dark:border-slate-700/50 font-sans shadow-xl',
+                                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500/25 text-sm focus:outline-none cursor-pointer mr-3',
+                                    cancelButton: 'px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-sm focus:outline-none cursor-pointer',
+                                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
                                     htmlContainer: 'text-sm font-medium leading-relaxed'
                                 }
                             }).then((result) => {
@@ -201,9 +200,9 @@
                                 background: isDark ? '#0f172a' : '#ffffff',
                                 color: isDark ? '#f1f5f9' : '#1e293b',
                                 customClass: {
-                                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-600/20 text-sm focus:outline-none cursor-pointer mr-3',
-                                    cancelButton: 'px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl transition-all text-sm focus:outline-none cursor-pointer',
-                                    popup: 'rounded-2xl border border-slate-200/50 dark:border-slate-700/50 font-sans shadow-xl',
+                                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500/25 text-sm focus:outline-none cursor-pointer mr-3',
+                                    cancelButton: 'px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-sm focus:outline-none cursor-pointer',
+                                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
                                     htmlContainer: 'text-sm font-medium leading-relaxed'
                                 }
                             }).then((result) => {

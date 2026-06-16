@@ -136,8 +136,21 @@ class JurnalController extends Controller
             }
             $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
             $imageData = str_replace(' ', '+', $imageData);
-            $fileName = 'jurnal/' . $siswa->id . '_' . time() . '.png';
-            Storage::disk('public')->put($fileName, base64_decode($imageData));
+            $binaryData = base64_decode($imageData);
+
+            // Compress to JPEG 85% using GD if available
+            if (extension_loaded('gd') && function_exists('imagecreatefromstring')) {
+                $image = @imagecreatefromstring($binaryData);
+                if ($image !== false) {
+                    ob_start();
+                    imagejpeg($image, null, 85);
+                    $binaryData = ob_get_clean();
+                    imagedestroy($image);
+                }
+            }
+
+            $fileName = 'jurnal/' . $siswa->id . '_' . time() . '.jpg';
+            Storage::disk('public')->put($fileName, $binaryData);
             $data['foto_path'] = $fileName;
         }
 
@@ -246,8 +259,21 @@ class JurnalController extends Controller
             }
             $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
             $imageData = str_replace(' ', '+', $imageData);
-            $fileName = 'jurnal/' . $siswa->id . '_' . time() . '.png';
-            Storage::disk('public')->put($fileName, base64_decode($imageData));
+            $binaryData = base64_decode($imageData);
+
+            // Compress to JPEG 85% using GD if available
+            if (extension_loaded('gd') && function_exists('imagecreatefromstring')) {
+                $image = @imagecreatefromstring($binaryData);
+                if ($image !== false) {
+                    ob_start();
+                    imagejpeg($image, null, 85);
+                    $binaryData = ob_get_clean();
+                    imagedestroy($image);
+                }
+            }
+
+            $fileName = 'jurnal/' . $siswa->id . '_' . time() . '.jpg';
+            Storage::disk('public')->put($fileName, $binaryData);
             
             if ($jurnal->foto_path) {
                 Storage::disk('public')->delete($jurnal->foto_path);

@@ -29,6 +29,9 @@ Route::middleware('auth', 'force.password.change')->group(function () {
     
     // Siswa Routes
     Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
+        Route::get('jurnal/export', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'export'])->name('jurnal.export');
+        Route::get('jurnal/portofolio', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'portofolio'])->name('jurnal.portofolio');
+        Route::get('jurnal/sertifikat', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'sertifikat'])->name('jurnal.sertifikat');
         Route::resource('jurnal', \App\Http\Controllers\Siswa\JurnalController::class);
         Route::get('absensi', [\App\Http\Controllers\Siswa\AbsensiController::class, 'index'])->name('absensi.index');
         Route::post('absensi/clock-in', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockIn'])->name('absensi.clock-in');
@@ -37,9 +40,6 @@ Route::middleware('auth', 'force.password.change')->group(function () {
         Route::get('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'index'])->name('laporan.index');
         Route::post('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'store'])->name('laporan.store');
         Route::get('panduan', [\App\Http\Controllers\Siswa\PanduanController::class, 'index'])->name('panduan.index');
-        Route::get('jurnal/export', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'export'])->name('jurnal.export');
-        Route::get('jurnal/portofolio', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'portofolio'])->name('jurnal.portofolio');
-        Route::get('jurnal/sertifikat', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'sertifikat'])->name('jurnal.sertifikat');
         Route::get('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('profile.index');
         Route::patch('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'update'])->name('profile.update');
         Route::post('profile/update-lokasi-dudi', [\App\Http\Controllers\Siswa\ProfileController::class, 'updateLokasiDudi'])->name('profile.update-lokasi-dudi');

@@ -5,6 +5,10 @@
 - Memperbaiki test case `ExampleTest` agar memvalidasi redirect ke `/login` (302) alih-alih status 200 sukses karena rute `/` di-redirect ke `/login`.
 - Memperbaiki penanganan error logging pada `ChangePasswordController` dengan memindahkan `$request->validate()` ke dalam blok `try` utama dan menangkap `ValidationException` secara eksplisit untuk memastikan kegagalan validasi password dicatat sebagai aktivitas `Password Change Failed` di database log.
 - Memperbaiki test setup pada `KaprogAccessControlTest` dengan menambahkan properti `program_keahlian_id` saat pembuatan user Kaprog bimbingan agar sinkron dengan logika filter relasi program keahlian pada controller `KaprogController` dan `PengajuanPklController`.
+- Memperbaiki rute `/siswa/jurnal/portofolio`, `/siswa/jurnal/export`, dan `/siswa/jurnal/sertifikat` yang sebelumnya salah dipetakan ke wildcard `Route::resource('jurnal', ...)` (menyebabkan error `Call to undefined method JurnalController::show()`) dengan memindahkan definisi rute-rute tersebut ke sebelum rute resource.
+- Memperbaiki bug layout shift yang menyebabkan sidebar menciut/bergeser saat modal dialog SweetAlert2 muncul dengan memindahkan kelas flex dari tag `<body>` ke div wrapper penampung konten utama.
+
+
 
 ### Added
 - Integrasi library **SweetAlert2** secara global pada layout aplikasi (`app.blade.php` dan `guest.blade.php`).
@@ -15,7 +19,10 @@
 - Penambahan mekanisme anti-BFCache global via event listener 'pageshow' pada layout utama dan guest untuk mendeteksi navigasi tombol back/forward browser, memaksa reload halaman, dan memicu proteksi rute middleware Laravel (auth & guest) secara dinamis.
 
 ### Changed
+- Mengubah tema default website menjadi **Light Mode**. Jika pengguna belum pernah memilih tema secara manual (tidak ada preferensi di `localStorage`), maka website akan memuat tema terang secara default (alih-alih mengikuti settingan dark mode bawaan OS/system). Pilihan tema manual ("Light", "Dark", dan "System") tetap dipertahankan untuk fleksibilitas pengguna.
 - Menghapus pembatasan visual ukuran maksimum file 4MB pada semua fitur impor data Excel (Siswa, DUDI, Pembimbing Sekolah, Pembimbing DUDI, dan Kaprog) serta memperbarui teks petunjuk format menjadi "Format file yang didukung: .xlsx, .xls saja".
+- Menambahkan fitur kompresi foto jurnal harian otomatis di sisi klien (CropperJS canvas diekspor sebagai JPEG 85%) dan di sisi server (PHP GD extension mengompresi gambar base64 ke JPEG 85% sebelum disimpan) untuk menghemat ruang penyimpanan server secara drastis tanpa mengurangi ketajaman gambar secara kasat mata.
+
 
 
 ## [2026-06-06] - Modul 4 & 7

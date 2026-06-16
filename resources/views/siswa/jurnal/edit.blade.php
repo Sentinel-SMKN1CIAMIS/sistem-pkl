@@ -271,7 +271,7 @@
                 imageSmoothingQuality: 'high',
             });
 
-            const croppedDataURL = canvas.toDataURL('image/png');
+            const croppedDataURL = canvas.toDataURL('image/jpeg', 0.85);
 
             // Set hidden input value
             document.getElementById('foto-cropped-input').value = croppedDataURL;
