@@ -127,6 +127,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('logs', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('logs.index');
         Route::get('config', [\App\Http\Controllers\Admin\ConfigController::class, 'index'])->name('config.index');
         Route::post('config', [\App\Http\Controllers\Admin\ConfigController::class, 'update'])->name('config.update');
+        Route::get('config/backup', [\App\Http\Controllers\Admin\ConfigController::class, 'backup'])->name('config.backup');
+        Route::get('config/download-backup/{filename}', [\App\Http\Controllers\Admin\ConfigController::class, 'downloadBackup'])->name('config.download-backup');
+        Route::delete('config/delete-backup/{filename}', [\App\Http\Controllers\Admin\ConfigController::class, 'deleteBackup'])->name('config.delete-backup');
+        Route::post('config/wipe', [\App\Http\Controllers\Admin\ConfigController::class, 'wipe'])->name('config.wipe');
     });
 
     // Pokja Routes - with group membership check
