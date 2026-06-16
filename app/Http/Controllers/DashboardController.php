@@ -58,22 +58,26 @@ class DashboardController extends Controller
                     $attendanceRate = $activeStudentsCount > 0 ? round(($absensiTodayCount / $activeStudentsCount) * 100) : 0;
                     
                     $missingAttendance = \App\Models\Siswa::where('status_pkl', 'sedang_pkl')
-                        ->whereDoesntHave('absensis', function($q) use ($today) {
+                        ->whereDoesntHave('absensi', function($q) use ($today) {
                             $q->whereDate('tanggal', $today);
                         })
                         ->take(5)
-                        ->get();
+                        ->get(['nama_lengkap', 'kelas'])
+                        ->map(fn($s) => ['nama_lengkap' => $s->nama_lengkap, 'kelas' => $s->kelas])
+                        ->toArray();
 
                     // Jurnal stats
                     $jurnalTodayCount = \App\Models\Jurnal::whereDate('tanggal', $today)->distinct('siswa_id')->count();
                     $journalRate = $activeStudentsCount > 0 ? round(($jurnalTodayCount / $activeStudentsCount) * 100) : 0;
                     
                     $missingJournal = \App\Models\Siswa::where('status_pkl', 'sedang_pkl')
-                        ->whereDoesntHave('jurnals', function($q) use ($today) {
+                        ->whereDoesntHave('jurnal', function($q) use ($today) {
                             $q->whereDate('tanggal', $today);
                         })
                         ->take(5)
-                        ->get();
+                        ->get(['nama_lengkap', 'kelas'])
+                        ->map(fn($s) => ['nama_lengkap' => $s->nama_lengkap, 'kelas' => $s->kelas])
+                        ->toArray();
 
                     return [
                         'total_siswa' => \App\Models\Siswa::count(),
@@ -86,6 +90,10 @@ class DashboardController extends Controller
                         'missing_journal' => $missingJournal,
                     ];
                 });
+
+                $stats['missing_attendance'] = collect($stats['missing_attendance'])->map(fn($s) => (object)$s);
+                $stats['missing_journal'] = collect($stats['missing_journal'])->map(fn($s) => (object)$s);
+
                 return view('dashboards.kaprog', compact('stats'));
             case 'pokja':
             case 'super_admin':
