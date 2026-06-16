@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title') - {{ config('app.name', 'Sistem PKL') }}</title>
+    <title>@yield('title') - {{ config('app.name', 'MAS-PKL') }}</title>
 
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -121,7 +121,7 @@
 
     <!-- Footer -->
     <div class="w-full text-center text-xs text-slate-400 dark:text-slate-600 select-none pb-6">
-        &copy; {{ date('Y') }} {{ config('app.name', 'Sistem PKL') }}. All rights reserved.
+        &copy; {{ date('Y') }} {{ config('app.name', 'MAS-PKL') }}. All rights reserved.
     </div>
 
     <!-- Theme Toggle and Icons Init Script -->
