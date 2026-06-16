@@ -368,18 +368,23 @@
                                 <span class="text-xs text-slate-500 dark:text-slate-400">{{ $item->kelas }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($item->dudi)
-                                    <span class="text-sm text-slate-700 dark:text-slate-300 block font-semibold mb-1.5">{{ $item->dudi->nama }}</span>
+                                <div class="flex flex-col gap-1.5 items-start">
+                                    <!-- DUDI -->
+                                    @if($item->dudi)
+                                        <span class="text-sm text-slate-700 dark:text-slate-300 font-semibold">{{ $item->dudi->nama }}</span>
+                                    @else
+                                        <span class="text-xs text-amber-500/80 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">Belum diplot (DUDI)</span>
+                                    @endif
+
+                                    <!-- Guru Pembimbing -->
                                     @if($item->pembimbingSekolah)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($item->pembimbingSekolah->nama_lengkap) }}">
                                             Guru: {{ $item->pembimbingSekolah->nama_lengkap }}
                                         </span>
                                     @else
-                                        <span class="text-xs text-slate-500 dark:text-slate-400 italic">Guru: Belum diplot</span>
+                                        <span class="text-[10px] text-slate-500/80 bg-slate-500/5 px-2 py-0.5 rounded border border-slate-500/10 font-bold uppercase tracking-wider">Guru: Belum diplot</span>
                                     @endif
-                                @else
-                                    <span class="text-xs text-amber-500/80 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">Belum diplot</span>
-                                @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
