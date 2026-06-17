@@ -69,12 +69,23 @@
                     @forelse($siswas as $siswa)
                         <tr class="hover:bg-white dark:bg-slate-800/30 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ $siswa->nama_lengkap }}</p>
-                                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-wider">{{ $siswa->nis }} | {{ $siswa->konsentrasiKeahlian->nama_konsentrasi ?? '-' }}</p>
+                                <div class="flex items-center gap-3">
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ $siswa->nama_lengkap }}</p>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-wider">{{ $siswa->nis }} | {{ $siswa->konsentrasiKeahlian->nama ?? '-' }}</p>
+                                    </div>
+                                    @if($siswa->pengajuanPkl && $siswa->pengajuanPkl->bukti_balasan)
+                                        <a href="{{ asset('storage/' . $siswa->pengajuanPkl->bukti_balasan) }}" target="_blank" 
+                                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-semibold hover:bg-emerald-500/20 transition-all cursor-pointer" 
+                                           title="Lihat Bukti Penerimaan Perusahaan">
+                                            <i data-lucide="file-check" class="w-3 h-3"></i> Bukti DUDI
+                                        </a>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 @if($siswa->dudi)
-                                    <span class="text-slate-700 dark:text-slate-300 font-medium">{{ $siswa->dudi->nama_perusahaan }}</span>
+                                    <span class="text-slate-700 dark:text-slate-300 font-medium">{{ $siswa->dudi->nama }}</span>
                                 @else
                                     <span class="text-slate-600 italic">Belum ditentukan</span>
                                 @endif

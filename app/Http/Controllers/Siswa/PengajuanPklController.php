@@ -43,7 +43,7 @@ class PengajuanPklController extends Controller
             'pembimbing_dudi_id' => 'nullable|exists:pembimbing_dudis,id',
             'nama_perusahaan'    => 'required|string|max:255',
             'pimpinan'           => 'nullable|string|max:255',
-            'alamat'             => 'nullable|string|max:1000',
+            'alamat'             => 'required_without:dudi_id|nullable|string|max:1000',
             'kota'               => 'required_without:dudi_id|nullable|string|max:100',
             'no_telp'            => 'nullable|string|max:30',
         ]);
@@ -55,7 +55,15 @@ class PengajuanPklController extends Controller
         }
 
         // Hapus pengajuan ditolak sebelumnya dan buat yang baru
-        $siswa->pengajuanPkl()->delete();
+        $existing = $siswa->pengajuanPkl;
+        if ($existing) {
+            if ($existing->bukti_balasan) {
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($existing->bukti_balasan)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($existing->bukti_balasan);
+                }
+            }
+            $existing->delete();
+        }
 
         PengajuanPkl::create([
             'siswa_id'           => $siswa->id,
@@ -85,7 +93,13 @@ class PengajuanPklController extends Controller
 
     public function status()
     {
-        $siswa     = auth()->user()->siswa;
+        $siswa = auth()->user()->siswa;
+
+        // Jika siswa sudah terpetakan pembimbing sekolahnya (sedang_pkl), redirect ke dashboard
+        if ($siswa->status_pkl === 'sedang_pkl') {
+            return redirect()->route('dashboard')->with('info', 'Anda sudah aktif melaksanakan PKL.');
+        }
+
         $pengajuan = $siswa->pengajuanPkl;
 
         return view('siswa.pengajuan-pkl.status', compact('pengajuan'));
@@ -101,5 +115,57 @@ class PengajuanPklController extends Controller
         }
 
         return view('siswa.pengajuan-pkl.print', compact('siswa', 'pengajuan'));
+    }
+
+    public function uploadBukti(Request $request)
+    {
+        $siswa = auth()->user()->siswa;
+        $pengajuan = $siswa->pengajuanPkl;
+
+        if (!$pengajuan || $pengajuan->status !== 'disetujui') {
+            return back()->with('error', 'Anda belum dapat mengunggah bukti penerimaan sebelum pengajuan disetujui Pokja.');
+        }
+
+        $request->validate([
+            'bukti_balasan' => 'required|file|mimes:pdf,png,jpg,jpeg|max:2048',
+        ], [
+            'bukti_balasan.required' => 'Berkas bukti penerimaan wajib dipilih.',
+            'bukti_balasan.file' => 'Berkas yang diunggah harus berupa file.',
+            'bukti_balasan.mimes' => 'Format berkas hanya diperbolehkan PDF, PNG, JPG, atau JPEG.',
+            'bukti_balasan.max' => 'Ukuran berkas maksimal adalah 2MB.',
+        ]);
+
+        try {
+            // Hapus bukti lama jika ada
+            if ($pengajuan->bukti_balasan) {
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuan->bukti_balasan)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuan->bukti_balasan);
+                }
+            }
+
+            $file = $request->file('bukti_balasan');
+            $fileName = 'bukti_' . $siswa->nis . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('bukti_balasan', $fileName, 'public');
+
+            $pengajuan->update([
+                'bukti_balasan' => $path,
+            ]);
+
+            // Kirim notifikasi ke Pokja
+            $pokjas = \App\Models\User::where('role', 'pokja')->get();
+            foreach ($pokjas as $pokja) {
+                \App\Models\Notifikasi::create([
+                    'to_user_id' => $pokja->id,
+                    'judul'      => 'Bukti Penerimaan Perusahaan Baru',
+                    'pesan'      => "Siswa {$siswa->nama_lengkap} telah mengunggah bukti penerimaan dari perusahaan {$pengajuan->nama_perusahaan}.",
+                    'link'       => route('pokja.siswa.edit', $siswa->id),
+                    'is_read'    => false,
+                ]);
+            }
+
+            return back()->with('success', 'Bukti penerimaan perusahaan berhasil diunggah.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengunggah bukti: ' . $e->getMessage());
+        }
     }
 }

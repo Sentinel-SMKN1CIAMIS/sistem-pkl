@@ -76,6 +76,19 @@
                             Penempatan & Pembimbing
                         </h3>
                         <div class="space-y-4">
+                            @if($siswa->pengajuanPkl && $siswa->pengajuanPkl->bukti_balasan)
+                                <div class="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs flex items-center justify-between gap-3">
+                                    <div>
+                                        <span class="font-bold text-emerald-600 dark:text-emerald-400 block mb-1">Bukti Balasan Perusahaan</span>
+                                        <p class="text-slate-600 dark:text-slate-400 leading-normal">Siswa telah mengunggah bukti penerimaan resmi dari perusahaan.</p>
+                                    </div>
+                                    <a href="{{ asset('storage/' . $siswa->pengajuanPkl->bukti_balasan) }}" target="_blank"
+                                       class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
+                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i> Lihat Bukti
+                                    </a>
+                                </div>
+                            @endif
+
                             <div>
                                 <label for="dudi_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tempat PKL (DUDI)</label>
                                 <select name="dudi_id" id="dudi_id"

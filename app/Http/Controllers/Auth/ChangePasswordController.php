@@ -77,7 +77,7 @@ class ChangePasswordController extends Controller
                 return response()->json(['success' => 'Password berhasil diubah']);
             }
 
-            return redirect()->intended('dashboard')->with('success', 'Password berhasil diubah. Selamat datang di dashboard!');
+            return redirect()->route('dashboard')->with('success', 'Password berhasil diubah. Selamat datang di dashboard!');
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Log failed password change due to validation
             ActivityLog::create([

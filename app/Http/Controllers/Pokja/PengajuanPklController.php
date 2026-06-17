@@ -52,7 +52,7 @@ class PengajuanPklController extends Controller
                     ['nama' => $pengajuanPkl->nama_perusahaan],
                     [
                         'nama_pimpinan' => $pengajuanPkl->pimpinan,
-                        'alamat' => $pengajuanPkl->alamat,
+                        'alamat' => $pengajuanPkl->alamat ?? '-',
                         'kota' => $pengajuanPkl->kota,
                         'no_telepon' => $pengajuanPkl->no_telp,
                         'konsentrasi_keahlian_id' => $pengajuanPkl->siswa->konsentrasi_keahlian_id,

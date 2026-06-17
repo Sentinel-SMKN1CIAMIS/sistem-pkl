@@ -50,6 +50,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('pengajuan-pkl', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'store'])->name('pengajuan_pkl.store');
         Route::get('pengajuan-pkl/status', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'status'])->name('pengajuan_pkl.status');
         Route::get('pengajuan-pkl/print', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'print'])->name('pengajuan_pkl.print');
+        Route::post('pengajuan-pkl/upload-bukti', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'uploadBukti'])->name('pengajuan_pkl.upload_bukti');
         Route::get('pengajuan-pkl/pembimbing', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'getPembimbing'])->name('pengajuan_pkl.pembimbing');
     });
 

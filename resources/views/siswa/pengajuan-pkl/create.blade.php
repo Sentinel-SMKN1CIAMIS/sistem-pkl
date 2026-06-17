@@ -85,10 +85,13 @@
                 </div>
 
                 <div>
-                    <label for="alamat" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Alamat Lengkap Perusahaan</label>
+                    <label for="alamat" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Alamat Lengkap Perusahaan <span class="text-red-500">*</span>
+                    </label>
                     <textarea name="alamat" id="alamat" rows="3"
                               class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-200 transition-all resize-none"
                               placeholder="Jl. ...">{{ old('alamat') }}</textarea>
+                    @error('alamat')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
