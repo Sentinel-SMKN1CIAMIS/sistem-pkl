@@ -2,7 +2,7 @@
     <x-slot name="header">Edit Data & Penempatan Siswa PKL</x-slot>
 
     <div class="mb-6">
-        <a href="{{ route('pokja.siswa.index') }}" class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 transition-colors inline-flex">
+        <a href="{{ route('pokja.siswa.index') }}" class="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
             Kembali ke Daftar
         </a>

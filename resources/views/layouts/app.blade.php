@@ -92,11 +92,6 @@
                 <i data-lucide="menu" class="w-6 h-6"></i>
             </button>
             
-            <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 dark:text-blue-400 text-xs font-black uppercase tracking-wider ml-4">
-                <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-                TA: {{ $tahunAjaranActive }}
-            </div>
-            
             <div class="ml-auto flex items-center gap-4">
                 <!-- Theme Toggle -->
                 <div x-data="{
