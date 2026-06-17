@@ -18,9 +18,9 @@ class PengajuanPklController extends Controller
             return redirect()->route('dashboard')->with('info', 'Anda sudah memiliki tempat PKL yang telah disetujui.');
         }
 
-        // Jika sudah ada pengajuan yang menunggu atau disetujui
+        // Jika sudah ada pengajuan yang menunggu, disetujui kaprog, atau disetujui final
         $existing = $siswa->pengajuanPkl;
-        if ($existing && in_array($existing->status, ['menunggu', 'disetujui'])) {
+        if ($existing && in_array($existing->status, ['menunggu', 'disetujui_kaprog', 'disetujui'])) {
             return redirect()->route('siswa.pengajuan_pkl.status');
         }
 
@@ -70,7 +70,7 @@ class PengajuanPklController extends Controller
         ]);
 
         return redirect()->route('siswa.pengajuan_pkl.status')
-            ->with('success', 'Pengajuan tempat PKL berhasil dikirim! Mohon tunggu konfirmasi dari Guru Pembimbing.');
+            ->with('success', 'Pengajuan tempat PKL berhasil dikirim! Mohon tunggu konfirmasi dari Ketua Program Keahlian (Kaprog).');
     }
 
     public function getPembimbing(Request $request)
@@ -89,5 +89,17 @@ class PengajuanPklController extends Controller
         $pengajuan = $siswa->pengajuanPkl;
 
         return view('siswa.pengajuan-pkl.status', compact('pengajuan'));
+    }
+
+    public function print()
+    {
+        $siswa = auth()->user()->siswa;
+        $pengajuan = $siswa->pengajuanPkl;
+
+        if (!$pengajuan || $pengajuan->status !== 'disetujui') {
+            return redirect()->route('siswa.pengajuan_pkl.status')->with('error', 'Surat pengantar belum diterbitkan atau pengajuan Anda belum disetujui.');
+        }
+
+        return view('siswa.pengajuan-pkl.print', compact('siswa', 'pengajuan'));
     }
 }

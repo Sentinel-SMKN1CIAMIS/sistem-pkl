@@ -31,9 +31,14 @@
             <div class="glass-card p-8">
                 <div class="flex items-center gap-4 mb-6">
                     <div class="w-14 h-14 rounded-2xl flex items-center justify-center
-                        {{ $pengajuan->status === 'menunggu' ? 'bg-amber-500/10' : ($pengajuan->status === 'disetujui' ? 'bg-emerald-500/10' : 'bg-red-500/10') }}">
+                        @if($pengajuan->status === 'menunggu') bg-amber-500/10
+                        @elseif($pengajuan->status === 'disetujui_kaprog') bg-blue-500/10
+                        @elseif($pengajuan->status === 'disetujui') bg-emerald-500/10
+                        @else bg-red-500/10 @endif">
                         @if($pengajuan->status === 'menunggu')
                             <i data-lucide="clock" class="w-7 h-7 text-amber-500"></i>
+                        @elseif($pengajuan->status === 'disetujui_kaprog')
+                            <i data-lucide="shield-alert" class="w-7 h-7 text-blue-500"></i>
                         @elseif($pengajuan->status === 'disetujui')
                             <i data-lucide="check-circle-2" class="w-7 h-7 text-emerald-500"></i>
                         @else
@@ -45,11 +50,15 @@
                         <p class="text-sm mt-0.5">
                             @if($pengajuan->status === 'menunggu')
                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-medium">
-                                    <i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Menunggu Persetujuan
+                                    <i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Menunggu Persetujuan Kaprog
+                                </span>
+                            @elseif($pengajuan->status === 'disetujui_kaprog')
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-xs font-medium animate-pulse">
+                                    <i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Menunggu Validasi Pokja
                                 </span>
                             @elseif($pengajuan->status === 'disetujui')
                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
-                                    <i data-lucide="check" class="w-3 h-3"></i> Disetujui
+                                    <i data-lucide="check" class="w-3 h-3"></i> Disetujui Pokja
                                 </span>
                             @else
                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-medium">
@@ -85,20 +94,39 @@
                     </div>
                 </div>
 
-                @if($pengajuan->status === 'disetujui' && auth()->user()->siswa->status_pkl === 'belum_mulai')
-                    <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl shadow-sm">
+                @if($pengajuan->status === 'disetujui')
+                    <div class="mt-6 p-5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl shadow-sm flex flex-col gap-4">
                         <div class="flex items-start gap-3">
-                            <i data-lucide="info" class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0"></i>
+                            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0"></i>
                             <div>
-                                <h3 class="text-sm font-bold text-blue-800 dark:text-blue-300 mb-1">Menunggu Pemetaan Guru Pembimbing</h3>
-                                <p class="text-sm text-blue-700 dark:text-blue-400/90 leading-relaxed">
-                                    Pengajuan Tempat PKL Anda telah <strong>disetujui</strong> oleh Kaprog. 
-                                    Saat ini, mohon menunggu Tim Pokja memetakan <strong>Guru Pembimbing Sekolah</strong> untuk Anda. 
-                                    Anda baru dapat mengakses fitur Jurnal, Absensi, dan Laporan setelah proses pemetaan ini selesai.
+                                <h3 class="text-sm font-bold text-emerald-800 dark:text-emerald-300 mb-1">Pengajuan Disetujui Pokja</h3>
+                                <p class="text-sm text-emerald-700 dark:text-emerald-400/90 leading-relaxed">
+                                    Pengajuan Tempat PKL Anda telah <strong>disetujui</strong> oleh Pokja. Silakan cetak Surat Pengantar Anda secara mandiri di bawah ini dan serahkan ke perusahaan/DUDI tujuan.
                                 </p>
                             </div>
                         </div>
+                        <div class="flex justify-start">
+                            <a href="{{ route('siswa.pengajuan_pkl.print') }}" target="_blank"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg cursor-pointer">
+                                <i data-lucide="printer" class="w-4 h-4"></i> Cetak Surat Pengantar
+                            </a>
+                        </div>
                     </div>
+
+                    @if(auth()->user()->siswa->status_pkl === 'belum_mulai')
+                        <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-2xl shadow-sm">
+                            <div class="flex items-start gap-3">
+                                <i data-lucide="info" class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0"></i>
+                                <div>
+                                    <h3 class="text-sm font-bold text-blue-800 dark:text-blue-300 mb-1">Menunggu Pemetaan Guru Pembimbing</h3>
+                                    <p class="text-sm text-blue-700 dark:text-blue-400/90 leading-relaxed">
+                                        Meskipun pengajuan Anda telah disetujui Pokja, saat ini Tim Pokja sedang memetakan <strong>Guru Pembimbing Sekolah</strong> untuk Anda. 
+                                        Anda baru dapat mengakses fitur Jurnal, Absensi, dan Laporan setelah proses pemetaan ini selesai.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 @endif
 
                 @if($pengajuan->status === 'ditolak')

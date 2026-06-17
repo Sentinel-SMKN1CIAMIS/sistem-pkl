@@ -49,6 +49,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'create'])->name('pengajuan_pkl.create');
         Route::post('pengajuan-pkl', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'store'])->name('pengajuan_pkl.store');
         Route::get('pengajuan-pkl/status', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'status'])->name('pengajuan_pkl.status');
+        Route::get('pengajuan-pkl/print', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'print'])->name('pengajuan_pkl.print');
         Route::get('pengajuan-pkl/pembimbing', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'getPembimbing'])->name('pengajuan_pkl.pembimbing');
     });
 
@@ -137,6 +138,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::middleware(['role:pokja,super_admin', 'pokja-group'])->prefix('pokja')->name('pokja.')->group(function () {
         Route::resource('kompetensi', \App\Http\Controllers\Pokja\KompetensiController::class);
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
+        
+        // Pengajuan PKL validation by Pokja
+        Route::get('pengajuan-pkl', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
+        Route::post('pengajuan-pkl/{pengajuanPkl}/validasi', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'validasi'])->name('pengajuan_pkl.validasi');
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);
         Route::resource('pembimbing_dudi', \App\Http\Controllers\PembimbingDudiController::class);

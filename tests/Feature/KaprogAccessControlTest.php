@@ -264,7 +264,7 @@ class KaprogAccessControlTest extends TestCase
         $response->assertStatus(302);
 
         // Verify the pengajuan was updated
-        $this->assertEquals('disetujui', $pengajuan->fresh()->status);
+        $this->assertEquals('disetujui_kaprog', $pengajuan->fresh()->status);
     }
 
     /**

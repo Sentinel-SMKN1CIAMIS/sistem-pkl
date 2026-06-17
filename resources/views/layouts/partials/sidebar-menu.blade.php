@@ -59,6 +59,7 @@
                 'name' => 'Pemetaan & Penempatan',
                 'icon' => 'network',
                 'children' => [
+                    ['name' => 'Validasi Pengajuan', 'route' => 'pokja.pengajuan_pkl.index', 'icon' => 'file-check'],
                     ['name' => 'Pemetaan', 'route' => 'pokja.pemetaan.index', 'icon' => 'git-branch'],
                     ['name' => 'Peta DUDI', 'route' => 'pokja.pemetaan.maps', 'icon' => 'map'],
                     ['name' => 'Kelola Zona', 'route' => 'pokja.zona.index', 'icon' => 'compass'],

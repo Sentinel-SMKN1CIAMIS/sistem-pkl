@@ -37,6 +37,12 @@ class AppServiceProvider extends ServiceProvider
             [\App\Listeners\LogAuthenticationActions::class, 'handleLogout']
         );
 
+        // Set default view variables first (especially for PHPUnit tests before migrations are run)
+        view()->share('appName', 'MAS-PKL');
+        view()->share('tahunAjaranActive', '-');
+        view()->share('appLogoActive', null);
+        view()->share('kontakAdminActive', '-');
+
         // Load dynamic configuration from database
         try {
             if (\Illuminate\Support\Facades\Schema::hasTable('konfigurasi_sistems')) {
@@ -45,28 +51,26 @@ class AppServiceProvider extends ServiceProvider
                 $appName = $configs->where('key', 'app_name')->first()?->value;
                 if ($appName) {
                     config(['app.name' => $appName]);
+                    view()->share('appName', $appName);
                 }
                 
                 $appLogoUrl = $configs->where('key', 'app_logo_url')->first()?->value;
                 if ($appLogoUrl) {
                     config(['app.logo_url' => $appLogoUrl]);
+                    view()->share('appLogoActive', $appLogoUrl);
                 }
 
                 $tahunAjaran = $configs->where('key', 'tahun_ajaran')->first()?->value;
                 if ($tahunAjaran) {
                     config(['app.tahun_ajaran' => $tahunAjaran]);
+                    view()->share('tahunAjaranActive', $tahunAjaran);
                 }
 
                 $kontakAdmin = $configs->where('key', 'kontak_admin')->first()?->value;
                 if ($kontakAdmin) {
                     config(['app.kontak_admin' => $kontakAdmin]);
+                    view()->share('kontakAdminActive', $kontakAdmin);
                 }
-
-                // Bagikan variabel ke semua view
-                view()->share('appName', $appName ?: 'MAS-PKL');
-                view()->share('tahunAjaranActive', $tahunAjaran ?: '-');
-                view()->share('appLogoActive', $appLogoUrl ?: null);
-                view()->share('kontakAdminActive', $kontakAdmin ?: '-');
             }
         } catch (\Exception $e) {
             // Abaikan jika database belum dimigrasikan
