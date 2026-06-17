@@ -251,4 +251,57 @@ class SiswaPklLogicTest extends TestCase
             'status' => 'menunggu',
         ]);
     }
+
+    /**
+     * Test Jurnal access control based on today's attendance.
+     */
+    public function test_student_cannot_access_create_journal_without_absen_today()
+    {
+        $this->siswa->update([
+            'dudi_id' => $this->dudi->id,
+            'pembimbing_sekolah_id' => $this->pembimbing->id,
+            'status_pkl' => 'sedang_pkl',
+        ]);
+
+        $this->actingAs($this->siswa->user);
+
+        // Access index page - check hasAbsenToday is false
+        $response = $this->get(route('siswa.jurnal.index'));
+        $response->assertStatus(200);
+        $response->assertViewHas('hasAbsenToday', false);
+
+        // Try to access create page directly
+        $responseCreate = $this->get(route('siswa.jurnal.create'));
+        $responseCreate->assertRedirect(route('siswa.jurnal.index'));
+        $responseCreate->assertSessionHas('error', 'Anda belum melakukan absensi hari ini. Silakan melakukan absensi terlebih dahulu sebelum mengisi jurnal.');
+    }
+
+    public function test_student_can_access_create_journal_after_absen_today()
+    {
+        $this->siswa->update([
+            'dudi_id' => $this->dudi->id,
+            'pembimbing_sekolah_id' => $this->pembimbing->id,
+            'status_pkl' => 'sedang_pkl',
+        ]);
+
+        // Create attendance record for today
+        \App\Models\Absensi::create([
+            'siswa_id' => $this->siswa->id,
+            'tanggal' => \Carbon\Carbon::today()->toDateString(),
+            'status' => 'hadir',
+            'approval_status' => 'approved',
+            'waktu_datang' => '08:00:00',
+        ]);
+
+        $this->actingAs($this->siswa->user);
+
+        // Access index page - check hasAbsenToday is true
+        $response = $this->get(route('siswa.jurnal.index'));
+        $response->assertStatus(200);
+        $response->assertViewHas('hasAbsenToday', true);
+
+        // Access create page
+        $responseCreate = $this->get(route('siswa.jurnal.create'));
+        $responseCreate->assertStatus(200);
+    }
 }

@@ -62,10 +62,17 @@
                 Cetak Sertifikat
             </a>
             @endif
-            <a href="{{ route('siswa.jurnal.create') }}" class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2">
-                <i data-lucide="plus" class="w-5 h-5"></i>
-                Tambah Jurnal
-            </a>
+            @if($hasAbsenToday)
+                <a href="{{ route('siswa.jurnal.create') }}" class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    Tambah Jurnal
+                </a>
+            @else
+                <button type="button" disabled class="w-full sm:w-auto px-5 py-2.5 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-medium rounded-xl border border-slate-200 dark:border-slate-600 cursor-not-allowed flex items-center justify-center gap-2" title="Silakan lakukan absensi hari ini terlebih dahulu untuk menambah jurnal">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    Tambah Jurnal (Absen Dulu)
+                </button>
+            @endif
         </div>
     </div>
 
@@ -73,6 +80,24 @@
         <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
             <i data-lucide="check-circle" class="w-5 h-5"></i>
             {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if(!$hasAbsenToday)
+        <div class="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 dark:text-amber-400 text-sm flex items-center gap-3">
+            <i data-lucide="info" class="w-5 h-5"></i>
+            <div>
+                <span class="font-bold">Perhatian:</span> Anda belum melakukan absensi hari ini. Silakan melakukan 
+                <a href="{{ route('siswa.absensi.index') }}" class="underline font-semibold hover:text-amber-400 dark:hover:text-amber-300">absensi terlebih dahulu</a> 
+                agar tombol tambah jurnal diaktifkan.
+            </div>
         </div>
     @endif
 

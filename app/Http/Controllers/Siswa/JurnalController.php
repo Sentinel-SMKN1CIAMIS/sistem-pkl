@@ -42,7 +42,11 @@ class JurnalController extends Controller
             ->latest('tanggal')
             ->paginate(10);
             
-        return view('siswa.jurnal.index', compact('jurnals'));
+        $hasAbsenToday = \App\Models\Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', \Carbon\Carbon::today()->toDateString())
+            ->exists();
+            
+        return view('siswa.jurnal.index', compact('jurnals', 'hasAbsenToday'));
     }
 
     public function create()
@@ -51,6 +55,16 @@ class JurnalController extends Controller
 
         $siswa = auth()->user()->siswa;
         $today = \Carbon\Carbon::today();
+
+        // Cek apakah siswa sudah melakukan absensi hari ini
+        $hasAbsenToday = \App\Models\Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', $today->toDateString())
+            ->exists();
+
+        if (!$hasAbsenToday) {
+            return redirect()->route('siswa.jurnal.index')
+                ->with('error', 'Anda belum melakukan absensi hari ini. Silakan melakukan absensi terlebih dahulu sebelum mengisi jurnal.');
+        }
 
         // Cek apakah siswa sudah mengisi jurnal hari ini
         $hasJurnalToday = Jurnal::where('siswa_id', $siswa->id)
