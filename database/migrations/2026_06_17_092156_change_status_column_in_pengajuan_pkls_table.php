@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('pengajuan_pkls', function (Blueprint $table) {
-            $table->string('status')->default('menunggu')->change();
-        });
+        if (config('database.default') === 'mysql') {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE pengajuan_pkls MODIFY COLUMN status VARCHAR(50) NOT NULL DEFAULT 'menunggu'");
+        } else {
+            Schema::table('pengajuan_pkls', function (Blueprint $table) {
+                $table->string('status', 50)->default('menunggu')->change();
+            });
+        }
     }
 
     /**
@@ -21,8 +25,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('pengajuan_pkls', function (Blueprint $table) {
-            $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu')->change();
-        });
+        if (config('database.default') === 'mysql') {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE pengajuan_pkls MODIFY COLUMN status ENUM('menunggu', 'disetujui', 'ditolak') NOT NULL DEFAULT 'menunggu'");
+        } else {
+            Schema::table('pengajuan_pkls', function (Blueprint $table) {
+                $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu')->change();
+            });
+        }
     }
 };
