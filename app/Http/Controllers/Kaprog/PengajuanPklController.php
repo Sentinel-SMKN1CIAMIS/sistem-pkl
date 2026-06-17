@@ -43,7 +43,17 @@ class PengajuanPklController extends Controller
             'catatan' => 'nullable|string'
         ]);
 
-        $statusValue = $request->status === 'disetujui' ? 'disetujui_kaprog' : 'ditolak';
+        if ($request->status === 'disetujui') {
+            if ($pengajuanPkl->dudi_id) {
+                // Jika siswa memilih DUDI yang sudah ada, persetujuan Kaprog bersifat final (langsung disetujui)
+                $statusValue = 'disetujui';
+            } else {
+                // Jika siswa menginput DUDI baru secara manual, perlu validasi Pokja
+                $statusValue = 'disetujui_kaprog';
+            }
+        } else {
+            $statusValue = 'ditolak';
+        }
 
         $pengajuanPkl->update([
             'status' => $statusValue,
@@ -51,7 +61,38 @@ class PengajuanPklController extends Controller
             'acc_oleh' => auth()->id()
         ]);
 
-        if ($statusValue === 'disetujui_kaprog') {
+        if ($statusValue === 'disetujui') {
+            $dudi = Dudi::find($pengajuanPkl->dudi_id);
+            if ($dudi) {
+                // Assign DUDI & pembimbing dudi ke Siswa
+                $pengajuanPkl->siswa->update([
+                    'dudi_id' => $dudi->id,
+                    'pembimbing_dudi_id' => $pengajuanPkl->pembimbing_dudi_id,
+                    'status_pkl' => 'belum_mulai', // Siap dipetakan pembimbing sekolah oleh Pokja
+                ]);
+
+                // Buat notifikasi untuk semua Pokja agar segera memetakan pembimbing sekolah
+                $pokjas = \App\Models\User::where('role', 'pokja')->get();
+                foreach ($pokjas as $pokja) {
+                    \App\Models\Notifikasi::create([
+                        'to_user_id' => $pokja->id,
+                        'judul'      => 'Penempatan Baru (Butuh Pemetaan)',
+                        'pesan'      => "Siswa {$pengajuanPkl->siswa->nama_lengkap} telah disetujui di {$dudi->nama}. Silakan lakukan pemetaan pembimbing.",
+                        'link'       => route('pokja.pemetaan.index'),
+                        'is_read'    => false,
+                    ]);
+                }
+
+                // Notify Student
+                \App\Models\Notifikasi::create([
+                    'to_user_id' => $pengajuanPkl->siswa->user_id,
+                    'judul'      => 'Pengajuan PKL Disetujui',
+                    'pesan'      => "Pengajuan tempat PKL Anda di {$dudi->nama} telah disetujui. Silakan unduh/cetak Surat Pengantar Anda.",
+                    'link'       => route('siswa.pengajuan_pkl.status'),
+                    'is_read'    => false,
+                ]);
+            }
+        } elseif ($statusValue === 'disetujui_kaprog') {
             // Notify Pokja that a student needs validation
             $pokjas = \App\Models\User::where('role', 'pokja')->get();
             foreach ($pokjas as $pokja) {

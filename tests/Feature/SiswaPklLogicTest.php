@@ -304,4 +304,109 @@ class SiswaPklLogicTest extends TestCase
         $responseCreate = $this->get(route('siswa.jurnal.create'));
         $responseCreate->assertStatus(200);
     }
+
+    /**
+     * Test Kaprog approval behavior on existing DUDI.
+     */
+    public function test_kaprog_approval_bypasses_pokja_validation_for_existing_dudi()
+    {
+        // 1. Create a Kaprog user
+        $kaprogUser = User::create([
+            'name' => 'Kaprog User',
+            'username' => 'kaprog1',
+            'email' => 'kaprog@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'kaprog',
+            'is_active' => true,
+            'force_password_change' => false,
+            'program_keahlian_id' => $this->konsentrasi->program_keahlian_id,
+        ]);
+
+        // 2. Create proposal with existing dudi_id
+        $pengajuan = PengajuanPkl::create([
+            'siswa_id' => $this->siswa->id,
+            'dudi_id' => $this->dudi->id,
+            'nama_perusahaan' => $this->dudi->nama,
+            'pimpinan' => 'Pimpinan Test',
+            'alamat' => 'Alamat Test',
+            'kota' => 'Kota Test',
+            'status' => 'menunggu',
+        ]);
+
+        $this->actingAs($kaprogUser);
+
+        // 3. Kaprog approves the proposal
+        $response = $this->patch(route('kaprog.pengajuan_pkl.update', $pengajuan->id), [
+            'status' => 'disetujui',
+            'catatan' => 'Disetujui Kaprog langsung final.',
+        ]);
+
+        $response->assertRedirect();
+        
+        $pengajuan = $pengajuan->fresh();
+        $this->siswa = $this->siswa->fresh();
+
+        // 4. Assert status is 'disetujui' directly and dudi is assigned to siswa
+        $this->assertEquals('disetujui', $pengajuan->status);
+        $this->assertEquals($this->dudi->id, $this->siswa->dudi_id);
+        $this->assertEquals('belum_mulai', $this->siswa->status_pkl);
+
+        // 5. Assert Pokja notification for mapping is sent
+        $this->assertDatabaseHas('notifikasis', [
+            'to_user_id' => $this->pokja->id,
+            'judul' => 'Penempatan Baru (Butuh Pemetaan)',
+        ]);
+    }
+
+    /**
+     * Test Kaprog approval behavior on new/manual DUDI.
+     */
+    public function test_kaprog_approval_requires_pokja_validation_for_new_dudi()
+    {
+        // 1. Create a Kaprog user
+        $kaprogUser = User::create([
+            'name' => 'Kaprog User 2',
+            'username' => 'kaprog2',
+            'email' => 'kaprog2@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'kaprog',
+            'is_active' => true,
+            'force_password_change' => false,
+            'program_keahlian_id' => $this->konsentrasi->program_keahlian_id,
+        ]);
+
+        // 2. Create proposal with manual DUDI (dudi_id = null)
+        $pengajuan = PengajuanPkl::create([
+            'siswa_id' => $this->siswa->id,
+            'dudi_id' => null,
+            'nama_perusahaan' => 'CV Baru Unregistered',
+            'pimpinan' => 'Pimpinan Baru',
+            'alamat' => 'Alamat Baru',
+            'kota' => 'Kota Baru',
+            'status' => 'menunggu',
+        ]);
+
+        $this->actingAs($kaprogUser);
+
+        // 3. Kaprog approves
+        $response = $this->patch(route('kaprog.pengajuan_pkl.update', $pengajuan->id), [
+            'status' => 'disetujui',
+            'catatan' => 'Kaprog setuju, butuh Pokja.',
+        ]);
+
+        $response->assertRedirect();
+        
+        $pengajuan = $pengajuan->fresh();
+        $this->siswa = $this->siswa->fresh();
+
+        // 4. Assert status is 'disetujui_kaprog' and dudi is NOT assigned to siswa yet
+        $this->assertEquals('disetujui_kaprog', $pengajuan->status);
+        $this->assertNull($this->siswa->dudi_id);
+
+        // 5. Assert Pokja notification for validation is sent
+        $this->assertDatabaseHas('notifikasis', [
+            'to_user_id' => $this->pokja->id,
+            'judul' => 'Pengajuan PKL Baru (Butuh Validasi)',
+        ]);
+    }
 }
