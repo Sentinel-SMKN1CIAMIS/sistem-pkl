@@ -14,6 +14,18 @@
         @endif
     </div>
 
+    @if($pengajuans->count() > 0)
+        <div class="flex justify-end mb-4">
+            <form action="{{ route('pokja.pengajuan_pkl.clear_all') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus seluruh data pengajuan siswa? Semua berkas lampiran juga akan dihapus permanen.')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="flex items-center gap-2 px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold transition-all border border-rose-500/20 hover:border-rose-500/30 cursor-pointer">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Semua Pengajuan
+                </button>
+            </form>
+        </div>
+    @endif
+
     <div class="glass-card p-6">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
@@ -54,13 +66,21 @@
                             @endif
                         </td>
                         <td class="py-3 px-4">
-                            @if($pengajuan->status === 'disetujui_kaprog')
-                                <button onclick="openModal('{{ $pengajuan->id }}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-colors shadow-md shadow-blue-500/10 cursor-pointer">
-                                    Validasi
-                                </button>
-                            @else
-                                <span class="text-xs text-slate-400">Tidak ada aksi</span>
-                            @endif
+                            <div class="flex items-center gap-2">
+                                @if($pengajuan->status === 'disetujui_kaprog')
+                                    <button onclick="openModal('{{ $pengajuan->id }}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-colors shadow-md shadow-blue-500/10 cursor-pointer">
+                                        Validasi
+                                    </button>
+                                @endif
+
+                                <form action="{{ route('pokja.pengajuan_pkl.destroy', $pengajuan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pengajuan PKL ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors cursor-pointer" title="Hapus Pengajuan">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
 

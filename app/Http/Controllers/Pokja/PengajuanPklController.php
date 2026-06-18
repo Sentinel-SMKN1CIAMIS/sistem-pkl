@@ -106,4 +106,40 @@ class PengajuanPklController extends Controller
 
         return back()->with('success', 'Validasi pengajuan PKL berhasil diperbarui.');
     }
+
+    /**
+     * Delete/Clean up student's PKL proposal by Pokja
+     */
+    public function destroy(PengajuanPkl $pengajuanPkl)
+    {
+        // Hapus berkas bukti balasan jika ada di storage
+        if ($pengajuanPkl->bukti_balasan) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuanPkl->bukti_balasan)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuanPkl->bukti_balasan);
+            }
+        }
+
+        $pengajuanPkl->delete();
+
+        return back()->with('success', 'Pengajuan PKL berhasil dihapus.');
+    }
+
+    /**
+     * Delete/Clear all students' PKL proposals by Pokja
+     */
+    public function clearAll()
+    {
+        // Hapus berkas bukti balasan untuk semua pengajuan yang memilikinya
+        $pengajuans = PengajuanPkl::whereNotNull('bukti_balasan')->get();
+        foreach ($pengajuans as $pengajuan) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuan->bukti_balasan)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuan->bukti_balasan);
+            }
+        }
+
+        // Hapus semua data pengajuan dari database
+        PengajuanPkl::query()->delete();
+
+        return back()->with('success', 'Semua data pengajuan PKL siswa berhasil dihapus.');
+    }
 }

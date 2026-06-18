@@ -99,6 +99,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     // General Auth Routes
     Route::get('notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifications.index');
     Route::patch('notifikasi/{notifikasi}/read', [\App\Http\Controllers\NotifikasiController::class, 'markAsRead'])->name('notifications.read');
+    Route::patch('notifikasi/read-all', [\App\Http\Controllers\NotifikasiController::class, 'readAll'])->name('notifications.read_all');
+    Route::delete('notifikasi/clear-all', [\App\Http\Controllers\NotifikasiController::class, 'clearAll'])->name('notifications.clear_all');
+    Route::delete('notifikasi/{notifikasi}', [\App\Http\Controllers\NotifikasiController::class, 'destroy'])->name('notifications.destroy');
     Route::get('panduan-interaktif', [\App\Http\Controllers\PanduanInteraktifController::class, 'index'])->name('panduan.interaktif');
 
     // Pesan (Chat) Routes
@@ -143,6 +146,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // Pengajuan PKL validation by Pokja
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
         Route::post('pengajuan-pkl/{pengajuanPkl}/validasi', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'validasi'])->name('pengajuan_pkl.validasi');
+        Route::delete('pengajuan-pkl/clear-all', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'clearAll'])->name('pengajuan_pkl.clear_all');
+        Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);
         Route::resource('pembimbing_dudi', \App\Http\Controllers\PembimbingDudiController::class);
