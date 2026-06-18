@@ -91,5 +91,30 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')
             ->with('success', 'Pengguna berhasil dihapus.');
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:users,id',
+        ]);
+
+        $ids = $request->input('ids');
+        
+        // Exclude the current authenticated user's ID
+        $filteredIds = array_filter($ids, function($id) {
+            return $id != auth()->id();
+        });
+
+        if (empty($filteredIds)) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Tidak ada akun valid yang dapat dihapus.');
+        }
+
+        User::whereIn('id', $filteredIds)->delete();
+
+        return back()
+            ->with('success', count($filteredIds) . ' akun berhasil dihapus.');
+    }
 }
 

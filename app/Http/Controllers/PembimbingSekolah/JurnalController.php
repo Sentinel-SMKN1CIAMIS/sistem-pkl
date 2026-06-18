@@ -14,20 +14,39 @@ class JurnalController extends Controller
     public function index(Request $request)
     {
         $teacher = auth()->user()->pembimbingSekolah;
-        $tipe    = $teacher->tipe; // 'produktif', 'normatif', or 'adaptif'
+        $tipe    = $teacher->tipe; // 'kejuruan' or 'umum' (previously 'produktif', 'normatif', or 'adaptif')
 
         $query = Jurnal::with(['siswa', 'kompetensi', 'tujuanPembelajaran'])
             ->latest('tanggal');
 
-        if ($tipe === 'produktif') {
-            // Produktif: tampilkan siswa yang langsung dibimbing atau dari kelas yang diajar
+        if ($tipe === 'kejuruan' || $tipe === 'produktif') {
+            // Kejuruan / Produktif: tampilkan siswa yang langsung dibimbing atau dari kelas yang diajar
             $kelasIds = $teacher->kelasDiajar()->pluck('kelas')->toArray();
             $query->whereHas('siswa', function ($q) use ($teacher, $kelasIds) {
                 $q->where('pembimbing_sekolah_id', $teacher->id)
                   ->orWhereIn('kelas', $kelasIds);
             });
+        } elseif ($tipe === 'keduanya') {
+            // Keduanya: tampilkan siswa yang langsung dibimbing OR (siswa di kelas yang diajar AND cocok dengan mapel_cp jika diisi)
+            $kelasIds = $teacher->kelasDiajar()->pluck('kelas')->toArray();
+            $query->where(function ($q) use ($teacher, $kelasIds) {
+                $q->whereHas('siswa', function ($sq) use ($teacher) {
+                    $sq->where('pembimbing_sekolah_id', $teacher->id);
+                });
+                
+                if (!empty($kelasIds)) {
+                    $q->orWhere(function ($oq) use ($teacher, $kelasIds) {
+                        $oq->whereHas('siswa', function ($sq) use ($kelasIds) {
+                            $sq->whereIn('kelas', $kelasIds);
+                        });
+                        if ($teacher->mapel_cp) {
+                            $oq->where('cp', 'like', '%' . $teacher->mapel_cp . '%');
+                        }
+                    });
+                }
+            });
         } else {
-            // Normatif / Adaptif: filter berdasarkan CP yang mengandung mapel_cp guru
+            // Umum (Normatif / Adaptif): filter berdasarkan CP yang mengandung mapel_cp guru
             $kelasIds = $teacher->kelasDiajar()->pluck('kelas')->toArray();
             $query->whereHas('siswa', function ($q) use ($kelasIds) {
                     $q->whereIn('kelas', $kelasIds);
@@ -70,6 +89,7 @@ class JurnalController extends Controller
     public function approve(Request $request, Jurnal $jurnal)
     {
         $jurnal->update([
+            'status' => 'valid',
             'approval_status' => 'approved',
             'approved_by' => auth()->id(),
             'approved_at' => now(),
@@ -96,6 +116,7 @@ class JurnalController extends Controller
         ]);
 
         $jurnal->update([
+            'status' => 'invalid',
             'approval_status' => 'rejected',
             'approved_by' => auth()->id(),
             'approved_at' => now(),

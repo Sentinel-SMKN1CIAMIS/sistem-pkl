@@ -26,6 +26,7 @@
                              <button type="button" id="clear-pad" class="text-[10px] text-slate-500 dark:text-slate-400 hover:text-red-400 flex items-center gap-1">
                                  <i data-lucide="refresh-cw" class="w-3 h-3"></i> Bersihkan TTD
                              </button>
+                             <p class="text-[10px] text-orange-500 dark:text-orange-400 mt-1 italic">* Geser layar di luar kotak putih ini untuk men-scroll halaman ke bawah</p>
                         </div>
 
                         <x-button type="button" onclick="submitAbsensi()" variant="emerald" class="w-full py-4 !font-black !rounded-2xl shadow-emerald-500/20" icon="log-in">
@@ -99,7 +100,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Tanggal</label>
-                        <input type="date" name="tanggal" value="{{ Carbon::today()->toDateString() }}" max="{{ Carbon::today()->toDateString() }}" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="date" name="tanggal" value="{{ \Carbon\Carbon::today()->toDateString() }}" max="{{ \Carbon\Carbon::today()->toDateString() }}" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
                     <x-button type="submit" variant="blue" class="w-full" icon="send">

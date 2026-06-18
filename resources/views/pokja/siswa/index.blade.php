@@ -1,4 +1,21 @@
 <x-app-layout>
+    @php
+        $getUniqueBadgeClass = function($name) {
+            if (!$name) return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+            $palettes = [
+                'bg-blue-500/10 text-blue-500 dark:text-blue-400 border-blue-500/20',
+                'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20',
+                'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border-indigo-500/20',
+                'bg-purple-500/10 text-purple-500 dark:text-purple-400 border-purple-500/20',
+                'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20',
+                'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20',
+                'bg-sky-500/10 text-sky-500 dark:text-sky-400 border-sky-500/20',
+                'bg-teal-500/10 text-teal-500 dark:text-teal-400 border-teal-500/20',
+            ];
+            $hash = crc32($name);
+            return $palettes[abs($hash) % count($palettes)];
+        };
+    @endphp
     <x-slot name="header">Kelola Data Siswa PKL</x-slot>
 
     <style>
@@ -70,7 +87,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Template -->
                         <div class="p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl flex items-start gap-3">
-                            <i data-lucide="file-spreadsheet" class="w-6 h-6 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                            <i data-lucide="file-spreadsheet" class="w-6 h-6 text-blue-400 shrink-0 mt-0.5"></i>
                             <div>
                                 <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100">Gunakan Template Resmi</h4>
                                 <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
@@ -85,7 +102,7 @@
 
                         <!-- Guide Toggle -->
                         <div class="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl flex items-start gap-3">
-                            <i data-lucide="book-open" class="w-6 h-6 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                            <i data-lucide="book-open" class="w-6 h-6 text-emerald-400 shrink-0 mt-0.5"></i>
                             <div>
                                 <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100">Butuh Panduan Kolom?</h4>
                                 <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
@@ -111,8 +128,8 @@
                             <!-- State: Empty -->
                             <div class="flex flex-col items-center gap-2 py-4" x-show="!localFileName">
                                 <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
-                                <span class="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:text-white transition-colors">Klik atau Seret file Excel ke sini</span>
-                                <span class="text-[10px] text-slate-500 dark:text-slate-500">Maksimum ukuran file: 4MB (Format .xlsx, .xls saja)</span>
+                                <span class="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Klik atau Seret file Excel ke sini</span>
+                                <span class="text-[10px] text-slate-500 dark:text-slate-500">Format file yang didukung: .xlsx, .xls saja</span>
                             </div>
 
                             <!-- State: File Chosen -->
@@ -148,7 +165,7 @@
                       class="glass-card w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-900 animate-fade-in-up text-left max-h-[85vh] flex flex-col">
                       
                       <!-- Modal Header -->
-                      <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 flex-shrink-0">
+                      <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
                           <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                               <i data-lucide="book-open" class="text-emerald-500"></i>
                               Panduan Impor Data Siswa Massal
@@ -261,7 +278,7 @@
                       </div>
 
                       <!-- Modal Footer -->
-                      <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end bg-slate-50/50 dark:bg-slate-800/30 flex-shrink-0">
+                      <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
                           <button type="button" @click="guideModalOpen = false" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer">
                               Mengerti & Tutup
                           </button>
@@ -274,7 +291,7 @@
     @if(session('import_errors'))
         <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm">
             <h4 class="font-bold mb-2 flex items-center gap-2">
-                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 flex-shrink-0"></i>
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 shrink-0"></i>
                 Gagal Mengimpor Data Siswa. Silakan periksa beberapa kesalahan berikut:
             </h4>
             <ul class="list-disc pl-5 space-y-1 text-xs">
@@ -309,10 +326,22 @@
                     @endforeach
                 </select>
             </div>
+            <div class="md:w-56">
+                <select name="sort" onchange="this.form.submit()" 
+                        class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                    <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Terbaru Dibuat</option>
+                    <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Terlama Dibuat</option>
+                    <option value="name_asc" {{ request('sort') === 'name_asc' ? 'selected' : '' }}>Nama Lengkap (A-Z)</option>
+                    <option value="name_desc" {{ request('sort') === 'name_desc' ? 'selected' : '' }}>Nama Lengkap (Z-A)</option>
+                    <option value="nis_asc" {{ request('sort') === 'nis_asc' ? 'selected' : '' }}>NIS (Kecil ke Besar)</option>
+                    <option value="nis_desc" {{ request('sort') === 'nis_desc' ? 'selected' : '' }}>NIS (Besar ke Kecil)</option>
+                    <option value="kelas_asc" {{ request('sort') === 'kelas_asc' ? 'selected' : '' }}>Kelas (A-Z)</option>
+                </select>
+            </div>
             <button type="submit" class="hidden md:block px-6 py-2 bg-slate-800 dark:bg-slate-700 text-white font-medium rounded-xl hover:bg-slate-700 transition-all text-sm">
                 Filter
             </button>
-            @if(request()->anyFilled(['search', 'konsentrasi']))
+            @if(request()->anyFilled(['search', 'konsentrasi', 'sort']))
                 <a href="{{ route('pokja.siswa.index') }}" class="px-4 py-2 text-slate-500 hover:text-red-400 text-sm flex items-center gap-2 transition-colors">
                     <i data-lucide="x-circle" class="w-4 h-4"></i> Reset
                 </a>
@@ -351,12 +380,23 @@
                                 <span class="text-xs text-slate-500 dark:text-slate-400">{{ $item->kelas }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($item->dudi)
-                                    <span class="text-sm text-slate-700 dark:text-slate-300 block">{{ $item->dudi->nama }}</span>
-                                    <span class="text-xs text-slate-500 dark:text-slate-400 italic">Guru: {{ $item->pembimbingSekolah->nama_lengkap ?? '-' }}</span>
-                                @else
-                                    <span class="text-xs text-amber-500/80 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">Belum diplot</span>
-                                @endif
+                                <div class="flex flex-col gap-1.5 items-start">
+                                    <!-- DUDI -->
+                                    @if($item->dudi)
+                                        <span class="text-sm text-slate-700 dark:text-slate-300 font-semibold">{{ $item->dudi->nama }}</span>
+                                    @else
+                                        <span class="text-xs text-amber-500/80 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">Belum diplot (DUDI)</span>
+                                    @endif
+
+                                    <!-- Guru Pembimbing -->
+                                    @if($item->pembimbingSekolah)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($item->pembimbingSekolah->nama_lengkap) }}">
+                                            Guru: {{ $item->pembimbingSekolah->nama_lengkap }}
+                                        </span>
+                                    @else
+                                        <span class="text-[10px] text-slate-500/80 bg-slate-500/5 px-2 py-0.5 rounded border border-slate-500/10 font-bold uppercase tracking-wider">Guru: Belum diplot</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
@@ -397,7 +437,7 @@
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Edit
                                         </a>
-                                        <form action="{{ route('pokja.siswa.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data siswa ini? Seluruh data terkait (jurnal, absensi, dll) juga akan terhapus.')">
+                                        <form action="{{ route('pokja.siswa.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data siswa {{ addslashes($item->user->name ?? $item->nama) }}? Seluruh data terkait (jurnal, absensi, dll) juga akan terhapus.')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left">

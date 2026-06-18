@@ -10,6 +10,24 @@ class DudiController extends Controller
     {
         $query = \App\Models\Dudi::with(['konsentrasiKeahlian', 'konsentrasiKeahlians']);
 
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $userKonId = auth()->user()->konsentrasi_keahlian_id;
+            $query->where(function($q) use ($userKonId) {
+                $q->where('konsentrasi_keahlian_id', $userKonId)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                      $sub->where('konsentrasi_keahlians.id', $userKonId);
+                  });
+            });
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->where(function($q) use ($konsentrasiIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                      $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                  });
+            });
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -29,14 +47,14 @@ class DudiController extends Controller
         }
 
         $dudis = $query->latest()->paginate(10)->withQueryString();
-        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        $concentrations = auth()->user()->getFilteredKonsentrasi();
 
         return view('pokja.dudi.index', compact('dudis', 'concentrations'));
     }
 
     public function create()
     {
-        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        $concentrations = auth()->user()->getFilteredKonsentrasi();
         return view('pokja.dudi.create', compact('concentrations'));
     }
 
@@ -71,7 +89,7 @@ class DudiController extends Controller
 
     public function edit(\App\Models\Dudi $dudi)
     {
-        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        $concentrations = auth()->user()->getFilteredKonsentrasi();
         $selectedConcentrationIds = $dudi->konsentrasiKeahlians->pluck('id')->toArray();
         if (empty($selectedConcentrationIds)) {
             $selectedConcentrationIds = [$dudi->konsentrasi_keahlian_id];
@@ -91,10 +109,20 @@ class DudiController extends Controller
             'email' => 'nullable|email',
             'nama_pimpinan' => 'nullable|string',
             'bidang_usaha' => 'nullable|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ]);
 
         $data = $request->all();
         $data['konsentrasi_keahlian_id'] = $request->konsentrasi_keahlian_ids[0];
+
+        // Auto-detect zona if coordinates are provided
+        if ($request->filled('latitude') && $request->filled('longitude')) {
+            $zona = \App\Models\Zona::detectZona((float) $request->latitude, (float) $request->longitude);
+            $data['zona_id'] = $zona ? $zona->id : null;
+        } else {
+            $data['zona_id'] = null; // Clear zona if coords are removed
+        }
 
         $dudi->update($data);
         $dudi->konsentrasiKeahlians()->sync($request->konsentrasi_keahlian_ids);

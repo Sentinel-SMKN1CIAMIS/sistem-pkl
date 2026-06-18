@@ -52,6 +52,38 @@
                     </div>
                 </div>
             </div>
+
+            @if($siswa->dudi)
+            <div class="glass-card p-6">
+                <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-red-400"></i>
+                    Lokasi DUDI
+                </h4>
+                <div id="lokasi-dudi-status" class="mb-4">
+                    @if($siswa->dudi->latitude && $siswa->dudi->longitude)
+                        <div class="flex items-center gap-2 text-xs text-emerald-500 font-medium mb-2">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            Koordinat Tersimpan
+                        </div>
+                        <p class="text-[11px] text-slate-500 font-mono">{{ number_format($siswa->dudi->latitude, 6) }}, {{ number_format($siswa->dudi->longitude, 6) }}</p>
+                        @if($siswa->dudi->zona)
+                            <p class="mt-1 text-xs text-blue-400 font-medium">Zona: {{ $siswa->dudi->zona->nama }}</p>
+                        @endif
+                    @else
+                        <p class="text-xs text-amber-400 font-medium flex items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                            Belum ada koordinat
+                        </p>
+                    @endif
+                </div>
+                <button type="button" id="btn-update-lokasi" 
+                        class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2">
+                    <i data-lucide="navigation" class="w-4 h-4"></i>
+                    <span id="btn-lokasi-text">Update Lokasi Saat Ini</span>
+                </button>
+                <p class="mt-2 text-[10px] text-slate-500 italic text-center">Pastikan Anda sedang berada di lokasi DUDI saat memencet tombol ini.</p>
+            </div>
+            @endif
         </div>
 
         <!-- Main Form -->
@@ -103,7 +135,7 @@
                     <div class="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
                         <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
                             <i data-lucide="contact" class="w-4 h-4 text-emerald-400"></i>
-                            Kontak & Alamat
+                            Kontak & Alamat DUDI
                         </h4>
                         <div class="space-y-6">
                             <div>
@@ -129,4 +161,69 @@
             </div>
         </div>
     </div>
+
+    @if($siswa->dudi)
+    @push('scripts')
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('btn-update-lokasi');
+        const btnText = document.getElementById('btn-lokasi-text');
+        if (!btn) return;
+
+        btn.addEventListener('click', function() {
+            if (!navigator.geolocation) {
+                alert('Browser Anda tidak mendukung Geolocation.');
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.textContent = 'Mendeteksi lokasi...';
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    btnText.textContent = 'Menyimpan...';
+
+                    fetch('{{ route("siswa.profile.update-lokasi-dudi") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ latitude: lat, longitude: lng })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            alert(data.message + (data.zona ? ' (Zona: ' + data.zona + ')' : ''));
+                            window.location.reload();
+                        }
+                    })
+                    .catch(e => alert('Gagal menyimpan: ' + e.message))
+                    .finally(() => {
+                        btn.disabled = false;
+                        btnText.textContent = 'Update Lokasi Saat Ini';
+                    });
+                },
+                function(error) {
+                    let msg = 'Gagal mendapatkan lokasi.';
+                    if (error.code === 1) msg = 'Izin lokasi ditolak. Aktifkan GPS dan izinkan akses lokasi.';
+                    else if (error.code === 2) msg = 'Lokasi tidak tersedia.';
+                    else if (error.code === 3) msg = 'Waktu permintaan habis.';
+                    alert(msg);
+                    btn.disabled = false;
+                    btnText.textContent = 'Update Lokasi Saat Ini';
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        });
+    });
+    </script>
+    @endpush
+    @endif
 </x-app-layout>

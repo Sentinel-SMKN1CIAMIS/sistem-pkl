@@ -21,7 +21,7 @@ Route::patch('/auth/change-password', [\App\Http\Controllers\Auth\ChangePassword
     ->middleware('auth')
     ->name('auth.change-password.update');
 
-Route::middleware('auth', 'force.password.change')->group(function () {
+Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     
     // Redirects to correct dashboard based on role
@@ -29,6 +29,9 @@ Route::middleware('auth', 'force.password.change')->group(function () {
     
     // Siswa Routes
     Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
+        Route::get('jurnal/export', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'export'])->name('jurnal.export');
+        Route::get('jurnal/portofolio', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'portofolio'])->name('jurnal.portofolio');
+        Route::get('jurnal/sertifikat', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'sertifikat'])->name('jurnal.sertifikat');
         Route::resource('jurnal', \App\Http\Controllers\Siswa\JurnalController::class);
         Route::get('absensi', [\App\Http\Controllers\Siswa\AbsensiController::class, 'index'])->name('absensi.index');
         Route::post('absensi/clock-in', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockIn'])->name('absensi.clock-in');
@@ -37,20 +40,23 @@ Route::middleware('auth', 'force.password.change')->group(function () {
         Route::get('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'index'])->name('laporan.index');
         Route::post('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'store'])->name('laporan.store');
         Route::get('panduan', [\App\Http\Controllers\Siswa\PanduanController::class, 'index'])->name('panduan.index');
-        Route::get('jurnal/export', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'export'])->name('jurnal.export');
         Route::get('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('profile.index');
         Route::patch('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'update'])->name('profile.update');
+        Route::post('profile/update-lokasi-dudi', [\App\Http\Controllers\Siswa\ProfileController::class, 'updateLokasiDudi'])->name('profile.update-lokasi-dudi');
         Route::get('bantuan', [\App\Http\Controllers\Siswa\BantuanController::class, 'index'])->name('bantuan.index');
 
         // Pengajuan PKL
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'create'])->name('pengajuan_pkl.create');
         Route::post('pengajuan-pkl', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'store'])->name('pengajuan_pkl.store');
         Route::get('pengajuan-pkl/status', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'status'])->name('pengajuan_pkl.status');
+        Route::get('pengajuan-pkl/print', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'print'])->name('pengajuan_pkl.print');
+        Route::post('pengajuan-pkl/upload-bukti', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'uploadBukti'])->name('pengajuan_pkl.upload_bukti');
         Route::get('pengajuan-pkl/pembimbing', [\App\Http\Controllers\Siswa\PengajuanPklController::class, 'getPembimbing'])->name('pengajuan_pkl.pembimbing');
     });
 
     // Verification Routes (Review by Mentors)
     Route::middleware('role:pembimbing_sekolah')->prefix('pembimbing_sekolah')->name('pembimbing_sekolah.')->group(function () {
+        Route::post('bulk-acc', [DashboardController::class, 'bulkAcc'])->name('bulk_acc');
         Route::get('siswa', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'index'])->name('siswa.index');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'index'])->name('jurnal.index');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'update'])->name('jurnal.update');
@@ -79,14 +85,30 @@ Route::middleware('auth', 'force.password.change')->group(function () {
     Route::middleware('role:kaprog')->prefix('kaprog')->name('kaprog.')->group(function () {
         Route::get('laporan', [\App\Http\Controllers\KaprogController::class, 'index'])->name('laporan.index');
         
+        // Data DUDI (Read-Only)
+        Route::get('dudi', [\App\Http\Controllers\DudiController::class, 'index'])->name('dudi.index');
+        
         // Pengajuan PKL
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
         Route::patch('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'update'])->name('pengajuan_pkl.update');
+        Route::delete('pengajuan-pkl/clear-all', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'clearAll'])->name('pengajuan_pkl.clear_all');
+        Route::delete('pengajuan-pkl/bulk-destroy', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'bulkDestroy'])->name('pengajuan_pkl.bulk_destroy');
+        Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
+    });
+
+    // Shared Map Routes - Accessible by Pokja, Kaprog, Pembimbing Sekolah
+    Route::middleware('role:pokja,kaprog,pembimbing_sekolah,super_admin')->group(function () {
+        Route::get('peta-dudi', [\App\Http\Controllers\Pokja\PemetaanController::class, 'maps'])->name('shared.pemetaan.maps');
+        Route::get('peta-dudi/data', [\App\Http\Controllers\Pokja\PemetaanController::class, 'mapsData'])->name('shared.pemetaan.maps.data');
     });
 
     // General Auth Routes
     Route::get('notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifications.index');
     Route::patch('notifikasi/{notifikasi}/read', [\App\Http\Controllers\NotifikasiController::class, 'markAsRead'])->name('notifications.read');
+    Route::patch('notifikasi/read-all', [\App\Http\Controllers\NotifikasiController::class, 'readAll'])->name('notifications.read_all');
+    Route::delete('notifikasi/clear-all', [\App\Http\Controllers\NotifikasiController::class, 'clearAll'])->name('notifications.clear_all');
+    Route::delete('notifikasi/{notifikasi}', [\App\Http\Controllers\NotifikasiController::class, 'destroy'])->name('notifications.destroy');
+    Route::get('panduan-interaktif', [\App\Http\Controllers\PanduanInteraktifController::class, 'index'])->name('panduan.interaktif');
 
     // Pesan (Chat) Routes
     Route::get('pesan', [\App\Http\Controllers\PesanController::class, 'index'])->name('pesan.index');
@@ -96,12 +118,19 @@ Route::middleware('auth', 'force.password.change')->group(function () {
     Route::post('pesan/{user}', [\App\Http\Controllers\PesanController::class, 'store'])->name('pesan.store');
     Route::get('pesan/{user}/poll', [\App\Http\Controllers\PesanController::class, 'poll'])->name('pesan.poll');
 
+    // Shared Admin Routes (Super Admin & Pokja)
+    Route::middleware('role:super_admin,pokja')->prefix('admin')->name('admin.')->group(function () {
+        Route::post('program_keahlian/reorder', [\App\Http\Controllers\ProgramKeahlianController::class, 'reorder'])->name('program_keahlian.reorder');
+        Route::resource('program_keahlian', \App\Http\Controllers\ProgramKeahlianController::class);
+        Route::post('konsentrasi_keahlian/reorder', [\App\Http\Controllers\KonsentrasiKeahlianController::class, 'reorder'])->name('konsentrasi_keahlian.reorder');
+        Route::resource('konsentrasi_keahlian', \App\Http\Controllers\KonsentrasiKeahlianController::class);
+    });
+
     // Super Admin Routes
     Route::middleware('role:super_admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::resource('program_keahlian', \App\Http\Controllers\ProgramKeahlianController::class);
-        Route::resource('konsentrasi_keahlian', \App\Http\Controllers\KonsentrasiKeahlianController::class);
         Route::resource('kompetensi', \App\Http\Controllers\KompetensiController::class);
         Route::resource('panduan', \App\Http\Controllers\Admin\BukuPanduanController::class);
+        Route::post('users/bulk-destroy', [\App\Http\Controllers\Admin\UserController::class, 'bulkDestroy'])->name('users.bulk-destroy');
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
         Route::resource('pokja-groups', \App\Http\Controllers\Admin\PokjaGroupController::class);
         Route::post('pokja-groups/{pokjaGroup}/add-member', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'addMember'])->name('pokja-groups.add-member');
@@ -109,19 +138,46 @@ Route::middleware('auth', 'force.password.change')->group(function () {
         Route::get('logs', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('logs.index');
         Route::get('config', [\App\Http\Controllers\Admin\ConfigController::class, 'index'])->name('config.index');
         Route::post('config', [\App\Http\Controllers\Admin\ConfigController::class, 'update'])->name('config.update');
+        Route::get('config/backup', [\App\Http\Controllers\Admin\ConfigController::class, 'backup'])->name('config.backup');
+        Route::get('config/download-backup/{filename}', [\App\Http\Controllers\Admin\ConfigController::class, 'downloadBackup'])->name('config.download-backup');
+        Route::delete('config/delete-backup/{filename}', [\App\Http\Controllers\Admin\ConfigController::class, 'deleteBackup'])->name('config.delete-backup');
+        Route::post('config/wipe', [\App\Http\Controllers\Admin\ConfigController::class, 'wipe'])->name('config.wipe');
     });
 
     // Pokja Routes - with group membership check
-    Route::middleware('role:pokja,super_admin', 'pokja-group')->prefix('pokja')->name('pokja.')->group(function () {
+    Route::middleware(['role:pokja,super_admin', 'pokja-group'])->prefix('pokja')->name('pokja.')->group(function () {
+        Route::resource('kompetensi', \App\Http\Controllers\Pokja\KompetensiController::class);
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
+        
+        // Pengajuan PKL validation by Pokja
+        Route::get('pengajuan-pkl', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
+        Route::post('pengajuan-pkl/{pengajuanPkl}/validasi', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'validasi'])->name('pengajuan_pkl.validasi');
+        Route::delete('pengajuan-pkl/clear-all', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'clearAll'])->name('pengajuan_pkl.clear_all');
+        Route::delete('pengajuan-pkl/bulk-destroy', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'bulkDestroy'])->name('pengajuan_pkl.bulk_destroy');
+        Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);
         Route::resource('pembimbing_dudi', \App\Http\Controllers\PembimbingDudiController::class);
+        Route::resource('kaprog', \App\Http\Controllers\Pokja\KaprogController::class);
         Route::get('pemetaan', [\App\Http\Controllers\Pokja\PemetaanController::class, 'index'])->name('pemetaan.index');
+        Route::get('pemetaan/maps', [\App\Http\Controllers\Pokja\PemetaanController::class, 'maps'])->name('pemetaan.maps');
+        Route::get('pemetaan/maps/data', [\App\Http\Controllers\Pokja\PemetaanController::class, 'mapsData'])->name('pemetaan.maps.data');
+
+        // Zona CRUD
+        Route::get('zona', [\App\Http\Controllers\Pokja\ZonaController::class, 'index'])->name('zona.index');
+        Route::post('zona', [\App\Http\Controllers\Pokja\ZonaController::class, 'store'])->name('zona.store');
+        Route::put('zona/{zona}', [\App\Http\Controllers\Pokja\ZonaController::class, 'update'])->name('zona.update');
+        Route::delete('zona/{zona}', [\App\Http\Controllers\Pokja\ZonaController::class, 'destroy'])->name('zona.destroy');
+        Route::get('zona/geojson', [\App\Http\Controllers\Pokja\ZonaController::class, 'geojson'])->name('zona.geojson');
+
         Route::get('monitoring', [\App\Http\Controllers\Pokja\MonitoringController::class, 'index'])->name('monitoring.index');
         Route::get('evaluasi', [\App\Http\Controllers\Pokja\EvaluasiController::class, 'index'])->name('evaluasi.index');
         Route::get('feedback', [\App\Http\Controllers\Pokja\FeedbackController::class, 'index'])->name('feedback.index');
         Route::get('feedback/{feedback}/print', [\App\Http\Controllers\Pokja\FeedbackController::class, 'print'])->name('feedback.print');
+
+        // Pengaturan Pokja
+        Route::get('pengaturan/sertifikat', [\App\Http\Controllers\Pokja\PengaturanController::class, 'sertifikat'])->name('pengaturan.sertifikat');
+        Route::post('pengaturan/sertifikat', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSertifikat'])->name('pengaturan.sertifikat.update');
 
         // Import & Template Routes
         Route::get('import/panduan', [\App\Http\Controllers\Pokja\ImportController::class, 'showPanduan'])->name('import.panduan');
@@ -130,6 +186,10 @@ Route::middleware('auth', 'force.password.change')->group(function () {
         Route::post('dudi/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importDudi'])->name('dudi.import');
         Route::post('pembimbing-sekolah/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importPembimbingSekolah'])->name('pembimbing_sekolah.import');
         Route::post('pembimbing-dudi/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importPembimbingDudi'])->name('pembimbing_dudi.import');
+        Route::post('kaprog/import', [\App\Http\Controllers\Pokja\ImportController::class, 'importKaprog'])->name('kaprog.import');
     });
 });
+
+
+
 

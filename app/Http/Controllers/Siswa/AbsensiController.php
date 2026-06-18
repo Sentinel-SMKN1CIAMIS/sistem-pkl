@@ -15,8 +15,19 @@ class AbsensiController extends Controller
         $siswa = auth()->user()->siswa;
         if (!$siswa || !$siswa->dudi_id) {
             return redirect()->route('siswa.pengajuan_pkl.status')
-                ->with('error', 'Anda belum memiliki tempat PKL yang disetujui. Silakan ajukan terlebih dahulu.');
+                ->with('error', 'Anda belum dapat mengakses menu ini. Pastikan pengajuan PKL telah disetujui.');
         }
+
+        if ($siswa->status_pkl === 'belum_mulai') {
+            return redirect()->route('siswa.pengajuan_pkl.status')
+                ->with('error', 'Tempat PKL Anda sudah disetujui, namun Anda belum bisa mengakses menu ini karena menunggu Tim Pokja memetakan Guru Pembimbing Sekolah.');
+        }
+
+        if (!in_array($siswa->status_pkl, ['sedang_pkl', 'selesai'])) {
+            return redirect()->route('siswa.pengajuan_pkl.status')
+                ->with('error', 'Anda belum dapat mengakses menu ini. Pastikan Surat Pengantar telah di-ACC dan DUDI telah membalas (menerima) Anda.');
+        }
+
         return null;
     }
 
@@ -125,7 +136,10 @@ class AbsensiController extends Controller
         $request->validate([
             'status' => 'required|in:izin,sakit,alpa',
             'alasan' => 'required|min:10',
-            'tanggal' => 'required|date',
+            'tanggal' => 'required|date|before_or_equal:today|after_or_equal:-7 days',
+        ], [
+            'tanggal.before_or_equal' => 'Tanggal tidak boleh melebihi hari ini.',
+            'tanggal.after_or_equal' => 'Tanggal tidak boleh lebih dari 7 hari yang lalu.',
         ]);
 
         $siswa = auth()->user()->siswa;

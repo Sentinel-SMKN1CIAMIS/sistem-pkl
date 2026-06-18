@@ -15,12 +15,11 @@ class PesanController extends Controller
     {
         $user = auth()->user();
         $role = $user->role;
+        $kontak = collect();
 
+        // 1. If has siswa profile
         if ($role === 'siswa') {
             $siswa = $user->siswa;
-            $kontak = collect();
-
-            // Tambahkan Pembimbing Sekolah
             if ($siswa && $siswa->pembimbing_sekolah_id) {
                 $guru = \App\Models\PembimbingSekolah::with('user')
                     ->find($siswa->pembimbing_sekolah_id);
@@ -29,7 +28,6 @@ class PesanController extends Controller
                 }
             }
 
-            // Tambahkan Pembimbing DUDI
             if ($siswa && $siswa->pembimbing_dudi_id) {
                 $mentor = \App\Models\PembimbingDudi::with('user')
                     ->find($siswa->pembimbing_dudi_id);
@@ -41,35 +39,81 @@ class PesanController extends Controller
             return $kontak;
         }
 
-        if ($role === 'pembimbing_sekolah') {
+        // 2. If has pembimbingSekolah profile
+        if ($user->pembimbingSekolah) {
             $guru = $user->pembimbingSekolah;
-            if (!$guru) return collect();
-
-            return \App\Models\Siswa::with('user')
+            $students = \App\Models\Siswa::with('user')
                 ->where('pembimbing_sekolah_id', $guru->id)
                 ->get()
                 ->pluck('user')
                 ->filter();
+            $kontak = $kontak->merge($students);
         }
 
-        if ($role === 'pembimbing_dudi') {
+        // 3. If has pembimbingDudi profile
+        if ($user->pembimbingDudi) {
             $mentor = $user->pembimbingDudi;
-            if (!$mentor) return collect();
-
-            return \App\Models\Siswa::with('user')
+            $students = \App\Models\Siswa::with('user')
                 ->where('dudi_id', $mentor->dudi_id)
                 ->get()
                 ->pluck('user')
                 ->filter();
+            $kontak = $kontak->merge($students);
         }
 
+        // 4. Super admin and Pokja
         if (in_array($role, ['pokja', 'super_admin'])) {
-            return User::where('id', '!=', $user->id)
+            $others = User::where('id', '!=', $user->id)
                 ->where('is_active', true)
                 ->get();
+            $kontak = $kontak->merge($others);
         }
 
-        return collect();
+        // 5. Kaprog
+        if ($role === 'kaprog') {
+            // Pokja & Super Admin
+            $pokjas = User::whereIn('role', ['pokja', 'super_admin'])->where('is_active', true)->where('id', '!=', $user->id)->get();
+            $kontak = $kontak->merge($pokjas);
+
+            if ($user->program_keahlian_id) {
+                $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id');
+                
+                // Pembimbing Sekolah
+                $pembimbingSekolahUsers = User::where('role', 'pembimbing_sekolah')
+                    ->where('is_active', true)
+                    ->whereHas('pembimbingSekolah', function($q) use ($konsentrasiIds) {
+                        $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+                    })->get();
+                $kontak = $kontak->merge($pembimbingSekolahUsers);
+
+                // Pembimbing Dudi
+                $pembimbingDudiUsers = User::where('role', 'pembimbing_dudi')
+                    ->where('is_active', true)
+                    ->whereHas('pembimbingDudi.dudi', function($q) use ($konsentrasiIds) {
+                        $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                          ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                              $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                          });
+                    })->get();
+                $kontak = $kontak->merge($pembimbingDudiUsers);
+            }
+        }
+
+        // 6. Include any user with whom we already have a chat history
+        $historyUserIds = \App\Models\Pesan::where('from_user_id', $user->id)
+            ->orWhere('to_user_id', $user->id)
+            ->get()
+            ->map(function($msg) use ($user) {
+                return $msg->from_user_id === $user->id ? $msg->to_user_id : $msg->from_user_id;
+            })
+            ->unique();
+
+        if ($historyUserIds->isNotEmpty()) {
+            $historyUsers = User::whereIn('id', $historyUserIds)->get();
+            $kontak = $kontak->merge($historyUsers);
+        }
+
+        return $kontak->unique('id')->values();
     }
 
     /**

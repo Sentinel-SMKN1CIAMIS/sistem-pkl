@@ -2,7 +2,7 @@
     <x-slot name="header">Tambah Jurnal Harian</x-slot>
 
     <div class="mb-6">
-        <a href="{{ route('siswa.jurnal.index') }}" class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 transition-colors inline-flex">
+        <a href="{{ route('siswa.jurnal.index') }}" class="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
             Kembali ke Daftar
         </a>
@@ -96,7 +96,7 @@
                                         class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-600/90 hover:bg-red-500 text-white flex items-center justify-center shadow-lg transition-all transform hover:scale-110">
                                     <i data-lucide="x" class="w-4 h-4"></i>
                                 </button>
-                                <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                                <div class="absolute bottom-0 inset-x-0 bg-linear-to-t from-black/60 to-transparent p-3">
                                     <p class="text-xs text-white font-medium flex items-center gap-1.5">
                                         <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
                                         Foto siap diunggah
@@ -125,7 +125,7 @@
     </div>
 
     {{-- Crop Modal --}}
-    <div id="crop-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
+    <div id="crop-modal" class="fixed inset-0 z-100 hidden items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
         <div class="glass-card max-w-lg w-full p-0 relative rounded-2xl overflow-hidden shadow-2xl animate-in" onclick="event.stopPropagation()">
             {{-- Header --}}
             <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between">
@@ -269,7 +269,7 @@
                 imageSmoothingQuality: 'high',
             });
 
-            const croppedDataURL = canvas.toDataURL('image/png');
+            const croppedDataURL = canvas.toDataURL('image/jpeg', 0.85);
 
             // Set hidden input value
             document.getElementById('foto-cropped-input').value = croppedDataURL;

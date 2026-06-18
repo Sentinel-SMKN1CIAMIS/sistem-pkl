@@ -1,0 +1,183 @@
+<?php
+
+namespace App\Http\Controllers\Pokja;
+
+use App\Http\Controllers\Controller;
+use App\Models\PengajuanPkl;
+use App\Models\Dudi;
+use App\Models\Notifikasi;
+use Illuminate\Http\Request;
+
+class PengajuanPklController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        // Tampilkan pengajuan yang berstatus 'disetujui_kaprog'
+        // Namun kita juga tampilkan riwayat pengajuan 'disetujui' dan 'ditolak' agar Pokja bisa melihat riwayatnya
+        $query = PengajuanPkl::with('siswa', 'dudi')
+            ->orderByRaw("CASE WHEN status = 'disetujui_kaprog' THEN 1 ELSE 2 END")
+            ->latest();
+
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $query->whereHas('siswa', function($q) {
+                $q->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
+            });
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->whereHas('siswa', function($q) use ($konsentrasiIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+            });
+        }
+
+        $pengajuans = $query->paginate(10);
+
+        return view('pokja.pengajuan-pkl.index', compact('pengajuans'));
+    }
+
+    /**
+     * Validate/Approve student's PKL proposal by Pokja
+     */
+    public function validasi(Request $request, PengajuanPkl $pengajuanPkl)
+    {
+        $request->validate([
+            'status' => 'required|in:disetujui,ditolak',
+            'catatan' => 'nullable|string'
+        ]);
+
+        $statusValue = $request->status;
+
+        $pengajuanPkl->update([
+            'status' => $statusValue,
+            'catatan' => $request->catatan,
+        ]);
+
+        if ($statusValue === 'disetujui') {
+            if ($pengajuanPkl->dudi_id) {
+                // Jika siswa memilih DUDI yang sudah ada
+                $dudi = Dudi::find($pengajuanPkl->dudi_id);
+            } else {
+                // Cari atau buat DUDI baru jika di-input manual oleh siswa
+                $dudi = Dudi::firstOrCreate(
+                    ['nama' => $pengajuanPkl->nama_perusahaan],
+                    [
+                        'nama_pimpinan' => $pengajuanPkl->pimpinan,
+                        'alamat' => $pengajuanPkl->alamat ?? '-',
+                        'kota' => $pengajuanPkl->kota,
+                        'no_telepon' => $pengajuanPkl->no_telp,
+                        'konsentrasi_keahlian_id' => $pengajuanPkl->siswa->konsentrasi_keahlian_id,
+                        'is_active' => true,
+                    ]
+                );
+                
+                // Update pengajuan dengan DUDI ID yang baru dibuat
+                $pengajuanPkl->update(['dudi_id' => $dudi->id]);
+            }
+
+            if ($dudi) {
+                // Assign DUDI & pembimbing dudi ke Siswa
+                $pengajuanPkl->siswa->update([
+                    'dudi_id' => $dudi->id,
+                    'pembimbing_dudi_id' => $pengajuanPkl->pembimbing_dudi_id,
+                    'status_pkl' => 'belum_mulai', // Siap dipetakan pembimbing sekolah
+                ]);
+
+                // Buat notifikasi untuk semua Pokja agar segera memetakan pembimbing sekolah
+                $pokjas = \App\Models\User::where('role', 'pokja')->get();
+                foreach ($pokjas as $pokja) {
+                    Notifikasi::create([
+                        'to_user_id' => $pokja->id,
+                        'judul'      => 'Penempatan Baru (Butuh Pemetaan)',
+                        'pesan'      => "Siswa {$pengajuanPkl->siswa->nama_lengkap} telah disetujui di {$dudi->nama}. Silakan lakukan pemetaan pembimbing.",
+                        'link'       => route('pokja.pemetaan.index'),
+                        'is_read'    => false,
+                    ]);
+                }
+
+                // Notify Student
+                Notifikasi::create([
+                    'to_user_id' => $pengajuanPkl->siswa->user_id,
+                    'judul'      => 'Pengajuan PKL Disetujui Pokja',
+                    'pesan'      => "Pengajuan tempat PKL Anda di {$dudi->nama} telah disetujui oleh Pokja. Silakan unduh/cetak Surat Pengantar Anda.",
+                    'link'       => route('siswa.pengajuan_pkl.status'),
+                    'is_read'    => false,
+                ]);
+            }
+        } else {
+            // Notify Student of rejection by Pokja
+            Notifikasi::create([
+                'to_user_id' => $pengajuanPkl->siswa->user_id,
+                'judul'      => 'Pengajuan PKL Ditolak Pokja',
+                'pesan'      => "Pengajuan tempat PKL Anda di {$pengajuanPkl->nama_perusahaan} ditolak oleh Pokja. Alasan: " . ($request->catatan ?? 'Tidak ada catatan.'),
+                'link'       => route('siswa.pengajuan_pkl.status'),
+                'is_read'    => false,
+            ]);
+        }
+
+        return back()->with('success', 'Validasi pengajuan PKL berhasil diperbarui.');
+    }
+
+    /**
+     * Delete/Clean up student's PKL proposal by Pokja
+     */
+    public function destroy(PengajuanPkl $pengajuanPkl)
+    {
+        // Hapus berkas bukti balasan jika ada di storage
+        if ($pengajuanPkl->bukti_balasan) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuanPkl->bukti_balasan)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuanPkl->bukti_balasan);
+            }
+        }
+
+        $pengajuanPkl->delete();
+
+        return back()->with('success', 'Pengajuan PKL berhasil dihapus.');
+    }
+
+    /**
+     * Delete/Clear all students' PKL proposals by Pokja
+     */
+    public function clearAll()
+    {
+        // Hapus berkas bukti balasan untuk semua pengajuan yang memilikinya
+        $pengajuans = PengajuanPkl::whereNotNull('bukti_balasan')->get();
+        foreach ($pengajuans as $pengajuan) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuan->bukti_balasan)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuan->bukti_balasan);
+            }
+        }
+
+        // Hapus semua data pengajuan dari database
+        PengajuanPkl::query()->delete();
+
+        return back()->with('success', 'Semua data pengajuan PKL siswa berhasil dihapus.');
+    }
+
+    /**
+     * Bulk delete selected student PKL submissions by Pokja
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:pengajuan_pkls,id'
+        ]);
+
+        $ids = $request->ids;
+
+        // Hapus berkas bukti balasan untuk pengajuan terpilih yang memilikinya
+        $pengajuans = PengajuanPkl::whereIn('id', $ids)->whereNotNull('bukti_balasan')->get();
+        foreach ($pengajuans as $pengajuan) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuan->bukti_balasan)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuan->bukti_balasan);
+            }
+        }
+
+        // Hapus data pengajuan terpilih
+        PengajuanPkl::whereIn('id', $ids)->delete();
+
+        return back()->with('success', count($ids) . ' data pengajuan PKL terpilih berhasil dihapus.');
+    }
+}

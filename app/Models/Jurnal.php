@@ -5,6 +5,24 @@ namespace App\Models;
 use App\Traits\AuditLog;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $siswa_id
+ * @property int $kompetensi_id
+ * @property int|null $cp_id
+ * @property string|null $cp
+ * @property string $tanggal
+ * @property string $deskripsi_pekerjaan
+ * @property string|null $catatan
+ * @property string|null $foto_path
+ * @property string $status
+ * @property string|null $catatan_pembimbing
+ * @property string|null $catatan_guru
+ * @property string|null $approval_status
+ * @property string|null $approval_notes
+ * @property int|null $approved_by
+ * @property string|null $approved_at
+ */
 class Jurnal extends Model
 {
     use AuditLog;

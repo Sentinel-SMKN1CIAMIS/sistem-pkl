@@ -1,4 +1,21 @@
 <x-app-layout>
+    @php
+        $getUniqueBadgeClass = function($name) {
+            if (!$name) return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+            $palettes = [
+                'bg-blue-500/10 text-blue-500 dark:text-blue-400 border-blue-500/20',
+                'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20',
+                'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border-indigo-500/20',
+                'bg-purple-500/10 text-purple-500 dark:text-purple-400 border-purple-500/20',
+                'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20',
+                'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20',
+                'bg-sky-500/10 text-sky-500 dark:text-sky-400 border-sky-500/20',
+                'bg-teal-500/10 text-teal-500 dark:text-teal-400 border-teal-500/20',
+            ];
+            $hash = crc32($name);
+            return $palettes[abs($hash) % count($palettes)];
+        };
+    @endphp
     <x-slot name="header">Pemetaan Siswa PKL</x-slot>
 
     <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -7,6 +24,9 @@
         </div>
         
         <div class="flex items-center gap-3">
+            <a href="{{ route('shared.pemetaan.maps') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                <i data-lucide="map" class="w-4 h-4"></i> Lihat Peta
+            </a>
             <div class="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                 <p class="text-[10px] text-blue-400 font-black uppercase tracking-widest leading-none mb-1">Terpetakan</p>
                 <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $terpetakan }} / {{ $totalSiswa }}</p>
@@ -49,28 +69,43 @@
                     @forelse($siswas as $siswa)
                         <tr class="hover:bg-white dark:bg-slate-800/30 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ $siswa->nama_lengkap }}</p>
-                                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-wider">{{ $siswa->nis }} | {{ $siswa->konsentrasiKeahlian->nama_konsentrasi ?? '-' }}</p>
+                                <div class="flex items-center gap-3">
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ $siswa->nama_lengkap }}</p>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-wider">{{ $siswa->nis }} | {{ $siswa->konsentrasiKeahlian->nama ?? '-' }}</p>
+                                    </div>
+                                    @if($siswa->pengajuanPkl && $siswa->pengajuanPkl->bukti_balasan)
+                                        <a href="{{ asset('storage/' . $siswa->pengajuanPkl->bukti_balasan) }}" target="_blank" 
+                                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-semibold hover:bg-emerald-500/20 transition-all cursor-pointer" 
+                                           title="Lihat Bukti Penerimaan Perusahaan">
+                                            <i data-lucide="file-check" class="w-3 h-3"></i> Bukti DUDI
+                                        </a>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 @if($siswa->dudi)
-                                    <span class="text-slate-700 dark:text-slate-300 font-medium">{{ $siswa->dudi->nama_perusahaan }}</span>
+                                    <span class="text-slate-700 dark:text-slate-300 font-medium">{{ $siswa->dudi->nama }}</span>
                                 @else
                                     <span class="text-slate-600 italic">Belum ditentukan</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 @if($siswa->pembimbingSekolah)
-                                    <span class="text-slate-700 dark:text-slate-300">{{ $siswa->pembimbingSekolah->nama_lengkap }}</span>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
+                                        {{ $siswa->pembimbingSekolah->nama_lengkap }}
+                                    </span>
                                 @else
-                                    <span class="text-slate-600 italic">Belum ditentukan</span>
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 italic">Belum ditentukan</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 @if($siswa->pembimbingDudi)
-                                    <span class="text-slate-700 dark:text-slate-300">{{ $siswa->pembimbingDudi->nama_lengkap }}</span>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingDudi->nama_lengkap) }}">
+                                        {{ $siswa->pembimbingDudi->nama_lengkap }}
+                                    </span>
                                 @else
-                                    <span class="text-slate-600 italic">Belum ditentukan</span>
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 italic">Belum ditentukan</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -84,7 +119,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-center whitespace-nowrap">
-                                <a href="{{ route('pokja.siswa.edit', $siswa->id) }}" class="inline-flex items-center justify-center p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:bg-slate-700 transition-colors text-slate-600 dark:text-slate-400 hover:text-blue-400">
+                                <a href="{{ route('pokja.siswa.edit', $siswa->id) }}" class="inline-flex items-center justify-center p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-400 hover:text-blue-400">
                                     <i data-lucide="edit-3" class="w-4 h-4"></i>
                                 </a>
                             </td>

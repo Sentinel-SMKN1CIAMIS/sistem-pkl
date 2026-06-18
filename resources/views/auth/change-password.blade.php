@@ -37,28 +37,38 @@
             @method('PATCH')
 
             <!-- Password Requirements Info -->
-            <div class="p-3 rounded-lg bg-slate-900/50 border border-slate-700/50">
-                <p class="text-xs font-medium text-slate-300 mb-2">Requirement Password:</p>
-                <ul class="text-xs text-slate-400 space-y-1">
-                    <li class="flex items-center gap-2">
-                        <span class="inline-block w-1 h-1 bg-slate-400 rounded-full"></span>
+            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 shadow-sm">
+                <p class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3">Kriteria Password Aman:</p>
+                <ul class="text-xs space-y-2.5">
+                    <li class="flex items-center gap-2.5 transition-colors duration-200" :class="password.length >= 8 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
+                        <span class="transition-all duration-200" :class="password.length >= 8 ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
                         Minimal 8 karakter
                     </li>
-                    <li class="flex items-center gap-2">
-                        <span class="inline-block w-1 h-1 bg-slate-400 rounded-full"></span>
+                    <li class="flex items-center gap-2.5 transition-colors duration-200" :class="/[A-Z]/.test(password) ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
+                        <span class="transition-all duration-200" :class="/[A-Z]/.test(password) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
                         Mengandung huruf besar (A-Z)
                     </li>
-                    <li class="flex items-center gap-2">
-                        <span class="inline-block w-1 h-1 bg-slate-400 rounded-full"></span>
+                    <li class="flex items-center gap-2.5 transition-colors duration-200" :class="/[a-z]/.test(password) ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
+                        <span class="transition-all duration-200" :class="/[a-z]/.test(password) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
                         Mengandung huruf kecil (a-z)
                     </li>
-                    <li class="flex items-center gap-2">
-                        <span class="inline-block w-1 h-1 bg-slate-400 rounded-full"></span>
+                    <li class="flex items-center gap-2.5 transition-colors duration-200" :class="/[0-9]/.test(password) ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
+                        <span class="transition-all duration-200" :class="/[0-9]/.test(password) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
                         Mengandung angka (0-9)
                     </li>
-                    <li class="flex items-center gap-2">
-                        <span class="inline-block w-1 h-1 bg-slate-400 rounded-full"></span>
-                        Mengandung karakter spesial (@$!%*?&)
+                    <li class="flex items-center gap-2.5 transition-colors duration-200" :class="/[@$!%*?&#-_]/.test(password) ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
+                        <span class="transition-all duration-200" :class="/[@$!%*?&#-_]/.test(password) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
+                        Mengandung karakter spesial (contoh: @$!%*?&#-_)
                     </li>
                 </ul>
             </div>

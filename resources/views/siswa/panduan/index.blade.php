@@ -17,12 +17,104 @@
                 Unduh PDF
             </a>
         </div>
-        <div class="w-full flex-grow rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900" style="height: 100%; min-height: 500px;">
-            <iframe src="{{ asset('BUKU%20PEDOMAN%20PKL%202025-2026.pdf') }}#toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 100%; min-height: 500px;" title="Buku Pedoman PKL" frameborder="0">
-                Browser Anda tidak mendukung tampilan PDF. Silakan unduh PDF untuk melihatnya: <a href="{{ asset('BUKU%20PEDOMAN%20PKL%202025-2026.pdf') }}">Unduh PDF</a>
-            </iframe>
+        <div class="w-full flex-grow rounded-xl overflow-y-auto border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-4" style="height: 100%; min-height: 500px;" id="pdf-container">
+            <div id="pdf-loader" class="flex flex-col items-center justify-center h-full text-slate-500">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                <p>Memuat dokumen PDF...</p>
+            </div>
+            <!-- Canvas elements will be appended here -->
         </div>
-    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+            const url = '{{ asset("BUKU PEDOMAN PKL 2025-2026.pdf") }}';
+            const pdfContainer = document.getElementById('pdf-container');
+            const pdfLoader = document.getElementById('pdf-loader');
+
+            let pdfDoc = null;
+
+            // Render the page
+            const renderPage = num => {
+                return pdfDoc.getPage(num).then(page => {
+                    let viewport = page.getViewport({ scale: 1 });
+                    
+                    // Responsive scale based on container width
+                    // leave some padding (32px)
+                    let containerWidth = pdfContainer.clientWidth - 32; 
+                    let autoScale = containerWidth / viewport.width;
+                    
+                    // Limit max scale to 2.0 to avoid huge blurry rendering on large screens
+                    let finalScale = Math.min(autoScale, 2.0);
+                    
+                    viewport = page.getViewport({ scale: finalScale });
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'flex justify-center mb-6';
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    canvas.className = 'shadow-md rounded bg-white max-w-full';
+
+                    wrapper.appendChild(canvas);
+                    pdfContainer.appendChild(wrapper);
+
+                    const renderCtx = {
+                        canvasContext: ctx,
+                        viewport: viewport
+                    };
+
+                    return page.render(renderCtx).promise;
+                });
+            };
+
+            // Load document
+            pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
+                pdfDoc = pdfDoc_;
+                pdfLoader.style.display = 'none';
+
+                // Render all pages sequentially
+                let promise = Promise.resolve();
+                for (let i = 1; i <= pdfDoc.numPages; i++) {
+                    promise = promise.then(() => renderPage(i));
+                }
+            }).catch(err => {
+                console.error('Error loading PDF: ', err);
+                pdfLoader.innerHTML = `
+                    <div class="text-red-500 text-center p-4">
+                        <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-2 text-red-400"></i>
+                        <p class="font-semibold">Gagal memuat PDF.</p>
+                        <p class="text-sm mt-1">${err.message}</p>
+                        <a href="${url}" download class="inline-block mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">Unduh Manual PDF</a>
+                    </div>
+                `;
+                if(window.lucide) {
+                    window.lucide.createIcons();
+                }
+            });
+            
+            // Re-render on resize with debounce
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (pdfDoc) {
+                        // Clear container
+                        pdfContainer.innerHTML = '';
+                        // Re-render pages
+                        let promise = Promise.resolve();
+                        for (let i = 1; i <= pdfDoc.numPages; i++) {
+                            promise = promise.then(() => renderPage(i));
+                        }
+                    }
+                }, 500);
+            });
+        });
+    </script>
 
     @if($panduans->count() > 0)
     <div class="mb-4">

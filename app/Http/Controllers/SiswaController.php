@@ -13,6 +13,13 @@ class SiswaController extends Controller
     {
         $query = \App\Models\Siswa::with(['user', 'konsentrasiKeahlian', 'dudi', 'pembimbingSekolah']);
 
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $query->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -25,15 +32,45 @@ class SiswaController extends Controller
             $query->where('konsentrasi_keahlian_id', $request->konsentrasi);
         }
 
-        $students = $query->latest()->paginate(10)->withQueryString();
-        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        // Sorting Logic
+        if ($request->filled('sort')) {
+            switch ($request->sort) {
+                case 'oldest':
+                    $query->oldest();
+                    break;
+                case 'name_asc':
+                    $query->orderBy('nama_lengkap', 'asc');
+                    break;
+                case 'name_desc':
+                    $query->orderBy('nama_lengkap', 'desc');
+                    break;
+                case 'nis_asc':
+                    $query->orderBy('nis', 'asc');
+                    break;
+                case 'nis_desc':
+                    $query->orderBy('nis', 'desc');
+                    break;
+                case 'kelas_asc':
+                    $query->orderBy('kelas', 'asc');
+                    break;
+                case 'latest':
+                default:
+                    $query->latest();
+                    break;
+            }
+        } else {
+            $query->latest();
+        }
+
+        $students = $query->paginate(10)->withQueryString();
+        $concentrations = auth()->user()->getFilteredKonsentrasi();
         
         return view('pokja.siswa.index', compact('students', 'concentrations'));
     }
 
     public function create()
     {
-        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        $concentrations = auth()->user()->getFilteredKonsentrasi();
         $dudis = \App\Models\Dudi::all();
         $pembimbingSekolah = \App\Models\PembimbingSekolah::all();
         $pembimbingDudi = \App\Models\PembimbingDudi::all();
@@ -102,17 +139,78 @@ class SiswaController extends Controller
         $request->validate([
             'nis' => 'required|unique:siswas,nis,' . $siswa->id,
             'nama_lengkap' => 'required|string|max:255',
-            // Email and password usually handled separately or left as is
             'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
             'kelas' => 'required|string',
             'jenis_kelamin' => 'required|in:L,P',
             'tahun_ajaran' => 'required|string',
         ]);
 
-        $siswa->update($request->all());
+        $oldPembimbingId = $siswa->pembimbing_sekolah_id;
+        $oldStatusPkl = $siswa->status_pkl;
+
+        $data = $request->all();
+
+        // Jika status_pkl diubah menjadi 'dibatalkan'
+        if (isset($data['status_pkl']) && $data['status_pkl'] === 'dibatalkan') {
+            $data['dudi_id'] = null;
+            $data['pembimbing_sekolah_id'] = null;
+            $data['pembimbing_dudi_id'] = null;
+
+            // Handle pengajuan tempat PKL lama: reject dan hapus bukti balasan
+            $pengajuan = $siswa->pengajuanPkl;
+            if ($pengajuan) {
+                if ($pengajuan->bukti_balasan) {
+                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuan->bukti_balasan)) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuan->bukti_balasan);
+                    }
+                }
+                $pengajuan->update([
+                    'status' => 'ditolak',
+                    'catatan' => 'PKL dibatalkan oleh Pokja.',
+                    'bukti_balasan' => null,
+                ]);
+            }
+        }
+
+        $siswa->update($data);
         
         // Update user name if changed
         $siswa->user->update(['name' => $request->nama_lengkap, 'username' => $request->nis]);
+
+        // Kirim notifikasi jika Pembimbing Sekolah ditugaskan/berubah
+        if ($siswa->pembimbing_sekolah_id && $siswa->pembimbing_sekolah_id != $oldPembimbingId) {
+            $pembimbing = \App\Models\PembimbingSekolah::find($siswa->pembimbing_sekolah_id);
+            if ($pembimbing) {
+                // Notifikasi untuk Guru Pembimbing
+                \App\Models\Notifikasi::create([
+                    'to_user_id' => $pembimbing->user_id,
+                    'judul'      => 'Penugasan Bimbingan Baru',
+                    'pesan'      => "Anda telah ditugaskan sebagai Pembimbing Sekolah untuk siswa {$siswa->nama_lengkap} (NIS: {$siswa->nis}).",
+                    'link'       => route('pembimbing_sekolah.siswa.index'),
+                    'is_read'    => false,
+                ]);
+
+                // Notifikasi untuk Siswa
+                \App\Models\Notifikasi::create([
+                    'to_user_id' => $siswa->user_id,
+                    'judul'      => 'Pembimbing Sekolah Ditugaskan',
+                    'pesan'      => "Anda telah dibimbing oleh Guru Pembimbing Sekolah: {$pembimbing->nama_lengkap}.",
+                    'link'       => route('dashboard'),
+                    'is_read'    => false,
+                ]);
+            }
+        }
+
+        // Kirim notifikasi jika status PKL dibatalkan
+        if (isset($data['status_pkl']) && $data['status_pkl'] === 'dibatalkan' && $oldStatusPkl !== 'dibatalkan') {
+            \App\Models\Notifikasi::create([
+                'to_user_id' => $siswa->user_id,
+                'judul'      => 'PKL Dibatalkan oleh Pokja',
+                'pesan'      => 'Status PKL Anda telah dibatalkan oleh Pokja. Silakan ajukan ulang tempat PKL baru.',
+                'link'       => route('siswa.pengajuan_pkl.status'),
+                'is_read'    => false,
+            ]);
+        }
 
         return redirect()->route('pokja.siswa.index')
             ->with('success', 'Data siswa berhasil diperbarui.');
@@ -120,8 +218,11 @@ class SiswaController extends Controller
 
     public function destroy(\App\Models\Siswa $siswa)
     {
-        // User will be deleted automatically due to cascade on delete in DB
+        $user = $siswa->user;
         $siswa->delete();
+        if ($user) {
+            $user->delete();
+        }
 
         return redirect()->route('pokja.siswa.index')
             ->with('success', 'Data siswa dan akun berhasil dihapus.');

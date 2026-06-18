@@ -16,8 +16,19 @@ class JurnalController extends Controller
         $siswa = auth()->user()->siswa;
         if (!$siswa || !$siswa->dudi_id) {
             return redirect()->route('siswa.pengajuan_pkl.status')
-                ->with('error', 'Anda belum memiliki tempat PKL yang disetujui. Silakan ajukan terlebih dahulu.');
+                ->with('error', 'Anda belum dapat mengakses menu ini. Pastikan pengajuan PKL telah disetujui.');
         }
+
+        if ($siswa->status_pkl === 'belum_mulai') {
+            return redirect()->route('siswa.pengajuan_pkl.status')
+                ->with('error', 'Tempat PKL Anda sudah disetujui, namun Anda belum bisa mengakses menu ini karena menunggu Tim Pokja memetakan Guru Pembimbing Sekolah.');
+        }
+
+        if (!in_array($siswa->status_pkl, ['sedang_pkl', 'selesai'])) {
+            return redirect()->route('siswa.pengajuan_pkl.status')
+                ->with('error', 'Anda belum dapat mengakses menu ini. Pastikan Surat Pengantar telah di-ACC dan DUDI telah membalas (menerima) Anda.');
+        }
+
         return null;
     }
 
@@ -31,7 +42,11 @@ class JurnalController extends Controller
             ->latest('tanggal')
             ->paginate(10);
             
-        return view('siswa.jurnal.index', compact('jurnals'));
+        $hasAbsenToday = \App\Models\Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', \Carbon\Carbon::today()->toDateString())
+            ->exists();
+            
+        return view('siswa.jurnal.index', compact('jurnals', 'hasAbsenToday'));
     }
 
     public function create()
@@ -40,6 +55,16 @@ class JurnalController extends Controller
 
         $siswa = auth()->user()->siswa;
         $today = \Carbon\Carbon::today();
+
+        // Cek apakah siswa sudah melakukan absensi hari ini
+        $hasAbsenToday = \App\Models\Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', $today->toDateString())
+            ->exists();
+
+        if (!$hasAbsenToday) {
+            return redirect()->route('siswa.jurnal.index')
+                ->with('error', 'Anda belum melakukan absensi hari ini. Silakan melakukan absensi terlebih dahulu sebelum mengisi jurnal.');
+        }
 
         // Cek apakah siswa sudah mengisi jurnal hari ini
         $hasJurnalToday = Jurnal::where('siswa_id', $siswa->id)
@@ -120,10 +145,26 @@ class JurnalController extends Controller
         // Handle cropped base64 image
         if ($request->filled('foto_cropped')) {
             $imageData = $request->foto_cropped;
+            if (!preg_match('/^data:image\/(jpeg|png|jpg);base64,/', $imageData)) {
+                return back()->withInput()->with('error', 'Format foto tidak valid. Harus berupa gambar JPEG atau PNG.');
+            }
             $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
             $imageData = str_replace(' ', '+', $imageData);
-            $fileName = 'jurnal/' . $siswa->id . '_' . time() . '.png';
-            Storage::disk('public')->put($fileName, base64_decode($imageData));
+            $binaryData = base64_decode($imageData);
+
+            // Compress to JPEG 85% using GD if available
+            if (extension_loaded('gd') && function_exists('imagecreatefromstring')) {
+                $image = @imagecreatefromstring($binaryData);
+                if ($image !== false) {
+                    ob_start();
+                    imagejpeg($image, null, 85);
+                    $binaryData = ob_get_clean();
+                    imagedestroy($image);
+                }
+            }
+
+            $fileName = 'jurnal/' . $siswa->id . '_' . time() . '.jpg';
+            Storage::disk('public')->put($fileName, $binaryData);
             $data['foto_path'] = $fileName;
         }
 
@@ -141,6 +182,122 @@ class JurnalController extends Controller
         }
 
         return redirect()->route('siswa.jurnal.index')->with('success', 'Jurnal berhasil disimpan.');
+    }
+
+    public function edit(Jurnal $jurnal)
+    {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
+        $siswa = auth()->user()->siswa;
+
+        if ($jurnal->siswa_id !== $siswa->id) { abort(403); }
+        if ($jurnal->status !== 'pending') {
+            return redirect()->route('siswa.jurnal.index')->with('error', 'Jurnal yang sudah diproses tidak dapat diedit.');
+        }
+
+        $kompetensis = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)->get();
+        $tujuanPembelajaran = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
+            ->whereNotNull('tp')
+            ->get();
+
+        $today = \Carbon\Carbon::today();
+        $maxBackdateDays = Jurnal::getMaxBackdateDays();
+        $minDate = $today->copy()->subDays($maxBackdateDays)->format('Y-m-d');
+        $maxDate = $today->format('Y-m-d');
+
+        return view('siswa.jurnal.edit', compact('jurnal', 'kompetensis', 'tujuanPembelajaran', 'minDate', 'maxDate'));
+    }
+
+    public function update(Request $request, Jurnal $jurnal)
+    {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
+        $siswa = auth()->user()->siswa;
+
+        if ($jurnal->siswa_id !== $siswa->id) { abort(403); }
+        if ($jurnal->status !== 'pending') {
+            return redirect()->route('siswa.jurnal.index')->with('error', 'Jurnal yang sudah diproses tidak dapat diedit.');
+        }
+
+        $request->validate([
+            'kompetensi_id' => 'required|exists:kompetensis,id',
+            'cp_id'         => 'nullable|exists:kompetensis,id',
+            'cp'            => 'nullable|string|max:500',
+            'tanggal'       => 'required|date',
+            'kegiatan'      => 'required|string',
+            'catatan'       => 'nullable|string',
+            'foto_cropped'  => 'nullable|string',
+        ]);
+
+        $requestDate = \Carbon\Carbon::parse($request->tanggal);
+
+        // Validasi backdate
+        if (!Jurnal::isDateAllowedForEntry($request->tanggal)) {
+            $maxBackdateDays = Jurnal::getMaxBackdateDays();
+            return back()->withInput()->with('error', 'Anda hanya dapat mengisi jurnal untuk maksimal ' . $maxBackdateDays . ' hari sebelumnya.');
+        }
+
+        // Validasi apakah siswa memiliki absen pada tanggal jurnal
+        $hasAbsensiForDate = \App\Models\Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', $request->tanggal)
+            ->exists();
+
+        if (!$hasAbsensiForDate) {
+            return back()->withInput()->with('error', 'Anda belum mengisi daftar hadir pada tanggal ' . $requestDate->format('d/m/Y') . '. Silakan isi absensi terlebih dahulu.');
+        }
+
+        // Cek tanggal duplikat jika tanggal diubah
+        if ($jurnal->tanggal !== $request->tanggal) {
+            $hasJurnalForDate = Jurnal::where('siswa_id', $siswa->id)
+                ->where('tanggal', $request->tanggal)
+                ->exists();
+
+            if ($hasJurnalForDate) {
+                return back()->withInput()->with('error', 'Anda sudah mengisi jurnal pada tanggal ' . $requestDate->format('d/m/Y') . '. Satu hari hanya boleh 1 jurnal.');
+            }
+        }
+
+        $data = [
+            'kompetensi_id'      => $request->kompetensi_id,
+            'cp_id'              => $request->cp_id,
+            'cp'                 => $request->cp,
+            'tanggal'            => $request->tanggal,
+            'deskripsi_pekerjaan'=> $request->kegiatan,
+            'catatan'            => $request->catatan,
+        ];
+
+        if ($request->filled('foto_cropped')) {
+            $imageData = $request->foto_cropped;
+            if (!preg_match('/^data:image\/(jpeg|png|jpg);base64,/', $imageData)) {
+                return back()->withInput()->with('error', 'Format foto tidak valid. Harus berupa gambar JPEG atau PNG.');
+            }
+            $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
+            $imageData = str_replace(' ', '+', $imageData);
+            $binaryData = base64_decode($imageData);
+
+            // Compress to JPEG 85% using GD if available
+            if (extension_loaded('gd') && function_exists('imagecreatefromstring')) {
+                $image = @imagecreatefromstring($binaryData);
+                if ($image !== false) {
+                    ob_start();
+                    imagejpeg($image, null, 85);
+                    $binaryData = ob_get_clean();
+                    imagedestroy($image);
+                }
+            }
+
+            $fileName = 'jurnal/' . $siswa->id . '_' . time() . '.jpg';
+            Storage::disk('public')->put($fileName, $binaryData);
+            
+            if ($jurnal->foto_path) {
+                Storage::disk('public')->delete($jurnal->foto_path);
+            }
+            $data['foto_path'] = $fileName;
+        }
+
+        $jurnal->update($data);
+
+        return redirect()->route('siswa.jurnal.index')->with('success', 'Jurnal berhasil diperbarui.');
     }
 
     public function destroy(Jurnal $jurnal)

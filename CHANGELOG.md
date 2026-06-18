@@ -1,5 +1,60 @@
 # CHANGELOG
 
+## [2026-06-16]
+### Fixed
+- Memperbaiki test case `ExampleTest` agar memvalidasi redirect ke `/login` (302) alih-alih status 200 sukses karena rute `/` di-redirect ke `/login`.
+- Memperbaiki penanganan error logging pada `ChangePasswordController` dengan memindahkan `$request->validate()` ke dalam blok `try` utama dan menangkap `ValidationException` secara eksplisit untuk memastikan kegagalan validasi password dicatat sebagai aktivitas `Password Change Failed` di database log.
+- Memperbaiki test setup pada `KaprogAccessControlTest` dengan menambahkan properti `program_keahlian_id` saat pembuatan user Kaprog bimbingan agar sinkron dengan logika filter relasi program keahlian pada controller `KaprogController` dan `PengajuanPklController`.
+- Memperbaiki rute `/siswa/jurnal/portofolio`, `/siswa/jurnal/export`, dan `/siswa/jurnal/sertifikat` yang sebelumnya salah dipetakan ke wildcard `Route::resource('jurnal', ...)` (menyebabkan error `Call to undefined method JurnalController::show()`) dengan memindahkan definisi rute-rute tersebut ke sebelum rute resource.
+- Memperbaiki bug layout shift yang menyebabkan sidebar menciut/bergeser saat modal dialog SweetAlert2 muncul dengan memindahkan kelas flex dari tag `<body>` ke div wrapper penampung konten utama.
+
+
+
+### Added
+- Integrasi library **SweetAlert2** secara global pada layout aplikasi (`app.blade.php` dan `guest.blade.php`).
+- Implementasi global override untuk `window.alert(...)` agar menampilkan dialog modal info yang modern dan premium dengan tema warna yang sesuai.
+- Implementasi interceptor dinamis untuk `confirm(...)` pada form `onsubmit` dan tombol/tautan `onclick` guna menggantikan dialog konfirmasi bawaan browser dengan modal SweetAlert2 interaktif.
+- Implementasi rendering otomatis untuk notifikasi Laravel (`session('success')`, `session('error')`, `$errors->any()`) menjadi toast notification melayang di pojok kanan atas layar.
+- Penambahan konfirmasi keluar sistem (logout) menggunakan SweetAlert2 saat user menekan tombol Logout.
+- Penambahan mekanisme anti-BFCache global via event listener 'pageshow' pada layout utama dan guest untuk mendeteksi navigasi tombol back/forward browser, memaksa reload halaman, dan memicu proteksi rute middleware Laravel (auth & guest) secara dinamis.
+- Implementasi fitur pengurutan data secara drag-and-drop pada halaman kelola **Program Keahlian** dan **Konsentrasi Keahlian** di bawah hak akses Admin/Pokja menggunakan library **Sortable.js** dan penyimpanan urutan via request AJAX ke route baru.
+- Penambahan kolom `sort_order` pada tabel database `program_keahlians` dan `konsentrasi_keahlians` beserta berkas migrasinya.
+- Implementasi fitur **Select All + Bulk Delete** pada halaman **Kelola Pengguna Sistem** (Users) untuk memudahkan administrator menghapus banyak akun secara massal dengan proteksi keamanan (mencegah penghapusan akun diri sendiri).
+
+### Changed
+- Mengubah tema default website menjadi **Light Mode**. Jika pengguna belum pernah memilih tema secara manual (tidak ada preferensi di `localStorage`), maka website akan memuat tema terang secara default (alih-alih mengikuti settingan dark mode bawaan OS/system). Pilihan tema manual ("Light", "Dark", dan "System") tetap dipertahankan untuk fleksibilitas pengguna.
+- Menghapus pembatasan visual ukuran maksimum file 4MB pada semua fitur impor data Excel (Siswa, DUDI, Pembimbing Sekolah, Pembimbing DUDI, dan Kaprog) serta memperbarui teks petunjuk format menjadi "Format file yang didukung: .xlsx, .xls saja".
+- Menambahkan fitur kompresi foto jurnal harian otomatis di sisi klien (CropperJS canvas diekspor sebagai JPEG 85%) dan di sisi server (PHP GD extension mengompresi gambar base64 ke JPEG 85% sebelum disimpan) untuk menghemat ruang penyimpanan server secara drastis tanpa mengurangi ketajaman gambar secara kasat mata.
+
+
+
+## [2026-06-06] - Modul 4 & 7
+### Added
+- Implementasi fitur **Cetak Sertifikat PKL** pada halaman Jurnal Siswa yang menghasilkan sertifikat dalam format PDF menggunakan DomPDF.
+- Pembuatan halaman **Pengaturan Template Sertifikat** (`PengaturanController`) pada dashboard Pokja yang memungkinkan edit teks paragraf pembuka sertifikat secara dinamis.
+- Penambahan widget **Monitoring Kaprog** pada dashboard Kepala Program untuk memantau metrik kehadiran harian, rasio pengisian jurnal, serta daftar siswa yang belum berpartisipasi.
+- Penambahan fitur tersembunyi **Bulk ACC** (Rapid Testing) pada dashboard Pembimbing Sekolah (diaktifkan dengan *triple-click* pada judul dashboard) yang menyetujui semua jurnal dan absensi tertunda secara massal.
+
+### Changed
+- Perubahan logika pencarian "Siswa PKL" bagi **Pembimbing DUDI**: pencarian siswa kini menggunakan `dudi_id` alih-alih `pembimbing_dudi_id` agar mentor tetap dapat melihat siswa yang belum diplot spesifik ke dirinya namun berada di perusahaan yang sama.
+- Pembaruan mekanisme proteksi akses aplikasi Siswa (Jurnal, Absensi, Laporan): siswa kini diwajibkan untuk berada pada status **Sedang PKL** atau **Selesai** (menandakan Surat Pengantar sudah di-ACC Kaprog dan DUDI membalas terima) sebelum dapat menggunakan fitur.
+
+### Added (Modul 4 - Pemetaan)
+- Implementasi **Peta Sebaran DUDI** menggunakan **Leaflet.js** dan **OpenStreetMap** dengan tampil di halaman `Peta DUDI` untuk role Pokja, Kaprog, dan Pembimbing Sekolah.
+- Integrasi **Leaflet.markercluster** untuk menghindari penumpukan marker saat peta di-zoom out; marker yang berdekatan otomatis menggumpal menjadi satu lingkaran angka.
+- Implementasi **Hover Tooltip** pada setiap marker DUDI yang menampilkan ringkasan jurusan siswa (nama jurusan dan jumlah siswa) saat mouse diarahkan di atas marker tanpa klik.
+- Implementasi **Click Popup** detail lengkap saat marker diklik: Nama DUDI, Alamat, Jenis Industri, Pimpinan, Telepon, Zona, serta daftar rincian nama seluruh siswa yang sedang PKL di sana.
+- Pembedaan warna marker berdasarkan **Jenis Industri** (Pemerintahan=Merah, Industri=Biru, Layanan=Ungu, Perdagangan=Kuning, Pendidikan=Hijau, Kesehatan=Pink, Teknologi=Cyan, Pertanian=Lime, Lainnya=Abu-abu) dilengkapi legenda visual.
+- Pembuatan tabel database **`zonas`** untuk menyimpan data zona wilayah (nama, warna isi, warna border, koordinat GeoJSON polygon, nomor zona).
+- Implementasi halaman **Kelola Zona** untuk Pokja menggunakan plugin **Leaflet Draw**, memungkinkan Pokja menggambar polygon zona langsung di atas peta, memilih warna, dan menyimpan ke database.
+- Rendering **Polygon Zona** di peta sebaran DUDI dengan warna semi-transparan dan garis batas putus-putus (*dashed stroke/border*).
+- Implementasi algoritma **Point-in-Polygon (Ray-Casting)** pada model `Zona` untuk mendeteksi secara otomatis zona wilayah sebuah DUDI berdasarkan koordinatnya.
+- Auto-deteksi zona berjalan otomatis setiap kali koordinat DUDI diperbarui (baik oleh Siswa maupun Pokja).
+- Penambahan fitur **Update Lokasi DUDI via GPS** pada halaman Profil Siswa: siswa cukup memencet tombol "Update Lokasi Saat Ini" dan koordinat GPS ponsel mereka otomatis disimpan sebagai lokasi DUDI tempatnya PKL.
+- Penambahan **Mini-map Interaktif (Leaflet)** pada form Edit DUDI di dashboard Pokja sebagai *fallback* untuk menentukan/menggeser koordinat secara manual dengan klik atau drag marker.
+- Penambahan kolom `zona_id` (FK) pada tabel `dudis` dengan relasi ke tabel `zonas`.
+- Penambahan menu **Peta DUDI** dan **Kelola Zona** pada sidebar Pokja, serta menu **Peta DUDI** pada sidebar Kaprog dan Pembimbing Sekolah.
+
 ## [2026-05-22]
 ### Changed
 - **Relokasi Hak Validasi Jurnal**: Validasi (Valid/Invalid) jurnal harian kini sepenuhnya menjadi tanggung jawab **Pembimbing DUDI (Mentor Industri)**. Pembimbing Sekolah (Guru) **tidak lagi bisa** memvalidasi jurnal.

@@ -3,13 +3,13 @@
         
         <!-- Logo Header -->
         <div class="text-center mb-8">
-            <img src="{{ asset('logo.png') }}" alt="Logo" class="w-16 h-16 mx-auto object-contain mb-4">
-            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-300">MAS-PKL</h1>
+            <img src="{{ $appLogoActive ?: asset('logo.png') }}" alt="Logo" class="w-16 h-16 mx-auto object-contain mb-4 rounded-xl">
+            <h1 class="text-3xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600 dark:from-blue-300 dark:to-blue-500 drop-shadow-sm transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-md cursor-default">{{ $appName }}</h1>
             <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Monitoring & Administrasi Siswa PKL</p>
         </div>
 
         @if ($errors->any())
-            <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <div class="mb-6 p-4 rounded-2xl bg-red-500/10 text-red-500 text-sm shadow-sm">
                 <ul class="list-disc list-inside">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -44,7 +44,7 @@
                     <input id="password" name="password" :type="showPassword ? 'text' : 'password'" required x-model="password"
                            class="w-full pl-10 pr-10 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all"
                            placeholder="••••••••">
-                    <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors">
+                    <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
                         <i data-lucide="eye" x-show="!showPassword" x-cloak class="h-5 w-5"></i>
                         <i data-lucide="eye-off" x-show="showPassword" x-cloak class="h-5 w-5"></i>
                     </button>
@@ -67,7 +67,7 @@
         </form>
 
         <div class="mt-8 text-center border-t border-slate-200/50 dark:border-slate-700/50 pt-6">
-            <p class="text-xs text-slate-500 dark:text-slate-400">© 2026 SMK Negeri 1. All rights reserved.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">©2026 RPL SMKN 1 CIAMIS. All rights reserved.</p>
         </div>
     </div>
 </x-guest-layout>

@@ -45,6 +45,10 @@ class ImportController extends Controller
             $headers = ['nama_lengkap', 'username', 'email', 'password', 'jabatan', 'no_hp', 'nama_perusahaan'];
             $exampleRow = ['Eko Prasetyo', 'ekoprasetyo', 'eko@example.com', 'mentor123', 'Senior Developer', '085712345678', 'PT Solusi Digital'];
             $filename = 'template_pembimbing_dudi.xlsx';
+        } elseif ($type === 'kaprog') {
+            $headers = ['nama_lengkap', 'username', 'email', 'password', 'program_keahlian'];
+            $exampleRow = ['Drs. Ahmad Yusuf, M.T.', 'ahmadyusuf', 'ahmad@example.com', 'kaprog123', 'Pengembangan Perangkat Lunak dan Gim'];
+            $filename = 'template_kaprog.xlsx';
         } else {
             abort(404);
         }
@@ -189,7 +193,7 @@ class ImportController extends Controller
                 $validator = Validator::make($row, [
                     'nis' => 'required|numeric',
                     'nama_lengkap' => 'required|string|max:255',
-                    'email' => 'required|email',
+                    'email' => 'nullable|email',
                     'password' => 'required|min:6',
                     'kelas' => 'required|string',
                     'jenis_kelamin' => 'required|in:L,P,l,p',
@@ -205,7 +209,7 @@ class ImportController extends Controller
                 }
 
                 // Check duplicates in database
-                if (User::where('email', $row['email'])->exists()) {
+                if (!empty($row['email']) && User::where('email', $row['email'])->exists()) {
                     $errors[] = "Baris {$lineNumber}: Email '{$row['email']}' sudah terdaftar di sistem.";
                     continue;
                 }
@@ -227,7 +231,7 @@ class ImportController extends Controller
                     $user = User::create([
                         'name' => $row['nama_lengkap'],
                         'username' => $row['nis'],
-                        'email' => $row['email'],
+                        'email' => empty($row['email']) ? null : $row['email'],
                         'password' => Hash::make($row['password']),
                         'role' => 'siswa',
                         'is_active' => true,
@@ -404,7 +408,7 @@ class ImportController extends Controller
                     'username' => 'required|alpha_dash|max:50',
                     'email' => 'required|email',
                     'password' => 'required|min:6',
-                    'tipe' => 'required|in:kejuruan,umum',
+                    'tipe' => 'required|in:kejuruan,umum,keduanya',
                     'no_hp' => 'nullable',
                     'mapel_cp' => 'nullable',
                     'konsentrasi_keahlian' => 'required',
@@ -573,6 +577,91 @@ class ImportController extends Controller
 
             DB::commit();
             return back()->with('success', "Berhasil mengimpor {$importCount} data pembimbing DUDI.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan sistem saat mengimpor data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Import Kaprog (Head of Program) Data.
+     */
+    public function importKaprog(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        $rows = $this->parseExcel($request->file('file'));
+        if (empty($rows)) {
+            return back()->with('error', 'File Excel kosong atau tidak valid.');
+        }
+
+        $errors = [];
+        $importCount = 0;
+
+        $programs = \App\Models\ProgramKeahlian::pluck('id', 'nama')
+            ->mapWithKeys(fn($id, $nama) => [strtolower(trim($nama)) => $id]);
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($rows as $index => $row) {
+                $lineNumber = $index + 2;
+
+                if (empty(array_filter($row))) continue;
+
+                $validator = Validator::make($row, [
+                    'nama_lengkap' => 'required|string|max:255',
+                    'username' => 'required|alpha_dash|max:50',
+                    'email' => 'required|email',
+                    'password' => 'required|min:6',
+                    'program_keahlian' => 'required',
+                ]);
+
+                if ($validator->fails()) {
+                    $errors[] = "Baris {$lineNumber}: " . implode(', ', $validator->errors()->all());
+                    continue;
+                }
+
+                if (User::where('email', $row['email'])->exists()) {
+                    $errors[] = "Baris {$lineNumber}: Email '{$row['email']}' sudah terdaftar.";
+                    continue;
+                }
+                if (User::where('username', $row['username'])->exists()) {
+                    $errors[] = "Baris {$lineNumber}: Username '{$row['username']}' sudah terdaftar.";
+                    continue;
+                }
+
+                $progName = strtolower(trim($row['program_keahlian']));
+                if (!isset($programs[$progName])) {
+                    $errors[] = "Baris {$lineNumber}: Program keahlian '{$row['program_keahlian']}' tidak ditemukan.";
+                    continue;
+                }
+
+                if (empty($errors)) {
+                    User::create([
+                        'name' => $row['nama_lengkap'],
+                        'username' => $row['username'],
+                        'email' => $row['email'],
+                        'password' => Hash::make($row['password']),
+                        'role' => 'kaprog',
+                        'program_keahlian_id' => $programs[$progName],
+                        'is_active' => true,
+                    ]);
+
+                    $importCount++;
+                }
+            }
+
+            if (!empty($errors)) {
+                DB::rollBack();
+                return back()->with('import_errors', $errors);
+            }
+
+            DB::commit();
+            return back()->with('success', "Berhasil mengimpor {$importCount} data Kaprog.");
 
         } catch (\Exception $e) {
             DB::rollBack();
