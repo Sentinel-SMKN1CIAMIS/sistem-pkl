@@ -4,6 +4,8 @@
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         window.deferredPwaPrompt = e;
+        // Jika event ini muncul, berarti aplikasi pasti BELUM di-install (atau sudah di-uninstall)
+        localStorage.removeItem('pwa_installed_flag');
         window.dispatchEvent(new Event('pwa-ready'));
     });
 </script>
@@ -65,8 +67,10 @@
                 const userAgent = window.navigator.userAgent.toLowerCase();
                 this.isIos = /iphone|ipad|ipod/.test(userAgent);
                 const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone) || window.matchMedia('(display-mode: standalone)').matches;
+                const isAlreadyInstalled = localStorage.getItem('pwa_installed_flag');
 
-                if (isInStandaloneMode) {
+                // Jangan tampilkan jika dalam mode standalone, ATAU sedang dalam proses OS installing
+                if (isInStandaloneMode || isAlreadyInstalled) {
                     return;
                 }
 
@@ -80,10 +84,14 @@
 
                 // Selalu tampilkan setelah 1.5 detik jika belum di mode standalone
                 setTimeout(() => {
-                    this.show = true;
+                    // Pastikan tidak tampil jika flag sudah diset oleh tab lain
+                    if (!localStorage.getItem('pwa_installed_flag')) {
+                        this.show = true;
+                    }
                 }, 1500);
 
                 window.addEventListener('appinstalled', () => {
+                    localStorage.setItem('pwa_installed_flag', 'true');
                     this.show = false;
                     this.deferredPrompt = null;
                 });
@@ -94,7 +102,18 @@
                     this.deferredPrompt.prompt();
                     const { outcome } = await this.deferredPrompt.userChoice;
                     if (outcome === 'accepted') {
-                        console.log('User accepted the install prompt');
+                        // Tandai di localStorage bahwa OS sedang memproses instalasi
+                        localStorage.setItem('pwa_installed_flag', 'true');
+                        
+                        if (window.Swal) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Sedang Menginstall...',
+                                text: 'Aplikasi sedang ditambahkan ke layar utama. Tergantung tipe HP Anda, proses ini memakan waktu 5-30 detik. Silakan cek layar utama HP Anda sebentar lagi.',
+                                showConfirmButton: true,
+                                confirmButtonColor: '#2563eb'
+                            });
+                        }
                     }
                     this.deferredPrompt = null;
                     this.show = false;
