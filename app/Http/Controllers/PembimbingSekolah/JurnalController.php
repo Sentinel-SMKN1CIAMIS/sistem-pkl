@@ -89,6 +89,7 @@ class JurnalController extends Controller
     public function approve(Request $request, Jurnal $jurnal)
     {
         $jurnal->update([
+            'status' => 'valid',
             'approval_status' => 'approved',
             'approved_by' => auth()->id(),
             'approved_at' => now(),
@@ -115,6 +116,7 @@ class JurnalController extends Controller
         ]);
 
         $jurnal->update([
+            'status' => 'invalid',
             'approval_status' => 'rejected',
             'approved_by' => auth()->id(),
             'approved_at' => now(),

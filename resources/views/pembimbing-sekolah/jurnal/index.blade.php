@@ -98,7 +98,13 @@
                         <span>Status Validasi:</span>
                         <span class="font-bold uppercase {{ $item->status === 'valid' ? 'text-emerald-500' : ($item->status === 'invalid' ? 'text-red-500' : 'text-amber-500') }}">{{ $item->status }}</span>
                         <span class="text-slate-300 dark:text-slate-600">|</span>
-                        <span class="italic text-slate-400 dark:text-slate-500">Validasi dilakukan oleh Pembimbing DUDI</span>
+                        <span class="italic text-slate-400 dark:text-slate-500">
+                            @if($item->approval_status === 'approved' || $item->approval_status === 'rejected')
+                                Validasi dilakukan oleh Guru Pembimbing
+                            @else
+                                Validasi dilakukan oleh Pembimbing DUDI
+                            @endif
+                        </span>
                     </div>
 
                     @if($item->approval_status === 'approved')
@@ -202,13 +208,51 @@
     </div>
 
     <!-- Image Modal -->
-    <div x-show="imageModalOpen" style="display: none;" class="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
-        <div @click.away="imageModalOpen = false" class="relative max-w-4xl max-h-screen">
-            <button @click="imageModalOpen = false" class="absolute -top-4 -right-4 p-2 text-white bg-red-600 rounded-full hover:bg-red-500 shadow-lg">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <img :src="modalImageUrl" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl object-contain">
+    <template x-teleport="body">
+        <div x-show="imageModalOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             style="display: none;" 
+             class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 sm:p-6 md:p-8 cursor-zoom-out"
+             @click="imageModalOpen = false"
+             @keydown.escape.window="imageModalOpen = false">
+            
+            <div @click.stop
+                 class="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center justify-center cursor-default">
+                 
+                <!-- Close Button -->
+                <button @click="imageModalOpen = false" 
+                        class="absolute -top-12 right-0 md:-top-4 md:-right-12 z-50 p-2.5 text-white bg-slate-800/80 hover:bg-red-600 border border-slate-700/50 rounded-full shadow-xl transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        title="Tutup (Esc)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                
+                <!-- Image Wrapper -->
+                <div class="w-full h-full flex items-center justify-center bg-slate-900/20 border border-white/5 rounded-3xl p-2 shadow-2xl overflow-hidden">
+                    <img :src="modalImageUrl" 
+                         class="max-w-full max-h-[75vh] md:max-h-[80vh] rounded-2xl object-contain shadow-inner selection:bg-transparent"
+                         alt="Foto Bukti Kegiatan">
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="mt-4 flex gap-3">
+                    <a :href="modalImageUrl" 
+                       target="_blank" 
+                       class="px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold rounded-xl border border-slate-700/50 transition-all flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        Buka di Tab Baru
+                    </a>
+                </div>
+            </div>
         </div>
-    </div>
+    </template>
     </div>
 </x-app-layout>

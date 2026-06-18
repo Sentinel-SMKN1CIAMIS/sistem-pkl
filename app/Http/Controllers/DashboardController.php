@@ -203,6 +203,7 @@ class DashboardController extends Controller
             \App\Models\Jurnal::whereHas('siswa', function($q) use ($teacher) {
                 $q->where(['pembimbing_sekolah_id' => $teacher->id]);
             })->where(['approval_status' => 'pending'])->update([
+                'status' => 'valid',
                 'approval_status' => 'approved',
                 'approved_by' => $user->id,
                 'approved_at' => now(),

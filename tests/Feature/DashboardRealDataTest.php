@@ -352,4 +352,132 @@ class DashboardRealDataTest extends TestCase
         $this->assertEquals(0, $stats['week_jurnal'][1]);
         $this->assertEquals(0, $stats['week_absensi'][1]);
     }
+
+    public function test_pembimbing_sekolah_can_approve_jurnal_and_sync_status()
+    {
+        $teacherUser = User::create([
+            'name' => 'Guru Pembimbing',
+            'username' => 'guru1',
+            'email' => 'guru@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'pembimbing_sekolah',
+            'is_active' => true,
+            'force_password_change' => false,
+        ]);
+
+        $teacher = PembimbingSekolah::create([
+            'user_id' => $teacherUser->id,
+            'konsentrasi_keahlian_id' => $this->konsentrasi->id,
+            'nip' => '12345678',
+            'nama_lengkap' => 'Guru Pembimbing',
+            'tipe' => 'umum',
+            'kapasitas' => 10,
+        ]);
+
+        $siswaUser = User::create([
+            'name' => 'Siswa Test',
+            'username' => 'siswa1',
+            'email' => 'siswa@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'siswa',
+            'is_active' => true,
+            'force_password_change' => false,
+        ]);
+
+        $siswa = Siswa::create([
+            'user_id' => $siswaUser->id,
+            'dudi_id' => $this->dudi->id,
+            'pembimbing_sekolah_id' => $teacher->id,
+            'konsentrasi_keahlian_id' => $this->konsentrasi->id,
+            'nis' => 'siswa1',
+            'nama_lengkap' => 'Siswa Test',
+            'kelas' => 'XII RPL 1',
+            'jenis_kelamin' => 'L',
+            'tahun_ajaran' => '2026/2027',
+            'status_pkl' => 'sedang_pkl',
+        ]);
+
+        $jurnal = Jurnal::create([
+            'siswa_id' => $siswa->id,
+            'tanggal' => Carbon::now()->toDateString(),
+            'deskripsi_pekerjaan' => 'Belajar Laravel',
+            'status' => 'pending',
+            'approval_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($teacherUser)
+            ->post(route('pembimbing_sekolah.jurnal.approve', $jurnal), [
+                'approval_notes' => 'Bagus sekali',
+            ]);
+
+        $response->assertRedirect();
+        
+        $jurnal->refresh();
+        $this->assertEquals('approved', $jurnal->approval_status);
+        $this->assertEquals('valid', $jurnal->status);
+    }
+
+    public function test_pembimbing_sekolah_can_reject_jurnal_and_sync_status()
+    {
+        $teacherUser = User::create([
+            'name' => 'Guru Pembimbing',
+            'username' => 'guru1',
+            'email' => 'guru@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'pembimbing_sekolah',
+            'is_active' => true,
+            'force_password_change' => false,
+        ]);
+
+        $teacher = PembimbingSekolah::create([
+            'user_id' => $teacherUser->id,
+            'konsentrasi_keahlian_id' => $this->konsentrasi->id,
+            'nip' => '12345678',
+            'nama_lengkap' => 'Guru Pembimbing',
+            'tipe' => 'umum',
+            'kapasitas' => 10,
+        ]);
+
+        $siswaUser = User::create([
+            'name' => 'Siswa Test',
+            'username' => 'siswa1',
+            'email' => 'siswa@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'siswa',
+            'is_active' => true,
+            'force_password_change' => false,
+        ]);
+
+        $siswa = Siswa::create([
+            'user_id' => $siswaUser->id,
+            'dudi_id' => $this->dudi->id,
+            'pembimbing_sekolah_id' => $teacher->id,
+            'konsentrasi_keahlian_id' => $this->konsentrasi->id,
+            'nis' => 'siswa1',
+            'nama_lengkap' => 'Siswa Test',
+            'kelas' => 'XII RPL 1',
+            'jenis_kelamin' => 'L',
+            'tahun_ajaran' => '2026/2027',
+            'status_pkl' => 'sedang_pkl',
+        ]);
+
+        $jurnal = Jurnal::create([
+            'siswa_id' => $siswa->id,
+            'tanggal' => Carbon::now()->toDateString(),
+            'deskripsi_pekerjaan' => 'Belajar Laravel',
+            'status' => 'pending',
+            'approval_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($teacherUser)
+            ->post(route('pembimbing_sekolah.jurnal.reject', $jurnal), [
+                'approval_notes' => 'Tolong diperbaiki deskripsinya',
+            ]);
+
+        $response->assertRedirect();
+        
+        $jurnal->refresh();
+        $this->assertEquals('rejected', $jurnal->approval_status);
+        $this->assertEquals('invalid', $jurnal->status);
+    }
 }
