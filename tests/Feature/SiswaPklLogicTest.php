@@ -237,6 +237,7 @@ class SiswaPklLogicTest extends TestCase
             'pimpinan' => 'Pimpinan Baru',
             'alamat' => 'Alamat Baru',
             'kota' => 'Kota Baru',
+            'no_telp' => '08123456789',
         ]);
 
         $response->assertRedirect(route('siswa.pengajuan_pkl.status'));
@@ -408,5 +409,21 @@ class SiswaPklLogicTest extends TestCase
             'to_user_id' => $this->pokja->id,
             'judul' => 'Pengajuan PKL Baru (Butuh Validasi)',
         ]);
+    }
+
+    public function test_new_dudi_submission_requires_phone_number()
+    {
+        $this->actingAs($this->siswa->user);
+
+        // Submit without no_telp
+        $response = $this->post(route('siswa.pengajuan_pkl.store'), [
+            'nama_perusahaan' => 'PT Baru Tanpa Telepon',
+            'pimpinan' => 'Pimpinan Baru',
+            'alamat' => 'Alamat Baru',
+            'kota' => 'Kota Baru',
+            // no_telp is missing
+        ]);
+
+        $response->assertSessionHasErrors('no_telp');
     }
 }

@@ -17,10 +17,10 @@
     </div>
 
     <div class="glass-card p-6">
-        <div class="overflow-x-auto lg:overflow-visible">
+        <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="border-b border-slate-200 dark:border-slate-700 text-sm">
+                    <tr class="border-b border-slate-200 dark:border-slate-700 text-sm whitespace-nowrap">
                         <!-- Select All Checkbox -->
                         <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium w-10">
                             <input type="checkbox" id="select-all" class="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer">
@@ -34,7 +34,7 @@
                 </thead>
                 <tbody class="text-sm">
                     @forelse($pengajuans as $pengajuan)
-                    <tr class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <tr class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap">
                         <!-- Individual Checkbox -->
                         <td class="py-3 px-4">
                             <input type="checkbox" name="ids[]" value="{{ $pengajuan->id }}" form="bulk-delete-form" class="submission-checkbox rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer">
@@ -53,13 +53,13 @@
                         </td>
                         <td class="py-3 px-4">
                             @if($pengajuan->status === 'menunggu')
-                                <span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">Menunggu Persetujuan Kaprog</span>
+                                <span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium whitespace-nowrap">Menunggu Persetujuan Kaprog</span>
                             @elseif($pengajuan->status === 'disetujui_kaprog')
-                                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">Disetujui Kaprog (Menunggu Validasi Pokja)</span>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium whitespace-nowrap">Disetujui Kaprog (Menunggu Validasi Pokja)</span>
                             @elseif($pengajuan->status === 'disetujui')
-                                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">Disetujui Pokja</span>
+                                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium whitespace-nowrap">Disetujui Pokja</span>
                             @else
-                                <span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-medium">Ditolak</span>
+                                <span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-medium whitespace-nowrap">Ditolak</span>
                             @endif
                         </td>
                         <td class="py-3 px-4 text-right whitespace-nowrap">

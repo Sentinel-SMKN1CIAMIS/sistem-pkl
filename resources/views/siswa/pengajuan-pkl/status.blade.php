@@ -49,19 +49,19 @@
                         <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ $pengajuan->nama_perusahaan }}</h2>
                         <p class="text-sm mt-0.5">
                             @if($pengajuan->status === 'menunggu')
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-medium">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-medium whitespace-nowrap">
                                     <i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Menunggu Persetujuan Kaprog
                                 </span>
                             @elseif($pengajuan->status === 'disetujui_kaprog')
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-xs font-medium animate-pulse">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-xs font-medium animate-pulse whitespace-nowrap">
                                     <i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Menunggu Validasi Pokja
                                 </span>
                             @elseif($pengajuan->status === 'disetujui')
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium whitespace-nowrap">
                                     <i data-lucide="check" class="w-3 h-3"></i> {{ $pengajuan->dudi_id ? 'Disetujui' : 'Disetujui Pokja' }}
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-medium">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-medium whitespace-nowrap">
                                     <i data-lucide="x" class="w-3 h-3"></i> Ditolak
                                 </span>
                             @endif

@@ -45,7 +45,11 @@ class PengajuanPklController extends Controller
             'pimpinan'           => 'nullable|string|max:255',
             'alamat'             => 'required_without:dudi_id|nullable|string|max:1000',
             'kota'               => 'required_without:dudi_id|nullable|string|max:100',
-            'no_telp'            => 'nullable|string|max:30',
+            'no_telp'            => 'required_without:dudi_id|nullable|string|max:30',
+        ], [
+            'alamat.required_without' => 'Alamat lengkap wajib diisi untuk tempat PKL baru.',
+            'kota.required_without' => 'Kota wajib diisi untuk tempat PKL baru.',
+            'no_telp.required_without' => 'No. telepon perusahaan wajib diisi untuk tempat PKL baru.',
         ]);
 
         $siswa = auth()->user()->siswa;
