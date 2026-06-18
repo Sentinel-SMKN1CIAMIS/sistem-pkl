@@ -118,16 +118,26 @@
                     this.deferredPrompt = null;
                     this.show = false;
                 } else {
-                    // Fallback jika browser tidak memicu event (misalnya Firefox, Incognito, In-App Browser)
+                    // Fallback jika browser tidak memicu event (misalnya sudah di-install, Firefox, Incognito, In-App Browser)
                     if (window.Swal) {
                         Swal.fire({
                             icon: 'info',
-                            title: 'Pemasangan Manual',
-                            text: 'Browser Anda tidak mendukung instalasi otomatis 1-klik. Silakan tap menu "Titik Tiga" (⋮) di pojok kanan atas, lalu pilih "Add to Home screen" atau "Install app".',
-                            confirmButtonColor: '#2563eb'
+                            title: 'Status Pemasangan',
+                            html: `
+                                <div class="text-sm text-left text-slate-600">
+                                    <p class="mb-3">Sepertinya <b>aplikasi sudah ter-install</b> di perangkat Anda. Silakan cek layar utama (Home Screen) HP Anda.</p>
+                                    <p class="mb-2">Jika belum ada, browser yang Anda gunakan saat ini mungkin tidak mendukung instalasi otomatis 1-klik. Anda bisa memasangnya secara manual:</p>
+                                    <ol class="list-decimal ml-4">
+                                        <li class="mb-1">Tap menu <b>Titik Tiga (⋮)</b> atau <b>Share</b> di pojok browser.</li>
+                                        <li>Pilih <b>"Add to Home screen"</b> atau <b>"Install app"</b>.</li>
+                                    </ol>
+                                </div>
+                            `,
+                            confirmButtonColor: '#2563eb',
+                            confirmButtonText: 'Baik, Mengerti'
                         });
                     } else {
-                        alert('Browser Anda tidak mendukung instalasi otomatis. Silakan tap menu "Titik Tiga" (⋮) di pojok kanan atas browser, lalu pilih "Add to Home screen" atau "Install app".');
+                        alert('Jika aplikasi sudah ter-install, silakan cek Home Screen Anda. Jika belum, tap menu "Titik Tiga" (⋮) di browser, lalu pilih "Add to Home screen".');
                     }
                 }
             },
