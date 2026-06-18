@@ -45,13 +45,17 @@
         <div class="glass-card p-6 border-t-2 border-slate-200/50 dark:border-slate-700/50">
             <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Statistik Bimbingan Anda</h3>
             <div class="relative h-64 flex items-center justify-center">
-                <canvas id="sekolahBimbinganChart"></canvas>
+                <canvas id="sekolahBimbinganChart"
+                        data-siswa-count="{{ $stats['siswa_count'] ?? 0 }}"
+                        data-jurnal-masuk="{{ $stats['jurnal_masuk'] ?? 0 }}"
+                        data-jurnal-pending="{{ $stats['jurnal_pending'] ?? 0 }}"></canvas>
             </div>
         </div>
         <div class="glass-card p-6 border-t-2 border-slate-200/50 dark:border-slate-700/50">
             <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Rata-Rata Validasi Jurnal Mingguan</h3>
             <div class="relative h-64 flex items-center justify-center">
-                <canvas id="sekolahJurnalChart"></canvas>
+                <canvas id="sekolahJurnalChart"
+                        data-weeks-evaluated='{!! json_encode($stats["weeks_evaluated"] ?? [0, 0, 0, 0]) !!}'></canvas>
             </div>
         </div>
     </div>
@@ -88,13 +92,17 @@
                 });
             }
 
-            const ctxBimbingan = document.getElementById('sekolahBimbinganChart').getContext('2d');
+            const canvasBimbingan = document.getElementById('sekolahBimbinganChart');
+            const siswaCount = parseInt(canvasBimbingan.getAttribute('data-siswa-count')) || 0;
+            const jurnalMasuk = parseInt(canvasBimbingan.getAttribute('data-jurnal-masuk')) || 0;
+            const jurnalPending = parseInt(canvasBimbingan.getAttribute('data-jurnal-pending')) || 0;
+            const ctxBimbingan = canvasBimbingan.getContext('2d');
             new Chart(ctxBimbingan, {
                 type: 'polarArea',
                 data: {
                     labels: ['Siswa Terbimbing', 'Jurnal Masuk', 'Validasi Pending'],
                     datasets: [{
-                        data: [{{ $stats['siswa_count'] ?? 10 }}, {{ $stats['jurnal_masuk'] ?? 45 }}, {{ $stats['jurnal_pending'] ?? 5 }}],
+                        data: [siswaCount, jurnalMasuk, jurnalPending],
                         backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(245, 158, 11, 0.7)'],
                         borderWidth: 0
                     }]
@@ -110,18 +118,26 @@
                                 font: { family: 'Plus Jakarta Sans, sans-serif', weight: 'bold' }
                             }
                         }
+                    },
+                    scales: {
+                        r: {
+                            grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                            angleLines: { color: 'rgba(148, 163, 184, 0.1)' }
+                        }
                     }
                 }
             });
 
-            const ctxJurnal = document.getElementById('sekolahJurnalChart').getContext('2d');
+            const canvasJurnal = document.getElementById('sekolahJurnalChart');
+            const weeksEvaluated = JSON.parse(canvasJurnal.getAttribute('data-weeks-evaluated') || '[0,0,0,0]');
+            const ctxJurnal = canvasJurnal.getContext('2d');
             new Chart(ctxJurnal, {
                 type: 'bar',
                 data: {
-                    labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
+                    labels: ['4 Minggu Lalu', '3 Minggu Lalu', '2 Minggu Lalu', 'Minggu Ini'],
                     datasets: [{
-                        label: 'Jurnal Terevaluasi',
-                        data: [25, 34, 42, {{ $stats['jurnal_masuk'] ?? 45 }}],
+                        label: 'Jurnal Dievaluasi',
+                        data: weeksEvaluated,
                         backgroundColor: '#8b5cf6',
                         borderRadius: 6
                     }]
@@ -140,10 +156,14 @@
                     },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
-                        y: { grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8' } }
+                        y: { 
+                            grid: { color: 'rgba(148, 163, 184, 0.1)' }, 
+                            ticks: { color: '#94a3b8', stepSize: 1 } 
+                        }
                     }
                 }
             });
         });
     </script>
 </x-app-layout>
+

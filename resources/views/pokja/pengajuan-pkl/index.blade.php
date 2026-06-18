@@ -59,7 +59,7 @@
                         </td>
                         <td class="py-3 px-4">
                             @if($pengajuan->status === 'menunggu')
-                                <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Menunggu Kaprog</span>
+                                <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Menunggu Persetujuan Kaprog</span>
                             @elseif($pengajuan->status === 'disetujui_kaprog')
                                 <span class="px-2.5 py-1 bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-semibold animate-pulse">Butuh Validasi Pokja</span>
                             @elseif($pengajuan->status === 'disetujui')

@@ -53,9 +53,9 @@
                         </td>
                         <td class="py-3 px-4">
                             @if($pengajuan->status === 'menunggu')
-                                <span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">Menunggu Kaprog</span>
+                                <span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">Menunggu Persetujuan Kaprog</span>
                             @elseif($pengajuan->status === 'disetujui_kaprog')
-                                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">Disetujui Kaprog (Menunggu Pokja)</span>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">Disetujui Kaprog (Menunggu Validasi Pokja)</span>
                             @elseif($pengajuan->status === 'disetujui')
                                 <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">Disetujui Pokja</span>
                             @else

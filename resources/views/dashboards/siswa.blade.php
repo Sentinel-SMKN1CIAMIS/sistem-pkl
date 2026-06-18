@@ -106,7 +106,7 @@
         <div class="glass-card p-6 border-t-2 border-slate-200/50 dark:border-slate-700/50">
             <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Grafik Kehadiran Mingguan Anda</h3>
             <div class="relative h-64 flex items-center justify-center">
-                <canvas id="kehadiranSiswaChart"></canvas>
+                <canvas id="kehadiranSiswaChart" data-week-attendance='{!! json_encode($stats["week_attendance"] ?? [null, null, null, null, null]) !!}'></canvas>
             </div>
         </div>
     </div>
@@ -145,16 +145,17 @@
                     }
                 }
             });
-
             // Kehadiran Siswa Chart (Line)
-            const ctxKehadiran = document.getElementById('kehadiranSiswaChart').getContext('2d');
+            const canvasKehadiran = document.getElementById('kehadiranSiswaChart');
+            const weekAttendance = JSON.parse(canvasKehadiran.getAttribute('data-week-attendance') || '[null,null,null,null,null]');
+            const ctxKehadiran = canvasKehadiran.getContext('2d');
             new Chart(ctxKehadiran, {
                 type: 'line',
                 data: {
                     labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
                     datasets: [{
                         label: 'Kehadiran Anda (Jam Masuk)',
-                        data: [7.30, 7.25, 7.40, 7.15, 7.35],
+                        data: weekAttendance,
                         borderColor: '#3b82f6',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         borderWidth: 3,
@@ -172,11 +173,33 @@
                                 color: '#94a3b8',
                                 font: { family: 'Plus Jakarta Sans, sans-serif', weight: 'bold' }
                             }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed.y;
+                                    if (value === null || isNaN(value)) return 'Tidak Hadir / Belum Absen';
+                                    const hour = Math.floor(value);
+                                    const minutes = Math.round((value - hour) * 60);
+                                    return 'Jam Masuk: ' + (hour < 10 ? '0' : '') + hour + ':' + (minutes < 10 ? '0' : '') + minutes;
+                                }
+                            }
                         }
                     },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
-                        y: { grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8' } }
+                        y: { 
+                            grid: { color: 'rgba(148, 163, 184, 0.1)' }, 
+                            ticks: { 
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    if (value === null || isNaN(value)) return '';
+                                    const hour = Math.floor(value);
+                                    const minutes = Math.round((value - hour) * 60);
+                                    return (hour < 10 ? '0' : '') + hour + ':' + (minutes < 10 ? '0' : '') + minutes;
+                                }
+                            } 
+                        }
                     }
                 }
             });
