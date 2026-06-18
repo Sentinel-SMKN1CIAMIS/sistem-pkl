@@ -110,7 +110,7 @@
                             
                             <div class="p-3 bg-blue-500/5 border border-blue-500/10 rounded-xl mb-4 text-xs">
                                 <span class="font-bold text-blue-500 block mb-1">Catatan Persetujuan Kaprog:</span>
-                                <p class="text-slate-600 dark:text-slate-400">Disetujui oleh Kepala Program Keahlian.</p>
+                                <p class="text-slate-600 dark:text-slate-400">Disetujui oleh Kepala Program Keahlian <strong>{{ $pengajuan->siswa->konsentrasiKeahlian->programKeahlian->nama ?? 'Terkait' }}</strong>.</p>
                             </div>
 
                             <div class="space-y-3 mb-6 text-sm">

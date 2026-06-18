@@ -17,7 +17,7 @@ class PengajuanPklController extends Controller
     {
         // Tampilkan pengajuan yang berstatus 'disetujui_kaprog'
         // Namun kita juga tampilkan riwayat pengajuan 'disetujui' dan 'ditolak' agar Pokja bisa melihat riwayatnya
-        $query = PengajuanPkl::with('siswa', 'dudi')
+        $query = PengajuanPkl::with(['siswa.konsentrasiKeahlian.programKeahlian', 'dudi'])
             ->orderByRaw("CASE WHEN status = 'disetujui_kaprog' THEN 1 ELSE 2 END")
             ->latest();
 
