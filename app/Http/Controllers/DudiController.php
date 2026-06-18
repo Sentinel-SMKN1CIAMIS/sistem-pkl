@@ -47,14 +47,14 @@ class DudiController extends Controller
         }
 
         $dudis = $query->latest()->paginate(10)->withQueryString();
-        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        $concentrations = auth()->user()->getFilteredKonsentrasi();
 
         return view('pokja.dudi.index', compact('dudis', 'concentrations'));
     }
 
     public function create()
     {
-        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        $concentrations = auth()->user()->getFilteredKonsentrasi();
         return view('pokja.dudi.create', compact('concentrations'));
     }
 
@@ -89,7 +89,7 @@ class DudiController extends Controller
 
     public function edit(\App\Models\Dudi $dudi)
     {
-        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        $concentrations = auth()->user()->getFilteredKonsentrasi();
         $selectedConcentrationIds = $dudi->konsentrasiKeahlians->pluck('id')->toArray();
         if (empty($selectedConcentrationIds)) {
             $selectedConcentrationIds = [$dudi->konsentrasi_keahlian_id];

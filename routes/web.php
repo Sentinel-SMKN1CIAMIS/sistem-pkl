@@ -85,6 +85,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::middleware('role:kaprog')->prefix('kaprog')->name('kaprog.')->group(function () {
         Route::get('laporan', [\App\Http\Controllers\KaprogController::class, 'index'])->name('laporan.index');
         
+        // Data DUDI (Read-Only)
+        Route::get('dudi', [\App\Http\Controllers\DudiController::class, 'index'])->name('dudi.index');
+        
         // Pengajuan PKL
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
         Route::patch('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'update'])->name('pengajuan_pkl.update');

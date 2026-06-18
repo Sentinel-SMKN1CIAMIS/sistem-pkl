@@ -149,6 +149,7 @@
             $navItems = [
                 ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
                 ['name' => 'Pengajuan PKL', 'route' => 'kaprog.pengajuan_pkl.index', 'icon' => 'file-plus-2'],
+                ['name' => 'Data DUDI', 'route' => 'kaprog.dudi.index', 'icon' => 'building-2'],
                 ['name' => 'Peta DUDI', 'route' => 'shared.pemetaan.maps', 'icon' => 'map'],
                 ['name' => 'Laporan Kaprog', 'route' => 'kaprog.laporan.index', 'icon' => 'file-bar-chart-2'],
                 ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],

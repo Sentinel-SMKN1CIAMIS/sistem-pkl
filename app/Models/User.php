@@ -89,4 +89,18 @@ class User extends Authenticatable
             ->where('is_active', true)
             ->first();
     }
+
+    /**
+     * Get filtered Konsentrasi Keahlian based on user's role/scope
+     */
+    public function getFilteredKonsentrasi()
+    {
+        $query = KonsentrasiKeahlian::query();
+        if ($this->konsentrasi_keahlian_id) {
+            $query->where('id', $this->konsentrasi_keahlian_id);
+        } elseif ($this->program_keahlian_id) {
+            $query->where('program_keahlian_id', $this->program_keahlian_id);
+        }
+        return $query->get();
+    }
 }

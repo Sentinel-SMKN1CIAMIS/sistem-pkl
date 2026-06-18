@@ -63,14 +63,14 @@ class SiswaController extends Controller
         }
 
         $students = $query->paginate(10)->withQueryString();
-        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        $concentrations = auth()->user()->getFilteredKonsentrasi();
         
         return view('pokja.siswa.index', compact('students', 'concentrations'));
     }
 
     public function create()
     {
-        $concentrations = \App\Models\KonsentrasiKeahlian::all();
+        $concentrations = auth()->user()->getFilteredKonsentrasi();
         $dudis = \App\Models\Dudi::all();
         $pembimbingSekolah = \App\Models\PembimbingSekolah::all();
         $pembimbingDudi = \App\Models\PembimbingDudi::all();
