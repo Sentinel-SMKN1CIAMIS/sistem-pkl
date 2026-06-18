@@ -57,7 +57,7 @@
                 <i data-lucide="book" class="w-5 h-5"></i>
                 Cetak Portofolio
             </a>
-            @if(auth()->user()->siswa->status_pkl === 'selesai')
+            @if(auth()->user()->siswa?->status_pkl === 'selesai')
             <a href="{{ route('siswa.jurnal.sertifikat') }}" class="w-full sm:w-auto px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-xl shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2">
                 <i data-lucide="award" class="w-5 h-5"></i>
                 Cetak Sertifikat

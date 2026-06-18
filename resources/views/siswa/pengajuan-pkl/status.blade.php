@@ -109,7 +109,7 @@
                             </div>
                         </div>
 
-                        @if(auth()->user()->siswa->status_pkl === 'belum_mulai')
+                        @if(auth()->user()->siswa?->status_pkl === 'belum_mulai')
                             <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-2xl shadow-sm">
                                 <div class="flex items-start gap-3">
                                     <i data-lucide="info" class="w-5 h-5 text-blue-500 mt-0.5 shrink-0"></i>
@@ -189,7 +189,7 @@
                             </form>
                         </div>
 
-                        @if(auth()->user()->siswa->status_pkl === 'belum_mulai')
+                        @if(auth()->user()->siswa?->status_pkl === 'belum_mulai')
                             <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-2xl shadow-sm">
                                 <div class="flex items-start gap-3">
                                     <i data-lucide="info" class="w-5 h-5 text-blue-500 mt-0.5 shrink-0"></i>

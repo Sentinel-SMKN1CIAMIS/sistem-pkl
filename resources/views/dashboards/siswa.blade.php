@@ -10,7 +10,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Status Hari Ini</p>
-                    <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tighter">{{ auth()->user()->siswa->status_hari_ini }}</h3>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tighter">{{ auth()->user()->siswa?->status_hari_ini ?? '-' }}</h3>
                 </div>
                 <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center relative z-10">
                     <i data-lucide="activity" class="w-6 h-6 text-blue-400"></i>
@@ -19,7 +19,7 @@
             <div class="mt-4 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
                 <p class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2">
                     <i data-lucide="building-2" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                    {{ auth()->user()->siswa->dudi->nama ?? 'Belum Penempatan' }}
+                    {{ auth()->user()->siswa?->dudi?->nama ?? 'Belum Penempatan' }}
                 </p>
             </div>
         </div>
