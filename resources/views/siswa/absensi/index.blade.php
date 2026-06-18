@@ -99,7 +99,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Tanggal</label>
-                        <input type="date" name="tanggal" value="{{ Carbon::today()->toDateString() }}" max="{{ Carbon::today()->toDateString() }}" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="date" name="tanggal" value="{{ \Carbon\Carbon::today()->toDateString() }}" max="{{ \Carbon\Carbon::today()->toDateString() }}" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
                     <x-button type="submit" variant="blue" class="w-full" icon="send">
