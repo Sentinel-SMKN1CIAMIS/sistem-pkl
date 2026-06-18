@@ -683,5 +683,8 @@
             });
         </script>
     @endif
+    @if(auth()->check() && in_array(auth()->user()->role, ['siswa', 'pembimbing_sekolah', 'pembimbing_dudi', 'pokja', 'kaprog']))
+        @include('components.pwa-prompt')
+    @endif
 </body>
 </html>
