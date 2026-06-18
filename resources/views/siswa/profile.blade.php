@@ -135,7 +135,7 @@
                     <div class="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
                         <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
                             <i data-lucide="contact" class="w-4 h-4 text-emerald-400"></i>
-                            Kontak & Alamat
+                            Kontak & Alamat DUDI
                         </h4>
                         <div class="space-y-6">
                             <div>
