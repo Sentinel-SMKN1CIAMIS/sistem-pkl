@@ -10,6 +10,24 @@ class DudiController extends Controller
     {
         $query = \App\Models\Dudi::with(['konsentrasiKeahlian', 'konsentrasiKeahlians']);
 
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $userKonId = auth()->user()->konsentrasi_keahlian_id;
+            $query->where(function($q) use ($userKonId) {
+                $q->where('konsentrasi_keahlian_id', $userKonId)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                      $sub->where('konsentrasi_keahlians.id', $userKonId);
+                  });
+            });
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->where(function($q) use ($konsentrasiIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                      $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                  });
+            });
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {

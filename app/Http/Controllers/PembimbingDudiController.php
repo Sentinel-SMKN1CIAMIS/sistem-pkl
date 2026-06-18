@@ -11,7 +11,25 @@ class PembimbingDudiController extends Controller
      */
     public function index()
     {
-        $mentors = \App\Models\PembimbingDudi::with(['user', 'dudi'])->latest()->paginate(10);
+        $query = \App\Models\PembimbingDudi::with(['user', 'dudi'])->latest();
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $userKonId = auth()->user()->konsentrasi_keahlian_id;
+            $query->whereHas('dudi', function($q) use ($userKonId) {
+                $q->where('konsentrasi_keahlian_id', $userKonId)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                      $sub->where('konsentrasi_keahlians.id', $userKonId);
+                  });
+            });
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->whereHas('dudi', function($q) use ($konsentrasiIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                      $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                  });
+            });
+        }
+        $mentors = $query->paginate(10);
         return view('pokja.pembimbing-dudi.index', compact('mentors'));
     }
 

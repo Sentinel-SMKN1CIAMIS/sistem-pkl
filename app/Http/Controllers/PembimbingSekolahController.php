@@ -11,7 +11,14 @@ class PembimbingSekolahController extends Controller
      */
     public function index()
     {
-        $teachers = \App\Models\PembimbingSekolah::with(['user', 'konsentrasiKeahlian'])->latest()->paginate(10);
+        $query = \App\Models\PembimbingSekolah::with(['user', 'konsentrasiKeahlian'])->latest();
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $query->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+        }
+        $teachers = $query->paginate(10);
         return view('pokja.pembimbing-sekolah.index', compact('teachers'));
     }
 

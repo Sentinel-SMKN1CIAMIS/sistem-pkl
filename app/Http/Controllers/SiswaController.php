@@ -13,6 +13,13 @@ class SiswaController extends Controller
     {
         $query = \App\Models\Siswa::with(['user', 'konsentrasiKeahlian', 'dudi', 'pembimbingSekolah']);
 
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $query->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {

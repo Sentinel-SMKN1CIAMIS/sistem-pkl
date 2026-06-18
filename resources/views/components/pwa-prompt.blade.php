@@ -68,9 +68,10 @@
                 this.isIos = /iphone|ipad|ipod/.test(userAgent);
                 const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone) || window.matchMedia('(display-mode: standalone)').matches;
                 const isAlreadyInstalled = localStorage.getItem('pwa_installed_flag');
+                const isDismissed = localStorage.getItem('pwa_dismissed_flag');
 
-                // Jangan tampilkan jika dalam mode standalone, ATAU sedang dalam proses OS installing
-                if (isInStandaloneMode || isAlreadyInstalled) {
+                // Jangan tampilkan jika dalam mode standalone, ATAU sedang dalam proses OS installing, ATAU sudah di-dismiss user
+                if (isInStandaloneMode || isAlreadyInstalled || isDismissed) {
                     return;
                 }
 
@@ -143,7 +144,8 @@
             },
 
             dismiss() {
-                // Hanya menyembunyikan di halaman ini saat ini. Jika di-refresh, akan muncul lagi.
+                // Sembunyikan dan simpan di localStorage agar tidak muncul lagi
+                localStorage.setItem('pwa_dismissed_flag', 'true');
                 this.show = false;
             }
         }));

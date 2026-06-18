@@ -72,7 +72,7 @@
 
         if ($role === 'siswa') {
             $navItems = [
-                ['name' => 'Beranda', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
                 ['name' => 'Jurnal', 'route' => 'siswa.jurnal.index', 'icon' => 'book-open'],
                 ['name' => 'Absensi', 'route' => 'siswa.absensi.index', 'icon' => 'calendar-check'],
                 ['name' => 'Laporan PKL', 'route' => 'siswa.laporan.index', 'icon' => 'file-text'],
@@ -82,7 +82,7 @@
             ];
         } elseif ($role === 'pembimbing_sekolah') {
             $navItems = [
-                ['name' => 'Beranda', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
                 ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
                 ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
                 ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
@@ -93,7 +93,7 @@
             ];
         } elseif ($role === 'pembimbing_dudi') {
             $navItems = [
-                ['name' => 'Beranda', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
                 ['name' => 'Siswa PKL', 'route' => 'pembimbing_dudi.siswa.index', 'icon' => 'users'],
                 ['name' => 'Jurnal Siswa', 'route' => 'pembimbing_dudi.jurnal.index', 'icon' => 'file-check-2'],
                 ['name' => 'Validasi Kehadiran', 'route' => 'pembimbing_dudi.absensi.index', 'icon' => 'clipboard-check'],
@@ -102,7 +102,7 @@
             ];
         } elseif ($role === 'pokja') {
             $navItems = [
-                ['name' => 'Beranda', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
                 [
                     'name' => 'Kelola Akun',
                     'icon' => 'users',
@@ -147,7 +147,7 @@
             ];
         } elseif ($role === 'kaprog') {
             $navItems = [
-                ['name' => 'Beranda', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
                 ['name' => 'Pengajuan PKL', 'route' => 'kaprog.pengajuan_pkl.index', 'icon' => 'file-plus-2'],
                 ['name' => 'Peta DUDI', 'route' => 'shared.pemetaan.maps', 'icon' => 'map'],
                 ['name' => 'Laporan Kaprog', 'route' => 'kaprog.laporan.index', 'icon' => 'file-bar-chart-2'],
@@ -155,7 +155,7 @@
             ];
         } elseif ($role === 'super_admin') {
             $navItems = [
-                ['name' => 'Beranda', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
                 [
                     'name' => 'Kelola Akun',
                     'icon' => 'users',

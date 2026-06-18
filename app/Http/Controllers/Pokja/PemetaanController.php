@@ -16,8 +16,16 @@ class PemetaanController extends Controller
     {
         $search = $request->search;
         
-        $siswas = Siswa::with(['dudi', 'pembimbingSekolah', 'pembimbingDudi', 'konsentrasiKeahlian'])
-            ->when($search, function($query) use ($search) {
+        $query = Siswa::with(['dudi', 'pembimbingSekolah', 'pembimbingDudi', 'konsentrasiKeahlian']);
+        
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $query->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+        }
+
+        $siswas = $query->when($search, function($query) use ($search) {
                 $query->where('nama_lengkap', 'like', "%{$search}%")
                       ->orWhere('nis', 'like', "%{$search}%");
             })
@@ -25,8 +33,16 @@ class PemetaanController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        $totalSiswa = Siswa::count();
-        $terpetakan = Siswa::whereNotNull('dudi_id')
+        $baseSiswaQuery = Siswa::query();
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $baseSiswaQuery->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $baseSiswaQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+        }
+        
+        $totalSiswa = (clone $baseSiswaQuery)->count();
+        $terpetakan = (clone $baseSiswaQuery)->whereNotNull('dudi_id')
             ->whereNotNull('pembimbing_sekolah_id')
             ->whereNotNull('pembimbing_dudi_id')
             ->count();
@@ -39,10 +55,33 @@ class PemetaanController extends Controller
      */
     public function maps()
     {
-        $totalDudi = Dudi::count();
-        $dudiWithCoords = Dudi::whereNotNull('latitude')->whereNotNull('longitude')->count();
+        $dudiQuery = Dudi::query();
+        $siswaQuery = Siswa::query();
+
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $userKonId = auth()->user()->konsentrasi_keahlian_id;
+            $dudiQuery->where(function($q) use ($userKonId) {
+                $q->where('konsentrasi_keahlian_id', $userKonId)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                      $sub->where('konsentrasi_keahlians.id', $userKonId);
+                  });
+            });
+            $siswaQuery->where('konsentrasi_keahlian_id', $userKonId);
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $dudiQuery->where(function($q) use ($konsentrasiIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                      $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                  });
+            });
+            $siswaQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+        }
+
+        $totalDudi = (clone $dudiQuery)->count();
+        $dudiWithCoords = (clone $dudiQuery)->whereNotNull('latitude')->whereNotNull('longitude')->count();
         $totalZona = Zona::count();
-        $totalSiswa = Siswa::whereNotNull('dudi_id')->count();
+        $totalSiswa = (clone $siswaQuery)->whereNotNull('dudi_id')->count();
 
         return view('pokja.pemetaan.maps', compact('totalDudi', 'dudiWithCoords', 'totalZona', 'totalSiswa'));
     }
@@ -52,10 +91,27 @@ class PemetaanController extends Controller
      */
     public function mapsData()
     {
-        $dudis = Dudi::whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->with(['siswa.konsentrasiKeahlian', 'zona', 'konsentrasiKeahlians'])
-            ->get();
+        $dudiQuery = Dudi::whereNotNull('latitude')->whereNotNull('longitude');
+
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $userKonId = auth()->user()->konsentrasi_keahlian_id;
+            $dudiQuery->where(function($q) use ($userKonId) {
+                $q->where('konsentrasi_keahlian_id', $userKonId)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                      $sub->where('konsentrasi_keahlians.id', $userKonId);
+                  });
+            });
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $dudiQuery->where(function($q) use ($konsentrasiIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                      $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                  });
+            });
+        }
+
+        $dudis = $dudiQuery->with(['siswa.konsentrasiKeahlian', 'zona', 'konsentrasiKeahlians'])->get();
 
         $markers = $dudis->map(function ($dudi) {
             // Group students by konsentrasi keahlian

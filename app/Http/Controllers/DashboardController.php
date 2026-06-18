@@ -97,14 +97,53 @@ class DashboardController extends Controller
                 return view('dashboards.pembimbing-dudi', compact('stats'));
             case 'kaprog':
                 $today = \Carbon\Carbon::today();
-                $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_kaprog_{$today->format('Y-m-d')}", 300, function() use ($today) {
-                    $activeStudentsCount = \App\Models\Siswa::where(['status_pkl' => 'sedang_pkl'])->count();
+                $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_kaprog_{$user->id}_{$today->format('Y-m-d')}", 300, function() use ($today, $user) {
+                    $baseSiswaQuery = \App\Models\Siswa::query();
+                    $baseDudiQuery = \App\Models\Dudi::query();
+                    $basePembimbingQuery = \App\Models\PembimbingSekolah::query();
+                    $basePengajuanQuery = \App\Models\PengajuanPkl::query();
+
+                    if ($user->konsentrasi_keahlian_id) {
+                        $baseSiswaQuery->where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id);
+                        $basePembimbingQuery->where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id);
+                        
+                        $userKonId = $user->konsentrasi_keahlian_id;
+                        $baseDudiQuery->where(function($q) use ($userKonId) {
+                            $q->where('konsentrasi_keahlian_id', $userKonId)
+                              ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                                  $sub->where('konsentrasi_keahlians.id', $userKonId);
+                              });
+                        });
+
+                        $basePengajuanQuery->whereHas('siswa', function($q) use ($userKonId) {
+                            $q->where('konsentrasi_keahlian_id', $userKonId);
+                        });
+                    } elseif ($user->program_keahlian_id) {
+                        $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id');
+                        $baseSiswaQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+                        $basePembimbingQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+
+                        $baseDudiQuery->where(function($q) use ($konsentrasiIds) {
+                            $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                              ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                                  $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                              });
+                        });
+
+                        $basePengajuanQuery->whereHas('siswa', function($q) use ($konsentrasiIds) {
+                            $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+                        });
+                    }
+
+                    $activeStudentsCount = (clone $baseSiswaQuery)->where(['status_pkl' => 'sedang_pkl'])->count();
                     
                     // Absensi stats
-                    $absensiTodayCount = \App\Models\Absensi::whereDate('tanggal', $today)->distinct('siswa_id')->count();
+                    $absensiTodayCount = \App\Models\Absensi::whereDate('tanggal', $today)
+                        ->whereIn('siswa_id', (clone $baseSiswaQuery)->pluck('id'))
+                        ->distinct('siswa_id')->count();
                     $attendanceRate = $activeStudentsCount > 0 ? round(($absensiTodayCount / $activeStudentsCount) * 100) : 0;
                     
-                    $missingAttendance = \App\Models\Siswa::where(['status_pkl' => 'sedang_pkl'])
+                    $missingAttendance = (clone $baseSiswaQuery)->where(['status_pkl' => 'sedang_pkl'])
                         ->whereDoesntHave('absensi', function($q) use ($today) {
                             $q->whereDate('tanggal', $today);
                         })
@@ -114,10 +153,12 @@ class DashboardController extends Controller
                         ->toArray();
 
                     // Jurnal stats
-                    $jurnalTodayCount = \App\Models\Jurnal::whereDate('tanggal', $today)->distinct('siswa_id')->count();
+                    $jurnalTodayCount = \App\Models\Jurnal::whereDate('tanggal', $today)
+                        ->whereIn('siswa_id', (clone $baseSiswaQuery)->pluck('id'))
+                        ->distinct('siswa_id')->count();
                     $journalRate = $activeStudentsCount > 0 ? round(($jurnalTodayCount / $activeStudentsCount) * 100) : 0;
                     
-                    $missingJournal = \App\Models\Siswa::where(['status_pkl' => 'sedang_pkl'])
+                    $missingJournal = (clone $baseSiswaQuery)->where(['status_pkl' => 'sedang_pkl'])
                         ->whereDoesntHave('jurnal', function($q) use ($today) {
                             $q->whereDate('tanggal', $today);
                         })
@@ -127,10 +168,10 @@ class DashboardController extends Controller
                         ->toArray();
 
                     return [
-                        'total_siswa' => \App\Models\Siswa::count(),
-                        'total_dudi' => \App\Models\Dudi::count(),
-                        'total_pembimbing' => \App\Models\PembimbingSekolah::count(),
-                        'pengajuan_menunggu' => \App\Models\PengajuanPkl::where(['status' => 'menunggu'])->count(),
+                        'total_siswa' => (clone $baseSiswaQuery)->count(),
+                        'total_dudi' => (clone $baseDudiQuery)->count(),
+                        'total_pembimbing' => (clone $basePembimbingQuery)->count(),
+                        'pengajuan_menunggu' => (clone $basePengajuanQuery)->where(['status' => 'menunggu'])->count(),
                         'attendance_rate' => $attendanceRate,
                         'journal_rate' => $journalRate,
                         'missing_attendance' => $missingAttendance,
@@ -143,17 +184,49 @@ class DashboardController extends Controller
 
                 return view('dashboards.kaprog', compact('stats'));
             case 'pokja':
-                $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_{$role}", 300, function() {
+                $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_{$role}_{$user->id}", 300, function() use ($user) {
                     $startOfWeek = \Carbon\Carbon::now()->startOfWeek(1);
                     $endOfWeek = $startOfWeek->copy()->addDays(4);
 
+                    $baseSiswaQuery = \App\Models\Siswa::query();
+                    $baseDudiQuery = \App\Models\Dudi::query();
+                    $basePembimbingQuery = \App\Models\PembimbingSekolah::query();
+
+                    if ($user->konsentrasi_keahlian_id) {
+                        $baseSiswaQuery->where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id);
+                        $basePembimbingQuery->where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id);
+                        
+                        $userKonId = $user->konsentrasi_keahlian_id;
+                        $baseDudiQuery->where(function($q) use ($userKonId) {
+                            $q->where('konsentrasi_keahlian_id', $userKonId)
+                              ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                                  $sub->where('konsentrasi_keahlians.id', $userKonId);
+                              });
+                        });
+                    } elseif ($user->program_keahlian_id) {
+                        $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id');
+                        $baseSiswaQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+                        $basePembimbingQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+
+                        $baseDudiQuery->where(function($q) use ($konsentrasiIds) {
+                            $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                              ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                                  $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                              });
+                        });
+                    }
+
+                    $siswaIds = (clone $baseSiswaQuery)->pluck('id');
+
                     $jurnalCounts = \App\Models\Jurnal::whereBetween('tanggal', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
+                        ->whereIn('siswa_id', $siswaIds)
                         ->groupBy('tanggal')
                         ->selectRaw('tanggal, count(*) as total')
                         ->pluck('total', 'tanggal')
                         ->toArray();
 
                     $absensiCounts = \App\Models\Absensi::whereBetween('tanggal', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
+                        ->whereIn('siswa_id', $siswaIds)
                         ->where(['status' => 'hadir'])
                         ->groupBy('tanggal')
                         ->selectRaw('tanggal, count(*) as total')
@@ -169,9 +242,9 @@ class DashboardController extends Controller
                     }
 
                     return [
-                        'total_siswa' => \App\Models\Siswa::count(),
-                        'total_dudi' => \App\Models\Dudi::count(),
-                        'total_pembimbing' => \App\Models\PembimbingSekolah::count(),
+                        'total_siswa' => (clone $baseSiswaQuery)->count(),
+                        'total_dudi' => (clone $baseDudiQuery)->count(),
+                        'total_pembimbing' => (clone $basePembimbingQuery)->count(),
                         'week_jurnal' => $weekJurnalData,
                         'week_absensi' => $weekAbsensiData,
                     ];

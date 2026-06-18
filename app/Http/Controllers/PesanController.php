@@ -61,12 +61,56 @@ class PesanController extends Controller
             $kontak = $kontak->merge($students);
         }
 
-        // 4. If admin, pokja, or kaprog (general roles)
-        if (in_array($role, ['pokja', 'super_admin', 'kaprog'])) {
+        // 4. Super admin and Pokja
+        if (in_array($role, ['pokja', 'super_admin'])) {
             $others = User::where('id', '!=', $user->id)
                 ->where('is_active', true)
                 ->get();
             $kontak = $kontak->merge($others);
+        }
+
+        // 5. Kaprog
+        if ($role === 'kaprog') {
+            // Pokja & Super Admin
+            $pokjas = User::whereIn('role', ['pokja', 'super_admin'])->where('is_active', true)->where('id', '!=', $user->id)->get();
+            $kontak = $kontak->merge($pokjas);
+
+            if ($user->program_keahlian_id) {
+                $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id');
+                
+                // Pembimbing Sekolah
+                $pembimbingSekolahUsers = User::where('role', 'pembimbing_sekolah')
+                    ->where('is_active', true)
+                    ->whereHas('pembimbingSekolah', function($q) use ($konsentrasiIds) {
+                        $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+                    })->get();
+                $kontak = $kontak->merge($pembimbingSekolahUsers);
+
+                // Pembimbing Dudi
+                $pembimbingDudiUsers = User::where('role', 'pembimbing_dudi')
+                    ->where('is_active', true)
+                    ->whereHas('pembimbingDudi.dudi', function($q) use ($konsentrasiIds) {
+                        $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                          ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                              $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                          });
+                    })->get();
+                $kontak = $kontak->merge($pembimbingDudiUsers);
+            }
+        }
+
+        // 6. Include any user with whom we already have a chat history
+        $historyUserIds = \App\Models\Pesan::where('from_user_id', $user->id)
+            ->orWhere('to_user_id', $user->id)
+            ->get()
+            ->map(function($msg) use ($user) {
+                return $msg->from_user_id === $user->id ? $msg->to_user_id : $msg->from_user_id;
+            })
+            ->unique();
+
+        if ($historyUserIds->isNotEmpty()) {
+            $historyUsers = User::whereIn('id', $historyUserIds)->get();
+            $kontak = $kontak->merge($historyUsers);
         }
 
         return $kontak->unique('id')->values();
@@ -252,8 +296,8 @@ class PesanController extends Controller
         $kontak = $this->getKontak();
         $allowed = $kontak->pluck('id')->contains($targetUser->id);
 
-        // Pokja / admin / kaprog bisa chat dengan siapa saja
-        if (in_array(auth()->user()->role, ['pokja', 'super_admin', 'kaprog'])) return;
+        // Pokja / admin bisa chat dengan siapa saja
+        if (in_array(auth()->user()->role, ['pokja', 'super_admin'])) return;
 
         if (!$allowed) {
             abort(403, 'Anda tidak memiliki akses untuk menghubungi pengguna ini.');

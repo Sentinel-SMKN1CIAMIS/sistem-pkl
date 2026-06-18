@@ -17,10 +17,22 @@ class PengajuanPklController extends Controller
     {
         // Tampilkan pengajuan yang berstatus 'disetujui_kaprog'
         // Namun kita juga tampilkan riwayat pengajuan 'disetujui' dan 'ditolak' agar Pokja bisa melihat riwayatnya
-        $pengajuans = PengajuanPkl::with('siswa', 'dudi')
+        $query = PengajuanPkl::with('siswa', 'dudi')
             ->orderByRaw("CASE WHEN status = 'disetujui_kaprog' THEN 1 ELSE 2 END")
-            ->latest()
-            ->paginate(10);
+            ->latest();
+
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $query->whereHas('siswa', function($q) {
+                $q->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
+            });
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->whereHas('siswa', function($q) use ($konsentrasiIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+            });
+        }
+
+        $pengajuans = $query->paginate(10);
 
         return view('pokja.pengajuan-pkl.index', compact('pengajuans'));
     }
