@@ -55,22 +55,145 @@
         }
     </script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased h-dvh overflow-hidden" x-data="{ sidebarOpen: false }">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased h-dvh overflow-hidden" x-data>
     <div class="flex h-full w-full overflow-hidden">
-        <!-- Sidebar Backdrop -->
-    <div x-show="sidebarOpen" 
-         x-transition:enter="transition-opacity ease-linear duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition-opacity ease-linear duration-300"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden"
-         @click="sidebarOpen = false" x-cloak></div>
 
-    <!-- Sidebar -->
-    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-           class="fixed inset-y-0 left-0 z-50 w-72 shrink-0 glass transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-slate-200/50 dark:border-slate-700/50 flex flex-col">
+    <!-- Sidebar (Desktop Only) -->
+    @php
+        $role = auth()->user()?->role;
+        $navItems = [];
+
+        if ($role === 'siswa') {
+            $navItems = [
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                ['name' => 'Jurnal Kegiatan', 'route' => 'siswa.jurnal.index', 'icon' => 'book-open'],
+                ['name' => 'Daftar Hadir', 'route' => 'siswa.absensi.index', 'icon' => 'calendar-check'],
+                ['name' => 'Laporan PKL', 'route' => 'siswa.laporan.index', 'icon' => 'file-text'],
+                ['name' => 'Buku Panduan', 'route' => 'siswa.panduan.index', 'icon' => 'library'],
+                ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
+                ['name' => 'Pusat Bantuan', 'route' => 'siswa.bantuan.index', 'icon' => 'help-circle'],
+            ];
+        } elseif ($role === 'pembimbing_sekolah') {
+            $navItems = [
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
+                ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
+                ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
+                ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
+                ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
+                ['name' => 'Peta DUDI', 'route' => 'shared.pemetaan.maps', 'icon' => 'map'],
+                ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
+            ];
+        } elseif ($role === 'pembimbing_dudi') {
+            $navItems = [
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                ['name' => 'Siswa PKL', 'route' => 'pembimbing_dudi.siswa.index', 'icon' => 'users'],
+                ['name' => 'Jurnal Siswa', 'route' => 'pembimbing_dudi.jurnal.index', 'icon' => 'file-check-2'],
+                ['name' => 'Validasi Kehadiran', 'route' => 'pembimbing_dudi.absensi.index', 'icon' => 'clipboard-check'],
+                ['name' => 'Feedback Sekolah', 'route' => 'pembimbing_dudi.feedback.index', 'icon' => 'message-square-plus'],
+                ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
+            ];
+        } elseif ($role === 'pokja') {
+            $navItems = [
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                [
+                    'name' => 'Kelola Akun',
+                    'icon' => 'users',
+                    'children' => [
+                        ['name' => 'Data Siswa', 'route' => 'pokja.siswa.index', 'icon' => 'graduation-cap'],
+                        ['name' => 'Pembimbing Sekolah', 'route' => 'pokja.pembimbing_sekolah.index', 'icon' => 'user-check'],
+                        ['name' => 'Pembimbing DUDI', 'route' => 'pokja.pembimbing_dudi.index', 'icon' => 'user-cog'],
+                        ['name' => 'Akun Kaprog', 'route' => 'pokja.kaprog.index', 'icon' => 'award'],
+                        ['name' => 'Data DUDI', 'route' => 'pokja.dudi.index', 'icon' => 'building-2'],
+                    ]
+                ],
+                [
+                    'name' => 'Akademik & Jurusan',
+                    'icon' => 'book',
+                    'children' => [
+                        ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],
+                        ['name' => 'Konsentrasi Keahlian', 'route' => 'admin.konsentrasi_keahlian.index', 'icon' => 'layers'],
+                        ['name' => 'Kelola TP/CP', 'route' => 'pokja.kompetensi.index', 'icon' => 'target'],
+                    ]
+                ],
+                [
+                    'name' => 'Pemetaan & Penempatan',
+                    'icon' => 'network',
+                    'children' => [
+                        ['name' => 'Validasi Pengajuan', 'route' => 'pokja.pengajuan_pkl.index', 'icon' => 'file-check'],
+                        ['name' => 'Pemetaan', 'route' => 'pokja.pemetaan.index', 'icon' => 'git-branch'],
+                        ['name' => 'Peta DUDI', 'route' => 'pokja.pemetaan.maps', 'icon' => 'map'],
+                        ['name' => 'Kelola Zona', 'route' => 'pokja.zona.index', 'icon' => 'compass'],
+                    ]
+                ],
+                [
+                    'name' => 'Monitoring & Evaluasi',
+                    'icon' => 'eye',
+                    'children' => [
+                        ['name' => 'Monitoring Pembimbing', 'route' => 'pokja.monitoring.index', 'icon' => 'eye'],
+                        ['name' => 'Evaluasi PKL', 'route' => 'pokja.evaluasi.index', 'icon' => 'bar-chart-3'],
+                        ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
+                    ]
+                ],
+                ['name' => 'Pengaturan', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'settings'],
+                ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
+            ];
+        } elseif ($role === 'kaprog') {
+            $navItems = [
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                ['name' => 'Pengajuan PKL', 'route' => 'kaprog.pengajuan_pkl.index', 'icon' => 'file-plus-2'],
+                ['name' => 'Peta DUDI', 'route' => 'shared.pemetaan.maps', 'icon' => 'map'],
+                ['name' => 'Laporan Kaprog', 'route' => 'kaprog.laporan.index', 'icon' => 'file-bar-chart-2'],
+                ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
+            ];
+        } elseif ($role === 'super_admin') {
+            $navItems = [
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
+                [
+                    'name' => 'Kelola Akun',
+                    'icon' => 'users',
+                    'children' => [
+                        ['name' => 'Data Siswa', 'route' => 'pokja.siswa.index', 'icon' => 'graduation-cap'],
+                        ['name' => 'Pembimbing Sekolah', 'route' => 'pokja.pembimbing_sekolah.index', 'icon' => 'user-check'],
+                        ['name' => 'Pembimbing DUDI', 'route' => 'pokja.pembimbing_dudi.index', 'icon' => 'user-cog'],
+                        ['name' => 'Akun Kaprog', 'route' => 'pokja.kaprog.index', 'icon' => 'award'],
+                        ['name' => 'Data DUDI', 'route' => 'pokja.dudi.index', 'icon' => 'building-2'],
+                        ['name' => 'Akun Sistem', 'route' => 'admin.users.index', 'icon' => 'user'],
+                    ]
+                ],
+                [
+                    'name' => 'Akademik & Jurusan',
+                    'icon' => 'book',
+                    'children' => [
+                        ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],
+                        ['name' => 'Konsentrasi Keahlian', 'route' => 'admin.konsentrasi_keahlian.index', 'icon' => 'layers'],
+                        ['name' => 'Kompetensi', 'route' => 'admin.kompetensi.index', 'icon' => 'target'],
+                    ]
+                ],
+                ['name' => 'Konfigurasi Sistem', 'route' => 'admin.config.index', 'icon' => 'settings'],
+                ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
+                ['name' => 'Log Sistem', 'route' => 'admin.logs.index', 'icon' => 'scroll-text'],
+            ];
+        }
+        
+        if ($role !== 'pembimbing_sekolah' && auth()->user()?->pembimbingSekolah) {
+            $navItems[] = [
+                'name' => 'Menu Pembimbing',
+                'icon' => 'user-check',
+                'children' => [
+                    ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
+                    ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
+                    ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
+                    ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
+                    ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
+                ]
+            ];
+        }
+
+        $navItems[] = ['name' => 'Panduan Interaktif', 'route' => 'panduan.interaktif', 'icon' => 'sparkles'];
+    @endphp
+
+    <aside class="hidden lg:flex w-72 shrink-0 glass static inset-0 border-r border-slate-200/50 dark:border-slate-700/50 flex-col z-50">
         
         <div class="flex items-center justify-center p-6 border-b border-slate-200/50 dark:border-slate-700/50">
             <div class="flex items-center gap-3">
@@ -88,9 +211,11 @@
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <!-- Top Navbar -->
         <header class="glass sticky top-0 z-30 h-16 border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-            <button @click="sidebarOpen = true" class="lg:hidden text-slate-700 hover:text-slate-900 dark:text-white focus:outline-none">
-                <i data-lucide="menu" class="w-6 h-6"></i>
-            </button>
+            <!-- Mobile Logo (Hidden on Desktop) -->
+            <div class="flex lg:hidden items-center gap-2.5">
+                <img src="{{ $appLogoActive ?? asset('logo.png') }}" alt="Logo" class="w-8 h-8 object-contain rounded-lg">
+                <h1 class="text-xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600 dark:from-blue-300 dark:to-blue-500 drop-shadow-sm">{{ $appName ?? config('app.name', 'MAS-PKL') }}</h1>
+            </div>
             
             <div class="ml-auto flex items-center gap-4">
                 <!-- Theme Toggle -->
@@ -107,7 +232,7 @@
                         }
                         this.open = false;
                     }
-                }" class="relative">
+                }" class="relative hidden lg:block">
                     <button @click="open = !open" @click.away="open = false" 
                             class="text-slate-700 hover:text-slate-900 dark:text-white relative p-2 rounded-full hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors block">
                         <i x-show="theme === 'light'" data-lucide="sun" class="w-5 h-5" x-cloak></i>
@@ -146,7 +271,7 @@
                 </div>
 
                 <!-- User Profile Dropdown -->
-                <div class="relative" x-data="{ profileMenuOpen: false }">
+                <div class="relative hidden lg:block" x-data="{ profileMenuOpen: false }">
                     <button @click="profileMenuOpen = !profileMenuOpen" @click.away="profileMenuOpen = false" 
                             class="flex items-center gap-3 p-1.5 pr-3 rounded-full hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors duration-200 focus:outline-none group border border-transparent hover:border-slate-200/50 dark:hover:border-slate-700/50">
                         <div class="relative">
@@ -202,7 +327,7 @@
         </header>
 
         <!-- Main Scrollable Area -->
-        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
+        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 sm:p-6 lg:p-8 lg:pb-8 relative">
             <div class="mx-auto max-w-7xl animate-fade-in-up">
                 <!-- Page Header -->
                 @if (isset($header))
@@ -218,6 +343,9 @@
         </main>
     </div>
     </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    @include('layouts.partials.bottom-nav')
 
     <!-- Scripts -->
     @stack('scripts')

@@ -41,6 +41,43 @@
         </div>
     </div>
 
+    <!-- Quick Actions (Mobile Only) -->
+    <div class="block lg:hidden mt-8 mb-8">
+        <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200 mb-4">Aksi Cepat</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <a href="{{ route('pembimbing_sekolah.absensi.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-blue-600/10 border hover:border-blue-500/30 transition-all group">
+                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                    <i data-lucide="calendar" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-blue-400"></i>
+                </div>
+                <span class="text-xs font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Kehadiran Siswa</span>
+            </a>
+            <a href="{{ route('pembimbing_sekolah.absensi.approval.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-emerald-600/10 border hover:border-emerald-500/30 transition-all group">
+                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
+                    <i data-lucide="check-circle" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-emerald-400"></i>
+                </div>
+                <span class="text-xs font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Persetujuan Absensi</span>
+            </a>
+            <a href="{{ route('pembimbing_sekolah.laporan.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-purple-600/10 border hover:border-purple-500/30 transition-all group">
+                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
+                    <i data-lucide="file-check" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-purple-400"></i>
+                </div>
+                <span class="text-xs font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Evaluasi Laporan</span>
+            </a>
+            <a href="{{ route('shared.pemetaan.maps') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-amber-600/10 border hover:border-amber-500/30 transition-all group">
+                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+                    <i data-lucide="map" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-amber-400"></i>
+                </div>
+                <span class="text-xs font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Peta DUDI</span>
+            </a>
+            <a href="{{ route('panduan.interaktif') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-indigo-600/10 border hover:border-indigo-500/30 transition-all group col-span-2">
+                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-indigo-500/20 transition-colors">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-indigo-400"></i>
+                </div>
+                <span class="text-xs font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Panduan Interaktif</span>
+            </a>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
         <div class="glass-card p-6 border-t-2 border-slate-200/50 dark:border-slate-700/50">
             <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Statistik Bimbingan Anda</h3>

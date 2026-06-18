@@ -77,19 +77,17 @@
             </div>
             <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Isi Absensi</span>
         </a>
+        <a href="{{ route('siswa.laporan.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-pink-600/10 border hover:border-pink-500/30 transition-all group">
+            <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-pink-500/20 transition-colors">
+                <i data-lucide="file-text" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-pink-400"></i>
+            </div>
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Laporan Akhir</span>
+        </a>
         <a href="{{ route('siswa.panduan.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-purple-600/10 border hover:border-purple-500/30 transition-all group">
             <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
                 <i data-lucide="download-cloud" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-purple-400"></i>
             </div>
             <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Buku Panduan</span>
-        </a>
-        <a href="{{ route('notifications.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-amber-600/10 border hover:border-amber-500/30 transition-all group">
-            <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
-                <i data-lucide="bell" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-amber-400 relative">
-                    <span class="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-red-500 border border-slate-900"></span>
-                </i>
-            </div>
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Notifikasi Baru</span>
         </a>
     </div>
 
