@@ -68,7 +68,7 @@
                                             <i data-lucide="eye" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Lihat
                                         </a>
-                                        <form action="{{ route('admin.panduan.destroy', $item) }}" method="POST" onsubmit="return confirm('Hapus panduan ini?')">
+                                        <form action="{{ route('admin.panduan.destroy', $item) }}" method="POST" onsubmit="return confirm('Hapus panduan {{ addslashes($item->judul) }}?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left">
