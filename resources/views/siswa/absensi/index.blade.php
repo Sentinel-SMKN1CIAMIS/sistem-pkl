@@ -26,6 +26,7 @@
                              <button type="button" id="clear-pad" class="text-[10px] text-slate-500 dark:text-slate-400 hover:text-red-400 flex items-center gap-1">
                                  <i data-lucide="refresh-cw" class="w-3 h-3"></i> Bersihkan TTD
                              </button>
+                             <p class="text-[10px] text-orange-500 dark:text-orange-400 mt-1 italic">* Geser layar di luar kotak putih ini untuk men-scroll halaman ke bawah</p>
                         </div>
 
                         <x-button type="button" onclick="submitAbsensi()" variant="emerald" class="w-full py-4 !font-black !rounded-2xl shadow-emerald-500/20" icon="log-in">
