@@ -88,6 +88,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // Pengajuan PKL
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
         Route::patch('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'update'])->name('pengajuan_pkl.update');
+        Route::delete('pengajuan-pkl/clear-all', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'clearAll'])->name('pengajuan_pkl.clear_all');
+        Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
     });
 
     // Shared Map Routes - Accessible by Pokja, Kaprog, Pembimbing Sekolah

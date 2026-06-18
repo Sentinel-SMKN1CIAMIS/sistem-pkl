@@ -126,4 +126,65 @@ class PengajuanPklController extends Controller
 
         return back()->with('success', 'Status pengajuan berhasil diperbarui.');
     }
+
+    /**
+     * Delete/Clean up student's PKL proposal by Kaprog (restricted to their department)
+     */
+    public function destroy(PengajuanPkl $pengajuanPkl)
+    {
+        $user = auth()->user();
+        if ($user->role === 'kaprog') {
+            $allowedIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id')->toArray();
+            if (!in_array($pengajuanPkl->siswa->konsentrasi_keahlian_id, $allowedIds)) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
+
+        // Hapus berkas bukti balasan jika ada di storage
+        if ($pengajuanPkl->bukti_balasan) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuanPkl->bukti_balasan)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuanPkl->bukti_balasan);
+            }
+        }
+
+        $pengajuanPkl->delete();
+
+        return back()->with('success', 'Pengajuan PKL berhasil dihapus.');
+    }
+
+    /**
+     * Delete/Clear all students' PKL proposals in Kaprog's department
+     */
+    public function clearAll()
+    {
+        $user = auth()->user();
+        $query = PengajuanPkl::query();
+
+        if ($user->role === 'kaprog') {
+            $allowedIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id')->toArray();
+            $query->whereHas('siswa', function($q) use ($allowedIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $allowedIds);
+            });
+        }
+
+        // Hapus berkas bukti balasan untuk semua pengajuan yang memilikinya
+        $pengajuans = $query->whereNotNull('bukti_balasan')->get();
+        foreach ($pengajuans as $pengajuan) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuan->bukti_balasan)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuan->bukti_balasan);
+            }
+        }
+
+        // Hapus data pengajuan milik Kaprog
+        if ($user->role === 'kaprog') {
+            $allowedIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id')->toArray();
+            PengajuanPkl::whereHas('siswa', function($q) use ($allowedIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $allowedIds);
+            })->delete();
+        } else {
+            PengajuanPkl::query()->delete();
+        }
+
+        return back()->with('success', 'Semua data pengajuan PKL siswa di program keahlian Anda berhasil dihapus.');
+    }
 }
