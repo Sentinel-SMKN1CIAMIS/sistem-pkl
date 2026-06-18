@@ -142,4 +142,30 @@ class PengajuanPklController extends Controller
 
         return back()->with('success', 'Semua data pengajuan PKL siswa berhasil dihapus.');
     }
+
+    /**
+     * Bulk delete selected student PKL submissions by Pokja
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:pengajuan_pkls,id'
+        ]);
+
+        $ids = $request->ids;
+
+        // Hapus berkas bukti balasan untuk pengajuan terpilih yang memilikinya
+        $pengajuans = PengajuanPkl::whereIn('id', $ids)->whereNotNull('bukti_balasan')->get();
+        foreach ($pengajuans as $pengajuan) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuan->bukti_balasan)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuan->bukti_balasan);
+            }
+        }
+
+        // Hapus data pengajuan terpilih
+        PengajuanPkl::whereIn('id', $ids)->delete();
+
+        return back()->with('success', count($ids) . ' data pengajuan PKL terpilih berhasil dihapus.');
+    }
 }

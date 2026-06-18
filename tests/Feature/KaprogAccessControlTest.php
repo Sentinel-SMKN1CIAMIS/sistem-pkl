@@ -308,4 +308,59 @@ class KaprogAccessControlTest extends TestCase
         $this->assertCount(0, $response->viewData('siswas')->items());
         $this->assertEquals(0, $response->viewData('totalSiswa'));
     }
+
+    /**
+     * Test Kaprog can bulk delete selected submissions with file cleanup
+     */
+    public function test_kaprog_can_bulk_delete_selected_submissions_with_file_cleanup()
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $data = $this->setupTestData();
+
+        // Get the pengajuans of Siswa AKL 1 and Siswa AKL 2 (same department as Kaprog 1)
+        $p1 = PengajuanPkl::where('siswa_id', $data['siswa1']->id)->first();
+        $p2 = PengajuanPkl::where('siswa_id', $data['siswa2']->id)->first();
+
+        $filePath1 = 'bukti_balasan/test_kaprog1.pdf';
+        $filePath2 = 'bukti_balasan/test_kaprog2.pdf';
+
+        \Illuminate\Support\Facades\Storage::disk('public')->put($filePath1, 'fake content 1');
+        \Illuminate\Support\Facades\Storage::disk('public')->put($filePath2, 'fake content 2');
+
+        $p1->update(['bukti_balasan' => $filePath1]);
+        $p2->update(['bukti_balasan' => $filePath2]);
+
+        $this->actingAs($data['kaprog1']);
+
+        $response = $this->delete(route('kaprog.pengajuan_pkl.bulk_destroy'), [
+            'ids' => [$p1->id, $p2->id]
+        ]);
+
+        $response->assertStatus(302);
+        $this->assertDatabaseMissing('pengajuan_pkls', ['id' => $p1->id]);
+        $this->assertDatabaseMissing('pengajuan_pkls', ['id' => $p2->id]);
+
+        $this->assertFalse(\Illuminate\Support\Facades\Storage::disk('public')->exists($filePath1));
+        $this->assertFalse(\Illuminate\Support\Facades\Storage::disk('public')->exists($filePath2));
+    }
+
+    /**
+     * Test Kaprog cannot bulk delete submissions from other departments
+     */
+    public function test_kaprog_cannot_bulk_delete_other_department_submissions()
+    {
+        $data = $this->setupTestData();
+
+        // p3 belongs to Siswa MPLB (different from Kaprog 1)
+        $p3 = PengajuanPkl::where('siswa_id', $data['siswa3']->id)->first();
+
+        $this->actingAs($data['kaprog1']);
+
+        $response = $this->delete(route('kaprog.pengajuan_pkl.bulk_destroy'), [
+            'ids' => [$p3->id]
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('pengajuan_pkls', ['id' => $p3->id]);
+    }
 }

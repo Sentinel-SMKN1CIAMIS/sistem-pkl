@@ -187,4 +187,44 @@ class PengajuanPklController extends Controller
 
         return back()->with('success', 'Semua data pengajuan PKL siswa di program keahlian Anda berhasil dihapus.');
     }
+
+    /**
+     * Bulk delete selected student PKL submissions by Kaprog (restricted to their department)
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:pengajuan_pkls,id'
+        ]);
+
+        $user = auth()->user();
+        $ids = $request->ids;
+
+        // Fetch submissions and verify department authorization for each
+        $pengajuans = PengajuanPkl::with('siswa')->whereIn('id', $ids)->get();
+
+        if ($user->role === 'kaprog') {
+            $allowedIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id')->toArray();
+            foreach ($pengajuans as $pengajuan) {
+                if (!in_array($pengajuan->siswa->konsentrasi_keahlian_id, $allowedIds)) {
+                    abort(403, 'Unauthorized action.');
+                }
+            }
+        }
+
+        // Delete associated files
+        foreach ($pengajuans as $pengajuan) {
+            if ($pengajuan->bukti_balasan) {
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pengajuan->bukti_balasan)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuan->bukti_balasan);
+                }
+            }
+        }
+
+        // Delete records
+        PengajuanPkl::whereIn('id', $ids)->delete();
+
+        return back()->with('success', count($ids) . ' data pengajuan PKL terpilih berhasil dihapus.');
+    }
 }

@@ -9,23 +9,22 @@
         @endif
     </div>
 
-    @if($pengajuans->count() > 0)
-        <div class="flex justify-end mb-4">
-            <form action="{{ route('kaprog.pengajuan_pkl.clear_all') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus seluruh data pengajuan siswa di program keahlian Anda? Semua berkas lampiran juga akan dihapus permanen.')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="flex items-center gap-2 px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold transition-all border border-rose-500/20 hover:border-rose-500/30 cursor-pointer">
-                    <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i> Hapus Semua Pengajuan
-                </button>
-            </form>
-        </div>
-    @endif
+    <!-- Bulk Delete Action Button (Visible only when checkboxes are selected) -->
+    <div id="bulk-delete-container" class="hidden justify-end mb-4 animate-in fade-in duration-200">
+        <button type="submit" form="bulk-delete-form" class="flex items-center gap-2 px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold transition-all border border-rose-500/20 hover:border-rose-500/30 cursor-pointer shadow-xs">
+            <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i> Hapus Terpilih (<span id="selected-count">0</span>)
+        </button>
+    </div>
 
     <div class="glass-card p-6">
         <div class="overflow-x-auto lg:overflow-visible">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="border-b border-slate-200 dark:border-slate-700 text-sm">
+                        <!-- Select All Checkbox -->
+                        <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium w-10">
+                            <input type="checkbox" id="select-all" class="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                        </th>
                         <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium">Siswa</th>
                         <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium">Kelas</th>
                         <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium">Perusahaan Tujuan</th>
@@ -36,6 +35,10 @@
                 <tbody class="text-sm">
                     @forelse($pengajuans as $pengajuan)
                     <tr class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <!-- Individual Checkbox -->
+                        <td class="py-3 px-4">
+                            <input type="checkbox" name="ids[]" value="{{ $pengajuan->id }}" form="bulk-delete-form" class="submission-checkbox rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                        </td>
                         <td class="py-3 px-4 text-slate-800 dark:text-slate-200 font-medium">
                             {{ $pengajuan->siswa->nama_lengkap }}
                         </td>
@@ -137,7 +140,7 @@
                     </dialog>
                     @empty
                     <tr>
-                        <td colspan="5" class="py-8 text-center text-slate-500">Belum ada pengajuan PKL dari siswa di kelas Anda.</td>
+                        <td colspan="6" class="py-8 text-center text-slate-500">Belum ada pengajuan PKL dari siswa di kelas Anda.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -148,7 +151,53 @@
         </div>
     </div>
 
+    <!-- Hidden Bulk Delete Form -->
+    <form id="bulk-delete-form" action="{{ route('kaprog.pengajuan_pkl.bulk_destroy') }}" method="POST" class="hidden" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pengajuan terpilih? Semua berkas lampiran terkait juga akan dihapus secara permanen.')">
+        @csrf
+        @method('DELETE')
+    </form>
+
     <script>
+        // Checkbox Bulk Selection Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectAllCheckbox = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.submission-checkbox');
+            const bulkDeleteContainer = document.getElementById('bulk-delete-container');
+            const selectedCountSpan = document.getElementById('selected-count');
+
+            function updateBulkDeleteButton() {
+                const checkedCount = document.querySelectorAll('.submission-checkbox:checked').length;
+                if (checkedCount > 0) {
+                    bulkDeleteContainer.classList.remove('hidden');
+                    bulkDeleteContainer.classList.add('flex');
+                    selectedCountSpan.textContent = checkedCount;
+                } else {
+                    bulkDeleteContainer.classList.remove('flex');
+                    bulkDeleteContainer.classList.add('hidden');
+                }
+            }
+
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', () => {
+                    checkboxes.forEach(cb => {
+                        cb.checked = selectAllCheckbox.checked;
+                    });
+                    updateBulkDeleteButton();
+                });
+            }
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const allChecked = Array.from(checkboxes).every(c => c.checked);
+                    const someChecked = Array.from(checkboxes).some(c => c.checked);
+                    selectAllCheckbox.checked = allChecked;
+                    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+                    
+                    updateBulkDeleteButton();
+                });
+            });
+        });
+
         function openModal(id) {
             document.getElementById('modal-' + id).showModal();
         }
@@ -157,10 +206,13 @@
         }
         function toggleCatatan(id, show) {
             const container = document.getElementById('catatan-container-' + id);
+            const textarea = container?.querySelector('textarea');
             if(show) {
-                container.classList.remove('hidden');
+                container?.classList.remove('hidden');
+                textarea?.setAttribute('required', 'required');
             } else {
-                container.classList.add('hidden');
+                container?.classList.add('hidden');
+                textarea?.removeAttribute('required');
             }
         }
     </script>

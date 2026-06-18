@@ -89,6 +89,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
         Route::patch('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'update'])->name('pengajuan_pkl.update');
         Route::delete('pengajuan-pkl/clear-all', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'clearAll'])->name('pengajuan_pkl.clear_all');
+        Route::delete('pengajuan-pkl/bulk-destroy', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'bulkDestroy'])->name('pengajuan_pkl.bulk_destroy');
         Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
     });
 
@@ -149,6 +150,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
         Route::post('pengajuan-pkl/{pengajuanPkl}/validasi', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'validasi'])->name('pengajuan_pkl.validasi');
         Route::delete('pengajuan-pkl/clear-all', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'clearAll'])->name('pengajuan_pkl.clear_all');
+        Route::delete('pengajuan-pkl/bulk-destroy', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'bulkDestroy'])->name('pengajuan_pkl.bulk_destroy');
         Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);
