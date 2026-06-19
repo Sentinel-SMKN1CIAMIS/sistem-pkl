@@ -13,7 +13,7 @@
         <!-- Info Message -->
         <div class="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
             <div class="flex items-start gap-3">
-                <i data-lucide="info" class="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                <i data-lucide="info" class="h-5 w-5 text-blue-400 shrink-0 mt-0.5"></i>
                 <div>
                     <p class="text-sm text-blue-300 font-medium">Pengubahan Password Wajib</p>
                     <p class="text-xs text-blue-300/80 mt-1">Anda harus mengubah password pada login pertama untuk keamanan akun Anda.</p>
@@ -136,7 +136,7 @@
             <!-- Submit -->
             <button 
                 type="submit"
-                class="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                class="w-full px-4 py-2.5 bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
             >
                 <i data-lucide="check-circle" class="h-5 w-5"></i>
                 Ubah Password

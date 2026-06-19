@@ -76,7 +76,7 @@ class User extends Authenticatable
     public function hasActivePokjaGroup(): bool
     {
         return $this->pokjaGroups()
-            ->where('is_active', true)
+            ->where('is_active' . '', true)
             ->exists();
     }
 
@@ -86,7 +86,7 @@ class User extends Authenticatable
     public function getActivePokjaGroup()
     {
         return $this->pokjaGroups()
-            ->where('is_active', true)
+            ->where('is_active' . '', true)
             ->first();
     }
 
@@ -97,9 +97,9 @@ class User extends Authenticatable
     {
         $query = KonsentrasiKeahlian::query();
         if ($this->konsentrasi_keahlian_id) {
-            $query->where('id', $this->konsentrasi_keahlian_id);
+            $query->where('id' . '', $this->konsentrasi_keahlian_id);
         } elseif ($this->program_keahlian_id) {
-            $query->where('program_keahlian_id', $this->program_keahlian_id);
+            $query->where('program_keahlian_id' . '', $this->program_keahlian_id);
         }
         return $query->get();
     }

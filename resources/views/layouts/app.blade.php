@@ -265,7 +265,7 @@
 
                 <!-- Notifications -->
                 @php
-                    $unreadNotificationsCount = \App\Models\Notifikasi::where('to_user_id', auth()->id())->where('is_read', false)->count();
+                    $unreadNotificationsCount = \App\Models\Notifikasi::where('to_user_id' . '', \Illuminate\Support\Facades\Auth::id())->where('is_read' . '', false)->count();
                 @endphp
                 <div class="relative">
                     <a href="{{ route('notifications.index') }}" class="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative p-2 rounded-full hover:bg-white/50 dark:bg-slate-800/50 transition-colors block">
@@ -377,7 +377,7 @@
             
             <div class="p-6 overflow-y-auto custom-scrollbar">
                 <div class="mb-8 text-center">
-                    <h4 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 mb-2">
+                    <h4 class="text-xl font-black text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 mb-2">
                         Tim Pengembang
                     </h4>
                     <p class="text-sm text-slate-600 dark:text-slate-400">MAS-PKL ini dikembangkan dengan dedikasi tinggi oleh <br/><span class="font-bold text-slate-800 dark:text-slate-200">Tim RPL Sentinel - SMKN 1 Ciamis</span>.</p>

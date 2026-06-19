@@ -231,7 +231,7 @@
                               </p>
                               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                                   @php
-                                      $jurusans = \App\Models\KonsentrasiKeahlian::orderBy('nama')->pluck('nama');
+                                      $jurusans = \App\Models\KonsentrasiKeahlian::orderBy('nama' . '')->pluck('nama' . '');
                                   @endphp
                                   @forelse($jurusans as $jur)
                                       <div class="flex items-center justify-between p-2 bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200">

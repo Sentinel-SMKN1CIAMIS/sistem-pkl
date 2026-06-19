@@ -29,7 +29,7 @@
                              <p class="text-[10px] text-orange-500 dark:text-orange-400 mt-1 italic">* Geser layar di luar kotak putih ini untuk men-scroll halaman ke bawah</p>
                         </div>
 
-                        <x-button type="button" onclick="submitAbsensi()" variant="emerald" class="w-full py-4 !font-black !rounded-2xl shadow-emerald-500/20" icon="log-in">
+                        <x-button type="button" onclick="submitAbsensi()" variant="emerald" class="w-full py-4 font-black! rounded-2xl! shadow-emerald-500/20" icon="log-in">
                             ABSEN DATANG SEKARANG
                         </x-button>
                     </form>
@@ -205,9 +205,11 @@
         }
         setInterval(updateClock, 1000);
         updateClock();
+    </script>
 
+    @if($absensiToday && !$absensiToday->waktu_pulang)
+    <script>
         // T5.2: Countdown Timer for 7-hour requirement
-        @if($absensiToday && !$absensiToday->waktu_pulang)
         function updateCountdown() {
             const clockOutBtn = document.getElementById('clockout-btn');
             const countdownText = document.getElementById('countdown-text');
@@ -264,10 +266,12 @@
         
         // Update every second
         setInterval(updateCountdown, 1000);
-        @endif
+    </script>
+    @endif
 
+    @if(!$absensiToday)
+    <script>
         // Signature Pad
-        @if(!$absensiToday)
         document.addEventListener('DOMContentLoaded', function() {
             const canvas = document.getElementById('signature-pad');
             if (!canvas) return;
@@ -336,7 +340,7 @@
                 document.getElementById('absensi-form').submit();
             };
         });
-        @endif
     </script>
+    @endif
     @endpush
 </x-app-layout>

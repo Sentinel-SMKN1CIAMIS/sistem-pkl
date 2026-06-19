@@ -28,13 +28,17 @@
                 </a>
             </div>
         @else
+            @php
+                $statusBgClass = match($pengajuan->status) {
+                    'menunggu' => 'bg-amber-500/10',
+                    'disetujui_kaprog' => 'bg-blue-500/10',
+                    'disetujui' => 'bg-emerald-500/10',
+                    default => 'bg-red-500/10',
+                };
+            @endphp
             <div class="glass-card p-8">
                 <div class="flex items-center gap-4 mb-6">
-                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center
-                        @if($pengajuan->status === 'menunggu') bg-amber-500/10
-                        @elseif($pengajuan->status === 'disetujui_kaprog') bg-blue-500/10
-                        @elseif($pengajuan->status === 'disetujui') bg-emerald-500/10
-                        @else bg-red-500/10 @endif">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center {{ $statusBgClass }}">
                         @if($pengajuan->status === 'menunggu')
                             <i data-lucide="clock" class="w-7 h-7 text-amber-500"></i>
                         @elseif($pengajuan->status === 'disetujui_kaprog')

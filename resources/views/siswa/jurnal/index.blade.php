@@ -207,7 +207,7 @@
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95"
              style="display: none;" 
-             class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 sm:p-6 md:p-8 cursor-zoom-out"
+             class="fixed inset-0 z-100 flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 sm:p-6 md:p-8 cursor-zoom-out"
              @click="imageModalOpen = false"
              @keydown.escape.window="imageModalOpen = false">
             
