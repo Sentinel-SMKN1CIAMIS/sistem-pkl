@@ -1,14 +1,14 @@
-# SIPKL - Sistem Informasi Praktek Kerja Lapangan
+# MAS-PKL - Manajemen Administrasi Siswa Praktek Kerja Lapangan
 
 <div align="center">
 
 ![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.0-4479A1?style=for-the-badge&logo=postgresql&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 
-**Solusi Digital Terpadu untuk Manajemen Praktek Kerja Lapangan**  
-SIPKL SMKN 1 Ciamis - Empowering Vocational Excellence
+**Solusi Digital Terpadu untuk Manajemen Administrasi Siswa Praktek Kerja Lapangan**  
+MAS-PKL SMKN 1 Ciamis - Empowering Vocational Excellence
 
 [Fitur](#-fitur-utama) • [Instalasi](#-instalasi) • [Alur Sistem](#-workflow-sistem) • [Credentials](#-default-credentials) • [Team](#-team-pengembang)
 
@@ -18,7 +18,7 @@ SIPKL SMKN 1 Ciamis - Empowering Vocational Excellence
 
 ## Tentang Project
 
-**SIPKL (Sistem Informasi Praktek Kerja Lapangan)** adalah platform manajemen PKL yang dirancang untuk mendigitalisasi seluruh ekosistem prakerin (Praktek Kerja Industri). Mulai dari pemetaan penempatan siswa, monitoring harian melalui jurnal digital, hingga evaluasi akhir oleh pembimbing sekolah dan industri.
+**MAS-PKL (Manajemen Administrasi Siswa - Praktek Kerja Lapangan)** adalah platform manajemen PKL yang dirancang untuk mendigitalisasi seluruh ekosistem prakerin (Praktek Kerja Industri). Mulai dari pemetaan penempatan siswa, monitoring harian melalui jurnal digital, hingga evaluasi akhir oleh pembimbing sekolah dan industri.
 
 Aplikasi ini bertujuan untuk menciptakan transparansi, akurasi data, dan efisiensi komunikasi antara pihak Sekolah, Siswa, dan Dunia Usaha/Dunia Industri (DUDI).
 
@@ -48,11 +48,23 @@ Aplikasi ini bertujuan untuk menciptakan transparansi, akurasi data, dan efisien
 - **Approval Jurnal/Absensi**: Memverifikasi kebenaran aktivitas siswa di lokasi industri.
 - **Penilaian Industri**: Memberikan penilaian terhadap kompetensi dan soft skill siswa selama PKL.
 
+### Portal Kaprog (Kepala Program Keahlian)
+- **Validasi Pengajuan**: Meninjau dan menyetujui pengajuan PKL siswa di program keahliannya.
+- **Pemantauan DUDI**: Memantau lokasi DUDI dan rekap siswa yang berada di bawah naungan jurusannya.
+- **Laporan Progres**: Melihat laporan pencapaian dan rekapitulasi data spesifik jurusannya.
+
 ### Manajemen Pokja & Admin
 - **Pemetaan Siswa (Mapping)**: Fitur smart-mapping untuk membagi siswa ke tempat PKL yang sesuai.
 - **Master Data**: Kelola data Siswa, Guru, DUDI, dan Konsentrasi Keahlian.
 - **Audit Log Detail**: Rekam jejak seluruh aktivitas user untuk keamanan dan transparansi.
 - **Configurable System**: Pengaturan tahun ajaran, kuota penempatan, dan periode PKL.
+
+### Fitur Sistem & Integrasi Tambahan
+- **PWA (Progressive Web App)**: Bisa diinstal di HP/Tablet dengan dukungan Offline-first dan caching.
+- **Real-time Chat (Pesan)**: Sistem komunikasi internal antar pengguna (Siswa, Pembimbing, Pokja, Kaprog).
+- **Notifikasi Pintar**: Pemberitahuan otomatis ketika ada persetujuan jurnal, absensi, atau pesan masuk.
+- **Interactive Guide (Panduan)**: Buku panduan interaktif step-by-step terintegrasi dalam sistem.
+- **Export Data**: Kemudahan mengunduh data ke dalam format Excel, Word, dan PDF.
 
 ---
 
@@ -60,7 +72,7 @@ Aplikasi ini bertujuan untuk menciptakan transparansi, akurasi data, dan efisien
 
 ### Backend & Core
 - **Framework**: Laravel 13
-- **Database**: PostgreSQL 18
+- **Database**: MySQL 8.0+
 - **PDF Engine**: Barryvdh Laravel DomPDF
 - **Excel Processor**: Maatwebsite Excel
 
@@ -75,7 +87,7 @@ Aplikasi ini bertujuan untuk menciptakan transparansi, akurasi data, dan efisien
 ## Instalasi
 
 ### 1. Persiapan Lingkungan
-Pastikan Anda memiliki **PHP 8.3+**, **Composer**, **Node.js**, dan database **PostgreSQL** yang sudah terinstall.
+Pastikan Anda memiliki **PHP 8.3+**, **Composer**, **Node.js**, dan database **MySQL** yang sudah terinstall.
 
 ### 2. Clone & Setup
 ```bash
@@ -95,11 +107,11 @@ php artisan key:generate
 Edit file `.env` dan sesuaikan konfigurasi database Anda.
 
 ```bash
-DB_CONNECTION=pgsql
+DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
-DB_PORT=5432
+DB_PORT=3306
 DB_DATABASE=db_pkl_jurnal
-DB_USERNAME=postgres
+DB_USERNAME=root
 DB_PASSWORD=
 ```
 
@@ -130,6 +142,7 @@ php artisan serve
 | :--- | :--- | :--- |
 | **Super Admin** | `admin` | `password` |
 | **Ketua Pokja** | `pokja` | `password` |
+| **Kepala Program (Kaprog)** | `kaprog` | `password` |
 | **Pembimbing Sekolah** | `guru` | `password` |
 | **Pembimbing DUDI** | `mentor` | `password` |
 | **Siswa** | `2223101` | `password` |
@@ -141,7 +154,7 @@ php artisan serve
 
 ## Team Pengembang
 
-SIPKL dikembangkan oleh **Tim RPL Sentinel SMKN 1 Ciamis**:
+MAS-PKL dikembangkan oleh **Tim RPL Sentinel SMKN 1 Ciamis**:
 
 <table align="center">
   <tr>
@@ -189,6 +202,6 @@ Jl. Jenderal Sudirman №269, Ciamis, Jawa Barat.
 **Developed by Tim RPL Sentinel**  
 © 2026 RPL SMKN 1 Ciamis
 
-[Kembali ke Atas](#-sipkl---sistem-informasi-praktek-kerja-lapangan)
+[Kembali ke Atas](#-mas-pkl---manajemen-administrasi-siswa-praktek-kerja-lapangan)
 
 </div>
