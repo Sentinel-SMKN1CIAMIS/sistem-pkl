@@ -18,7 +18,62 @@
             </div>
         @endif
 
-        @if(!$pengajuan)
+        @php
+            $siswa = auth()->user()->siswa;
+        @endphp
+
+        @if($siswa && $siswa->dudi_id && $siswa->dudi && (!$pengajuan || $pengajuan->status !== 'disetujui'))
+            <div class="glass-card p-8">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-500/10">
+                        <i data-lucide="check-circle-2" class="w-7 h-7 text-emerald-500"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ $siswa->dudi->nama }}</h2>
+                        <p class="text-sm mt-0.5">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium whitespace-nowrap">
+                                <i data-lucide="check" class="w-3 h-3"></i> Terdaftar di DUDI
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-3 text-sm">
+                    @if($siswa->dudi->nama_pimpinan)
+                    <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                        <i data-lucide="user" class="w-4 h-4 text-slate-400 mt-0.5"></i>
+                        <div><span class="text-slate-400 text-xs block">Pimpinan</span><span class="text-slate-700 dark:text-slate-200">{{ $siswa->dudi->nama_pimpinan }}</span></div>
+                    </div>
+                    @endif
+                    @if($siswa->dudi->alamat)
+                    <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-slate-400 mt-0.5"></i>
+                        <div><span class="text-slate-400 text-xs block">Alamat</span><span class="text-slate-700 dark:text-slate-200">{{ $siswa->dudi->alamat }}</span></div>
+                    </div>
+                    @endif
+                    @if($siswa->dudi->no_telepon)
+                    <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                        <i data-lucide="phone" class="w-4 h-4 text-slate-400 mt-0.5"></i>
+                        <div><span class="text-slate-400 text-xs block">No. Telp</span><span class="text-slate-700 dark:text-slate-200">{{ $siswa->dudi->no_telepon }}</span></div>
+                    </div>
+                    @endif
+                </div>
+
+                @if($siswa->status_pkl === 'belum_mulai')
+                    <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-2xl shadow-sm">
+                        <div class="flex items-start gap-3">
+                            <i data-lucide="info" class="w-5 h-5 text-blue-500 mt-0.5 shrink-0"></i>
+                            <div>
+                                <h3 class="text-sm font-bold text-blue-800 dark:text-blue-300 mb-1">Menunggu Pemetaan Guru Pembimbing</h3>
+                                <p class="text-sm text-blue-700 dark:text-blue-400/90 leading-relaxed">
+                                    Tim Pokja akan segera memetakan <strong>Guru Pembimbing Sekolah</strong> untuk Anda. Anda baru dapat mengakses fitur Jurnal, Absensi, dan Laporan setelah proses pemetaan ini selesai.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @elseif(!$pengajuan)
             <div class="glass-card p-8 text-center">
                 <i data-lucide="file-x" class="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600"></i>
                 <p class="text-slate-500 dark:text-slate-400 mb-4">Belum ada pengajuan tempat PKL.</p>
