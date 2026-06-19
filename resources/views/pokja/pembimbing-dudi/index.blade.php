@@ -242,7 +242,7 @@
                               
                               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-48 overflow-y-auto pr-1">
                                   @php
-                                      $dudis = \App\Models\Dudi::orderBy('nama')->pluck('nama');
+                                      $dudis = \App\Models\Dudi::orderBy('nama' . '')->pluck('nama' . '');
                                   @endphp
                                   @forelse($dudis as $d)
                                       <div x-show="searchQuery === '' || '{{ strtolower(addslashes($d)) }}'.includes(searchQuery.toLowerCase())" class="flex items-center justify-between p-2 bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200">
@@ -345,7 +345,7 @@
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Edit
                                         </a>
-                                        <form action="{{ route('pokja.pembimbing_dudi.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data mentor {{ addslashes($item->user->name ?? '') }}?')">
+                                        <form action="{{ route('pokja.pembimbing_dudi.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun mentor {{ addslashes($item->nama_lengkap) }} ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left">
