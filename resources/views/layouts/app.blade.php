@@ -265,7 +265,7 @@
 
                 <!-- Notifications -->
                 @php
-                    $unreadNotificationsCount = \App\Models\Notifikasi::where('to_user_id', auth()->id())->where('is_read', false)->count();
+                    $unreadNotificationsCount = \App\Models\Notifikasi::where('to_user_id' . '', \Illuminate\Support\Facades\Auth::id())->where('is_read' . '', false)->count();
                 @endphp
                 <div class="relative">
                     <a href="{{ route('notifications.index') }}" class="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative p-2 rounded-full hover:bg-white/50 dark:bg-slate-800/50 transition-colors block">
@@ -321,6 +321,11 @@
                                 </a>
                             @endif
                             
+                            <button type="button" onclick="document.getElementById('aboutModal').showModal()" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors focus:outline-none group/item">
+                                <i data-lucide="info" class="w-4 h-4 text-blue-400 group-hover/item:text-blue-500"></i>
+                                Tentang Aplikasi
+                            </button>
+                            
                             <form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('Apakah Anda yakin ingin keluar dari sistem?')">
                                 @csrf
                                 <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors focus:outline-none group/item">
@@ -351,6 +356,87 @@
         </main>
     </div>
     </div>
+
+    <!-- About App Modal -->
+    <dialog id="aboutModal" class="backdrop:bg-slate-900/60 backdrop:backdrop-blur-sm bg-transparent border-0 outline-none p-4 w-full max-w-2xl m-auto rounded-2xl shadow-2xl">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-200/50 dark:border-slate-700/50 flex flex-col max-h-[85vh]">
+            <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                        <i data-lucide="info" class="w-5 h-5 text-blue-500"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-slate-200 leading-tight">Tentang Aplikasi</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">MAS-PKL (Manajemen Administrasi Siswa - Praktek Kerja Lapangan)</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('aboutModal').close()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto custom-scrollbar">
+                <div class="mb-8 text-center">
+                    <h4 class="text-xl font-black text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 mb-2">
+                        Tim Pengembang
+                    </h4>
+                    <p class="text-sm text-slate-600 dark:text-slate-400">MAS-PKL ini dikembangkan dengan dedikasi tinggi oleh <br/><span class="font-bold text-slate-800 dark:text-slate-200">Tim RPL Sentinel - SMKN 1 Ciamis</span>.</p>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    
+                    <!-- Rasya -->
+                    <a href="https://github.com/rasyakt" target="_blank" class="flex flex-col items-center gap-3 p-4 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all hover:-translate-y-1 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-500/30 group">
+                        <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-colors">
+                            <img src="https://github.com/rasyakt.png" alt="Rasya Syahreza" class="w-full h-full object-cover">
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Rasya Syahreza M. Z.</p>
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Full Stack Dev</p>
+                        </div>
+                    </a>
+                    
+                    <!-- Pradipta -->
+                    <a href="https://github.com/PradiptaPPLG" target="_blank" class="flex flex-col items-center gap-3 p-4 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all hover:-translate-y-1 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-500/30 group">
+                        <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-colors">
+                            <img src="https://github.com/PradiptaPPL.png" alt="Pradipta Endra Maulana" class="w-full h-full object-cover">
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Pradipta Endra M.</p>
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Full Stack Dev</p>
+                        </div>
+                    </a>
+
+                    <!-- Rafli -->
+                    <a href="https://github.com/rafliaditya0125" target="_blank" class="flex flex-col items-center gap-3 p-4 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all hover:-translate-y-1 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-500/30 group">
+                        <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-colors">
+                            <img src="https://github.com/rafliadity0125.png" alt="Rafli Aditya" class="w-full h-full object-cover">
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Rafli Aditya</p>
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Full Stack Dev</p>
+                        </div>
+                    </a>
+                    
+                    <!-- Zidny -->
+                    <a href="https://github.com/ZidnyAl-HikamMawarist" target="_blank" class="flex flex-col items-center gap-3 p-4 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all hover:-translate-y-1 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-500/30 group">
+                        <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-colors">
+                            <img src="https://github.com/ZidnyAl-HikamMawarist.png" alt="Zidny Al-Hikam" class="w-full h-full object-cover">
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Zidny Al-Hikam M.</p>
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Full Stack Dev</p>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-slate-200/50 dark:border-slate-700/50 text-center">
+                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200">SMKN 1 Ciamis</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Vocational High School - Center of Excellence<br/>Jl. Jenderal Sudirman №269, Ciamis, Jawa Barat.</p>
+                </div>
+            </div>
+        </div>
+    </dialog>
 
     <!-- Bottom Navigation (Mobile) -->
     @include('layouts.partials.bottom-nav')

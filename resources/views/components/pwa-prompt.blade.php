@@ -18,7 +18,7 @@
      x-transition:leave="transition ease-in duration-200"
      x-transition:leave-start="opacity-100 translate-y-0"
      x-transition:leave-end="opacity-0 translate-y-10"
-     class="fixed bottom-4 left-4 right-4 z-[100] md:max-w-sm md:left-1/2 md:-translate-x-1/2 md:bottom-8"
+     class="fixed bottom-4 left-4 right-4 z-100 md:max-w-sm md:left-1/2 md:-translate-x-1/2 md:bottom-8"
      style="display: none;">
     
     <div class="bg-[#1e293b] rounded-2xl shadow-2xl p-4 border border-slate-700/50 relative overflow-hidden">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DudiController extends Controller
 {
@@ -10,16 +11,19 @@ class DudiController extends Controller
     {
         $query = \App\Models\Dudi::with(['konsentrasiKeahlian', 'konsentrasiKeahlians']);
 
-        if (auth()->user()->konsentrasi_keahlian_id) {
-            $userKonId = auth()->user()->konsentrasi_keahlian_id;
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->konsentrasi_keahlian_id) {
+            $userKonId = $user->konsentrasi_keahlian_id;
             $query->where(function($q) use ($userKonId) {
                 $q->where('konsentrasi_keahlian_id', $userKonId)
                   ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
                       $sub->where('konsentrasi_keahlians.id', $userKonId);
                   });
             });
-        } elseif (auth()->user()->program_keahlian_id) {
-            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+        } elseif ($user->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id' . '', $user->program_keahlian_id)->pluck('id');
             $query->where(function($q) use ($konsentrasiIds) {
                 $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
                   ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
@@ -47,14 +51,16 @@ class DudiController extends Controller
         }
 
         $dudis = $query->latest()->paginate(10)->withQueryString();
-        $concentrations = auth()->user()->getFilteredKonsentrasi();
+        $concentrations = $user->getFilteredKonsentrasi();
 
         return view('pokja.dudi.index', compact('dudis', 'concentrations'));
     }
 
     public function create()
     {
-        $concentrations = auth()->user()->getFilteredKonsentrasi();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $concentrations = $user->getFilteredKonsentrasi();
         return view('pokja.dudi.create', compact('concentrations'));
     }
 
@@ -89,7 +95,9 @@ class DudiController extends Controller
 
     public function edit(\App\Models\Dudi $dudi)
     {
-        $concentrations = auth()->user()->getFilteredKonsentrasi();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $concentrations = $user->getFilteredKonsentrasi();
         $selectedConcentrationIds = $dudi->konsentrasiKeahlians->pluck('id')->toArray();
         if (empty($selectedConcentrationIds)) {
             $selectedConcentrationIds = [$dudi->konsentrasi_keahlian_id];

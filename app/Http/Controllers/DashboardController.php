@@ -104,23 +104,23 @@ class DashboardController extends Controller
                     $basePengajuanQuery = \App\Models\PengajuanPkl::query();
 
                     if ($user->konsentrasi_keahlian_id) {
-                        $baseSiswaQuery->where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id);
-                        $basePembimbingQuery->where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id);
+                        $baseSiswaQuery->where('konsentrasi_keahlian_id' . '', $user->konsentrasi_keahlian_id);
+                        $basePembimbingQuery->where('konsentrasi_keahlian_id' . '', $user->konsentrasi_keahlian_id);
                         
                         $userKonId = $user->konsentrasi_keahlian_id;
                         $baseDudiQuery->where(function($q) use ($userKonId) {
-                            $q->where('konsentrasi_keahlian_id', $userKonId)
+                            $q->where('konsentrasi_keahlian_id' . '', $userKonId)
                               ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
                                   $sub->where('konsentrasi_keahlians.id', $userKonId);
                               });
                         });
 
                         $basePengajuanQuery->whereHas('siswa', function($q) use ($userKonId) {
-                            $q->where('konsentrasi_keahlian_id', $userKonId);
+                            $q->where('konsentrasi_keahlian_id' . '', $userKonId);
                         });
                     } elseif ($user->program_keahlian_id) {
-                        $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id');
-                        $baseSiswaQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+                        $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id' . '', $user->program_keahlian_id)->pluck('id');
+                        $baseSiswaQuery->whereIn('konsentrasi_keahlian_id' . '', $konsentrasiIds);
                         $basePembimbingQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
 
                         $baseDudiQuery->where(function($q) use ($konsentrasiIds) {
@@ -193,18 +193,18 @@ class DashboardController extends Controller
                     $basePembimbingQuery = \App\Models\PembimbingSekolah::query();
 
                     if ($user->konsentrasi_keahlian_id) {
-                        $baseSiswaQuery->where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id);
-                        $basePembimbingQuery->where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id);
+                        $baseSiswaQuery->where('konsentrasi_keahlian_id' . '', $user->konsentrasi_keahlian_id);
+                        $basePembimbingQuery->where('konsentrasi_keahlian_id' . '', $user->konsentrasi_keahlian_id);
                         
                         $userKonId = $user->konsentrasi_keahlian_id;
                         $baseDudiQuery->where(function($q) use ($userKonId) {
-                            $q->where('konsentrasi_keahlian_id', $userKonId)
+                            $q->where('konsentrasi_keahlian_id' . '', $userKonId)
                               ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
                                   $sub->where('konsentrasi_keahlians.id', $userKonId);
                               });
                         });
                     } elseif ($user->program_keahlian_id) {
-                        $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id');
+                        $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id' . '', $user->program_keahlian_id)->pluck('id');
                         $baseSiswaQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
                         $basePembimbingQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
 

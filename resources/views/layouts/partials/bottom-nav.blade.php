@@ -204,6 +204,16 @@
                         </a>
                     @endif
 
+                    <!-- Tentang Aplikasi Option -->
+                    <button @click="openMenu = false; setTimeout(() => document.getElementById('aboutModal').showModal(), 300)" 
+                        class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left group">
+                        <div class="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40">
+                            <i data-lucide="info" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1 font-medium text-sm text-slate-700 dark:text-slate-200">Tentang Aplikasi</div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                    </button>
+
                     <!-- Theme Toggle Option -->
                     <button @click="
                             theme = theme === 'light' ? 'dark' : 'light';

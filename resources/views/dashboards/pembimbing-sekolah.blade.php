@@ -10,8 +10,8 @@
                     <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Total Siswa Bimbingan</p>
                     <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $stats['siswa_count'] ?? 0 }}</h3>
                 </div>
-                <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                    <i data-lucide="users" class="w-6 h-6 text-blue-400"></i>
+                <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                    <i data-lucide="users" class="w-6 h-6 text-blue-500"></i>
                 </div>
             </div>
         </div>
@@ -22,8 +22,8 @@
                     <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Jurnal Menunggu Validasi</p>
                     <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $stats['jurnal_pending'] ?? 0 }}</h3>
                 </div>
-                <div class="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center">
-                    <i data-lucide="alert-triangle" class="w-6 h-6 text-amber-400"></i>
+                <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-amber-500"></i>
                 </div>
             </div>
         </div>
@@ -34,8 +34,8 @@
                     <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Total Jurnal Bimbingan</p>
                     <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $stats['jurnal_masuk'] ?? 0 }}</h3>
                 </div>
-                <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                    <i data-lucide="check-square" class="w-6 h-6 text-emerald-400"></i>
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+                    <i data-lucide="check-square" class="w-6 h-6 text-emerald-500"></i>
                 </div>
             </div>
         </div>

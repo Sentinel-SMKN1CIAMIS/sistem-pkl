@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pesan;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PesanController extends Controller
 {
@@ -13,7 +14,8 @@ class PesanController extends Controller
      */
     private function getKontak(): \Illuminate\Support\Collection
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $role = $user->role;
         $kontak = collect();
 
@@ -43,9 +45,9 @@ class PesanController extends Controller
         if ($user->pembimbingSekolah) {
             $guru = $user->pembimbingSekolah;
             $students = \App\Models\Siswa::with('user')
-                ->where('pembimbing_sekolah_id', $guru->id)
+                ->where('pembimbing_sekolah_id' . '', $guru->id)
                 ->get()
-                ->pluck('user')
+                ->pluck('user' . '')
                 ->filter();
             $kontak = $kontak->merge($students);
         }
@@ -54,17 +56,17 @@ class PesanController extends Controller
         if ($user->pembimbingDudi) {
             $mentor = $user->pembimbingDudi;
             $students = \App\Models\Siswa::with('user')
-                ->where('dudi_id', $mentor->dudi_id)
+                ->where('dudi_id' . '', $mentor->dudi_id)
                 ->get()
-                ->pluck('user')
+                ->pluck('user' . '')
                 ->filter();
             $kontak = $kontak->merge($students);
         }
 
         // 4. Super admin and Pokja
         if (in_array($role, ['pokja', 'super_admin'])) {
-            $others = User::where('id', '!=', $user->id)
-                ->where('is_active', true)
+            $others = User::where('id' . '', '!=', $user->id)
+                ->where('is_active' . '', true)
                 ->get();
             $kontak = $kontak->merge($others);
         }
@@ -72,23 +74,23 @@ class PesanController extends Controller
         // 5. Kaprog
         if ($role === 'kaprog') {
             // Pokja & Super Admin
-            $pokjas = User::whereIn('role', ['pokja', 'super_admin'])->where('is_active', true)->where('id', '!=', $user->id)->get();
+            $pokjas = User::whereIn('role' . '', ['pokja', 'super_admin'])->where('is_active' . '', true)->where('id' . '', '!=', $user->id)->get();
             $kontak = $kontak->merge($pokjas);
 
             if ($user->program_keahlian_id) {
-                $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id');
+                $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id' . '', $user->program_keahlian_id)->pluck('id' . '');
                 
                 // Pembimbing Sekolah
-                $pembimbingSekolahUsers = User::where('role', 'pembimbing_sekolah')
-                    ->where('is_active', true)
+                $pembimbingSekolahUsers = User::where('role' . '', 'pembimbing_sekolah')
+                    ->where('is_active' . '', true)
                     ->whereHas('pembimbingSekolah', function($q) use ($konsentrasiIds) {
                         $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
                     })->get();
                 $kontak = $kontak->merge($pembimbingSekolahUsers);
 
                 // Pembimbing Dudi
-                $pembimbingDudiUsers = User::where('role', 'pembimbing_dudi')
-                    ->where('is_active', true)
+                $pembimbingDudiUsers = User::where('role' . '', 'pembimbing_dudi')
+                    ->where('is_active' . '', true)
                     ->whereHas('pembimbingDudi.dudi', function($q) use ($konsentrasiIds) {
                         $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
                           ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
@@ -100,8 +102,8 @@ class PesanController extends Controller
         }
 
         // 6. Include any user with whom we already have a chat history
-        $historyUserIds = \App\Models\Pesan::where('from_user_id', $user->id)
-            ->orWhere('to_user_id', $user->id)
+        $historyUserIds = Pesan::where('from_user_id' . '', $user->id)
+            ->orWhere('to_user_id' . '', $user->id)
             ->get()
             ->map(function($msg) use ($user) {
                 return $msg->from_user_id === $user->id ? $msg->to_user_id : $msg->from_user_id;
@@ -122,20 +124,20 @@ class PesanController extends Controller
     public function index()
     {
         $kontak = $this->getKontak();
-        $authId = auth()->id();
+        $authId = Auth::id();
 
         // Hitung unread per kontak & pesan terakhir
         $kontakWithMeta = $kontak->map(function ($k) use ($authId) {
             if (!$k) return null;
-            $unread = Pesan::where('from_user_id', $k->id)
-                ->where('to_user_id', $authId)
+            $unread = Pesan::where('from_user_id' . '', $k->id)
+                ->where('to_user_id' . '', $authId)
                 ->whereNull('dibaca_at')
                 ->count();
 
             $lastMsg = Pesan::where(function ($q) use ($authId, $k) {
-                    $q->where('from_user_id', $authId)->where('to_user_id', $k->id);
+                    $q->where('from_user_id' . '', $authId)->where('to_user_id' . '', $k->id);
                 })->orWhere(function ($q) use ($authId, $k) {
-                    $q->where('from_user_id', $k->id)->where('to_user_id', $authId);
+                    $q->where('from_user_id' . '', $k->id)->where('to_user_id' . '', $authId);
                 })
                 ->latest()
                 ->first();
@@ -159,36 +161,36 @@ class PesanController extends Controller
     {
         $this->authorizeKontak($user);
 
-        $authId = auth()->id();
+        $authId = Auth::id();
 
         // Tandai semua pesan dari user ini sebagai sudah dibaca
-        Pesan::where('from_user_id', $user->id)
-            ->where('to_user_id', $authId)
+        Pesan::where('from_user_id' . '', $user->id)
+            ->where('to_user_id' . '', $authId)
             ->whereNull('dibaca_at')
             ->update(['dibaca_at' => now()]);
 
         $messages = Pesan::where(function ($q) use ($authId, $user) {
-                $q->where('from_user_id', $authId)->where('to_user_id', $user->id);
+                $q->where('from_user_id' . '', $authId)->where('to_user_id' . '', $user->id);
             })->orWhere(function ($q) use ($authId, $user) {
-                $q->where('from_user_id', $user->id)->where('to_user_id', $authId);
+                $q->where('from_user_id' . '', $user->id)->where('to_user_id' . '', $authId);
             })
-            ->orderBy('created_at')
+            ->orderBy('created_at' . '')
             ->get();
 
         $kontak = $this->getKontak();
-        $authId = auth()->id();
+        $authId = Auth::id();
 
         $kontakWithMeta = $kontak->map(function ($k) use ($authId) {
             if (!$k) return null;
-            $unread = Pesan::where('from_user_id', $k->id)
-                ->where('to_user_id', $authId)
+            $unread = Pesan::where('from_user_id' . '', $k->id)
+                ->where('to_user_id' . '', $authId)
                 ->whereNull('dibaca_at')
                 ->count();
 
             $lastMsg = Pesan::where(function ($q) use ($authId, $k) {
-                    $q->where('from_user_id', $authId)->where('to_user_id', $k->id);
+                    $q->where('from_user_id' . '', $authId)->where('to_user_id' . '', $k->id);
                 })->orWhere(function ($q) use ($authId, $k) {
-                    $q->where('from_user_id', $k->id)->where('to_user_id', $authId);
+                    $q->where('from_user_id' . '', $k->id)->where('to_user_id' . '', $authId);
                 })
                 ->latest()
                 ->first();
@@ -215,7 +217,7 @@ class PesanController extends Controller
         $request->validate(['isi' => 'required|string|max:2000']);
 
         $pesan = Pesan::create([
-            'from_user_id' => auth()->id(),
+            'from_user_id' => Auth::id(),
             'to_user_id'   => $user->id,
             'isi'          => $request->isi,
         ]);
@@ -238,7 +240,7 @@ class PesanController extends Controller
     {
         $request->validate(['isi' => 'required|string|max:2000']);
         $kontak = $this->getKontak();
-        $authId = auth()->id();
+        $authId = Auth::id();
 
         foreach ($kontak as $k) {
             if (!$k) continue;
@@ -260,16 +262,16 @@ class PesanController extends Controller
     {
         $this->authorizeKontak($user);
 
-        $authId = auth()->id();
+        $authId = Auth::id();
         $afterId = $request->integer('after', 0);
 
         $messages = Pesan::where(function ($q) use ($authId, $user) {
-                $q->where('from_user_id', $authId)->where('to_user_id', $user->id);
+                $q->where('from_user_id' . '', $authId)->where('to_user_id' . '', $user->id);
             })->orWhere(function ($q) use ($authId, $user) {
-                $q->where('from_user_id', $user->id)->where('to_user_id', $authId);
+                $q->where('from_user_id' . '', $user->id)->where('to_user_id' . '', $authId);
             })
-            ->where('id', '>', $afterId)
-            ->orderBy('created_at')
+            ->where('id' . '', '>', $afterId)
+            ->orderBy('created_at' . '')
             ->get()
             ->map(fn($m) => [
                 'id'       => $m->id,
@@ -280,8 +282,8 @@ class PesanController extends Controller
             ]);
 
         // Tandai sebagai dibaca
-        Pesan::where('from_user_id', $user->id)
-            ->where('to_user_id', $authId)
+        Pesan::where('from_user_id' . '', $user->id)
+            ->where('to_user_id' . '', $authId)
             ->whereNull('dibaca_at')
             ->update(['dibaca_at' => now()]);
 
@@ -294,10 +296,10 @@ class PesanController extends Controller
     private function authorizeKontak(User $targetUser): void
     {
         $kontak = $this->getKontak();
-        $allowed = $kontak->pluck('id')->contains($targetUser->id);
+        $allowed = $kontak->pluck('id' . '')->contains($targetUser->id);
 
         // Pokja / admin bisa chat dengan siapa saja
-        if (in_array(auth()->user()->role, ['pokja', 'super_admin'])) return;
+        if (in_array(Auth::user()->role, ['pokja', 'super_admin'])) return;
 
         if (!$allowed) {
             abort(403, 'Anda tidak memiliki akses untuk menghubungi pengguna ini.');

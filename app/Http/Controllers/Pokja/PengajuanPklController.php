@@ -7,6 +7,7 @@ use App\Models\PengajuanPkl;
 use App\Models\Dudi;
 use App\Models\Notifikasi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PengajuanPklController extends Controller
 {
@@ -17,16 +18,19 @@ class PengajuanPklController extends Controller
     {
         // Tampilkan pengajuan yang berstatus 'disetujui_kaprog'
         // Namun kita juga tampilkan riwayat pengajuan 'disetujui' dan 'ditolak' agar Pokja bisa melihat riwayatnya
-        $query = PengajuanPkl::with('siswa', 'dudi')
+        $query = PengajuanPkl::with(['siswa.konsentrasiKeahlian.programKeahlian', 'dudi'])
             ->orderByRaw("CASE WHEN status = 'disetujui_kaprog' THEN 1 ELSE 2 END")
             ->latest();
 
-        if (auth()->user()->konsentrasi_keahlian_id) {
-            $query->whereHas('siswa', function($q) {
-                $q->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->konsentrasi_keahlian_id) {
+            $query->whereHas('siswa', function($q) use ($user) {
+                $q->where('konsentrasi_keahlian_id' . '', $user->konsentrasi_keahlian_id);
             });
-        } elseif (auth()->user()->program_keahlian_id) {
-            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+        } elseif ($user->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id' . '', $user->program_keahlian_id)->pluck('id');
             $query->whereHas('siswa', function($q) use ($konsentrasiIds) {
                 $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
             });
@@ -85,7 +89,7 @@ class PengajuanPklController extends Controller
                 ]);
 
                 // Buat notifikasi untuk semua Pokja agar segera memetakan pembimbing sekolah
-                $pokjas = \App\Models\User::where('role', 'pokja')->get();
+                $pokjas = \App\Models\User::where('role' . '', 'pokja')->get();
                 foreach ($pokjas as $pokja) {
                     Notifikasi::create([
                         'to_user_id' => $pokja->id,

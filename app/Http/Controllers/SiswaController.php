@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SiswaController extends Controller
 {
@@ -13,23 +14,26 @@ class SiswaController extends Controller
     {
         $query = \App\Models\Siswa::with(['user', 'konsentrasiKeahlian', 'dudi', 'pembimbingSekolah']);
 
-        if (auth()->user()->konsentrasi_keahlian_id) {
-            $query->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
-        } elseif (auth()->user()->program_keahlian_id) {
-            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
-            $query->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->konsentrasi_keahlian_id) {
+            $query->where('konsentrasi_keahlian_id' . '', $user->konsentrasi_keahlian_id);
+        } elseif ($user->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id' . '', $user->program_keahlian_id)->pluck('id');
+            $query->whereIn('konsentrasi_keahlian_id' . '', $konsentrasiIds);
         }
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('nis', 'like', "%{$search}%");
+                $q->where('nama_lengkap' . '', 'like', "%{$search}%")
+                  ->orWhere('nis' . '', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('konsentrasi')) {
-            $query->where('konsentrasi_keahlian_id', $request->konsentrasi);
+            $query->where('konsentrasi_keahlian_id' . '', $request->konsentrasi);
         }
 
         // Sorting Logic
@@ -39,19 +43,19 @@ class SiswaController extends Controller
                     $query->oldest();
                     break;
                 case 'name_asc':
-                    $query->orderBy('nama_lengkap', 'asc');
+                    $query->orderBy('nama_lengkap' . '', 'asc');
                     break;
                 case 'name_desc':
-                    $query->orderBy('nama_lengkap', 'desc');
+                    $query->orderBy('nama_lengkap' . '', 'desc');
                     break;
                 case 'nis_asc':
-                    $query->orderBy('nis', 'asc');
+                    $query->orderBy('nis' . '', 'asc');
                     break;
                 case 'nis_desc':
-                    $query->orderBy('nis', 'desc');
+                    $query->orderBy('nis' . '', 'desc');
                     break;
                 case 'kelas_asc':
-                    $query->orderBy('kelas', 'asc');
+                    $query->orderBy('kelas' . '', 'asc');
                     break;
                 case 'latest':
                 default:
@@ -63,14 +67,16 @@ class SiswaController extends Controller
         }
 
         $students = $query->paginate(10)->withQueryString();
-        $concentrations = auth()->user()->getFilteredKonsentrasi();
+        $concentrations = $user->getFilteredKonsentrasi();
         
         return view('pokja.siswa.index', compact('students', 'concentrations'));
     }
 
     public function create()
     {
-        $concentrations = auth()->user()->getFilteredKonsentrasi();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $concentrations = $user->getFilteredKonsentrasi();
         $dudis = \App\Models\Dudi::all();
         $pembimbingSekolah = \App\Models\PembimbingSekolah::all();
         $pembimbingDudi = \App\Models\PembimbingDudi::all();
