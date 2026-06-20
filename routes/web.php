@@ -96,8 +96,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
     });
 
-    // Shared Map Routes - Accessible by Pokja, Kaprog, Pembimbing Sekolah
-    Route::middleware('role:pokja,kaprog,pembimbing_sekolah,super_admin')->group(function () {
+    // Shared Map Routes - Accessible by Pokja, Kaprog, Pembimbing Sekolah, Kepala Sekolah
+    Route::middleware('role:pokja,kaprog,pembimbing_sekolah,super_admin,kepala_sekolah')->group(function () {
         Route::get('peta-dudi', [\App\Http\Controllers\Pokja\PemetaanController::class, 'maps'])->name('shared.pemetaan.maps');
         Route::get('peta-dudi/data', [\App\Http\Controllers\Pokja\PemetaanController::class, 'mapsData'])->name('shared.pemetaan.maps.data');
     });
@@ -118,8 +118,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::post('pesan/{user}', [\App\Http\Controllers\PesanController::class, 'store'])->name('pesan.store');
     Route::get('pesan/{user}/poll', [\App\Http\Controllers\PesanController::class, 'poll'])->name('pesan.poll');
 
-    // Shared Admin Routes (Super Admin & Pokja)
-    Route::middleware('role:super_admin,pokja')->prefix('admin')->name('admin.')->group(function () {
+    // Shared Admin Routes (Super Admin, Pokja, Kepala Sekolah)
+    Route::middleware(['role:super_admin,pokja,kepala_sekolah', 'view-only'])->prefix('admin')->name('admin.')->group(function () {
         Route::post('program_keahlian/reorder', [\App\Http\Controllers\ProgramKeahlianController::class, 'reorder'])->name('program_keahlian.reorder');
         Route::resource('program_keahlian', \App\Http\Controllers\ProgramKeahlianController::class);
         Route::post('konsentrasi_keahlian/reorder', [\App\Http\Controllers\KonsentrasiKeahlianController::class, 'reorder'])->name('konsentrasi_keahlian.reorder');
@@ -145,7 +145,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     });
 
     // Pokja Routes - with group membership check
-    Route::middleware(['role:pokja,super_admin', 'pokja-group'])->prefix('pokja')->name('pokja.')->group(function () {
+    Route::middleware(['role:pokja,super_admin,kepala_sekolah', 'pokja-group', 'view-only'])->prefix('pokja')->name('pokja.')->group(function () {
         Route::resource('kompetensi', \App\Http\Controllers\Pokja\KompetensiController::class);
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
         

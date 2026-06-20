@@ -28,6 +28,7 @@
     <div x-data="{ importPanelOpen: false, guideModalOpen: false }">
         <div class="mb-6 pokja-header-container">
             <p class="text-slate-600 dark:text-slate-400">Daftar guru pembimbing sekolah per konsentrasi keahlian.</p>
+            @if(auth()->user()->role !== 'kepala_sekolah')
             <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
                     <i data-lucide="upload-cloud" class="w-5 h-5"></i>
@@ -38,6 +39,7 @@
                     Tambah Pembimbing
                 </a>
             </div>
+            @endif
         </div>
 
         <!-- Inline Import Panel (Directly on the main page layout, occupying full width!) -->
@@ -363,6 +365,7 @@
                                             <i data-lucide="eye" class="w-3.5 h-3.5 text-emerald-500"></i>
                                             Lihat Siswa
                                         </a>
+                                        @if(auth()->user()->role !== 'kepala_sekolah')
                                         <a href="{{ route('pokja.pembimbing_sekolah.edit', $item) }}" class="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Edit
@@ -375,6 +378,7 @@
                                                 Hapus
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

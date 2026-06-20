@@ -14,36 +14,44 @@
         @endif
     </div>
 
+    @if(auth()->user()->role !== 'kepala_sekolah')
     <!-- Bulk Delete Action Button (Visible only when checkboxes are selected) -->
     <div id="bulk-delete-container" class="hidden justify-end mb-4 animate-in fade-in duration-200">
         <button type="submit" form="bulk-delete-form" class="flex items-center gap-2 px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold transition-all border border-rose-500/20 hover:border-rose-500/30 cursor-pointer shadow-xs">
             <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i> Hapus Terpilih (<span id="selected-count">0</span>)
         </button>
     </div>
+    @endif
 
     <div class="glass-card p-6">
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto min-h-[200px]">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="border-b border-slate-200 dark:border-slate-700 text-sm whitespace-nowrap">
+                        @if(auth()->user()->role !== 'kepala_sekolah')
                         <!-- Select All Checkbox -->
                         <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium w-10">
                             <input type="checkbox" id="select-all" class="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer">
                         </th>
+                        @endif
                         <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium">Siswa</th>
                         <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium">Kelas / Konsentrasi</th>
                         <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium">Perusahaan Tujuan</th>
                         <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium">Status</th>
+                        @if(auth()->user()->role !== 'kepala_sekolah')
                         <th class="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium text-right">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="text-sm">
                     @forelse($pengajuans as $pengajuan)
                     <tr class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap">
+                        @if(auth()->user()->role !== 'kepala_sekolah')
                         <!-- Individual Checkbox -->
                         <td class="py-3 px-4">
                             <input type="checkbox" name="ids[]" value="{{ $pengajuan->id }}" form="bulk-delete-form" class="submission-checkbox rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer">
                         </td>
+                        @endif
                         <td class="py-3 px-4 text-slate-800 dark:text-slate-200 font-medium">
                             {{ $pengajuan->siswa->nama_lengkap }}
                         </td>
@@ -68,39 +76,50 @@
                                 <span class="px-2.5 py-1 bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 rounded-lg text-xs font-semibold whitespace-nowrap">Ditolak</span>
                             @endif
                         </td>
+                        @if(auth()->user()->role !== 'kepala_sekolah')
                         <td class="py-3 px-4 text-right whitespace-nowrap">
-                            <div x-data="{ open: false }" class="relative inline-flex justify-end" x-on:click.away="open = false">
-                                <button x-on:click="open = !open" class="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none cursor-pointer">
+                            <div x-data="{ open: false, btnX: 0, btnY: 0 }" class="inline-flex justify-end">
+                                <button @click="
+                                    const r = $el.getBoundingClientRect();
+                                    btnX = r.right;
+                                    btnY = r.bottom;
+                                    open = !open;
+                                " class="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none cursor-pointer">
                                     <i data-lucide="more-vertical" class="w-4 h-4"></i>
                                 </button>
-                                <div x-show="open" 
-                                     x-transition:enter="transition ease-out duration-100"
-                                     x-transition:enter-start="transform opacity-0 scale-95"
-                                     x-transition:enter-end="transform opacity-100 scale-100"
-                                     x-transition:leave="transition ease-in duration-75"
-                                     x-transition:leave-start="transform opacity-100 scale-100"
-                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                     class="absolute right-0 mt-8 w-36 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 shadow-lg py-1 z-50 text-left" 
-                                     style="display: none;">
-                                     
-                                    @if($pengajuan->status === 'disetujui_kaprog')
-                                        <button type="button" onclick="openModal('{{ $pengajuan->id }}'); open = false" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left cursor-pointer">
-                                            <i data-lucide="check-square" class="w-3.5 h-3.5 text-blue-500"></i>
-                                            Validasi
-                                        </button>
-                                    @endif
+                                <template x-teleport="body">
+                                    <div x-show="open"
+                                         x-transition:enter="transition ease-out duration-100"
+                                         x-transition:enter-start="transform opacity-0 scale-95"
+                                         x-transition:enter-end="transform opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="transform opacity-100 scale-100"
+                                         x-transition:leave-end="transform opacity-0 scale-95"
+                                         :style="`position: fixed; right: ${window.innerWidth - btnX}px; top: ${btnY + 4}px; z-index: 9999;`"
+                                         @click.outside="open = false"
+                                         style="display: none;"
+                                         class="w-36 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 shadow-lg py-1 text-left">
 
-                                    <form action="{{ route('pokja.pengajuan_pkl.destroy', $pengajuan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pengajuan PKL ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer">
-                                            <i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-500"></i>
-                                            Hapus
-                                        </button>
-                                    </form>
-                                </div>
+                                        @if($pengajuan->status === 'disetujui_kaprog')
+                                            <button type="button" @click="open = false; openModal('{{ $pengajuan->id }}')" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left cursor-pointer">
+                                                <i data-lucide="check-square" class="w-3.5 h-3.5 text-blue-500"></i>
+                                                Validasi
+                                            </button>
+                                        @endif
+
+                                        <form action="{{ route('pokja.pengajuan_pkl.destroy', $pengajuan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pengajuan PKL ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer">
+                                                <i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-500"></i>
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </template>
                             </div>
                         </td>
+                        @endif
                     </tr>
 
                     <!-- Modal untuk validasi Pokja -->
@@ -151,7 +170,7 @@
                     </dialog>
                     @empty
                     <tr>
-                        <td colspan="6" class="py-8 text-center text-slate-500">Belum ada pengajuan PKL yang membutuhkan validasi Pokja.</td>
+                        <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 4 : 6 }}" class="py-8 text-center text-slate-500">Belum ada pengajuan PKL yang membutuhkan validasi Pokja.</td>
                     </tr>
                     @endforelse
                 </tbody>

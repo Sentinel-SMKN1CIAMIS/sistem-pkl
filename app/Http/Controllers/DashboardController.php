@@ -183,6 +183,7 @@ class DashboardController extends Controller
                 $stats['missing_journal'] = collect($stats['missing_journal'])->map(fn($s) => (object)$s);
 
                 return view('dashboards.kaprog', compact('stats'));
+            case 'kepala_sekolah':
             case 'pokja':
                 $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_{$role}_{$user->id}", 300, function() use ($user) {
                     $startOfWeek = \Carbon\Carbon::now()->startOfWeek(1);

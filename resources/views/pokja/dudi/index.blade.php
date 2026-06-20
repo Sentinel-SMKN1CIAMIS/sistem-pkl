@@ -28,7 +28,7 @@
     <div x-data="{ importPanelOpen: false, guideModalOpen: false }">
         <div class="mb-6 pokja-header-container">
             <p class="text-slate-600 dark:text-slate-400">Dunia Usaha & Dunia Industri (DUDI) per Konsentrasi Keahlian.</p>
-            @if(auth()->user()->role !== 'kaprog')
+            @if(auth()->user()->role !== 'kaprog' && auth()->user()->role !== 'kepala_sekolah')
             <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
                     <i data-lucide="upload-cloud" class="w-5 h-5"></i>
@@ -316,7 +316,7 @@
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Konsentrasi Keahlian</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Lokasi</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Pimpinan</th>
-                        @if(auth()->user()->role !== 'kaprog')
+                        @if(auth()->user()->role !== 'kaprog' && auth()->user()->role !== 'kepala_sekolah')
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right whitespace-nowrap">Aksi</th>
                         @endif
                     </tr>
@@ -349,7 +349,7 @@
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 {{ $item->nama_pimpinan ?? '-' }}
                             </td>
-                            @if(auth()->user()->role !== 'kaprog')
+                            @if(auth()->user()->role !== 'kaprog' && auth()->user()->role !== 'kepala_sekolah')
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <div x-data="{ open: false }" class="relative flex justify-end" x-on:click.away="open = false">
                                     <button x-on:click="open = !open" class="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
@@ -383,7 +383,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
+                            <td colspan="{{ (auth()->user()->role === 'kaprog' || auth()->user()->role === 'kepala_sekolah') ? 4 : 5 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
                                 Belum ada data DUDI.
                             </td>
                         </tr>

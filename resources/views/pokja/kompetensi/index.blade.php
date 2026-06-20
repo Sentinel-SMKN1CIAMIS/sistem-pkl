@@ -3,10 +3,12 @@
 
     <div class="mb-6 flex justify-between items-center">
         <p class="text-slate-600 dark:text-slate-400">Kelola Elemen Kompetensi dan Tujuan Pembelajaran per Konsentrasi Keahlian.</p>
+        @if(auth()->user()->role !== 'kepala_sekolah')
         <a href="{{ route('pokja.kompetensi.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
             <i data-lucide="plus-circle" class="w-5 h-5"></i>
             Tambah TP
         </a>
+        @endif
     </div>
 
     @if(session('success'))
@@ -25,7 +27,9 @@
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Elemen Kompetensi</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Tujuan Pembelajaran (TP)</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Capaian (CP)</th>
+                        @if(auth()->user()->role !== 'kepala_sekolah')
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right whitespace-nowrap">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-700/50">
@@ -45,6 +49,7 @@
                             <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 max-w-xs truncate" title="{{ $item->cp }}">
                                 {{ $item->cp ?? '-' }}
                             </td>
+                            @if(auth()->user()->role !== 'kepala_sekolah')
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <div x-data="{ open: false }" class="relative flex justify-end" x-on:click.away="open = false">
                                     <button x-on:click="open = !open" class="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
@@ -74,10 +79,11 @@
                                     </div>
                                 </div>
                             </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
+                            <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 4 : 5 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
                                 Belum ada data elemen kompetensi / TP.
                             </td>
                         </tr>

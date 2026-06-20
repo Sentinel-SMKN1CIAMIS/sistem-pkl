@@ -23,7 +23,7 @@ class UserController extends Controller
         } elseif ($filter === 'siswa') {
             $query->where('role', 'siswa');
         } elseif ($filter === 'other') {
-            $query->whereIn('role', ['pokja', 'kaprog']);
+            $query->whereIn('role', ['pokja', 'kaprog', 'kepala_sekolah']);
         }
         
         $users = $query->paginate(15);
@@ -40,9 +40,13 @@ class UserController extends Controller
     {
         $request->validate([
             'username' => 'required|string|unique:users,username',
-            'role' => 'required|in:siswa,pembimbing_sekolah,pembimbing_dudi,pokja,super_admin',
+            'role' => 'required|in:siswa,pembimbing_sekolah,pembimbing_dudi,pokja,super_admin,kepala_sekolah',
             'password' => 'required|string|min:8|confirmed'
         ]);
+
+        if ($request->role === 'kepala_sekolah' && User::where('role', 'kepala_sekolah')->exists()) {
+            return back()->withInput()->withErrors(['role' => 'Akun dengan role Kepala Sekolah sudah ada. Maksimal hanya diperbolehkan 1 akun.']);
+        }
 
         User::create([
             'username' => $request->username,
@@ -64,9 +68,13 @@ class UserController extends Controller
     {
         $request->validate([
             'username' => 'required|string|unique:users,username,' . $user->id,
-            'role' => 'required|in:siswa,pembimbing_sekolah,pembimbing_dudi,pokja,super_admin',
+            'role' => 'required|in:siswa,pembimbing_sekolah,pembimbing_dudi,pokja,super_admin,kepala_sekolah',
             'password' => 'nullable|string|min:8|confirmed'
         ]);
+
+        if ($request->role === 'kepala_sekolah' && $user->role !== 'kepala_sekolah' && User::where('role', 'kepala_sekolah')->exists()) {
+            return back()->withInput()->withErrors(['role' => 'Akun dengan role Kepala Sekolah sudah ada. Maksimal hanya diperbolehkan 1 akun.']);
+        }
 
         $user->username = $request->username;
         $user->role = $request->role;

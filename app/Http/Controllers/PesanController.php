@@ -71,10 +71,18 @@ class PesanController extends Controller
             $kontak = $kontak->merge($others);
         }
 
+        // Kepala Sekolah
+        if ($role === 'kepala_sekolah') {
+            $allowedUsers = User::whereIn('role', ['pokja', 'kaprog'])
+                ->where('is_active', true)
+                ->get();
+            $kontak = $kontak->merge($allowedUsers);
+        }
+
         // 5. Kaprog
         if ($role === 'kaprog') {
-            // Pokja & Super Admin
-            $pokjas = User::whereIn('role' . '', ['pokja', 'super_admin'])->where('is_active' . '', true)->where('id' . '', '!=', $user->id)->get();
+            // Pokja, Super Admin, & Kepala Sekolah
+            $pokjas = User::whereIn('role' . '', ['pokja', 'super_admin', 'kepala_sekolah'])->where('is_active' . '', true)->where('id' . '', '!=', $user->id)->get();
             $kontak = $kontak->merge($pokjas);
 
             if ($user->program_keahlian_id) {

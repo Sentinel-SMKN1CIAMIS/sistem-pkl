@@ -25,9 +25,11 @@
                                     <p class="text-[10px] text-slate-500">{{ $zona->dudis_count }} DUDI</p>
                                 </div>
                             </div>
+                            @if(auth()->user()->role !== 'kepala_sekolah')
                             <button type="button" onclick="deleteZona({{ $zona->id }})" class="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
+                            @endif
                         </div>
                     @empty
                         <p class="text-sm text-slate-500 italic text-center py-4">Belum ada zona. Gambar polygon di peta untuk menambah.</p>
@@ -35,6 +37,7 @@
                 </div>
             </div>
 
+            @if(auth()->user()->role !== 'kepala_sekolah')
             {{-- Form Add Zona --}}
             <div class="glass-card p-6" id="zona-form-card">
                 <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
@@ -69,6 +72,7 @@
                     </button>
                 </form>
             </div>
+            @endif
         </div>
 
         {{-- Map --}}
@@ -105,6 +109,7 @@
             }).addTo(map).bindTooltip(zona.nama, { permanent: true, direction: 'center', className: 'zona-label' });
         });
 
+        @if(auth()->user()->role !== 'kepala_sekolah')
         // Draw controls
         const drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
@@ -128,6 +133,7 @@
             }
         });
         map.addControl(drawControl);
+        @endif
 
         let currentCoords = null;
 

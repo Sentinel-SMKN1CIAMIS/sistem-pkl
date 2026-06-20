@@ -32,7 +32,7 @@
             ['name' => 'Feedback Sekolah', 'route' => 'pembimbing_dudi.feedback.index', 'icon' => 'message-square-plus'],
             ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
-    } elseif ($role === 'pokja') {
+    } elseif ($role === 'pokja' || $role === 'kepala_sekolah') {
         $navItems = [
             ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
             [
@@ -74,9 +74,13 @@
                     ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
                 ]
             ],
-            ['name' => 'Pengaturan', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'settings'],
-            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
+
+        if ($role !== 'kepala_sekolah') {
+            $navItems[] = ['name' => 'Pengaturan', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'settings'];
+        }
+
+        $navItems[] = ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'];
     } elseif ($role === 'kaprog') {
         $navItems = [
             ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
