@@ -18,10 +18,12 @@
                 <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">Silakan tinjau dan sunting data hasil scan otomatis sebelum disimpan ke database.</p>
             </div>
             <div class="flex items-center gap-6">
-                <label class="inline-flex items-center cursor-pointer select-none gap-3">
+                <label class="inline-flex items-center cursor-pointer select-none gap-3 group">
                     <input type="checkbox" name="clear_old" value="1" checked class="sr-only peer">
-                    <div class="relative w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/25 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <div class="w-11 h-6 bg-slate-300 dark:bg-slate-600 rounded-full peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-500/30 peer-checked:bg-blue-600 transition-all duration-300 flex items-center p-0.5 shadow-inner">
+                        <div class="w-5 h-5 bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-transform duration-300 transform peer-checked:translate-x-5"></div>
+                    </div>
+                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">
                         Bersihkan data lama per jurusan sebelum impor
                     </span>
                 </label>
@@ -65,12 +67,16 @@
                     <div x-show="activeTab === '{{ $key }}'" class="space-y-6 animate-in fade-in duration-200" style="display: none;">
                         {{-- Mapped concentration selector --}}
                         <div class="glass-card p-6 border-l-4 border-l-emerald-500 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div class="flex items-start gap-3">
-                                <input type="checkbox" name="sections[{{ $key }}][import]" value="1" checked id="import_{{ $key }}"
-                                       class="w-5 h-5 text-blue-600 bg-slate-100 border-slate-300 rounded-lg focus:ring-blue-500 dark:focus:ring-blue-600 focus:ring-2 mt-1">
+                            <div class="flex items-start gap-4">
+                                <label class="inline-flex items-center cursor-pointer select-none group mt-1">
+                                    <input type="checkbox" name="sections[{{ $key }}][import]" value="1" checked id="import_{{ $key }}" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-300 dark:bg-slate-600 rounded-full peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-500/30 peer-checked:bg-emerald-500 transition-all duration-300 flex items-center p-0.5 shadow-inner">
+                                        <div class="w-5 h-5 bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-transform duration-300 transform peer-checked:translate-x-5"></div>
+                                    </div>
+                                </label>
                                 <div>
-                                    <label for="import_{{ $key }}" class="font-bold text-slate-800 dark:text-slate-100 cursor-pointer">Import Kurikulum Jurusan Ini</label>
-                                    <p class="text-xs text-slate-500">Uncheck jika tidak ingin mengimpor kurikulum jurusan ini.</p>
+                                    <label for="import_{{ $key }}" class="font-bold text-slate-800 dark:text-slate-100 cursor-pointer group-hover:text-emerald-600 transition-colors">Import Kurikulum Jurusan Ini</label>
+                                    <p class="text-xs text-slate-500 mt-0.5">Nonaktifkan switch ini jika tidak ingin mengimpor kurikulum jurusan ini.</p>
                                 </div>
                             </div>
                             <div class="w-full md:w-80">
