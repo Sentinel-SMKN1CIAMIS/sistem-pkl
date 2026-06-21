@@ -18,10 +18,10 @@
                 <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">Silakan tinjau dan sunting data hasil scan otomatis sebelum disimpan ke database.</p>
             </div>
             <div class="flex items-center gap-6">
-                <label class="relative inline-flex items-center cursor-pointer select-none">
+                <label class="inline-flex items-center cursor-pointer select-none gap-3">
                     <input type="checkbox" name="clear_old" value="1" checked class="sr-only peer">
-                    <div class="w-11 h-6 bg-slate-300 dark:bg-slate-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-blue-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    <span class="ml-3 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <div class="relative w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/25 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">
                         Bersihkan data lama per jurusan sebelum impor
                     </span>
                 </label>
