@@ -151,6 +151,13 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
     // Pokja Routes - with group membership check
     Route::middleware(['role:pokja,super_admin,kepala_sekolah', 'pokja-group', 'view-only'])->prefix('pokja')->name('pokja.')->group(function () {
+        Route::get('kompetensi/import-pdf', [\App\Http\Controllers\Pokja\KompetensiController::class, 'showImportPdfForm'])->name('kompetensi.import-pdf.form');
+        Route::post('kompetensi/import-pdf/parse', [\App\Http\Controllers\Pokja\KompetensiController::class, 'parseImportPdf'])->name('kompetensi.import-pdf.parse');
+        Route::get('kompetensi/import-pdf/parse', function() {
+            return redirect()->route('pokja.kompetensi.import-pdf.form');
+        });
+        Route::get('kompetensi/import-pdf/preview', [\App\Http\Controllers\Pokja\KompetensiController::class, 'showImportPdfPreview'])->name('kompetensi.import-pdf.preview');
+        Route::post('kompetensi/import-pdf/store', [\App\Http\Controllers\Pokja\KompetensiController::class, 'storeImportPdf'])->name('kompetensi.import-pdf.store');
         Route::resource('kompetensi', \App\Http\Controllers\Pokja\KompetensiController::class);
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
         

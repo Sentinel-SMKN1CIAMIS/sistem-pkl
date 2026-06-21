@@ -30,37 +30,101 @@
                         </div>
                     </div>
 
+                    {{-- Hidden inputs to satisfy backend model structure and validation --}}
+                    <input type="hidden" name="kompetensi_id" id="kompetensi_id" value="{{ old('kompetensi_id') }}">
+                    <input type="hidden" name="cp" id="hidden_cp" value="{{ old('cp') }}">
+                    <input type="hidden" name="cp_id" id="cp_id" value="{{ old('cp_id') }}">
+
                     <div>
-                        <label for="kompetensi_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Elemen Kompetensi</label>
-                        <select name="kompetensi_id" id="kompetensi_id" required
-                                class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
-                            <option value="" disabled selected>Pilih Kompetensi</option>
-                            @foreach($kompetensis as $item)
-                                <option value="{{ $item->id }}">{{ $item->nama }}</option>
-                            @endforeach
-                        </select>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Elemen Kompetensi</label>
+                        <div class="relative" id="elemen_wrapper">
+                            <button type="button" id="elemen_btn" 
+                                    class="w-full flex items-center justify-between px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-left">
+                                <span id="elemen_btn_label" class="truncate">Pilih Elemen Kompetensi</span>
+                                <span id="elemen_icon_container" class="shrink-0 ml-2">
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500"></i>
+                                </span>
+                            </button>
+                            <div id="elemen_dropdown" class="hidden custom-dropdown absolute left-0 right-0 mt-2 max-h-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 flex flex-col overflow-hidden">
+                                <div id="elemen_search_container" class="p-2 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-10">
+                                    <div class="relative">
+                                        <input type="text" id="elemen_search" placeholder="Cari elemen..." autocomplete="off" class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="elemen_options" class="divide-y divide-slate-100 dark:divide-slate-800/50 overflow-y-auto max-h-56">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
-                        <label for="cp_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tujuan Pembelajaran (TP)</label>
-                        <select name="cp_id" id="cp_id" 
-                                class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
-                            <option value="">-- Pilih TP (Opsional) --</option>
-                            @foreach($tujuanPembelajaran as $tp)
-                                <option value="{{ $tp->id }}" title="{{ $tp->deskripsi ?? '' }}">
-                                    {{ $tp->tp ?? $tp->nama }} @if($tp->cp) - {{ $tp->cp }} @endif
-                                </option>
-                            @endforeach
-                        </select>
-                        <p class="text-xs text-slate-400 mt-1">Pilih TP yang sesuai dengan kegiatan hari ini.</p>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Capaian Pembelajaran (CP)</label>
+                        <div class="relative" id="cp_wrapper">
+                            <button type="button" id="cp_btn" disabled
+                                    class="w-full flex items-center justify-between px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-200/50 dark:disabled:bg-slate-950/30 disabled:text-slate-400 dark:disabled:text-slate-500 text-left relative">
+                                <span id="cp_btn_label" class="truncate text-slate-400 dark:text-slate-500">Pilih Elemen Kompetensi Terlebih Dahulu</span>
+                                <span id="cp_icon_container" class="shrink-0 ml-2">
+                                    <i data-lucide="lock" class="w-4 h-4 text-slate-400/80 dark:text-slate-500/80"></i>
+                                </span>
+                            </button>
+                            <div id="cp_dropdown" class="hidden custom-dropdown absolute left-0 right-0 mt-2 max-h-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 flex flex-col overflow-hidden">
+                                <div id="cp_search_container" class="p-2 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-10">
+                                    <div class="relative">
+                                        <input type="text" id="cp_search" placeholder="Cari CP..." autocomplete="off" class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="cp_options" class="divide-y divide-slate-100 dark:divide-slate-800/50 overflow-y-auto max-h-56">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1 font-medium">* CP disaring berdasarkan Elemen Kompetensi yang Anda pilih.</p>
+                        
+                        <!-- Full CP Card -->
+                        <div id="cp_full_text_container" class="hidden mt-3 p-3.5 bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/10 dark:border-blue-500/20 text-xs text-slate-700 dark:text-slate-300 rounded-xl leading-relaxed">
+                            <span class="font-bold text-blue-600 dark:text-blue-400 block mb-1 text-[10px] uppercase tracking-wider">Capaian Pembelajaran (CP) Lengkap:</span>
+                            <p id="cp_full_text" class="whitespace-pre-line"></p>
+                        </div>
                     </div>
 
                     <div>
-                        <label for="cp" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Capaian Pembelajaran (CP)</label>
-                        <input type="text" name="cp" id="cp" value="{{ old('cp') }}"
-                               class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all"
-                               placeholder="Contoh: Menyajikan makanan Indonesia">
-                        <p class="text-xs text-slate-400 mt-1">Isi CP yang sesuai dengan kegiatan hari ini.</p>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tujuan Pembelajaran (TP)</label>
+                        <div class="relative" id="tp_wrapper">
+                            <button type="button" id="tp_btn" disabled
+                                    class="w-full flex items-center justify-between px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-200/50 dark:disabled:bg-slate-950/30 disabled:text-slate-400 dark:disabled:text-slate-500 text-left relative">
+                                <span id="tp_btn_label" class="truncate text-slate-400 dark:text-slate-500">Pilih Capaian Pembelajaran (CP) Terlebih Dahulu</span>
+                                <span id="tp_icon_container" class="shrink-0 ml-2">
+                                    <i data-lucide="lock" class="w-4 h-4 text-slate-400/80 dark:text-slate-500/80"></i>
+                                </span>
+                            </button>
+                            <div id="tp_dropdown" class="hidden custom-dropdown absolute left-0 right-0 mt-2 max-h-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 flex flex-col overflow-hidden">
+                                <div id="tp_search_container" class="p-2 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-10">
+                                    <div class="relative">
+                                        <input type="text" id="tp_search" placeholder="Cari TP..." autocomplete="off" class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="tp_options" class="divide-y divide-slate-100 dark:divide-slate-800/50 overflow-y-auto max-h-56">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1 font-medium">* TP disaring berdasarkan Capaian Pembelajaran yang Anda pilih.</p>
+                        
+                        <!-- Full TP Card -->
+                        <div id="tp_full_text_container" class="hidden mt-3 p-3.5 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 dark:border-emerald-500/20 text-xs text-slate-700 dark:text-slate-300 rounded-xl leading-relaxed">
+                            <span class="font-bold text-emerald-600 dark:text-emerald-400 block mb-1 text-[10px] uppercase tracking-wider">Tujuan Pembelajaran (TP) Lengkap:</span>
+                            <p id="tp_full_text" class="whitespace-pre-line"></p>
+                        </div>
                     </div>
 
                     <!-- Status Absensi dan Alasan Alpha -->
@@ -184,12 +248,475 @@
     </div>
 
     @push('scripts')
+    <style>
+        .custom-dropdown {
+            opacity: 0;
+            transform: translateY(-8px) scale(0.98);
+            transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        .custom-dropdown.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+    </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
     <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
     <script>
         let cropper = null;
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Cascading Dropdown Master Data & Logic
+            const masterKompetensi = @json($kompetensis);
+            const hiddenKompetensiId = document.getElementById('kompetensi_id');
+            const hiddenCp = document.getElementById('hidden_cp');
+            const hiddenTpId = document.getElementById('cp_id');
+
+            const elemenBtn = document.getElementById('elemen_btn');
+            const elemenBtnLabel = document.getElementById('elemen_btn_label');
+            const elemenDropdown = document.getElementById('elemen_dropdown');
+            const elemenOptions = document.getElementById('elemen_options');
+            const elemenSearch = document.getElementById('elemen_search');
+
+            const cpBtn = document.getElementById('cp_btn');
+            const cpBtnLabel = document.getElementById('cp_btn_label');
+            const cpDropdown = document.getElementById('cp_dropdown');
+            const cpOptions = document.getElementById('cp_options');
+            const cpSearch = document.getElementById('cp_search');
+
+            const tpBtn = document.getElementById('tp_btn');
+            const tpBtnLabel = document.getElementById('tp_btn_label');
+            const tpDropdown = document.getElementById('tp_dropdown');
+            const tpOptions = document.getElementById('tp_options');
+            const tpSearch = document.getElementById('tp_search');
+
+            const cpFullTextContainer = document.getElementById('cp_full_text_container');
+            const cpFullText = document.getElementById('cp_full_text');
+            const tpFullTextContainer = document.getElementById('tp_full_text_container');
+            const tpFullText = document.getElementById('tp_full_text');
+
+            // Old / Existing values for recovery
+            @php
+                $oldTpId = old('cp_id');
+                $oldKompetensi = $oldTpId ? \App\Models\Kompetensi::find($oldTpId) : null;
+                $oldElemen = $oldKompetensi ? $oldKompetensi->nama : '';
+                $oldCP = $oldKompetensi ? $oldKompetensi->cp : '';
+            @endphp
+            const existingElemen = @json($oldElemen);
+            const existingCP = @json($oldCP);
+            const existingTPId = @json($oldTpId);
+
+            const data = {};
+            masterKompetensi.forEach(item => {
+                const elemen = item.nama;
+                const cp = item.cp || 'Umum';
+                const tp = item.tp || item.nama;
+
+                if (!data[elemen]) {
+                    data[elemen] = {};
+                }
+                if (!data[elemen][cp]) {
+                    data[elemen][cp] = [];
+                }
+                data[elemen][cp].push({
+                    id: item.id,
+                    tp: tp,
+                    deskripsi: item.deskripsi
+                });
+            });
+
+            function truncateText(text, maxLength = 90) {
+                if (!text) return '';
+                return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+            }
+
+            function openDropdown(dropdown, searchInput) {
+                closeAllDropdowns();
+                dropdown.classList.remove('hidden');
+                dropdown.offsetHeight; // Force reflow
+                dropdown.classList.add('active');
+                if (searchInput) {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input'));
+                    
+                    const parentContainer = searchInput.closest('.sticky');
+                    if (parentContainer && !parentContainer.classList.contains('hidden')) {
+                        setTimeout(() => searchInput.focus(), 50);
+                    }
+                }
+            }
+
+            function closeDropdown(dropdown) {
+                if (!dropdown.classList.contains('active')) return;
+                dropdown.classList.remove('active');
+                setTimeout(() => {
+                    if (!dropdown.classList.contains('active')) {
+                        dropdown.classList.add('hidden');
+                    }
+                }, 150);
+            }
+
+            function closeAllDropdowns() {
+                [elemenDropdown, cpDropdown, tpDropdown].forEach(closeDropdown);
+            }
+
+            // Click outside to close
+            document.addEventListener('click', closeAllDropdowns);
+
+            // Prevent closing when clicking inside the dropdowns
+            [elemenDropdown, cpDropdown, tpDropdown].forEach(dropdown => {
+                dropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // Toggle handlers
+            elemenBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isOpened = elemenDropdown.classList.contains('active');
+                if (isOpened) {
+                    closeDropdown(elemenDropdown);
+                } else {
+                    openDropdown(elemenDropdown, elemenSearch);
+                }
+            });
+
+            cpBtn.addEventListener('click', function(e) {
+                if (cpBtn.disabled) return;
+                e.stopPropagation();
+                const isOpened = cpDropdown.classList.contains('active');
+                if (isOpened) {
+                    closeDropdown(cpDropdown);
+                } else {
+                    openDropdown(cpDropdown, cpSearch);
+                }
+            });
+
+            tpBtn.addEventListener('click', function(e) {
+                if (tpBtn.disabled) return;
+                e.stopPropagation();
+                const isOpened = tpDropdown.classList.contains('active');
+                if (isOpened) {
+                    closeDropdown(tpDropdown);
+                } else {
+                    openDropdown(tpDropdown, tpSearch);
+                }
+            });
+
+            // Setup search filtering
+            function setupSearch(searchInput, optionsContainer) {
+                searchInput.addEventListener('input', function(e) {
+                    const query = e.target.value.toLowerCase().trim();
+                    const buttons = optionsContainer.querySelectorAll('button');
+                    let hasVisible = false;
+                    
+                    buttons.forEach(btn => {
+                        const text = btn.textContent.toLowerCase();
+                        if (text.includes(query)) {
+                            btn.style.display = '';
+                            hasVisible = true;
+                        } else {
+                            btn.style.display = 'none';
+                        }
+                    });
+
+                    let noResults = optionsContainer.querySelector('.no-results-msg');
+                    if (!hasVisible) {
+                        if (!noResults) {
+                            noResults = document.createElement('div');
+                            noResults.className = 'no-results-msg p-4 text-xs text-center text-slate-500 dark:text-slate-400 font-medium';
+                            noResults.textContent = 'Tidak ada hasil yang cocok';
+                            optionsContainer.appendChild(noResults);
+                        }
+                    } else {
+                        if (noResults) {
+                            noResults.remove();
+                        }
+                    }
+                });
+            }
+
+            setupSearch(elemenSearch, elemenOptions);
+            setupSearch(cpSearch, cpOptions);
+            setupSearch(tpSearch, tpOptions);
+
+            function populateElemen() {
+                elemenOptions.innerHTML = '';
+                const selectedElemen = elemenBtnLabel.textContent;
+                const keys = Object.keys(data);
+                
+                const searchContainer = document.getElementById('elemen_search_container');
+                if (searchContainer) {
+                    if (keys.length <= 1) {
+                        searchContainer.classList.add('hidden');
+                    } else {
+                        searchContainer.classList.remove('hidden');
+                    }
+                }
+
+                keys.forEach(elemen => {
+                    const isSelected = selectedElemen === elemen;
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = `w-full text-left px-4 py-3 text-xs md:text-sm transition-all leading-relaxed flex items-center justify-between border-b border-slate-100 dark:border-slate-800 last:border-b-0 ${
+                        isSelected 
+                        ? 'bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-semibold' 
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                    }`;
+                    item.innerHTML = `
+                        <span class="flex-1 pr-4">${elemen}</span>
+                        ${isSelected ? '<i data-lucide="check" class="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0"></i>' : ''}
+                    `;
+                    item.addEventListener('click', () => {
+                        selectElemen(elemen);
+                        closeDropdown(elemenDropdown);
+                    });
+                    elemenOptions.appendChild(item);
+                });
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons({
+                        attrs: { class: 'lucide' },
+                        node: elemenOptions
+                    });
+                }
+            }
+
+            function resetCP() {
+                cpBtn.disabled = true;
+                cpBtnLabel.textContent = 'Pilih Elemen Kompetensi Terlebih Dahulu';
+                cpBtnLabel.classList.add('text-slate-400', 'dark:text-slate-500');
+                cpOptions.innerHTML = '';
+                hiddenCp.value = '';
+                
+                const cpIconContainer = document.getElementById('cp_icon_container');
+                if (cpIconContainer) {
+                    cpIconContainer.innerHTML = '<i data-lucide="lock" class="w-4 h-4 text-slate-400/80 dark:text-slate-500/80"></i>';
+                }
+                
+                if (cpFullTextContainer) cpFullTextContainer.classList.add('hidden');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+
+            function resetTP() {
+                tpBtn.disabled = true;
+                tpBtnLabel.textContent = 'Pilih Capaian Pembelajaran (CP) Terlebih Dahulu';
+                tpBtnLabel.classList.add('text-slate-400', 'dark:text-slate-500');
+                tpOptions.innerHTML = '';
+                hiddenKompetensiId.value = '';
+                hiddenTpId.value = '';
+                
+                const tpIconContainer = document.getElementById('tp_icon_container');
+                if (tpIconContainer) {
+                    tpIconContainer.innerHTML = '<i data-lucide="lock" class="w-4 h-4 text-slate-400/80 dark:text-slate-500/80"></i>';
+                }
+                
+                if (tpFullTextContainer) tpFullTextContainer.classList.add('hidden');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+
+            function selectElemen(value) {
+                elemenBtnLabel.textContent = value;
+                elemenBtnLabel.classList.remove('text-slate-400', 'dark:text-slate-500');
+
+                resetCP();
+                resetTP();
+
+                if (value && data[value]) {
+                    const cps = Object.keys(data[value]);
+                    if (cps.length > 0) {
+                        cpBtn.disabled = false;
+                        cpBtnLabel.textContent = 'Pilih Capaian Pembelajaran (CP)';
+                        cpBtnLabel.classList.remove('text-slate-400', 'dark:text-slate-500');
+                        
+                        const cpIconContainer = document.getElementById('cp_icon_container');
+                        if (cpIconContainer) {
+                            cpIconContainer.innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4 text-slate-500"></i>';
+                        }
+                        
+                        populateCP(cps);
+                    }
+                }
+                
+                populateElemen();
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+
+            function populateCP(cps) {
+                cpOptions.innerHTML = '';
+                const selectedCP = hiddenCp.value;
+                
+                const searchContainer = document.getElementById('cp_search_container');
+                if (searchContainer) {
+                    if (cps.length <= 1) {
+                        searchContainer.classList.add('hidden');
+                    } else {
+                        searchContainer.classList.remove('hidden');
+                    }
+                }
+
+                cps.forEach(cp => {
+                    const isSelected = selectedCP === cp;
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = `w-full text-left px-4 py-3 text-xs md:text-sm transition-all leading-relaxed flex items-center justify-between border-b border-slate-100 dark:border-slate-800 last:border-b-0 ${
+                        isSelected 
+                        ? 'bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-semibold' 
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                    }`;
+                    item.innerHTML = `
+                        <span class="flex-1 pr-4">${cp}</span>
+                        ${isSelected ? '<i data-lucide="check" class="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0"></i>' : ''}
+                    `;
+                    item.addEventListener('click', () => {
+                        selectCP(cp);
+                        closeDropdown(cpDropdown);
+                    });
+                    cpOptions.appendChild(item);
+                });
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons({
+                        attrs: { class: 'lucide' },
+                        node: cpOptions
+                    });
+                }
+            }
+
+            function selectCP(value) {
+                cpBtnLabel.textContent = truncateText(value, 60);
+                hiddenCp.value = value;
+
+                cpFullText.textContent = value;
+                if (cpFullTextContainer) cpFullTextContainer.classList.remove('hidden');
+
+                resetTP();
+
+                const selectedElemen = elemenBtnLabel.textContent;
+                if (selectedElemen && value && data[selectedElemen][value]) {
+                    const tps = data[selectedElemen][value];
+                    if (tps.length > 0) {
+                        tpBtn.disabled = false;
+                        tpBtnLabel.textContent = 'Pilih Tujuan Pembelajaran (TP)';
+                        tpBtnLabel.classList.remove('text-slate-400', 'dark:text-slate-500');
+                        
+                        const tpIconContainer = document.getElementById('tp_icon_container');
+                        if (tpIconContainer) {
+                            tpIconContainer.innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4 text-slate-500"></i>';
+                        }
+                        
+                        populateTP(tps);
+                    }
+                }
+                
+                if (selectedElemen && data[selectedElemen]) {
+                    populateCP(Object.keys(data[selectedElemen]));
+                }
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+
+            function populateTP(tps) {
+                tpOptions.innerHTML = '';
+                const selectedTPId = hiddenTpId.value;
+                
+                const searchContainer = document.getElementById('tp_search_container');
+                if (searchContainer) {
+                    if (tps.length <= 1) {
+                        searchContainer.classList.add('hidden');
+                    } else {
+                        searchContainer.classList.remove('hidden');
+                    }
+                }
+
+                tps.forEach(tpItem => {
+                    const isSelected = selectedTPId == tpItem.id;
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = `w-full text-left px-4 py-3 text-xs md:text-sm transition-all leading-relaxed flex items-center justify-between border-b border-slate-100 dark:border-slate-800 last:border-b-0 ${
+                        isSelected 
+                        ? 'bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-semibold' 
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                    }`;
+                    item.innerHTML = `
+                        <span class="flex-1 pr-4">${tpItem.tp}</span>
+                        ${isSelected ? '<i data-lucide="check" class="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0"></i>' : ''}
+                    `;
+                    item.addEventListener('click', () => {
+                        selectTP(tpItem.id, tpItem.tp);
+                        closeDropdown(tpDropdown);
+                    });
+                    tpOptions.appendChild(item);
+                });
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons({
+                        attrs: { class: 'lucide' },
+                        node: tpOptions
+                    });
+                }
+            }
+
+            function selectTP(id, text) {
+                tpBtnLabel.textContent = truncateText(text, 60);
+                hiddenKompetensiId.value = id;
+                hiddenTpId.value = id;
+
+                tpFullText.textContent = text;
+                if (tpFullTextContainer) tpFullTextContainer.classList.remove('hidden');
+                
+                const selectedElemen = elemenBtnLabel.textContent;
+                const selectedCP = hiddenCp.value;
+                if (selectedElemen && selectedCP && data[selectedElemen][selectedCP]) {
+                    populateTP(data[selectedElemen][selectedCP]);
+                }
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+
+            // Initialize dropdowns
+            populateElemen();
+
+
+            // Pre-select if there are existing / old values
+            if (existingElemen) {
+                selectElemen(existingElemen);
+                
+                if (existingCP) {
+                    selectCP(existingCP);
+                    
+                    if (existingTPId) {
+                        const selectedElemen = existingElemen;
+                        const selectedCP = existingCP;
+                        if (data[selectedElemen] && data[selectedElemen][selectedCP]) {
+                            const found = data[selectedElemen][selectedCP].find(x => x.id == existingTPId);
+                            if (found) {
+                                selectTP(found.id, found.tp);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Add form submit validation for hidden input
+            const form = document.getElementById('jurnal-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!hiddenTpId.value) {
+                        e.preventDefault();
+                        alert('Silakan pilih Tujuan Pembelajaran (TP) terlebih dahulu.');
+                    }
+                });
+            }
+
             const fileInput = document.getElementById('foto-raw');
             
             fileInput.addEventListener('change', function(e) {
