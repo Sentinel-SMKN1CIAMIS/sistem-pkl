@@ -171,6 +171,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('zona/geojson', [\App\Http\Controllers\Pokja\ZonaController::class, 'geojson'])->name('zona.geojson');
 
         Route::get('monitoring', [\App\Http\Controllers\Pokja\MonitoringController::class, 'index'])->name('monitoring.index');
+        Route::get('monitoring/{pembimbingSekolah}', [\App\Http\Controllers\Pokja\MonitoringController::class, 'show'])->name('monitoring.show');
+        Route::post('monitoring/{pembimbingSekolah}/note', [\App\Http\Controllers\Pokja\MonitoringController::class, 'storeNote'])->name('monitoring.storeNote');
         Route::get('evaluasi', [\App\Http\Controllers\Pokja\EvaluasiController::class, 'index'])->name('evaluasi.index');
         Route::get('feedback', [\App\Http\Controllers\Pokja\FeedbackController::class, 'index'])->name('feedback.index');
         Route::get('feedback/{feedback}/print', [\App\Http\Controllers\Pokja\FeedbackController::class, 'print'])->name('feedback.print');
