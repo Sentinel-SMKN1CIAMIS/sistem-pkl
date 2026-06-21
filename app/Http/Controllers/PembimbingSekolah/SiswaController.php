@@ -5,6 +5,7 @@ namespace App\Http\Controllers\PembimbingSekolah;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
+use App\Models\Notifikasi;
 
 class SiswaController extends Controller
 {
@@ -134,5 +135,80 @@ class SiswaController extends Controller
             'attendanceCounts',
             'dudiCounts'
         ));
+    }
+
+    public function remind(Request $request, Siswa $siswa)
+    {
+        $teacher = auth()->user()->pembimbingSekolah;
+        
+        if (!$teacher) {
+            return redirect()->back()->with('error', 'Profil pembimbing sekolah tidak ditemukan.');
+        }
+
+        // Verify advisor permission
+        if ($siswa->pembimbing_sekolah_id !== $teacher->id && $siswa->pembimbing_sekolah_umum_id !== $teacher->id) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki wewenang untuk memberi peringatan pada siswa ini.');
+        }
+
+        // Create the notification in database
+        Notifikasi::create([
+            'from_user_id' => auth()->id(),
+            'to_user_id' => $siswa->user_id,
+            'judul' => 'Segera Isi Jurnal',
+            'pesan' => 'Pembimbing Sekolah mengingatkan Anda agar segera mengisi Jurnal PKL harian hari ini di sistem.',
+            'tipe' => 'jurnal_reminder',
+            'is_read' => 0
+        ]);
+
+        return redirect()->back()->with('success', 'Notifikasi peringatan berhasil dikirim ke ' . $siswa->nama_lengkap . '.');
+    }
+
+    public function remindAll(Request $request)
+    {
+        $teacher = auth()->user()->pembimbingSekolah;
+        
+        if (!$teacher) {
+            return redirect()->back()->with('error', 'Profil pembimbing sekolah tidak ditemukan.');
+        }
+
+        // Get all students assigned to this teacher
+        $students = Siswa::where(function($q) use ($teacher) {
+                $q->where('pembimbing_sekolah_id', $teacher->id)
+                  ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
+            })->get();
+
+        if ($students->isEmpty()) {
+            return redirect()->back()->with('error', 'Tidak ada siswa bimbingan ditemukan.');
+        }
+
+        // Get today's journals for these students
+        $today = \Carbon\Carbon::today()->toDateString();
+        $todayJournals = \App\Models\Jurnal::whereIn('siswa_id', $students->pluck('id'))
+            ->where('tanggal', $today)
+            ->pluck('siswa_id')
+            ->toArray();
+
+        // Filter students who have not filled today's journal
+        $unfilledStudents = $students->filter(fn($student) => !in_array($student->id, $todayJournals));
+
+        if ($unfilledStudents->isEmpty()) {
+            return redirect()->back()->with('error', 'Semua siswa bimbingan Anda sudah mengisi jurnal hari ini.');
+        }
+
+        // Create notification for each student
+        $count = 0;
+        foreach ($unfilledStudents as $siswa) {
+            Notifikasi::create([
+                'from_user_id' => auth()->id(),
+                'to_user_id' => $siswa->user_id,
+                'judul' => 'Segera Isi Jurnal',
+                'pesan' => 'Pembimbing Sekolah mengingatkan Anda agar segera mengisi Jurnal PKL harian hari ini di sistem.',
+                'tipe' => 'jurnal_reminder',
+                'is_read' => 0
+            ]);
+            $count++;
+        }
+
+        return redirect()->back()->with('success', "Notifikasi pengingat berhasil dikirim ke {$count} siswa sekaligus.");
     }
 }

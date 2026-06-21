@@ -10,6 +10,13 @@
         <p class="text-slate-600 dark:text-slate-400">Pantau aktivitas pengisian jurnal harian dan kelola absensi siswa bimbingan Anda secara real-time.</p>
     </div>
 
+    @if(session('success'))
+        <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+
     @if(session('error'))
         <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3">
             <i data-lucide="alert-circle" class="w-5 h-5"></i>
@@ -186,9 +193,19 @@
         
         <!-- Tab 1: Belum Isi Hari Ini -->
         <div x-show="activeTab === 'belum-isi'" class="glass-card overflow-hidden">
-            <div class="p-5 border-b border-slate-200/30 dark:border-slate-800/50">
-                <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Siswa Belum Mengisi Jurnal Hari Ini</h4>
-                <p class="text-xs text-slate-500 mt-1">Kirim pesan teguran / WhatsApp secara instan untuk mengingatkan siswa.</p>
+            <div class="p-5 border-b border-slate-200/30 dark:border-slate-800/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Siswa Belum Mengisi Jurnal Hari Ini</h4>
+                    <p class="text-xs text-slate-500 mt-1">Kirim pesan teguran / WhatsApp secara instan untuk mengingatkan siswa.</p>
+                </div>
+                @if($studentsNotFilledToday->count() > 0)
+                    <form action="{{ route('pembimbing_sekolah.siswa.remind_all') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-rose-500/20 cursor-pointer">
+                            <i data-lucide="bell-ring" class="w-4 h-4"></i> Kirim Notif ke Semua
+                        </button>
+                    </form>
+                @endif
             </div>
             
             <!-- Desktop Table View -->
@@ -224,21 +241,30 @@
                                     {{ $item->no_hp ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    @if($item->no_hp)
-                                        @php
-                                            $cleanPhone = preg_replace('/[^0-9]/', '', $item->no_hp);
-                                            if (str_starts_with($cleanPhone, '0')) {
-                                                $cleanPhone = '62' . substr($cleanPhone, 1);
-                                            }
-                                            $waMessage = rawurlencode("Halo {$item->nama_lengkap}, saya guru pembimbing sekolah Anda. Mengingatkan agar segera mengisi Jurnal PKL harian hari ini di sistem. Terima kasih.");
-                                        @endphp
-                                        <a href="https://wa.me/{{ $cleanPhone }}?text={{ $waMessage }}" target="_blank"
-                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-500/20">
-                                            <i data-lucide="message-circle" class="w-4 h-4"></i> Hubungi via WA
-                                        </a>
-                                    @else
-                                        <span class="text-xs text-slate-400 italic">No HP tidak tersedia</span>
-                                    @endif
+                                    <div class="flex items-center justify-end gap-2">
+                                        <form action="{{ route('pembimbing_sekolah.siswa.remind', $item->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 cursor-pointer">
+                                                <i data-lucide="bell" class="w-3.5 h-3.5"></i> Kirim Notif
+                                            </button>
+                                        </form>
+
+                                        @if($item->no_hp)
+                                            @php
+                                                $cleanPhone = preg_replace('/[^0-9]/', '', $item->no_hp);
+                                                if (str_starts_with($cleanPhone, '0')) {
+                                                    $cleanPhone = '62' . substr($cleanPhone, 1);
+                                                }
+                                                $waMessage = rawurlencode("Halo {$item->nama_lengkap}, saya guru pembimbing sekolah Anda. Mengingatkan agar segera mengisi Jurnal PKL harian hari ini di sistem. Terima kasih.");
+                                            @endphp
+                                            <a href="https://wa.me/{{ $cleanPhone }}?text={{ $waMessage }}" target="_blank"
+                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-500/20">
+                                                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Hubungi via WA
+                                            </a>
+                                        @else
+                                            <span class="text-xs text-slate-400 italic">No HP tidak tersedia</span>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -269,7 +295,14 @@
                             <div>Jurusan: <span class="font-medium text-slate-800 dark:text-slate-200">{{ $item->konsentrasiKeahlian->nama }}</span></div>
                             <div>No. HP: <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ $item->no_hp ?? '-' }}</span></div>
                         </div>
-                        <div class="flex justify-end pt-1">
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <form action="{{ route('pembimbing_sekolah.siswa.remind', $item->id) }}" method="POST" class="w-full">
+                                @csrf
+                                <button type="submit" class="w-full text-center inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 cursor-pointer">
+                                    <i data-lucide="bell" class="w-4 h-4"></i> Kirim Notif
+                                </button>
+                            </form>
+
                             @if($item->no_hp)
                                 @php
                                     $cleanPhone = preg_replace('/[^0-9]/', '', $item->no_hp);
@@ -283,7 +316,7 @@
                                     <i data-lucide="message-circle" class="w-4 h-4"></i> Hubungi via WA
                                 </a>
                             @else
-                                <span class="text-xs text-slate-400 italic w-full text-center py-2 bg-slate-100 dark:bg-slate-900/40 rounded-xl">No HP tidak tersedia</span>
+                                <span class="text-xs text-slate-400 italic w-full text-center py-2.5 bg-slate-100 dark:bg-slate-900/40 rounded-xl flex items-center justify-center font-bold">No WA N/A</span>
                             @endif
                         </div>
                     </div>

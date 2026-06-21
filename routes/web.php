@@ -60,6 +60,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::middleware('role:pembimbing_sekolah')->prefix('pembimbing_sekolah')->name('pembimbing_sekolah.')->group(function () {
         Route::post('bulk-acc', [DashboardController::class, 'bulkAcc'])->name('bulk_acc');
         Route::get('siswa', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'index'])->name('siswa.index');
+        Route::post('siswa/remind-all', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'remindAll'])->name('siswa.remind_all');
+        Route::post('siswa/{siswa}/remind', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'remind'])->name('siswa.remind');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'index'])->name('jurnal.index');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'update'])->name('jurnal.update');
         Route::post('jurnal/{jurnal}/approve', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'approve'])->name('jurnal.approve');
