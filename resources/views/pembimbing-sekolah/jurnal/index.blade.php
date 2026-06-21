@@ -132,7 +132,7 @@
                     <div class="pl-14">
                         <div class="flex items-center gap-2 mb-2 flex-wrap">
                             <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400">
-                                {{ $item->kompetensi->nama }}
+                                {{ $item->kompetensi?->nama ?? 'Tidak Ada Kompetensi' }}
                             </span>
                             @if($item->tujuanPembelajaran)
                                 <span class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-[10px] text-blue-600 dark:text-blue-300 font-medium">
