@@ -18,6 +18,12 @@
                         <input type="hidden" name="latitude" id="latitude-input">
                         <input type="hidden" name="longitude" id="longitude-input">
 
+                        <!-- GPS Status Indicator -->
+                        <div id="gps-status" class="p-3 rounded-xl text-sm font-medium flex items-center gap-2 mb-4">
+                            <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+                            <span id="gps-status-text">Mendeteksi lokasi GPS...</span>
+                        </div>
+
                         <div class="space-y-2">
                              <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 text-left">Tanda Tangan Digital</label>
                              <div class="bg-white rounded-xl overflow-hidden cursor-crosshair">
@@ -29,7 +35,7 @@
                              <p class="text-[10px] text-orange-500 dark:text-orange-400 mt-1 italic">* Geser layar di luar kotak putih ini untuk men-scroll halaman ke bawah</p>
                         </div>
 
-                        <x-button type="button" onclick="submitAbsensi()" variant="emerald" class="w-full py-4 font-black! rounded-2xl! shadow-emerald-500/20" icon="log-in">
+                        <x-button type="button" onclick="submitAbsensi()" variant="emerald" class="w-full py-4 font-black! rounded-2xl! shadow-emerald-500/20" icon="log-in" id="submit-btn">
                             ABSEN DATANG SEKARANG
                         </x-button>
                     </form>
@@ -230,14 +236,15 @@
 
     @if($absensiToday && !$absensiToday->waktu_pulang)
     <script>
-        // T5.2: Countdown Timer for 7-hour requirement
+        // T5.2: Countdown Timer and Button Control
         function updateCountdown() {
             const countdownInfo = document.getElementById('countdown-info');
             const countdownText = document.getElementById('countdown-text');
             const alasanContainer = document.getElementById('alasan-container');
             const alasanInput = document.getElementById('alasan-input');
+            const clockoutBtn = document.getElementById('clockout-btn');
             
-            if (!countdownText) return;
+            if (!countdownText || !clockoutBtn) return;
 
             // Parse the clock-in time from database
             const clockInTimeStr = '{{ $absensiToday->waktu_datang }}';
@@ -247,35 +254,64 @@
             let clockInTime = new Date();
             clockInTime.setHours(inHours, inMinutes, inSeconds, 0);
             
-            // Calculate 7 hours later
+            // Calculate 1 hour and 7 hours later
+            const oneHourLater = new Date(clockInTime.getTime() + 1 * 60 * 60 * 1000);
             const sevenHoursLater = new Date(clockInTime.getTime() + 7 * 60 * 60 * 1000);
             
             // Current time
             const now = new Date();
             
-            // Calculate remaining time
-            const diff = sevenHoursLater - now;
+            // Check if 1 hour has passed (minimum to enable clock out)
+            const diffOneHour = now - oneHourLater;
+            
+            if (diffOneHour < 0) {
+                // LESS THAN 1 HOUR - Disable button, hide all notifications
+                clockoutBtn.disabled = true;
+                clockoutBtn.style.opacity = '0.5';
+                clockoutBtn.style.cursor = 'not-allowed';
+                
+                // Hide everything - no notification
+                countdownInfo.classList.add('hidden');
+                alasanContainer.classList.add('hidden');
+                alasanInput.required = false;
+                
+                return;
+            }
+            
+            // MORE THAN 1 HOUR - Enable button
+            clockoutBtn.disabled = false;
+            clockoutBtn.style.opacity = '1';
+            clockoutBtn.style.cursor = 'pointer';
+            
+            // Calculate remaining time until 7 hours (normal work time)
+            const diffSevenHours = sevenHoursLater - now;
 
-            if (diff <= 0) {
-                // Time's up - normal clock out
+            if (diffSevenHours <= 0) {
+                // MORE THAN 7 HOURS - Normal clock out (no reason needed)
                 countdownInfo.classList.add('hidden');
                 alasanContainer.classList.add('hidden');
                 alasanInput.required = false;
                 return;
             }
 
-            // Still waiting - show early clock out UI
+            // BETWEEN 1-7 HOURS - Early clock out (reason required)
             countdownInfo.classList.remove('hidden');
+            countdownInfo.className = 'mb-4 p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-600 dark:text-orange-400 text-sm';
             alasanContainer.classList.remove('hidden');
             alasanInput.required = true;
             
-            // Format countdown
-            const hours = Math.floor(diff / (60 * 60 * 1000));
-            const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
-            const seconds = Math.floor((diff % (60 * 1000)) / 1000);
+            // Format countdown to 7 hours
+            const hours = Math.floor(diffSevenHours / (60 * 60 * 1000));
+            const minutes = Math.floor((diffSevenHours % (60 * 60 * 1000)) / (60 * 1000));
+            const seconds = Math.floor((diffSevenHours % (60 * 1000)) / 1000);
             
             const formattedCountdown = `${hours}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
             countdownText.textContent = formattedCountdown;
+            
+            // Refresh lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         }
 
         // Run immediately on page load
@@ -331,23 +367,95 @@
                 signaturePad.clear();
             });
 
-            // Get Geolocation (silently, no user notification)
+            // GPS Status Variables
+            let gpsReady = false;
+            const gpsStatusDiv = document.getElementById('gps-status');
+            const gpsStatusText = document.getElementById('gps-status-text');
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Disable submit button initially
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+
+            // Get Geolocation (REQUIRED for clock-in)
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
+                        // Success: GPS detected
                         document.getElementById('latitude-input').value = position.coords.latitude;
                         document.getElementById('longitude-input').value = position.coords.longitude;
+                        gpsReady = true;
+
+                        // Update UI to success state
+                        gpsStatusDiv.className = 'p-3 rounded-xl text-sm font-medium flex items-center gap-2 mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400';
+                        gpsStatusDiv.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i><span>Lokasi GPS terdeteksi</span>';
+                        
+                        // Enable submit button
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                        submitBtn.style.cursor = 'pointer';
+
+                        // Refresh lucide icons
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
                     },
                     function(error) {
-                        // Silently fail - GPS is captured in background without user knowing
-                        console.warn('GPS not available');
+                        // Error: GPS failed
+                        gpsReady = false;
+                        let errorMessage = 'GPS tidak dapat diakses';
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'Izin akses lokasi ditolak. Harap aktifkan lokasi di pengaturan browser.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'Informasi lokasi tidak tersedia. Pastikan GPS perangkat aktif.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'Waktu tunggu GPS habis. Coba refresh halaman.';
+                                break;
+                        }
+
+                        // Update UI to error state
+                        gpsStatusDiv.className = 'p-3 rounded-xl text-sm font-medium flex items-center gap-2 mb-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400';
+                        gpsStatusDiv.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4"></i><span>' + errorMessage + '</span>';
+                        
+                        // Keep submit button disabled
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.5';
+                        submitBtn.style.cursor = 'not-allowed';
+
+                        // Refresh lucide icons
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+
+                        console.error('GPS Error:', error);
                     },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
                 );
+            } else {
+                // Browser doesn't support geolocation
+                gpsStatusDiv.className = 'p-3 rounded-xl text-sm font-medium flex items-center gap-2 mb-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400';
+                gpsStatusDiv.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4"></i><span>Browser tidak mendukung GPS</span>';
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.cursor = 'not-allowed';
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
             }
 
             // Submit function — exposed globally for onclick
             window.submitAbsensi = function() {
+                if (!gpsReady) {
+                    alert('Lokasi GPS wajib diaktifkan untuk melakukan absensi hadir.\n\nHarap:\n1. Aktifkan lokasi di pengaturan perangkat Anda\n2. Izinkan akses lokasi untuk browser\n3. Refresh halaman ini');
+                    return;
+                }
+
                 if (signaturePad.isEmpty()) {
                     alert('Harap isi tanda tangan terlebih dahulu.');
                     return;

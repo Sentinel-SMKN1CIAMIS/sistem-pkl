@@ -55,8 +55,11 @@ class AbsensiController extends Controller
 
         $request->validate([
             'signature' => 'required', // Base64 signature
-            'latitude' => 'nullable',
-            'longitude' => 'nullable',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ], [
+            'latitude.required' => 'Lokasi GPS wajib diaktifkan untuk melakukan absensi.',
+            'longitude.required' => 'Lokasi GPS wajib diaktifkan untuk melakukan absensi.',
         ]);
 
         $siswa = auth()->user()->siswa;
@@ -87,6 +90,11 @@ class AbsensiController extends Controller
             'longitude' => $request->longitude,
         ]);
 
+        // Auto-update status PKL to 'sedang_pkl' on first attendance
+        if ($siswa->status_pkl === 'belum_mulai') {
+            $siswa->update(['status_pkl' => 'sedang_pkl']);
+        }
+
         return redirect()->route('siswa.absensi.index')->with('success', 'Berhasil melakukan Absen Datang.');
     }
 
@@ -109,9 +117,16 @@ class AbsensiController extends Controller
             return back()->with('error', 'Anda sudah melakukan absen pulang hari ini.');
         }
 
-        // T5.2: Check if 7 hours have passed since clock-in
+        // Check if at least 1 hour has passed since clock-in
         $clockInTime = Carbon::parse($absensi->tanggal . ' ' . $absensi->waktu_datang);
         $now = Carbon::now();
+        $oneHourLater = $clockInTime->copy()->addHour();
+
+        if ($now < $oneHourLater) {
+            return back()->with('error', 'Anda belum bisa melakukan absen pulang. Minimal 1 jam setelah absen datang.');
+        }
+
+        // T5.2: Check if 7 hours have passed since clock-in (for early leave reason)
         $sevenHoursLater = $clockInTime->copy()->addHours(7);
 
         if ($now < $sevenHoursLater) {
