@@ -35,19 +35,19 @@
         {{-- Main Mapping Layout --}}
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {{-- Tabs / Sidebar --}}
-            <div class="lg:col-span-1 space-y-3">
+            <div class="lg:col-span-1 space-y-3 min-w-0">
                 <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-2">Jurusan dari PDF</p>
-                <div class="glass-card p-2 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible gap-1 whitespace-nowrap">
+                <div class="glass-card p-2 flex flex-row lg:flex-col overflow-x-auto lg:overflow-y-auto gap-1 whitespace-nowrap lg:whitespace-normal">
                     @foreach($parsedData as $key => $section)
                         <button type="button" 
                                 @click="activeTab = '{{ $key }}'"
                                 :class="activeTab === '{{ $key }}' ? 'bg-blue-600 text-white' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50'"
-                                class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-between gap-3">
-                            <span class="flex items-center gap-2">
-                                <i data-lucide="folder" class="w-4 h-4"></i>
-                                {{ $key }} ({{ $section['konsentrasi'] }})
+                                class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-between gap-3 whitespace-normal lg:whitespace-normal">
+                            <span class="flex items-start gap-2 min-w-0">
+                                <i data-lucide="folder" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                                <span class="break-words">{{ $key }} ({{ $section['konsentrasi'] }})</span>
                             </span>
-                            <span class="px-1.5 py-0.5 text-[10px] bg-black/20 text-white rounded-md">
+                            <span class="px-1.5 py-0.5 text-[10px] bg-black/20 text-white rounded-md shrink-0">
                                 @php
                                     $tpCount = 0;
                                     foreach($section['elemens'] as $el) $tpCount += count($el['tps']);
