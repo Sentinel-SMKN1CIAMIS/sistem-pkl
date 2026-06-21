@@ -251,12 +251,18 @@
                                                 <div class="text-slate-700 dark:text-slate-300 font-medium">{{ $siswa->kelas }}</div>
                                                 <div class="text-xs text-slate-500 dark:text-slate-400">{{ $siswa->konsentrasiKeahlian->nama }}</div>
                                             </td>
-                                            <td class="p-3">
+                                            <td class="p-3 flex flex-col gap-1 items-start">
                                                 @if($siswa->pembimbingSekolah)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
-                                                        {{ $siswa->pembimbingSekolah->nama_lengkap }}
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
+                                                        KJ: {{ $siswa->pembimbingSekolah->nama_lengkap }}
                                                     </span>
-                                                @else
+                                                @endif
+                                                @if($siswa->pembimbingSekolahUmum)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolahUmum->nama_lengkap) }}">
+                                                        UM: {{ $siswa->pembimbingSekolahUmum->nama_lengkap }}
+                                                    </span>
+                                                @endif
+                                                @if(!$siswa->pembimbingSekolah && !$siswa->pembimbingSekolahUmum)
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-400">
                                                         Belum diplot
                                                     </span>

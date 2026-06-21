@@ -25,6 +25,11 @@ class PembimbingSekolah extends Model
         return $this->hasMany(Siswa::class, 'pembimbing_sekolah_id');
     }
 
+    public function siswaUmum()
+    {
+        return $this->hasMany(Siswa::class, 'pembimbing_sekolah_umum_id');
+    }
+
     public function kelasDiajar()
     {
         return $this->hasMany(KelasPembimbing::class, 'pembimbing_sekolah_id');
@@ -35,8 +40,18 @@ class PembimbingSekolah extends Model
         return $this->hasManyThrough(Jurnal::class, Siswa::class, 'pembimbing_sekolah_id', 'siswa_id');
     }
 
+    public function jurnalUmum()
+    {
+        return $this->hasManyThrough(Jurnal::class, Siswa::class, 'pembimbing_sekolah_umum_id', 'siswa_id');
+    }
+
     public function absensi()
     {
         return $this->hasManyThrough(Absensi::class, Siswa::class, 'pembimbing_sekolah_id', 'siswa_id');
+    }
+
+    public function absensiUmum()
+    {
+        return $this->hasManyThrough(Absensi::class, Siswa::class, 'pembimbing_sekolah_umum_id', 'siswa_id');
     }
 }

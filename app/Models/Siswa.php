@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'konsentrasi_keahlian_id', 'dudi_id', 'pembimbing_sekolah_id', 'pembimbing_dudi_id', 'nis', 'nama_lengkap', 'kelas', 'jenis_kelamin', 'no_hp', 'alamat', 'tahun_ajaran', 'status_pkl', 'pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'unit_pekerjaan'])]
+#[Fillable(['user_id', 'konsentrasi_keahlian_id', 'dudi_id', 'pembimbing_sekolah_id', 'pembimbing_sekolah_umum_id', 'pembimbing_dudi_id', 'nis', 'nama_lengkap', 'kelas', 'jenis_kelamin', 'no_hp', 'alamat', 'tahun_ajaran', 'status_pkl', 'pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'unit_pekerjaan'])]
 class Siswa extends Model
 {
     protected static function boot()
@@ -13,7 +13,7 @@ class Siswa extends Model
         parent::boot();
 
         static::saving(function ($siswa) {
-            if ($siswa->dudi_id && $siswa->pembimbing_sekolah_id && $siswa->status_pkl === 'belum_mulai') {
+            if ($siswa->dudi_id && ($siswa->pembimbing_sekolah_id || $siswa->pembimbing_sekolah_umum_id) && $siswa->status_pkl === 'belum_mulai') {
                 $siswa->status_pkl = 'sedang_pkl';
             }
         });
@@ -36,6 +36,11 @@ class Siswa extends Model
     public function pembimbingSekolah()
     {
         return $this->belongsTo(PembimbingSekolah::class);
+    }
+
+    public function pembimbingSekolahUmum()
+    {
+        return $this->belongsTo(PembimbingSekolah::class, 'pembimbing_sekolah_umum_id');
     }
 
     public function pembimbingDudi()

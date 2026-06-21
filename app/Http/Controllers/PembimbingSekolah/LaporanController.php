@@ -15,7 +15,8 @@ class LaporanController extends Controller
         
         $laporans = LaporanPkl::with('siswa')
             ->whereHas('siswa', function ($query) use ($pembimbing) {
-                $query->where('pembimbing_sekolah_id', $pembimbing->id);
+                $query->where('pembimbing_sekolah_id', $pembimbing->id)
+                      ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id);
             })
             ->latest('updated_at')
             ->paginate(15);
@@ -31,7 +32,7 @@ class LaporanController extends Controller
 
         // Ensure the laporan belongs to a student guided by this teacher
         $pembimbing = auth()->user()->pembimbingSekolah;
-        if ($laporan->siswa->pembimbing_sekolah_id !== $pembimbing->id) {
+        if ($laporan->siswa->pembimbing_sekolah_id !== $pembimbing->id && $laporan->siswa->pembimbing_sekolah_umum_id !== $pembimbing->id) {
             abort(403);
         }
 

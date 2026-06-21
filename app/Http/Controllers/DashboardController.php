@@ -56,7 +56,8 @@ class DashboardController extends Controller
                 $teacher = $user->pembimbingSekolah;
                 $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_pembimbing_sekolah_{$teacher->id}", 300, function() use ($teacher) {
                     $jurnalMasuk = \App\Models\Jurnal::whereHas('siswa', function($q) use ($teacher) {
-                        $q->where(['pembimbing_sekolah_id' => $teacher->id]);
+                        $q->where('pembimbing_sekolah_id', $teacher->id)
+                          ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
                     })->count();
 
                     $weeksEvaluatedData = [];
@@ -65,7 +66,8 @@ class DashboardController extends Controller
                         $end = $start->copy()->endOfWeek();
                         
                         $count = \App\Models\Jurnal::whereHas('siswa', function($q) use ($teacher) {
-                                $q->where(['pembimbing_sekolah_id' => $teacher->id]);
+                                $q->where('pembimbing_sekolah_id', $teacher->id)
+                                  ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
                             })
                             ->whereIn('status', ['valid', 'invalid'])
                             ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
@@ -75,9 +77,12 @@ class DashboardController extends Controller
                     }
 
                     return [
-                        'siswa_count' => \App\Models\Siswa::where(['pembimbing_sekolah_id' => $teacher->id])->count(),
+                        'siswa_count' => \App\Models\Siswa::where('pembimbing_sekolah_id', $teacher->id)
+                            ->orWhere('pembimbing_sekolah_umum_id', $teacher->id)
+                            ->count(),
                         'jurnal_pending' => \App\Models\Jurnal::whereHas('siswa', function($q) use ($teacher) {
-                            $q->where(['pembimbing_sekolah_id' => $teacher->id]);
+                            $q->where('pembimbing_sekolah_id', $teacher->id)
+                              ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
                         })->where(['status' => 'pending'])->count(),
                         'jurnal_masuk' => $jurnalMasuk,
                         'weeks_evaluated' => $weeksEvaluatedData,
@@ -275,7 +280,8 @@ class DashboardController extends Controller
             
             // ACC all pending jurnal
             \App\Models\Jurnal::whereHas('siswa', function($q) use ($teacher) {
-                $q->where(['pembimbing_sekolah_id' => $teacher->id]);
+                $q->where('pembimbing_sekolah_id', $teacher->id)
+                  ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
             })->where(['approval_status' => 'pending'])->update([
                 'status' => 'valid',
                 'approval_status' => 'approved',
@@ -285,7 +291,8 @@ class DashboardController extends Controller
             
             // ACC all pending absensi
             \App\Models\Absensi::whereHas('siswa', function($q) use ($teacher) {
-                $q->where(['pembimbing_sekolah_id' => $teacher->id]);
+                $q->where('pembimbing_sekolah_id', $teacher->id)
+                  ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
             })->where(['approval_status' => 'pending'])->update([
                 'approval_status' => 'approved',
                 'approved_by' => $user->id,

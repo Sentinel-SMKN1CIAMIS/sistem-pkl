@@ -17,7 +17,7 @@ class SiswaController extends Controller
         }
 
         $students = Siswa::where('dudi_id', $mentor->dudi_id)
-            ->with(['konsentrasiKeahlian', 'pembimbingSekolah'])
+            ->with(['konsentrasiKeahlian', 'pembimbingSekolah', 'pembimbingSekolahUmum'])
             ->withCount(['jurnal', 'absensi'])
             ->get();
 

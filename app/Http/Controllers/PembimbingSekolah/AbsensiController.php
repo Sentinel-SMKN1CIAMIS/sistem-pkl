@@ -15,7 +15,8 @@ class AbsensiController extends Controller
         $teacher = auth()->user()->pembimbingSekolah;
         
         $query = Absensi::whereHas('siswa', function($q) use ($teacher) {
-                $q->where('pembimbing_sekolah_id', $teacher->id);
+                $q->where('pembimbing_sekolah_id', $teacher->id)
+                  ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
             })
             ->with(['siswa', 'siswa.dudi']);
 
@@ -30,7 +31,9 @@ class AbsensiController extends Controller
         }
 
         $absensis = $query->latest('tanggal')->paginate(15)->withQueryString();
-        $students = \App\Models\Siswa::where('pembimbing_sekolah_id', $teacher->id)->get();
+        $students = \App\Models\Siswa::where('pembimbing_sekolah_id', $teacher->id)
+            ->orWhere('pembimbing_sekolah_umum_id', $teacher->id)
+            ->get();
 
         return view('pembimbing-sekolah.absensi.index', compact('absensis', 'students'));
     }
@@ -39,7 +42,8 @@ class AbsensiController extends Controller
     {
         $teacher = auth()->user()->pembimbingSekolah;
         $query = Absensi::whereHas('siswa', function($q) use ($teacher) {
-                $q->where('pembimbing_sekolah_id', $teacher->id);
+                $q->where('pembimbing_sekolah_id', $teacher->id)
+                  ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
             })
             ->with(['siswa', 'siswa.dudi']);
 

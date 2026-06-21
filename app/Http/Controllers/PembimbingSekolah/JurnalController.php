@@ -24,6 +24,7 @@ class JurnalController extends Controller
         $kelasIds = $teacher->kelasDiajar()->pluck('kelas')->toArray();
         $query->whereHas('siswa', function ($q) use ($teacher, $kelasIds) {
             $q->where('pembimbing_sekolah_id', $teacher->id)
+              ->orWhere('pembimbing_sekolah_umum_id', $teacher->id)
               ->orWhereIn('kelas', $kelasIds);
         });
 

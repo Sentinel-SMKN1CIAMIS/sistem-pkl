@@ -92,13 +92,21 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
-                                @if($siswa->pembimbingSekolah)
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
-                                        {{ $siswa->pembimbingSekolah->nama_lengkap }}
-                                    </span>
-                                @else
-                                    <span class="text-xs text-slate-500 dark:text-slate-400 italic">Belum ditentukan</span>
-                                @endif
+                                <div class="flex flex-col gap-1 items-start">
+                                    @if($siswa->pembimbingSekolah)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
+                                            KJ: {{ $siswa->pembimbingSekolah->nama_lengkap }}
+                                        </span>
+                                    @endif
+                                    @if($siswa->pembimbingSekolahUmum)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolahUmum->nama_lengkap) }}">
+                                            UM: {{ $siswa->pembimbingSekolahUmum->nama_lengkap }}
+                                        </span>
+                                    @endif
+                                    @if(!$siswa->pembimbingSekolah && !$siswa->pembimbingSekolahUmum)
+                                        <span class="text-xs text-slate-500 dark:text-slate-400 italic">Belum ditentukan</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 @if($siswa->pembimbingDudi)
@@ -111,7 +119,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
-                                    $isComplete = $siswa->dudi_id && $siswa->pembimbing_sekolah_id && $siswa->pembimbing_dudi_id;
+                                    $isComplete = $siswa->dudi_id && $siswa->pembimbing_sekolah_id && $siswa->pembimbing_sekolah_umum_id && $siswa->pembimbing_dudi_id;
                                 @endphp
                                 @if($isComplete)
                                     <span class="px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[9px] font-black border border-emerald-500/20 uppercase tracking-tighter">Lengkap</span>

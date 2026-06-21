@@ -16,7 +16,7 @@ class PemetaanController extends Controller
     {
         $search = $request->search;
         
-        $query = Siswa::with(['dudi', 'pembimbingSekolah', 'pembimbingDudi', 'konsentrasiKeahlian']);
+        $query = Siswa::with(['dudi', 'pembimbingSekolah', 'pembimbingSekolahUmum', 'pembimbingDudi', 'konsentrasiKeahlian']);
         
         if (auth()->user()->konsentrasi_keahlian_id) {
             $query->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
@@ -44,6 +44,7 @@ class PemetaanController extends Controller
         $totalSiswa = (clone $baseSiswaQuery)->count();
         $terpetakan = (clone $baseSiswaQuery)->whereNotNull('dudi_id')
             ->whereNotNull('pembimbing_sekolah_id')
+            ->whereNotNull('pembimbing_sekolah_umum_id')
             ->whereNotNull('pembimbing_dudi_id')
             ->count();
         

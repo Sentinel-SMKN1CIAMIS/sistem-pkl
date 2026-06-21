@@ -393,10 +393,17 @@
                                     @endif
 
                                     <!-- Guru Pembimbing -->
-                                    @if($item->pembimbingSekolah)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($item->pembimbingSekolah->nama_lengkap) }}">
-                                            Guru: {{ $item->pembimbingSekolah->nama_lengkap }}
-                                        </span>
+                                    @if($item->pembimbingSekolah || $item->pembimbingSekolahUmum)
+                                        @if($item->pembimbingSekolah)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($item->pembimbingSekolah->nama_lengkap) }}">
+                                                KJ: {{ $item->pembimbingSekolah->nama_lengkap }}
+                                            </span>
+                                        @endif
+                                        @if($item->pembimbingSekolahUmum)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($item->pembimbingSekolahUmum->nama_lengkap) }}">
+                                                UM: {{ $item->pembimbingSekolahUmum->nama_lengkap }}
+                                            </span>
+                                        @endif
                                     @else
                                         <span class="text-[10px] text-slate-500/80 bg-slate-500/5 px-2 py-0.5 rounded border border-slate-500/10 font-bold uppercase tracking-wider">Guru: Belum diplot</span>
                                     @endif

@@ -22,19 +22,27 @@ class PesanController extends Controller
         // 1. If has siswa profile
         if ($role === 'siswa') {
             $siswa = $user->siswa;
-            if ($siswa && $siswa->pembimbing_sekolah_id) {
-                $guru = \App\Models\PembimbingSekolah::with('user')
-                    ->find($siswa->pembimbing_sekolah_id);
-                if ($guru && $guru->user) {
-                    $kontak->push($guru->user);
+            if ($siswa) {
+                if ($siswa->pembimbing_sekolah_id) {
+                    $guru = \App\Models\PembimbingSekolah::with('user')
+                        ->find($siswa->pembimbing_sekolah_id);
+                    if ($guru && $guru->user) {
+                        $kontak->push($guru->user);
+                    }
                 }
-            }
-
-            if ($siswa && $siswa->pembimbing_dudi_id) {
-                $mentor = \App\Models\PembimbingDudi::with('user')
-                    ->find($siswa->pembimbing_dudi_id);
-                if ($mentor && $mentor->user) {
-                    $kontak->push($mentor->user);
+                if ($siswa->pembimbing_sekolah_umum_id) {
+                    $guruUmum = \App\Models\PembimbingSekolah::with('user')
+                        ->find($siswa->pembimbing_sekolah_umum_id);
+                    if ($guruUmum && $guruUmum->user) {
+                        $kontak->push($guruUmum->user);
+                    }
+                }
+                if ($siswa->pembimbing_dudi_id) {
+                    $mentor = \App\Models\PembimbingDudi::with('user')
+                        ->find($siswa->pembimbing_dudi_id);
+                    if ($mentor && $mentor->user) {
+                        $kontak->push($mentor->user);
+                    }
                 }
             }
 
@@ -45,9 +53,10 @@ class PesanController extends Controller
         if ($user->pembimbingSekolah) {
             $guru = $user->pembimbingSekolah;
             $students = \App\Models\Siswa::with('user')
-                ->where('pembimbing_sekolah_id' . '', $guru->id)
+                ->where('pembimbing_sekolah_id', $guru->id)
+                ->orWhere('pembimbing_sekolah_umum_id', $guru->id)
                 ->get()
-                ->pluck('user' . '')
+                ->pluck('user')
                 ->filter();
             $kontak = $kontak->merge($students);
         }

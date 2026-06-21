@@ -23,7 +23,8 @@ class AbsensiApprovalController extends Controller
 
         // Get all pending absence requests for students assigned to this advisor
         $pendingAbsences = Absensi::whereHas('siswa', function ($query) use ($pembimbing) {
-            $query->where('pembimbing_sekolah_id' . '', $pembimbing->id);
+            $query->where('pembimbing_sekolah_id', $pembimbing->id)
+                  ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id);
         })
         ->where('approval_status' . '', 'pending')
         ->whereIn('status' . '', ['izin', 'sakit', 'alpha'])
@@ -33,7 +34,8 @@ class AbsensiApprovalController extends Controller
 
         // Get approved/rejected history
         $approvalHistory = Absensi::whereHas('siswa', function ($query) use ($pembimbing) {
-            $query->where('pembimbing_sekolah_id' . '', $pembimbing->id);
+            $query->where('pembimbing_sekolah_id', $pembimbing->id)
+                  ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id);
         })
         ->whereIn('approval_status' . '', ['approved', 'rejected'])
         ->whereIn('status' . '', ['izin', 'sakit', 'alpha'])
@@ -54,7 +56,7 @@ class AbsensiApprovalController extends Controller
         $pembimbing = $user->pembimbingSekolah;
 
         // Authorization check
-        if (!$pembimbing || $absensi->siswa->pembimbing_sekolah_id !== $pembimbing->id) {
+        if (!$pembimbing || ($absensi->siswa->pembimbing_sekolah_id !== $pembimbing->id && $absensi->siswa->pembimbing_sekolah_umum_id !== $pembimbing->id)) {
             return back()->with('error', 'Tidak diizinkan.');
         }
 
@@ -83,7 +85,7 @@ class AbsensiApprovalController extends Controller
         $pembimbing = $user->pembimbingSekolah;
 
         // Authorization check
-        if (!$pembimbing || $absensi->siswa->pembimbing_sekolah_id !== $pembimbing->id) {
+        if (!$pembimbing || ($absensi->siswa->pembimbing_sekolah_id !== $pembimbing->id && $absensi->siswa->pembimbing_sekolah_umum_id !== $pembimbing->id)) {
             return back()->with('error', 'Tidak diizinkan.');
         }
 

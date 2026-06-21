@@ -139,7 +139,7 @@ class SiswaPklLogicTest extends TestCase
         // Assert student notification is sent
         $this->assertDatabaseHas('notifikasis', [
             'to_user_id' => $this->siswa->user_id,
-            'judul' => 'Pembimbing Sekolah Ditugaskan',
+            'judul' => 'Pembimbing Sekolah (Kejuruan) Ditugaskan',
         ]);
     }
 

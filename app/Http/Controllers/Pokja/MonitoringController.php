@@ -20,12 +20,21 @@ class MonitoringController extends Controller
         $query = PembimbingSekolah::with(['user', 'konsentrasiKeahlian'])
             ->withCount([
                 'siswa',
+                'siswaUmum',
                 'jurnal as total_jurnals_count',
+                'jurnalUmum as total_jurnals_umum_count',
                 'jurnal as pending_jurnals_count' => function ($q) {
                     $q->where('approval_status', 'pending');
                 },
+                'jurnalUmum as pending_jurnals_umum_count' => function ($q) {
+                    $q->where('approval_status', 'pending');
+                },
                 'absensi as total_absensis_count',
+                'absensiUmum as total_absensis_umum_count',
                 'absensi as pending_absensis_count' => function ($q) {
+                    $q->where('approval_status', 'pending');
+                },
+                'absensiUmum as pending_absensis_umum_count' => function ($q) {
                     $q->where('approval_status', 'pending');
                 }
             ]);
@@ -57,6 +66,12 @@ class MonitoringController extends Controller
 
         // Map and enrich status
         $mentors = $mentors->map(function ($mentor) {
+            $mentor->siswa_count = $mentor->siswa_count + $mentor->siswa_umum_count;
+            $mentor->total_jurnals_count = $mentor->total_jurnals_count + $mentor->total_jurnals_umum_count;
+            $mentor->pending_jurnals_count = $mentor->pending_jurnals_count + $mentor->pending_jurnals_umum_count;
+            $mentor->total_absensis_count = $mentor->total_absensis_count + $mentor->total_absensis_umum_count;
+            $mentor->pending_absensis_count = $mentor->pending_absensis_count + $mentor->pending_absensis_umum_count;
+
             $lastLogin = $mentor->user?->last_login_at;
             if (!$lastLogin) {
                 $mentor->activity_status = 'tidak_pernah_login';
@@ -82,7 +97,13 @@ class MonitoringController extends Controller
                 'jurnal as pending_jurnals_count' => function ($q) {
                     $q->where('approval_status', 'pending');
                 },
+                'jurnalUmum as pending_jurnals_umum_count' => function ($q) {
+                    $q->where('approval_status', 'pending');
+                },
                 'absensi as pending_absensis_count' => function ($q) {
+                    $q->where('approval_status', 'pending');
+                },
+                'absensiUmum as pending_absensis_umum_count' => function ($q) {
                     $q->where('approval_status', 'pending');
                 }
             ])->get();
@@ -95,10 +116,13 @@ class MonitoringController extends Controller
         ];
 
         foreach ($allMentorsForStats as $m) {
+            $pendingJurnals = $m->pending_jurnals_count + $m->pending_jurnals_umum_count;
+            $pendingAbsences = $m->pending_absensis_count + $m->pending_absensis_umum_count;
+            
             $lastLogin = $m->user?->last_login_at;
             if (!$lastLogin) {
                 $stats['tidak_pernah_login']++;
-            } elseif ($lastLogin->diffInDays(now()) > 3 || $m->pending_jurnals_count > 0 || $m->pending_absensis_count > 0) {
+            } elseif ($lastLogin->diffInDays(now()) > 3 || $pendingJurnals > 0 || $pendingAbsences > 0) {
                 $stats['kurang_aktif']++;
             } else {
                 $stats['aktif']++;
@@ -115,7 +139,10 @@ class MonitoringController extends Controller
         $pembimbingSekolah->load(['user', 'konsentrasiKeahlian']);
         
         // Fetch students under this advisor with their individual stats
-        $students = Siswa::where(['pembimbing_sekolah_id' => $pembimbingSekolah->id])
+        $students = Siswa::where(function($q) use ($pembimbingSekolah) {
+                $q->where('pembimbing_sekolah_id', $pembimbingSekolah->id)
+                  ->orWhere('pembimbing_sekolah_umum_id', $pembimbingSekolah->id);
+            })
             ->withCount([
                 'jurnal as total_jurnals_count',
                 'jurnal as pending_jurnals_count' => function ($q) {

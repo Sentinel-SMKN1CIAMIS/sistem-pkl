@@ -16,7 +16,10 @@ class SiswaController extends Controller
             return redirect()->back()->with('error', 'Profil pembimbing sekolah tidak ditemukan.');
         }
 
-        $query = Siswa::where('pembimbing_sekolah_id', $teacher->id)
+        $query = Siswa::where(function($q) use ($teacher) {
+                $q->where('pembimbing_sekolah_id', $teacher->id)
+                  ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
+            })
             ->with(['konsentrasiKeahlian', 'dudi'])
             ->withCount(['jurnal', 'absensi']);
 

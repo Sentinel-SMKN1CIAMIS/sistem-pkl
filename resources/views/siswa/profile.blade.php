@@ -47,8 +47,12 @@
                         <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $siswa->dudi->nama ?? 'Belum Penempatan' }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Pembimbing Sekolah</p>
+                        <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Pembimbing Kejuruan</p>
                         <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $siswa->pembimbingSekolah->nama_lengkap ?? 'Belum Ditugaskan' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Pembimbing Umum</p>
+                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $siswa->pembimbingSekolahUmum->nama_lengkap ?? 'Belum Ditugaskan' }}</p>
                     </div>
                     <div>
                         <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Pembimbing Lapangan (DUDI)</p>
