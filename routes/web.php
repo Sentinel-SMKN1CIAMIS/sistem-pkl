@@ -37,6 +37,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('absensi', [\App\Http\Controllers\Siswa\AbsensiController::class, 'index'])->name('absensi.index');
         Route::post('absensi/clock-in', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockIn'])->name('absensi.clock-in');
         Route::post('absensi/clock-out', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockOut'])->name('absensi.clock-out');
+        Route::post('absensi/request-early-leave', [\App\Http\Controllers\Siswa\AbsensiController::class, 'requestEarlyLeave'])->name('absensi.request-early-leave');
         Route::post('absensi/submit-absence-request', [\App\Http\Controllers\Siswa\AbsensiController::class, 'submitAbsenceRequest'])->name('absensi.submit-absence-request');
         Route::get('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'index'])->name('laporan.index');
         Route::post('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'store'])->name('laporan.store');
@@ -78,6 +79,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('jurnal', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'index'])->name('jurnal.index');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'update'])->name('jurnal.update');
         Route::get('absensi', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'index'])->name('absensi.index');
+        Route::patch('absensi/{absensi}/approve-early-leave', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'approveEarlyLeave'])->name('absensi.approve-early-leave');
+        Route::patch('absensi/{absensi}/reject-early-leave', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'rejectEarlyLeave'])->name('absensi.reject-early-leave');
         Route::get('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'index'])->name('feedback.index');
         Route::get('feedback/create', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'create'])->name('feedback.create');
         Route::post('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'store'])->name('feedback.store');

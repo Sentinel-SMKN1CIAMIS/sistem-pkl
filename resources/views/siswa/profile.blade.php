@@ -50,6 +50,12 @@
                         <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Pembimbing Sekolah</p>
                         <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ $siswa->pembimbingSekolah->nama_lengkap ?? 'Belum Ditugaskan' }}</p>
                     </div>
+                    <div>
+                        <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Pembimbing Lapangan (DUDI)</p>
+                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            {{ $siswa->pembimbingDudi->nama_lengkap ?? $siswa->pembimbing_dudi_nama ?? 'Belum Ditugaskan' }}
+                        </p>
+                    </div>
                 </div>
             </div>
 
