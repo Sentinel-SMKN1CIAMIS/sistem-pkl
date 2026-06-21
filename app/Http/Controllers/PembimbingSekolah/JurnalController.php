@@ -83,7 +83,18 @@ class JurnalController extends Controller
             'catatan_guru' => $request->catatan_guru
         ]);
 
-        return back()->with('success', 'Saran / Komentar berhasil disimpan.');
+        if ($request->filled('catatan_guru')) {
+            Notifikasi::create([
+                'from_user_id' => auth()->id(),
+                'to_user_id' => $jurnal->siswa->user_id,
+                'judul' => 'Saran Jurnal Baru',
+                'pesan' => 'Pembimbing Sekolah memberikan saran/komentar pada jurnal Anda tanggal ' . \Carbon\Carbon::parse($jurnal->tanggal)->isoFormat('D MMMM YYYY') . '.',
+                'tipe' => 'jurnal_comment',
+                'is_read' => 0
+            ]);
+        }
+
+        return back()->with('success', 'Saran / Komentar berhasil dikirim.');
     }
 
     public function approve(Request $request, Jurnal $jurnal)
