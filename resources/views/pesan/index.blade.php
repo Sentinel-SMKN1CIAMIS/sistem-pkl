@@ -33,7 +33,11 @@
                             <div class="flex items-center justify-between gap-1">
                                 <span class="text-xs text-slate-400 dark:text-slate-500 truncate">
                                     @if($meta->last_msg)
-                                        {{ $meta->last_msg->from_user_id === auth()->id() ? 'Anda: ' : '' }}{{ $meta->last_msg->isi }}
+                                        {{ $meta->last_msg->from_user_id === auth()->id() ? 'Anda: ' : '' }}
+                                        @if($meta->last_msg->is_broadcast)
+                                            <span class="font-semibold text-indigo-500 dark:text-indigo-400">📢</span>
+                                        @endif
+                                        {{ $meta->last_msg->isi }}
                                     @else
                                         <span class="italic">Belum ada pesan</span>
                                     @endif

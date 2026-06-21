@@ -287,6 +287,7 @@ class PesanController extends Controller
                 'mine'     => $m->from_user_id === $authId,
                 'time'     => $m->created_at->format('H:i'),
                 'read'     => $m->dibaca_at !== null,
+                'is_broadcast' => $m->is_broadcast,
             ]);
 
         // Tandai sebagai dibaca
