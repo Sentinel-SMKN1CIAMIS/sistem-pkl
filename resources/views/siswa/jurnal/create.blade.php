@@ -63,6 +63,23 @@
                         <p class="text-xs text-slate-400 mt-1">Isi CP yang sesuai dengan kegiatan hari ini.</p>
                     </div>
 
+                    <!-- Status Absensi dan Alasan Alpha -->
+                    <div class="md:col-span-2">
+                        <div id="attendance-status-box" class="hidden p-4 rounded-xl text-sm flex items-center gap-3">
+                            <span id="attendance-status-text" class="font-medium"></span>
+                        </div>
+                        
+                        <div id="alasan-alpha-container" class="hidden mt-4">
+                            <label for="alasan_alpha" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Alasan Tidak Melakukan Absensi (Status: Alpha)</label>
+                            <textarea name="alasan_alpha" id="alasan_alpha" rows="3"
+                                      class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all resize-none"
+                                      placeholder="Tulis alasan mengapa Anda tidak melakukan absensi pada tanggal ini..."></textarea>
+                            <p class="text-xs text-rose-500 dark:text-rose-400 mt-1 font-medium">
+                                *Catatan: Anda tidak melakukan absensi pada tanggal ini. Status absensi Anda akan tetap tercatat sebagai Alpha, namun Anda wajib memberikan alasan untuk dapat menyimpan jurnal.
+                            </p>
+                        </div>
+                    </div>
+
                     <div class="md:col-span-2">
                         <label for="kegiatan" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Unit Kerja / Pekerjaan</label>
                         <input type="text" name="kegiatan" id="kegiatan" required
@@ -198,6 +215,65 @@
                 };
                 reader.readAsDataURL(file);
             });
+
+            // Attendance check logic
+            const tanggalInput = document.getElementById('tanggal');
+            const statusBox = document.getElementById('attendance-status-box');
+            const statusText = document.getElementById('attendance-status-text');
+            const alphaContainer = document.getElementById('alasan-alpha-container');
+            const alphaTextarea = document.getElementById('alasan_alpha');
+
+            function checkAttendance(dateStr) {
+                if (!dateStr) return;
+                
+                fetch("{{ route('siswa.jurnal.check-attendance') }}?tanggal=" + dateStr)
+                    .then(response => response.json())
+                    .then(data => {
+                        statusBox.classList.remove('hidden', 'flex', 'bg-emerald-500/10', 'border-emerald-500/20', 'text-emerald-500', 'dark:text-emerald-400', 'bg-amber-500/10', 'border-amber-500/20', 'text-amber-500', 'dark:text-amber-400', 'bg-rose-500/10', 'border-rose-500/20', 'text-rose-500', 'dark:text-rose-400');
+                        
+                        if (data.exists) {
+                            alphaContainer.classList.add('hidden');
+                            alphaTextarea.removeAttribute('required');
+                            statusBox.classList.add('flex');
+                            
+                            if (data.status === 'hadir') {
+                                statusBox.classList.add('bg-emerald-500/10', 'border', 'border-emerald-500/20', 'text-emerald-600', 'dark:text-emerald-400');
+                                statusText.innerHTML = `<span class="flex items-center gap-2"><svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><b>Absensi Terdeteksi: Hadir</b> (Masuk: ${data.waktu_datang || '-'} | Pulang: ${data.waktu_pulang || '-'})</span>`;
+                            } else if (data.status === 'sakit' || data.status === 'izin') {
+                                statusBox.classList.add('bg-amber-500/10', 'border', 'border-amber-500/20', 'text-amber-600', 'dark:text-amber-400');
+                                let details = [];
+                                if (data.keterangan) details.push(`Ket: ${data.keterangan}`);
+                                if (data.alasan) details.push(`Alasan: ${data.alasan}`);
+                                let detailStr = details.length > 0 ? ` (${details.join(', ')})` : '';
+                                statusText.innerHTML = `<span class="flex items-center gap-2"><svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg><b>Absensi Terdeteksi: ${data.status.toUpperCase()}</b>${detailStr}</span>`;
+                            } else if (data.status === 'alpha') {
+                                statusBox.classList.add('bg-rose-500/10', 'border', 'border-rose-500/20', 'text-rose-600', 'dark:text-rose-400');
+                                statusText.innerHTML = `<span class="flex items-center gap-2"><svg class="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><b>Absensi Terdeteksi: Alpha</b></span>`;
+                                
+                                alphaContainer.classList.remove('hidden');
+                                alphaTextarea.setAttribute('required', 'required');
+                                alphaTextarea.value = data.alasan || '';
+                            }
+                        } else {
+                            statusBox.classList.add('bg-rose-500/10', 'border', 'border-rose-500/20', 'text-rose-600', 'dark:text-rose-400', 'flex');
+                            statusText.innerHTML = `<span class="flex items-center gap-2"><svg class="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg><b>Anda tidak melakukan absensi pada tanggal ini (Status: Alpha).</b></span>`;
+                            
+                            alphaContainer.classList.remove('hidden');
+                            alphaTextarea.setAttribute('required', 'required');
+                            alphaTextarea.value = '';
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error checking attendance:", error);
+                    });
+            }
+
+            if (tanggalInput) {
+                tanggalInput.addEventListener('change', function() {
+                    checkAttendance(this.value);
+                });
+                checkAttendance(tanggalInput.value);
+            }
 
             // Re-initialize lucide icons for dynamically shown elements
             if (typeof lucide !== 'undefined') {

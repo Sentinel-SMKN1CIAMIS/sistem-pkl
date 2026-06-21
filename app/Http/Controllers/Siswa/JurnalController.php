@@ -32,6 +32,38 @@ class JurnalController extends Controller
         return null;
     }
 
+    public function checkAttendance(Request $request)
+    {
+        $request->validate([
+            'tanggal' => 'required|date',
+        ]);
+
+        $siswa = auth()->user()->siswa;
+        if (!$siswa) {
+            return response()->json(['exists' => false, 'status' => null]);
+        }
+
+        $absensi = \App\Models\Absensi::where('siswa_id' . '', $siswa->id)
+            ->where('tanggal' . '', $request->tanggal)
+            ->first();
+
+        if ($absensi) {
+            return response()->json([
+                'exists' => true,
+                'status' => $absensi->status,
+                'waktu_datang' => $absensi->waktu_datang ? \Carbon\Carbon::parse($absensi->waktu_datang)->format('H:i') : null,
+                'waktu_pulang' => $absensi->waktu_pulang ? \Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i') : null,
+                'keterangan' => $absensi->keterangan,
+                'alasan' => $absensi->alasan,
+            ]);
+        }
+
+        return response()->json([
+            'exists' => false,
+            'status' => null,
+        ]);
+    }
+
     public function index()
     {
         if ($redirect = $this->requirePkl()) return $redirect;
@@ -56,24 +88,7 @@ class JurnalController extends Controller
         $siswa = auth()->user()->siswa;
         $today = \Carbon\Carbon::today();
 
-        // Cek apakah siswa sudah melakukan absensi hari ini
-        $hasAbsenToday = \App\Models\Absensi::where('siswa_id', $siswa->id)
-            ->where('tanggal', $today->toDateString())
-            ->exists();
-
-        if (!$hasAbsenToday) {
-            return redirect()->route('siswa.jurnal.index')
-                ->with('error', 'Anda belum melakukan absensi hari ini. Silakan melakukan absensi terlebih dahulu sebelum mengisi jurnal.');
-        }
-
-        // Cek apakah siswa sudah mengisi jurnal hari ini
-        $hasJurnalToday = Jurnal::where('siswa_id', $siswa->id)
-            ->where('tanggal', $today)
-            ->exists();
-
-        if ($hasJurnalToday) {
-            return redirect()->route('siswa.jurnal.index')->with('error', 'Anda sudah mengisi jurnal untuk hari ini. Anda hanya dapat mengisi 1 jurnal per hari.');
-        }
+        // Check removed: Students can open the form any day to backfill journals.
 
         $kompetensis = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)->get();
         
@@ -113,15 +128,6 @@ class JurnalController extends Controller
             return back()->withInput()->with('error', 'Anda hanya dapat mengisi jurnal untuk maksimal ' . $maxBackdateDays . ' hari sebelumnya.');
         }
 
-        // Validasi apakah siswa memiliki absen pada tanggal jurnal yang diinput
-        $hasAbsensiForDate = \App\Models\Absensi::where('siswa_id', $siswa->id)
-            ->where('tanggal', $request->tanggal)
-            ->exists();
-
-        if (!$hasAbsensiForDate) {
-            return back()->withInput()->with('error', 'Anda belum mengisi daftar hadir pada tanggal ' . $requestDate->format('d/m/Y') . '. Silakan isi absensi terlebih dahulu sebelum mengisi jurnal.');
-        }
-
         // Validasi apakah siswa sudah memiliki jurnal pada tanggal tersebut
         $hasJurnalForDate = Jurnal::where('siswa_id', $siswa->id)
             ->where('tanggal', $request->tanggal)
@@ -129,6 +135,37 @@ class JurnalController extends Controller
 
         if ($hasJurnalForDate) {
             return back()->withInput()->with('error', 'Anda sudah mengisi jurnal pada tanggal ' . $requestDate->format('d/m/Y') . '. Satu hari hanya boleh 1 jurnal.');
+        }
+
+        // Cek status absensi untuk tanggal yang diinput
+        $absensi = \App\Models\Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', $request->tanggal)
+            ->first();
+
+        // Block journal creation if status is izin or sakit
+        if ($absensi && in_array($absensi->status, ['izin', 'sakit'])) {
+            return back()->withInput()->with('error', 'Anda tidak dapat mengisi jurnal pada hari di mana Anda sedang Izin atau Sakit.');
+        }
+
+        if (!$absensi) {
+            $request->validate([
+                'alasan_alpha' => 'required|string|min:10|max:500',
+            ], [
+                'alasan_alpha.required' => 'Anda wajib mengisi alasan tidak melakukan absensi pada tanggal ini.',
+                'alasan_alpha.min' => 'Alasan tidak melakukan absensi minimal 10 karakter.',
+            ]);
+
+            \App\Models\Absensi::create([
+                'siswa_id' => $siswa->id,
+                'tanggal' => $request->tanggal,
+                'status' => 'alpha',
+                'alasan' => $request->alasan_alpha,
+                'approval_status' => 'pending',
+            ]);
+        } elseif ($absensi->status === 'alpha' && $request->filled('alasan_alpha')) {
+            $absensi->update([
+                'alasan' => $request->alasan_alpha,
+            ]);
         }
 
         $data = [
@@ -237,15 +274,6 @@ class JurnalController extends Controller
             return back()->withInput()->with('error', 'Anda hanya dapat mengisi jurnal untuk maksimal ' . $maxBackdateDays . ' hari sebelumnya.');
         }
 
-        // Validasi apakah siswa memiliki absen pada tanggal jurnal
-        $hasAbsensiForDate = \App\Models\Absensi::where('siswa_id', $siswa->id)
-            ->where('tanggal', $request->tanggal)
-            ->exists();
-
-        if (!$hasAbsensiForDate) {
-            return back()->withInput()->with('error', 'Anda belum mengisi daftar hadir pada tanggal ' . $requestDate->format('d/m/Y') . '. Silakan isi absensi terlebih dahulu.');
-        }
-
         // Cek tanggal duplikat jika tanggal diubah
         if ($jurnal->tanggal !== $request->tanggal) {
             $hasJurnalForDate = Jurnal::where('siswa_id', $siswa->id)
@@ -255,6 +283,32 @@ class JurnalController extends Controller
             if ($hasJurnalForDate) {
                 return back()->withInput()->with('error', 'Anda sudah mengisi jurnal pada tanggal ' . $requestDate->format('d/m/Y') . '. Satu hari hanya boleh 1 jurnal.');
             }
+        }
+
+        // Cek status absensi untuk tanggal yang diinput
+        $absensi = \App\Models\Absensi::where('siswa_id' . '', $siswa->id)
+            ->where('tanggal' . '', $request->tanggal)
+            ->first();
+
+        if (!$absensi) {
+            $request->validate([
+                'alasan_alpha' => 'required|string|min:10|max:500',
+            ], [
+                'alasan_alpha.required' => 'Anda wajib mengisi alasan tidak melakukan absensi pada tanggal ini.',
+                'alasan_alpha.min' => 'Alasan tidak melakukan absensi minimal 10 karakter.',
+            ]);
+
+            \App\Models\Absensi::create([
+                'siswa_id' => $siswa->id,
+                'tanggal' => $request->tanggal,
+                'status' => 'alpha',
+                'alasan' => $request->alasan_alpha,
+                'approval_status' => 'pending',
+            ]);
+        } elseif ($absensi->status === 'alpha' && $request->filled('alasan_alpha')) {
+            $absensi->update([
+                'alasan' => $request->alasan_alpha,
+            ]);
         }
 
         $data = [

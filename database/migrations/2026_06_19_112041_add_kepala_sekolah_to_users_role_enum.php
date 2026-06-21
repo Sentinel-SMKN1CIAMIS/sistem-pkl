@@ -14,6 +14,8 @@ return new class extends Migration
     {
         if (config('database.default') === 'mysql') {
             DB::statement("ALTER TABLE `users` MODIFY COLUMN `role` ENUM('siswa', 'pembimbing_sekolah', 'pembimbing_dudi', 'pokja', 'super_admin', 'kaprog', 'kepala_sekolah') NOT NULL DEFAULT 'siswa'");
+        } elseif (config('database.default') === 'sqlite') {
+            // SQLite does not need check constraint modification
         } else {
             // PostgreSQL: drop old check constraint and create a new one
             DB::statement("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
@@ -28,6 +30,8 @@ return new class extends Migration
     {
         if (config('database.default') === 'mysql') {
             DB::statement("ALTER TABLE `users` MODIFY COLUMN `role` ENUM('siswa', 'pembimbing_sekolah', 'pembimbing_dudi', 'pokja', 'super_admin', 'kaprog') NOT NULL DEFAULT 'siswa'");
+        } elseif (config('database.default') === 'sqlite') {
+            // SQLite does not need check constraint modification
         } else {
             // PostgreSQL: rollback check constraint (remove kepala_sekolah)
             DB::statement("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");

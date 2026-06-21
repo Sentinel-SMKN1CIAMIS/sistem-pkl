@@ -256,7 +256,7 @@ class SiswaPklLogicTest extends TestCase
     /**
      * Test Jurnal access control based on today's attendance.
      */
-    public function test_student_cannot_access_create_journal_without_absen_today()
+    public function test_student_can_access_create_journal_without_absen_today()
     {
         $this->siswa->update([
             'dudi_id' => $this->dudi->id,
@@ -266,15 +266,14 @@ class SiswaPklLogicTest extends TestCase
 
         $this->actingAs($this->siswa->user);
 
-        // Access index page - check hasAbsenToday is false
+        // Access index page
         $response = $this->get(route('siswa.jurnal.index'));
         $response->assertStatus(200);
         $response->assertViewHas('hasAbsenToday', false);
 
-        // Try to access create page directly
+        // Try to access create page directly (should succeed now)
         $responseCreate = $this->get(route('siswa.jurnal.create'));
-        $responseCreate->assertRedirect(route('siswa.jurnal.index'));
-        $responseCreate->assertSessionHas('error', 'Anda belum melakukan absensi hari ini. Silakan melakukan absensi terlebih dahulu sebelum mengisi jurnal.');
+        $responseCreate->assertStatus(200);
     }
 
     public function test_student_can_access_create_journal_after_absen_today()

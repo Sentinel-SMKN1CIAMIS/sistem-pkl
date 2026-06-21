@@ -23,20 +23,20 @@ class AbsensiApprovalController extends Controller
 
         // Get all pending absence requests for students assigned to this advisor
         $pendingAbsences = Absensi::whereHas('siswa', function ($query) use ($pembimbing) {
-            $query->where('pembimbing_sekolah_id', $pembimbing->id);
+            $query->where('pembimbing_sekolah_id' . '', $pembimbing->id);
         })
-        ->where('approval_status', 'pending')
-        ->whereIn('status', ['izin', 'sakit', 'alpa'])
+        ->where('approval_status' . '', 'pending')
+        ->whereIn('status' . '', ['izin', 'sakit', 'alpha'])
         ->with(['siswa', 'siswa.user', 'approvedBy'])
-        ->orderBy('tanggal', 'desc')
+        ->orderBy('tanggal' . '', 'desc')
         ->paginate(15);
 
         // Get approved/rejected history
         $approvalHistory = Absensi::whereHas('siswa', function ($query) use ($pembimbing) {
-            $query->where('pembimbing_sekolah_id', $pembimbing->id);
+            $query->where('pembimbing_sekolah_id' . '', $pembimbing->id);
         })
-        ->whereIn('approval_status', ['approved', 'rejected'])
-        ->whereIn('status', ['izin', 'sakit', 'alpa'])
+        ->whereIn('approval_status' . '', ['approved', 'rejected'])
+        ->whereIn('status' . '', ['izin', 'sakit', 'alpha'])
         ->with(['siswa', 'siswa.user', 'approvedBy'])
         ->orderBy('updated_at', 'desc')
         ->limit(50)
@@ -95,8 +95,11 @@ class AbsensiApprovalController extends Controller
             'approval_status' => 'rejected',
             'approved_by' => $user->id,
             'approval_note' => $request->approval_note,
+            'status' => 'alpha',
         ]);
 
         return back()->with('success', "Penolakan untuk {$absensi->siswa->user->name} ({$absensi->status}) berhasil disimpan.");
     }
+
+
 }

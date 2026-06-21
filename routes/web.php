@@ -32,6 +32,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('jurnal/export', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'export'])->name('jurnal.export');
         Route::get('jurnal/portofolio', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'portofolio'])->name('jurnal.portofolio');
         Route::get('jurnal/sertifikat', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'sertifikat'])->name('jurnal.sertifikat');
+        Route::get('jurnal/check-attendance', [\App\Http\Controllers\Siswa\JurnalController::class, 'checkAttendance'])->name('jurnal.check-attendance');
         Route::resource('jurnal', \App\Http\Controllers\Siswa\JurnalController::class);
         Route::get('absensi', [\App\Http\Controllers\Siswa\AbsensiController::class, 'index'])->name('absensi.index');
         Route::post('absensi/clock-in', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockIn'])->name('absensi.clock-in');
@@ -67,6 +68,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('absensi/approval', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'index'])->name('absensi.approval.index');
         Route::patch('absensi/{absensi}/approve', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'approve'])->name('absensi.approve');
         Route::patch('absensi/{absensi}/reject', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'reject'])->name('absensi.reject');
+
         Route::get('laporan', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'index'])->name('laporan.index');
         Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
     });

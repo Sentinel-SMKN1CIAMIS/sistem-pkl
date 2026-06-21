@@ -68,10 +68,26 @@
                                 {{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/y') }}
                             </td>
                             <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Hadir</span>
+                                @php
+                                    $statusConfig = [
+                                        'hadir' => ['bg' => 'bg-emerald-500/10', 'text' => 'text-emerald-400', 'label' => 'Hadir'],
+                                        'izin' => ['bg' => 'bg-blue-500/10', 'text' => 'text-blue-400', 'label' => 'Izin'],
+                                        'sakit' => ['bg' => 'bg-red-500/10', 'text' => 'text-red-400', 'label' => 'Sakit'],
+                                        'alpha' => ['bg' => 'bg-gray-500/10', 'text' => 'text-gray-400', 'label' => 'Alpa'],
+                                    ];
+                                    $config = $statusConfig[$row->status] ?? $statusConfig['hadir'];
+                                @endphp
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase {{ $config['bg'] }} {{ $config['text'] }} border {{ $config['text'] }}/20">
+                                    {{ $config['label'] }}
+                                </span>
                             </td>
                             <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ $row->waktu_datang ? \Carbon\Carbon::parse($row->waktu_datang)->format('H:i') : '-' }}</td>
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ $row->waktu_pulang ? \Carbon\Carbon::parse($row->waktu_pulang)->format('H:i') : '-' }}</td>
+                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                                {{ $row->waktu_pulang ? \Carbon\Carbon::parse($row->waktu_pulang)->format('H:i') : '-' }}
+                                @if($row->status === 'hadir' && $row->alasan)
+                                    <br><span class="text-[10px] text-orange-500 font-medium" title="{{ $row->alasan }}"><i data-lucide="info" class="w-3 h-3 inline"></i> {{ Str::limit($row->alasan, 20) }}</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($row->latitude)
                                     <a href="https://www.google.com/maps?q={{ $row->latitude }},{{ $row->longitude }}" target="_blank" 

@@ -39,6 +39,9 @@
                             </td>
                             <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">
                                 {{ $row->waktu_pulang ? \Carbon\Carbon::parse($row->waktu_pulang)->format('H:i') : '-' }}
+                                @if($row->status === 'hadir' && $row->alasan)
+                                    <br><span class="text-[10px] text-orange-500 font-medium" title="{{ $row->alasan }}"><i data-lucide="info" class="w-3 h-3 inline"></i> {{ Str::limit($row->alasan, 20) }}</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($row->ttd_siswa_path)

@@ -115,10 +115,19 @@ class AbsensiController extends Controller
         $sevenHoursLater = $clockInTime->copy()->addHours(7);
 
         if ($now < $sevenHoursLater) {
-            $diffInMinutes = $now->diffInMinutes($sevenHoursLater);
-            $hours = intdiv($diffInMinutes, 60);
-            $minutes = $diffInMinutes % 60;
-            return back()->with('error', "Anda baru bisa absen pulang setelah 7 jam sejak absen datang. Sisa waktu: $hours jam $minutes menit.");
+            $request->validate([
+                'alasan' => 'required|string|min:10',
+            ], [
+                'alasan.required' => 'Anda melakukan absen pulang sebelum 7 jam. Wajib mengisi alasan pulang cepat.',
+                'alasan.min' => 'Alasan pulang cepat minimal 10 karakter.',
+            ]);
+
+            $absensi->update([
+                'waktu_pulang' => Carbon::now()->toTimeString(),
+                'alasan' => $request->alasan,
+            ]);
+
+            return redirect()->route('siswa.absensi.index')->with('success', 'Berhasil melakukan Absen Pulang Cepat.');
         }
 
         $absensi->update([
@@ -134,16 +143,12 @@ class AbsensiController extends Controller
         if ($redirect = $this->requirePkl()) return $redirect;
 
         $request->validate([
-            'status' => 'required|in:izin,sakit,alpa',
+            'status' => 'required|in:izin,sakit',
             'alasan' => 'required|min:10',
-            'tanggal' => 'required|date|before_or_equal:today|after_or_equal:-7 days',
-        ], [
-            'tanggal.before_or_equal' => 'Tanggal tidak boleh melebihi hari ini.',
-            'tanggal.after_or_equal' => 'Tanggal tidak boleh lebih dari 7 hari yang lalu.',
         ]);
 
         $siswa = auth()->user()->siswa;
-        $tanggal = Carbon::parse($request->tanggal);
+        $tanggal = Carbon::today();
 
         // Check if already submitted for today
         $exists = Absensi::where('siswa_id', $siswa->id)
@@ -151,7 +156,7 @@ class AbsensiController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Anda sudah memiliki absensi untuk tanggal tersebut.');
+            return back()->with('error', 'Anda sudah memiliki absensi untuk hari ini.');
         }
 
         Absensi::create([
