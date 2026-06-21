@@ -68,6 +68,69 @@
         </div>
     </div>
 
+    <!-- Analytics Section with Alpine.js Toggle -->
+    <div x-data="{ showAnalytics: true }" class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-500"></i>
+                Analisis & Statistik Hari Ini
+            </h3>
+            <button @click="showAnalytics = !showAnalytics" 
+                    class="px-3 py-1 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-white/5 hover:bg-white/10 border border-slate-200/20 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                <span x-text="showAnalytics ? 'Sembunyikan' : 'Tampilkan'"></span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="showAnalytics ? 'rotate-180' : ''"></i>
+            </button>
+        </div>
+
+        <div x-show="showAnalytics" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform -translate-y-2 scale-95"
+             x-transition:enter-end="opacity-100 transform translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-250"
+             x-transition:leave-start="opacity-100 transform translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 transform -translate-y-2 scale-95"
+             class="grid grid-cols-1 md:grid-cols-3 gap-6">
+             
+            <!-- Chart 1: Jurnal Hari Ini -->
+            <div class="glass-card p-5 border-t-2 border-emerald-500/80 bg-white/5 dark:bg-slate-900/50 flex flex-col justify-between min-h-[220px]">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3">Progress Jurnal Hari Ini</h4>
+                </div>
+                <div class="relative h-36 flex items-center justify-center">
+                    <canvas id="todayJurnalChart" 
+                            data-filled="{{ $studentsHasFilledToday->count() }}" 
+                            data-unfilled="{{ $studentsNotFilledToday->count() }}"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Kehadiran Hari Ini -->
+            <div class="glass-card p-5 border-t-2 border-blue-500/80 bg-white/5 dark:bg-slate-900/50 flex flex-col justify-between min-h-[220px]">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3">Status Absensi Hari Ini</h4>
+                </div>
+                <div class="relative h-36 flex items-center justify-center">
+                    <canvas id="todayAbsensiChart" 
+                            data-masuk="{{ $attendanceCounts['masuk_kerja'] }}" 
+                            data-pulang="{{ $attendanceCounts['pulang_kerja'] }}" 
+                            data-belum="{{ $attendanceCounts['belum_absen'] }}" 
+                            data-lainnya="{{ $attendanceCounts['lainnya'] }}"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 3: Penempatan DUDI -->
+            <div class="glass-card p-5 border-t-2 border-purple-500/80 bg-white/5 dark:bg-slate-900/50 flex flex-col justify-between min-h-[220px]">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3">Distribusi Penempatan DUDI (Top 5)</h4>
+                </div>
+                <div class="relative h-36 flex items-center justify-center">
+                    <canvas id="dudiDistributionChart" 
+                            data-labels='{!! json_encode(array_keys($dudiCounts)) !!}' 
+                            data-values='{!! json_encode(array_values($dudiCounts)) !!}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Search Form (Responsive Layout) -->
     <div class="glass-card p-4 mb-6">
         <form action="{{ route('pembimbing_sekolah.siswa.index') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
@@ -505,27 +568,27 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-slate-700 dark:text-slate-300 font-semibold">
                                     {{ $item->absensi_count }} Hari
                                 </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
-                                    @php
-                                        $hariIni = strtolower($item->status_hari_ini);
-                                        if ($hariIni === 'masuk kerja') {
-                                            $statusClass = 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-                                        } elseif ($hariIni === 'pulang kerja') {
-                                            $statusClass = 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
-                                        } elseif ($hariIni === 'selesai') {
-                                            $statusClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-                                        } elseif ($hariIni === 'dibatalkan') {
-                                            $statusClass = 'bg-red-500/10 text-red-500 border-red-500/20';
-                                        } elseif ($hariIni === 'belum absen') {
-                                            $statusClass = 'bg-slate-500/10 text-slate-500 border-slate-500/20';
-                                        } else {
-                                            $statusClass = 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
-                                        }
-                                    @endphp
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border {{ $statusClass }}">
-                                        {{ $item->status_hari_ini }}
-                                    </span>
-                                </td>
+                                 <td class="px-6 py-4 text-right whitespace-nowrap">
+                                     @php
+                                         $hariIni = strtolower($item->status_hari_ini_computed);
+                                         if ($hariIni === 'masuk kerja') {
+                                             $statusClass = 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+                                         } elseif ($hariIni === 'pulang kerja') {
+                                             $statusClass = 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
+                                         } elseif ($hariIni === 'selesai') {
+                                             $statusClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                                         } elseif ($hariIni === 'dibatalkan') {
+                                             $statusClass = 'bg-red-500/10 text-red-500 border-red-500/20';
+                                         } elseif ($hariIni === 'belum absen') {
+                                             $statusClass = 'bg-slate-500/10 text-slate-500 border-slate-500/20';
+                                         } else {
+                                             $statusClass = 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
+                                         }
+                                     @endphp
+                                     <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border {{ $statusClass }}">
+                                         {{ $item->status_hari_ini_computed }}
+                                     </span>
+                                 </td>
                             </tr>
                         @empty
                             <tr>
@@ -618,4 +681,139 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Chart 1: Today's Jurnal
+            const ctxJurnal = document.getElementById('todayJurnalChart');
+            if (ctxJurnal) {
+                const filled = parseInt(ctxJurnal.getAttribute('data-filled')) || 0;
+                const unfilled = parseInt(ctxJurnal.getAttribute('data-unfilled')) || 0;
+                
+                new Chart(ctxJurnal, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Sudah Isi', 'Belum Isi'],
+                        datasets: [{
+                            data: [filled, unfilled],
+                            backgroundColor: ['rgba(16, 185, 129, 0.85)', 'rgba(244, 63, 94, 0.85)'],
+                            borderColor: 'transparent',
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 10,
+                                    padding: 10,
+                                    color: '#94a3b8',
+                                    font: { family: 'Plus Jakarta Sans, sans-serif', weight: '600', size: 10 }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Chart 2: Today's Absensi
+            const ctxAbsensi = document.getElementById('todayAbsensiChart');
+            if (ctxAbsensi) {
+                const masuk = parseInt(ctxAbsensi.getAttribute('data-masuk')) || 0;
+                const pulang = parseInt(ctxAbsensi.getAttribute('data-pulang')) || 0;
+                const belum = parseInt(ctxAbsensi.getAttribute('data-belum')) || 0;
+                const lainnya = parseInt(ctxAbsensi.getAttribute('data-lainnya')) || 0;
+
+                new Chart(ctxAbsensi, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Masuk', 'Pulang', 'Belum', 'Lainnya'],
+                        datasets: [{
+                            data: [masuk, pulang, belum, lainnya],
+                            backgroundColor: [
+                                'rgba(59, 130, 246, 0.85)', 
+                                'rgba(99, 102, 241, 0.85)', 
+                                'rgba(148, 163, 184, 0.6)', 
+                                'rgba(245, 158, 11, 0.85)'
+                            ],
+                            borderColor: 'transparent',
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 10,
+                                    padding: 8,
+                                    color: '#94a3b8',
+                                    font: { family: 'Plus Jakarta Sans, sans-serif', weight: '600', size: 10 }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Chart 3: DUDI Distribution
+            const ctxDudi = document.getElementById('dudiDistributionChart');
+            if (ctxDudi) {
+                const labels = JSON.parse(ctxDudi.getAttribute('data-labels') || '[]');
+                const values = JSON.parse(ctxDudi.getAttribute('data-values') || '[]');
+
+                new Chart(ctxDudi, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Jumlah Siswa',
+                            data: values,
+                            backgroundColor: 'rgba(139, 92, 246, 0.8)',
+                            borderRadius: 6,
+                            borderWidth: 0,
+                            barThickness: 15
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', // horizontal bar chart
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                                ticks: { 
+                                    color: '#94a3b8',
+                                    stepSize: 1,
+                                    font: { size: 9 }
+                                }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: { 
+                                    color: '#94a3b8',
+                                    font: { size: 9 },
+                                    callback: function(value) {
+                                        let label = this.getLabelForValue(value);
+                                        return label.length > 15 ? label.substr(0, 15) + '...' : label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </x-app-layout>
