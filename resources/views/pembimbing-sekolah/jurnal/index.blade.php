@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">Monitoring Jurnal Siswa</x-slot>
 
-    <div x-data="{ imageModalOpen: false, modalImageUrl: '' }">
+    <div x-data="{ imageModalOpen: false, modalImageUrl: '', filterOpen: false }">
         <div class="mb-6 space-y-4">
             {{-- Info banner berdasarkan tipe guru --}}
             @if($tipe !== 'kejuruan' && $tipe !== 'produktif')
@@ -18,23 +18,89 @@
             </div>
             @endif
 
-            {{-- Search bar --}}
-            <form method="GET" action="{{ route('pembimbing_sekolah.jurnal.index') }}" class="flex gap-3">
+            {{-- Search bar and Filter Button --}}
+            <div class="flex gap-3">
                 <div class="relative flex-1">
                     <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                    <input type="text" name="search" value="{{ request('search') }}"
+                    <input type="text" name="search" value="{{ request('search') }}" form="searchForm"
                            placeholder="Cari berdasarkan nama siswa, NIS, atau CP..."
                            class="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
                 </div>
-                <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-all">
+                <button type="submit" form="searchForm" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-all">
                     Cari
                 </button>
-                @if(request('search'))
+                
+                {{-- Filter Toggle Button --}}
+                <button type="button" @click="filterOpen = !filterOpen"
+                        class="px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
+                        :class="filterOpen ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'">
+                    <i data-lucide="filter" class="w-4 h-4"></i> 
+                    Filter
+                    @if(request()->hasAny(['status', 'tanggal_dari', 'tanggal_sampai']))
+                        <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                    @endif
+                </button>
+
+                @if(request()->hasAny(['search', 'status', 'tanggal_dari', 'tanggal_sampai']))
                 <a href="{{ route('pembimbing_sekolah.jurnal.index') }}" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl transition-all flex items-center gap-2">
                     <i data-lucide="x" class="w-4 h-4"></i> Reset
                 </a>
                 @endif
+            </div>
+
+            {{-- Hidden Search Form --}}
+            <form id="searchForm" method="GET" action="{{ route('pembimbing_sekolah.jurnal.index') }}" class="hidden">
+                <input type="hidden" name="status" value="{{ request('status') }}">
+                <input type="hidden" name="tanggal_dari" value="{{ request('tanggal_dari') }}">
+                <input type="hidden" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}">
             </form>
+
+            {{-- Filter Panel (Collapsible) --}}
+            <div x-show="filterOpen" 
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-2"
+                 style="display: none;"
+                 class="glass-card p-4">
+                <form id="filterForm" method="GET" action="{{ route('pembimbing_sekolah.jurnal.index') }}">
+                    {{-- Preserve search value --}}
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {{-- Filter Status --}}
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-2">Status Approval</label>
+                            <select name="status" 
+                                    onchange="document.getElementById('filterForm').submit()"
+                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
+                                <option value="">Semua Status</option>
+                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
+                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                            </select>
+                        </div>
+
+                        {{-- Filter Tanggal Dari --}}
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-2">Tanggal Dari</label>
+                            <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}"
+                                   onchange="document.getElementById('filterForm').submit()"
+                                   class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
+                        </div>
+
+                        {{-- Filter Tanggal Sampai --}}
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-2">Tanggal Sampai</label>
+                            <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}"
+                                   onchange="document.getElementById('filterForm').submit()"
+                                   class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
 
     <div class="grid grid-cols-1 gap-6">
@@ -186,7 +252,7 @@
                                           class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none resize-none transition-all block"
                                           placeholder="Tulis saran atau komentar tambahan untuk siswa...">{{ $item->catatan_guru }}</textarea>
                             </div>
-                            <div class="md:col-span-3 lg:col-span-2">
+                            <div class="md:col-span-3 lg:col-span-2 md:mt-6">
                                 <button type="submit" 
                                         class="w-full flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white">
                                     <i data-lucide="send" class="w-4 h-4"></i> KIRIM

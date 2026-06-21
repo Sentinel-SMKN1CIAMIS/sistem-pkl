@@ -17,7 +17,7 @@ class JurnalController extends Controller
         $tipe    = $teacher->tipe; // 'kejuruan' or 'umum' (previously 'produktif', 'normatif', or 'adaptif')
 
         $query = Jurnal::with(['siswa', 'kompetensi', 'tujuanPembelajaran'])
-            ->latest('tanggal');
+            ->orderBy('created_at', 'desc');
 
         if ($tipe === 'kejuruan' || $tipe === 'produktif') {
             // Kejuruan / Produktif: tampilkan siswa yang langsung dibimbing atau dari kelas yang diajar
@@ -66,6 +66,20 @@ class JurnalController extends Controller
                   ->orWhereHas('siswa', fn($s) => $s->where('nama_lengkap', 'like', '%' . $search . '%')
                                                       ->orWhere('nis', 'like', '%' . $search . '%'));
             });
+        }
+
+        // Filter berdasarkan status approval
+        if ($request->filled('status')) {
+            $query->where('approval_status', $request->status);
+        }
+
+        // Filter berdasarkan tanggal
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('tanggal', '>=', $request->tanggal_dari);
+        }
+        
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('tanggal', '<=', $request->tanggal_sampai);
         }
 
         $jurnals = $query->paginate(15)->withQueryString();
