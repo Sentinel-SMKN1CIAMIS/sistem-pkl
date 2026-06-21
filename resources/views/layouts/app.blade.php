@@ -84,7 +84,7 @@
             $navItems = [
                 ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
                 ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
-                ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
+                ['name' => 'Validasi Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
                 ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
                 ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
                 ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
@@ -145,7 +145,14 @@
             ];
 
             if ($role !== 'kepala_sekolah') {
-                $navItems[] = ['name' => 'Pengaturan', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'settings'];
+                $navItems[] = [
+                    'name' => 'Pengaturan',
+                    'icon' => 'settings',
+                    'children' => [
+                        ['name' => 'Template Sertifikat', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'award'],
+                        ['name' => 'Template Surat PKL', 'route' => 'pokja.pengaturan.surat_pengantar', 'icon' => 'file-text'],
+                    ]
+                ];
             }
 
             $navItems[] = ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'];
@@ -194,7 +201,7 @@
                 'icon' => 'user-check',
                 'children' => [
                     ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
-                    ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
+                    ['name' => 'Validasi Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
                     ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
                     ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
                     ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
@@ -295,7 +302,13 @@
                         
                         <div class="hidden md:flex flex-col text-left">
                             <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight truncate max-w-[150px]">{{ auth()->user()?->name ?? 'Guest User' }}</span>
-                            <span class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5">{{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}</span>
+                            <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5">
+                                @if(auth()->user()?->role === 'pembimbing_sekolah' && auth()->user()->pembimbingSekolah)
+                                    Pembimbing {{ auth()->user()->pembimbingSekolah->tipe === 'keduanya' ? 'Kejuruan & Umum' : (auth()->user()->pembimbingSekolah->tipe === 'kejuruan' ? 'Kejuruan' : 'Umum') }}
+                                @else
+                                    {{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}
+                                @endif
+                            </span>
                         </div>
                         
                         <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform duration-200 group-hover:text-slate-600 dark:group-hover:text-slate-300" :class="profileMenuOpen ? 'rotate-180' : ''"></i>
@@ -314,7 +327,13 @@
                         
                         <div class="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/20 border-b border-slate-200/50 dark:border-slate-700/50">
                             <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{{ auth()->user()?->name ?? 'Guest User' }}</p>
-                            <p class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5">{{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}</p>
+                             <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5">
+                                 @if(auth()->user()?->role === 'pembimbing_sekolah' && auth()->user()->pembimbingSekolah)
+                                     Pembimbing {{ auth()->user()->pembimbingSekolah->tipe === 'keduanya' ? 'Kejuruan & Umum' : (auth()->user()->pembimbingSekolah->tipe === 'kejuruan' ? 'Kejuruan' : 'Umum') }}
+                                 @else
+                                     {{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}
+                                 @endif
+                             </p>
                         </div>
 
                         <div class="p-1.5 space-y-1">

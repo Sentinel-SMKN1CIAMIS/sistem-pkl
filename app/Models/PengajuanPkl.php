@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['siswa_id', 'dudi_id', 'pembimbing_dudi_id', 'nama_perusahaan', 'pimpinan', 'alamat', 'kota', 'no_telp', 'status', 'bukti_balasan', 'catatan', 'acc_oleh'])]
+#[Fillable(['siswa_id', 'dudi_id', 'pembimbing_dudi_id', 'nama_perusahaan', 'pimpinan', 'alamat', 'kota', 'no_telp', 'status', 'is_manual', 'bukti_balasan', 'catatan', 'acc_oleh'])]
 class PengajuanPkl extends Model
 {
+    protected $casts = [
+        'is_manual' => 'boolean',
+    ];
     public function siswa()
     {
         return $this->belongsTo(Siswa::class);

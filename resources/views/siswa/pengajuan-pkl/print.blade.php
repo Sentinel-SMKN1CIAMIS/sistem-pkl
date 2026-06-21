@@ -5,14 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Surat Pengantar PKL - {{ $siswa->nama_lengkap }}</title>
     <style>
+        /* General Layout */
         body {
             font-family: "Times New Roman", Times, serif;
             color: #000;
-            background-color: #fff;
+            background-color: #f1f5f9;
             margin: 0;
-            padding: 30px 40px;
-            line-height: 1.5;
-            font-size: 14px;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .page-container {
+            width: 210mm;
+            height: 297mm;
+            padding: 15mm 20mm;
+            background-color: #fff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            overflow: hidden; /* Strict A4 1-page constraint */
         }
 
         /* Kop Surat Styles */
@@ -21,8 +39,8 @@
             align-items: center;
             justify-content: center;
             border-bottom: 4px double #000;
-            padding-bottom: 12px;
-            margin-bottom: 25px;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
             position: relative;
         }
         
@@ -31,8 +49,8 @@
             left: 10px;
             top: 50%;
             transform: translateY(-50%);
-            width: 75px;
-            height: 85px;
+            width: 70px;
+            height: 80px;
         }
 
         .logo-container img {
@@ -44,19 +62,19 @@
         .kop-text {
             text-align: center;
             flex-grow: 1;
-            padding-left: 90px;
+            padding-left: 80px;
             padding-right: 20px;
         }
         
         .kop-text h2 {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             margin: 0 0 2px 0;
             text-transform: uppercase;
         }
         
         .kop-text h1 {
-            font-size: 19px;
+            font-size: 18px;
             font-weight: bold;
             margin: 0 0 3px 0;
             text-transform: uppercase;
@@ -66,6 +84,7 @@
         .kop-text p {
             font-size: 10px;
             margin: 0 0 2px 0;
+            line-height: 1.3;
         }
         
         .kop-text .alamat {
@@ -74,8 +93,8 @@
         
         /* Content layout styles */
         .surat-meta {
-            margin-bottom: 20px;
-            font-size: 14px;
+            margin-bottom: 15px;
+            font-size: 13.5px;
         }
         
         .surat-meta table {
@@ -89,12 +108,13 @@
         }
 
         .penerima-container {
-            margin-top: 20px;
-            margin-bottom: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            font-size: 13.5px;
         }
 
         .penerima-container p {
-            margin: 0 0 5px 0;
+            margin: 0 0 4px 0;
         }
 
         .penerima-nama {
@@ -105,18 +125,22 @@
         .isi-surat {
             text-align: justify;
             text-indent: 40px;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
+            margin-top: 0;
+            font-size: 13.5px;
+            line-height: 1.45;
         }
 
         /* Student Data Table */
         .siswa-table {
             width: 85%;
-            margin: 20px auto;
+            margin: 10px auto;
             border-collapse: collapse;
+            font-size: 13.5px;
         }
 
         .siswa-table td {
-            padding: 6px 10px;
+            padding: 5px 10px;
             vertical-align: top;
             border: 1px solid #000;
         }
@@ -129,27 +153,32 @@
 
         /* Signature Block */
         .ttd-section {
-            margin-top: 40px;
+            margin-top: auto; /* Push to the very bottom of A4 container */
+            padding-bottom: 5mm;
             display: flex;
             justify-content: flex-end;
+            page-break-inside: avoid;
         }
 
         .ttd-container {
             width: 300px;
             text-align: center;
+            font-size: 13.5px;
         }
 
         .ttd-space {
-            height: 80px;
+            height: 65px; /* Compact signature space */
         }
 
         .ttd-nama {
             font-weight: bold;
             text-decoration: underline;
+            margin-bottom: 2px;
         }
 
         /* Print Button Utility */
         .no-print-bar {
+            width: 210mm;
             background-color: #1e293b;
             color: #fff;
             padding: 15px;
@@ -157,37 +186,52 @@
             justify-content: space-between;
             align-items: center;
             font-family: sans-serif;
-            border-radius: 8px;
-            margin-bottom: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            box-sizing: border-box;
         }
         
         .print-btn {
             background-color: #10b981;
             color: #fff;
             border: none;
-            padding: 8px 16px;
+            padding: 8px 18px;
             font-size: 14px;
             font-weight: bold;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
         }
         
         .print-btn:hover {
             background-color: #059669;
+            transform: translateY(-1px);
         }
         
+        /* Media Print Settings */
         @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            body {
+                background-color: #fff;
+                padding: 0;
+                display: block;
+            }
             .no-print-bar {
                 display: none;
             }
-            body {
-                padding: 0;
-                margin: 0;
+            .page-container {
+                box-shadow: none;
+                padding: 15mm 20mm;
+                width: 210mm;
+                height: 297mm;
+                overflow: hidden;
             }
         }
     </style>
@@ -196,7 +240,7 @@
 
     <!-- Utility bar for printing inside app -->
     <div class="no-print-bar">
-        <span>Dokumen Surat Pengantar PKL Resmi. Silakan cetak sekarang.</span>
+        <span style="font-size: 13px; font-weight: 500;">Dokumen Surat Pengantar PKL Resmi. Silakan cetak sekarang.</span>
         <button onclick="window.print()" class="print-btn">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display:inline-block; vertical-align:middle;">
                 <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
@@ -206,99 +250,102 @@
         </button>
     </div>
 
-    <!-- Kop Surat -->
-    <div class="kop-surat">
-        <div class="logo-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Lambang_Pemerintah_Daerah_Provinsi_Jawa_Barat.svg" alt="Logo Jawa Barat">
+    <!-- Dynamic A4 Page Container -->
+    <div class="page-container">
+        <!-- Kop Surat -->
+        <div class="kop-surat">
+            <div class="logo-container">
+                <img src="{{ asset('jabar.png') }}" alt="Logo Jawa Barat">
+            </div>
+            <div class="kop-text">
+                <h2>{{ $surat_kop_baris_1 }}</h2>
+                <h1>{{ $surat_kop_baris_2 }}</h1>
+                <h2>{{ $surat_kop_baris_3 }}</h2>
+                <h1 style="font-size: 20px;">{{ $surat_kop_baris_4 }}</h1>
+                <p class="alamat">{{ $surat_kop_baris_5 }}</p>
+                <p>{{ $surat_kop_baris_6 }}</p>
+                <p style="font-weight: bold; font-size: 11px; margin-top: 3px; text-transform: uppercase;">{{ $surat_kop_baris_7 }}</p>
+            </div>
         </div>
-        <div class="kop-text">
-            <h2>PEMERINTAH DAERAH PROVINSI JAWA BARAT</h2>
-            <h1>DINAS PENDIDIKAN</h1>
-            <h2>CABANG DINAS PENDIDIKAN WILAYAH XIII</h2>
-            <h1 style="font-size: 21px;">SMK NEGERI 1 CIAMIS</h1>
-            <p class="alamat" style="font-style: normal; font-size: 11px;">Jalan : Jl. Jenderal Sudirman Nomor : 269 Telepon : (0265) 771204</p>
-            <p style="font-style: normal; font-size: 11px;">Faksimile : (0265) 771204/777719 Website : www.smkn1ciamis.sch.id E-mail : surat@smkn1cms.net</p>
-            <p style="font-weight: bold; font-style: normal; font-size: 12px; margin-top: 4px; text-transform: uppercase;">Ciamis – 46215</p>
-        </div>
-    </div>
 
-    <!-- Meta Surat -->
-    <div class="surat-meta">
-        <table>
+        <!-- Meta Surat -->
+        <div class="surat-meta">
+            <table>
+                <tr>
+                    <td style="width: 12%;">Nomor</td>
+                    <td style="width: 3%;">:</td>
+                    <td style="width: 50%;">{{ $surat_nomor_format }}</td>
+                    <td style="width: 35%; text-align: right;">Ciamis, {{ now()->translatedFormat('d F Y') }}</td>
+                </tr>
+                <tr>
+                    <td>Lampiran</td>
+                    <td>:</td>
+                    <td>-</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Hal</td>
+                    <td>:</td>
+                    <td style="font-weight: bold; text-decoration: underline;">Permohonan Tempat Praktik Kerja Lapangan (PKL)</td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Penerima -->
+        <div class="penerima-container">
+            <p>Kepada Yth.</p>
+            <p class="penerima-nama">Pimpinan / HRD {{ $pengajuan->nama_perusahaan }}</p>
+            <p>di</p>
+            <p style="font-weight: bold;">{{ $pengajuan->alamat ?? $pengajuan->kota ?? 'Tempat' }}</p>
+        </div>
+
+        <!-- Isi Surat -->
+        <p class="isi-surat">
+            {{ $surat_isi_pembuka }}
+        </p>
+        
+        <p class="isi-surat" style="text-indent: 0;">
+            {{ $surat_isi_tengah }}
+        </p>
+
+        <!-- Tabel Data Siswa -->
+        <table class="siswa-table">
             <tr>
-                <td style="width: 12%;">Nomor</td>
-                <td style="width: 3%;">:</td>
-                <td style="width: 50%;">421.5 / ............ / SMKN1.CMS / PKL / {{ date('Y') }}</td>
-                <td style="width: 35%; text-align: right;">Ciamis, {{ now()->translatedFormat('d F Y') }}</td>
+                <td class="label-col">Nama Lengkap</td>
+                <td>{{ $siswa->nama_lengkap }}</td>
             </tr>
             <tr>
-                <td>Lampiran</td>
-                <td>:</td>
-                <td>-</td>
-                <td></td>
+                <td class="label-col">NIS</td>
+                <td>{{ $siswa->nis }}</td>
             </tr>
             <tr>
-                <td>Hal</td>
-                <td>:</td>
-                <td style="font-weight: bold; text-decoration: underline;">Permohonan Tempat Praktik Kerja Lapangan (PKL)</td>
-                <td></td>
+                <td class="label-col">Kelas</td>
+                <td>{{ $siswa->kelas }}</td>
+            </tr>
+            <tr>
+                <td class="label-col">Konsentrasi Keahlian</td>
+                <td>{{ $siswa->konsentrasiKeahlian?->nama ?? '-' }}</td>
             </tr>
         </table>
-    </div>
 
-    <!-- Penerima -->
-    <div class="penerima-container">
-        <p>Kepada Yth.</p>
-        <p class="penerima-nama">Pimpinan / HRD {{ $pengajuan->nama_perusahaan }}</p>
-        <p>di</p>
-        <p style="font-weight: bold;">{{ $pengajuan->alamat ?? $pengajuan->kota ?? 'Tempat' }}</p>
-    </div>
+        <p class="isi-surat">
+            {{ $surat_isi_penutup }}
+        </p>
 
-    <!-- Isi Surat -->
-    <p class="isi-surat">
-        Dengan hormat, dalam rangka mempersiapkan tenaga kerja yang terampil dan profesional serta memenuhi tuntutan kurikulum Sekolah Menengah Kejuruan (SMK), siswa tingkat akhir diwajibkan untuk menempuh program Praktik Kerja Lapangan (PKL). Kegiatan ini bertujuan untuk menyelaraskan teori yang diperoleh di sekolah dengan praktik langsung di dunia kerja.
-    </p>
-    
-    <p class="isi-surat" style="text-indent: 0;">
-        Berkaitan dengan hal tersebut, kami mengajukan permohonan agar siswa kami berikut ini diperkenankan melaksanakan Praktik Kerja Lapangan (PKL) pada instansi/perusahaan yang Bapak/Ibu pimpin:
-    </p>
+        <p class="isi-surat">
+            {{ $surat_isi_salam }}
+        </p>
 
-    <!-- Tabel Data Siswa -->
-    <table class="siswa-table">
-        <tr>
-            <td class="label-col">Nama Lengkap</td>
-            <td>{{ $siswa->nama_lengkap }}</td>
-        </tr>
-        <tr>
-            <td class="label-col">NIS</td>
-            <td>{{ $siswa->nis }}</td>
-        </tr>
-        <tr>
-            <td class="label-col">Kelas</td>
-            <td>{{ $siswa->kelas }}</td>
-        </tr>
-        <tr>
-            <td class="label-col">Konsentrasi Keahlian</td>
-            <td>{{ $siswa->konsentrasiKeahlian->nama }}</td>
-        </tr>
-    </table>
-
-    <p class="isi-surat">
-        Pelaksanaan Praktik Kerja Lapangan (PKL) ini direncanakan akan berlangsung pada Tahun Pelajaran {{ $tahunAjaranActive }}. Selama pelaksanaan PKL, siswa diwajibkan mematuhi segala tata tertib dan peraturan yang berlaku di perusahaan/instansi Bapak/Ibu.
-    </p>
-
-    <p class="isi-surat">
-        Besar harapan kami permohonan ini dapat dipertimbangkan dan dikabulkan. Atas bantuan, perhatian, serta kerja sama yang terjalin selama ini, kami mengucapkan terima kasih.
-    </p>
-
-    <!-- Tanda Tangan -->
-    <div class="ttd-section">
-        <div class="ttd-container">
-            <p>Hormat kami,</p>
-            <p>Ketua Pokja PKL SMKN 1 Ciamis</p>
-            <div class="ttd-space"></div>
-            <p class="ttd-nama">......................................................</p>
-            <p style="margin: 0; font-size: 12px; color: #555;">NIP. .................................................</p>
+        <!-- Tanda Tangan -->
+        <div class="ttd-section">
+            <div class="ttd-container">
+                <p style="margin: 0 0 2px 0;">Hormat kami,</p>
+                <p style="margin: 0 0 2px 0;">{{ $surat_ttd_jabatan }}</p>
+                <div class="ttd-space"></div>
+                <p class="ttd-nama">{{ $surat_ttd_nama }}</p>
+                <p style="margin: 0; font-size: 12px; color: #333;">{{ $surat_ttd_nip }}</p>
+            </div>
         </div>
     </div>
 

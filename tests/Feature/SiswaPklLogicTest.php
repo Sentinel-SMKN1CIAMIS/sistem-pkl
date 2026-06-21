@@ -425,4 +425,46 @@ class SiswaPklLogicTest extends TestCase
 
         $response->assertSessionHasErrors('no_telp');
     }
+
+    public function test_notifications_sent_to_kaprog_and_pokja_on_submission()
+    {
+        // 1. Create Kaprog associated with RPL program keahlian
+        $kaprog = User::create([
+            'name' => 'Kaprog RPL',
+            'username' => 'kaprog_rpl',
+            'email' => 'kaprog_rpl@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'kaprog',
+            'is_active' => true,
+            'force_password_change' => false,
+            'program_keahlian_id' => $this->konsentrasi->program_keahlian_id,
+        ]);
+
+        $this->actingAs($this->siswa->user);
+
+        // 2. Submit a new PKL proposal
+        $response = $this->post(route('siswa.pengajuan_pkl.store'), [
+            'nama_perusahaan' => 'PT Test Notifikasi',
+            'pimpinan' => 'Pimpinan Test',
+            'alamat' => 'Alamat Test',
+            'kota' => 'Kota Test',
+            'no_telp' => '08123456789',
+        ]);
+
+        $response->assertRedirect(route('siswa.pengajuan_pkl.status'));
+
+        // 3. Assert notification was sent to Kaprog
+        $this->assertDatabaseHas('notifikasis', [
+            'to_user_id' => $kaprog->id,
+            'judul' => 'Pengajuan Tempat PKL Baru',
+            'pesan' => "Siswa {$this->siswa->nama_lengkap} mengajukan tempat PKL baru di PT Test Notifikasi.",
+        ]);
+
+        // 4. Assert notification was sent to Pokja
+        $this->assertDatabaseHas('notifikasis', [
+            'to_user_id' => $this->pokja->id,
+            'judul' => 'Pengajuan Tempat PKL Baru',
+            'pesan' => "Siswa {$this->siswa->nama_lengkap} mengajukan tempat PKL baru di PT Test Notifikasi.",
+        ]);
+    }
 }

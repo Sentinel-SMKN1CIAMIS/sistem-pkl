@@ -180,4 +180,66 @@ class PokjaPengajuanPklTest extends TestCase
         ]);
         $responseBulk->assertStatus(403);
     }
+
+    public function test_pokja_can_access_surat_pengantar_settings_page()
+    {
+        $this->actingAs($this->pokja);
+
+        $response = $this->get(route('pokja.pengaturan.surat_pengantar'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('pokja.pengaturan.surat-pengantar');
+        $response->assertViewHasAll([
+            'surat_kop_baris_1',
+            'surat_kop_baris_2',
+            'surat_kop_baris_3',
+            'surat_kop_baris_4',
+            'surat_kop_baris_5',
+            'surat_kop_baris_6',
+            'surat_kop_baris_7',
+            'surat_nomor_format',
+            'surat_isi_pembuka',
+            'surat_isi_tengah',
+            'surat_isi_penutup',
+            'surat_isi_salam',
+            'surat_ttd_jabatan',
+            'surat_ttd_nama',
+            'surat_ttd_nip'
+        ]);
+    }
+
+    public function test_pokja_can_update_surat_pengantar_settings()
+    {
+        $this->actingAs($this->pokja);
+
+        $response = $this->post(route('pokja.pengaturan.surat_pengantar.update'), [
+            'surat_kop_baris_1' => 'KOP 1 BARU',
+            'surat_kop_baris_2' => 'KOP 2 BARU',
+            'surat_kop_baris_3' => 'KOP 3 BARU',
+            'surat_kop_baris_4' => 'KOP 4 BARU',
+            'surat_kop_baris_5' => 'KOP 5 BARU',
+            'surat_kop_baris_6' => 'KOP 6 BARU',
+            'surat_kop_baris_7' => 'KOP 7 BARU',
+            'surat_nomor_format' => 'NOMOR FORMAT BARU',
+            'surat_isi_pembuka' => 'PEMBUKA BARU',
+            'surat_isi_tengah' => 'TENGAH BARU',
+            'surat_isi_penutup' => 'PENUTUP BARU',
+            'surat_isi_salam' => 'SALAM BARU',
+            'surat_ttd_jabatan' => 'JABATAN BARU',
+            'surat_ttd_nama' => 'NAMA BARU',
+            'surat_ttd_nip' => 'NIP BARU',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('konfigurasi_sistems', [
+            'key' => 'surat_kop_baris_1',
+            'value' => 'KOP 1 BARU',
+        ]);
+        $this->assertDatabaseHas('konfigurasi_sistems', [
+            'key' => 'surat_ttd_nama',
+            'value' => 'NAMA BARU',
+        ]);
+    }
 }

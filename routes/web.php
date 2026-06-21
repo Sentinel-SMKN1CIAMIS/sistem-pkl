@@ -192,6 +192,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // Pengaturan Pokja
         Route::get('pengaturan/sertifikat', [\App\Http\Controllers\Pokja\PengaturanController::class, 'sertifikat'])->name('pengaturan.sertifikat');
         Route::post('pengaturan/sertifikat', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSertifikat'])->name('pengaturan.sertifikat.update');
+        Route::get('pengaturan/surat-pengantar', [\App\Http\Controllers\Pokja\PengaturanController::class, 'suratPengantar'])->name('pengaturan.surat_pengantar');
+        Route::post('pengaturan/surat-pengantar', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSuratPengantar'])->name('pengaturan.surat_pengantar.update');
 
         // Import & Template Routes
         Route::get('import/panduan', [\App\Http\Controllers\Pokja\ImportController::class, 'showPanduan'])->name('import.panduan');

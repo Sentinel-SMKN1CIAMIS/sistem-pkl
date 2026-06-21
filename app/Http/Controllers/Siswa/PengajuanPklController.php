@@ -69,7 +69,7 @@ class PengajuanPklController extends Controller
             $existing->delete();
         }
 
-        PengajuanPkl::create([
+        $pengajuan = PengajuanPkl::create([
             'siswa_id'           => $siswa->id,
             'dudi_id'            => $request->dudi_id,
             'pembimbing_dudi_id' => $request->pembimbing_dudi_id,
@@ -79,7 +79,37 @@ class PengajuanPklController extends Controller
             'kota'               => $request->kota,
             'no_telp'            => $request->no_telp,
             'status'             => 'menunggu',
+            'is_manual'          => empty($request->dudi_id),
         ]);
+
+        // Kirim notifikasi ke Kaprog di program keahlian siswa
+        $programKeahlianId = $siswa->konsentrasiKeahlian?->program_keahlian_id;
+        $kaprogs = \App\Models\User::where('role', 'kaprog')
+            ->when($programKeahlianId, function ($q) use ($programKeahlianId) {
+                $q->where('program_keahlian_id', $programKeahlianId);
+            })->get();
+
+        foreach ($kaprogs as $kaprog) {
+            \App\Models\Notifikasi::create([
+                'to_user_id' => $kaprog->id,
+                'judul'      => 'Pengajuan Tempat PKL Baru',
+                'pesan'      => "Siswa {$siswa->nama_lengkap} mengajukan tempat PKL baru di {$pengajuan->nama_perusahaan}.",
+                'link'       => route('kaprog.pengajuan_pkl.index'),
+                'is_read'    => false,
+            ]);
+        }
+
+        // Kirim notifikasi ke Pokja
+        $pokjas = \App\Models\User::where('role', 'pokja')->get();
+        foreach ($pokjas as $pokja) {
+            \App\Models\Notifikasi::create([
+                'to_user_id' => $pokja->id,
+                'judul'      => 'Pengajuan Tempat PKL Baru',
+                'pesan'      => "Siswa {$siswa->nama_lengkap} mengajukan tempat PKL baru di {$pengajuan->nama_perusahaan}.",
+                'link'       => route('pokja.pengajuan_pkl.index'),
+                'is_read'    => false,
+            ]);
+        }
 
         return redirect()->route('siswa.pengajuan_pkl.status')
             ->with('success', 'Pengajuan tempat PKL berhasil dikirim! Mohon tunggu konfirmasi dari Ketua Program Keahlian (Kaprog).');
@@ -118,7 +148,62 @@ class PengajuanPklController extends Controller
             return redirect()->route('siswa.pengajuan_pkl.status')->with('error', 'Surat pengantar belum diterbitkan atau pengajuan Anda belum disetujui.');
         }
 
-        return view('siswa.pengajuan-pkl.print', compact('siswa', 'pengajuan'));
+        // Ambil tahun ajaran aktif dari shared view variables
+        $tahunAjaranActive = view()->shared('tahunAjaranActive') ?: '-';
+
+        $keys = [
+            'surat_kop_baris_1' => 'PEMERINTAH DAERAH PROVINSI JAWA BARAT',
+            'surat_kop_baris_2' => 'DINAS PENDIDIKAN',
+            'surat_kop_baris_3' => 'CABANG DINAS PENDIDIKAN WILAYAH XIII',
+            'surat_kop_baris_4' => 'SMK NEGERI 1 CIAMIS',
+            'surat_kop_baris_5' => 'Jalan : Jl. Jenderal Sudirman Nomor : 269 Telepon : (0265) 771204',
+            'surat_kop_baris_6' => 'Faksimile : (0265) 771204/777719 Website : www.smkn1ciamis.sch.id E-mail : surat@smkn1cms.net',
+            'surat_kop_baris_7' => 'Ciamis – 46215',
+            'surat_nomor_format' => '421.5 / ............ / SMKN1.CMS / PKL / [TAHUN_SEKARANG]',
+            'surat_isi_pembuka' => 'Dengan hormat, dalam rangka mempersiapkan tenaga kerja yang terampil dan profesional serta memenuhi tuntutan kurikulum Sekolah Menengah Kejuruan (SMK), siswa tingkat akhir diwajibkan untuk menempuh program Praktik Kerja Lapangan (PKL). Kegiatan ini bertujuan untuk menyelaraskan teori yang diperoleh di sekolah dengan praktik langsung di dunia kerja.',
+            'surat_isi_tengah' => 'Berkaitan dengan hal tersebut, kami mengajukan permohonan agar siswa kami berikut ini diperkenankan melaksanakan Praktik Kerja Lapangan (PKL) pada instansi/perusahaan yang Bapak/Ibu pimpin:',
+            'surat_isi_penutup' => 'Pelaksanaan Praktik Kerja Lapangan (PKL) ini direncanakan akan berlangsung pada Tahun Pelajaran [TAHUN_AJARAN]. Selama pelaksanaan PKL, siswa diwajibkan mematuhi segala tata tertib dan peraturan yang berlaku di perusahaan/instansi Bapak/Ibu.',
+            'surat_isi_salam' => 'Besar harapan kami permohonan ini dapat dipertimbangkan dan dikabulkan. Atas bantuan, perhatian, serta kerja sama yang terjalin selama ini, kami mengucapkan terima kasih.',
+            'surat_ttd_jabatan' => 'Ketua Pokja PKL SMKN 1 Ciamis',
+            'surat_ttd_nama' => '......................................................',
+            'surat_ttd_nip' => 'NIP. .................................................',
+        ];
+
+        $configs = \App\Models\KonfigurasiSistem::whereIn('key', array_keys($keys))->get()->pluck('value', 'key');
+
+        $compiled = [];
+        $placeholders = [
+            '[NAMA_SISWA]',
+            '[NIS]',
+            '[KELAS]',
+            '[JURUSAN]',
+            '[NAMA_PERUSAHAAN]',
+            '[TAHUN_AJARAN]',
+            '[TAHUN_SEKARANG]',
+            '[TANGGAL_SEKARANG]'
+        ];
+
+        $replacements = [
+            $siswa->nama_lengkap,
+            $siswa->nis,
+            $siswa->kelas,
+            $siswa->konsentrasiKeahlian?->nama ?? '-',
+            $pengajuan->nama_perusahaan,
+            $tahunAjaranActive,
+            date('Y'),
+            now()->translatedFormat('d F Y')
+        ];
+
+        foreach ($keys as $key => $default) {
+            $rawText = $configs->get($key) ?? $default;
+            $compiled[$key] = str_replace($placeholders, $replacements, $rawText);
+        }
+
+        return view('siswa.pengajuan-pkl.print', array_merge([
+            'siswa' => $siswa,
+            'pengajuan' => $pengajuan,
+            'tahunAjaranActive' => $tahunAjaranActive,
+        ], $compiled));
     }
 
     public function uploadBukti(Request $request)

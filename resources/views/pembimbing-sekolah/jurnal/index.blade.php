@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">Monitoring Jurnal Siswa</x-slot>
+    <x-slot name="header">Validasi Jurnal Siswa</x-slot>
 
     <div x-data="{ imageModalOpen: false, modalImageUrl: '', filterOpen: false }">
         <div class="mb-6 space-y-4">
