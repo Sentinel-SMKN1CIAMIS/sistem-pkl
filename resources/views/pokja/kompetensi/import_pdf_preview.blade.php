@@ -18,21 +18,43 @@
                 <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">Silakan tinjau dan sunting data hasil scan otomatis sebelum disimpan ke database.</p>
             </div>
             <div class="flex items-center gap-6">
-                <label class="inline-flex items-center cursor-pointer select-none gap-3 group">
-                    <input type="checkbox" name="clear_old" value="1" checked class="sr-only peer">
-                    <div class="w-11 h-6 bg-slate-300 dark:bg-slate-600 rounded-full peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-500/30 peer-checked:bg-blue-600 transition-all duration-300 flex items-center p-0.5 shadow-inner">
-                        <div class="w-5 h-5 bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-transform duration-300 transform peer-checked:translate-x-5"></div>
+                {{-- Modern Capsule Toggle Switch --}}
+                <label class="inline-flex items-center cursor-pointer select-none group">
+                    <input type="checkbox" name="clear_old" value="1" checked class="toggle-checkbox sr-only" id="toggle-clear">
+                    <div class="relative inline-flex items-center">
+                        <span class="toggle-bg w-14 h-7 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-full transition-all duration-300 shadow-inner flex items-center"></span>
+                        <span class="toggle-circle absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 flex items-center justify-center">
+                            <svg class="toggle-icon w-3 h-3 text-slate-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </span>
+                        <span class="ml-3 text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors whitespace-nowrap">
+                            Bersihkan data lama per jurusan
+                        </span>
                     </div>
-                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">
-                        Bersihkan data lama per jurusan sebelum impor
-                    </span>
                 </label>
-                <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
                     <i data-lucide="check-square" class="w-5 h-5"></i>
                     Simpan ke Database
                 </button>
             </div>
         </div>
+
+        <style>
+            /* Toggle Switch Styles */
+            .toggle-checkbox:checked ~ div .toggle-bg {
+                background: linear-gradient(to right, rgb(59, 130, 246), rgb(37, 99, 235));
+            }
+            .toggle-checkbox:checked ~ div .toggle-circle {
+                transform: translateX(1.75rem);
+            }
+            .toggle-checkbox:checked ~ div .toggle-icon {
+                color: rgb(59, 130, 246);
+            }
+            .toggle-checkbox:focus ~ div .toggle-bg {
+                box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+            }
+        </style>
 
         {{-- Main Mapping Layout --}}
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -68,16 +90,39 @@
                         {{-- Mapped concentration selector --}}
                         <div class="glass-card p-6 border-l-4 border-l-emerald-500 flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div class="flex items-start gap-4">
-                                <label class="inline-flex items-center cursor-pointer select-none group mt-1">
-                                    <input type="checkbox" name="sections[{{ $key }}][import]" value="1" checked id="import_{{ $key }}" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-slate-300 dark:bg-slate-600 rounded-full peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-500/30 peer-checked:bg-emerald-500 transition-all duration-300 flex items-center p-0.5 shadow-inner">
-                                        <div class="w-5 h-5 bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-transform duration-300 transform peer-checked:translate-x-5"></div>
+                                {{-- Modern Capsule Toggle for Import --}}
+                                <label class="inline-flex items-center cursor-pointer select-none group">
+                                    <input type="checkbox" name="sections[{{ $key }}][import]" value="1" checked id="import_{{ $key }}" class="toggle-checkbox-{{ $key }} sr-only">
+                                    <div class="relative inline-flex items-center">
+                                        <div class="relative">
+                                            <span class="toggle-bg-{{ $key }} block w-14 h-7 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-full transition-all duration-300 shadow-inner"></span>
+                                            <span class="toggle-circle-{{ $key }} absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 flex items-center justify-center">
+                                                <svg class="toggle-icon-{{ $key }} w-3 h-3 text-slate-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="ml-3">
+                                            <div class="font-bold text-sm text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Import Kurikulum Jurusan Ini</div>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Nonaktifkan switch ini jika tidak ingin mengimpor.</p>
+                                        </div>
                                     </div>
                                 </label>
-                                <div>
-                                    <label for="import_{{ $key }}" class="font-bold text-slate-800 dark:text-slate-100 cursor-pointer group-hover:text-emerald-600 transition-colors">Import Kurikulum Jurusan Ini</label>
-                                    <p class="text-xs text-slate-500 mt-0.5">Nonaktifkan switch ini jika tidak ingin mengimpor kurikulum jurusan ini.</p>
-                                </div>
+                                
+                                <style>
+                                    .toggle-checkbox-{{ $key }}:checked ~ div .toggle-bg-{{ $key }} {
+                                        background: linear-gradient(to right, rgb(16, 185, 129), rgb(5, 150, 105));
+                                    }
+                                    .toggle-checkbox-{{ $key }}:checked ~ div .toggle-circle-{{ $key }} {
+                                        transform: translateX(1.75rem);
+                                    }
+                                    .toggle-checkbox-{{ $key }}:checked ~ div .toggle-icon-{{ $key }} {
+                                        color: rgb(16, 185, 129);
+                                    }
+                                    .toggle-checkbox-{{ $key }}:focus ~ div .toggle-bg-{{ $key }} {
+                                        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+                                    }
+                                </style>
                             </div>
                             <div class="w-full md:w-80">
                                 <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">Petakan ke Jurusan di Database:</label>
