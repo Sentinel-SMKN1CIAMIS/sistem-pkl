@@ -58,25 +58,43 @@ class PemetaanController extends Controller
     {
         $dudiQuery = Dudi::query();
         $siswaQuery = Siswa::query();
+        $user = auth()->user();
 
-        if (auth()->user()->konsentrasi_keahlian_id) {
-            $userKonId = auth()->user()->konsentrasi_keahlian_id;
-            $dudiQuery->where(function($q) use ($userKonId) {
-                $q->where('konsentrasi_keahlian_id', $userKonId)
-                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
-                      $sub->where('konsentrasi_keahlians.id', $userKonId);
-                  });
-            });
-            $siswaQuery->where('konsentrasi_keahlian_id', $userKonId);
-        } elseif (auth()->user()->program_keahlian_id) {
-            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
-            $dudiQuery->where(function($q) use ($konsentrasiIds) {
-                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
-                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
-                      $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
-                  });
-            });
-            $siswaQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+        if ($user->role === 'pembimbing_sekolah') {
+            $pembimbing = $user->pembimbingSekolah;
+            if ($pembimbing) {
+                $siswaQuery->where(function($q) use ($pembimbing) {
+                    $q->where('pembimbing_sekolah_id', $pembimbing->id)
+                      ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id);
+                });
+                $dudiQuery->whereHas('siswa', function($q) use ($pembimbing) {
+                    $q->where('pembimbing_sekolah_id', $pembimbing->id)
+                      ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id);
+                });
+            } else {
+                $siswaQuery->whereNull('id');
+                $dudiQuery->whereNull('id');
+            }
+        } else {
+            if ($user->konsentrasi_keahlian_id) {
+                $userKonId = $user->konsentrasi_keahlian_id;
+                $dudiQuery->where(function($q) use ($userKonId) {
+                    $q->where('konsentrasi_keahlian_id', $userKonId)
+                      ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                          $sub->where('konsentrasi_keahlians.id', $userKonId);
+                      });
+                });
+                $siswaQuery->where('konsentrasi_keahlian_id', $userKonId);
+            } elseif ($user->program_keahlian_id) {
+                $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id');
+                $dudiQuery->where(function($q) use ($konsentrasiIds) {
+                    $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                      ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                          $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                      });
+                });
+                $siswaQuery->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+            }
         }
 
         $totalDudi = (clone $dudiQuery)->count();
@@ -93,26 +111,49 @@ class PemetaanController extends Controller
     public function mapsData()
     {
         $dudiQuery = Dudi::whereNotNull('latitude')->whereNotNull('longitude');
+        $user = auth()->user();
 
-        if (auth()->user()->konsentrasi_keahlian_id) {
-            $userKonId = auth()->user()->konsentrasi_keahlian_id;
-            $dudiQuery->where(function($q) use ($userKonId) {
-                $q->where('konsentrasi_keahlian_id', $userKonId)
-                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
-                      $sub->where('konsentrasi_keahlians.id', $userKonId);
-                  });
-            });
-        } elseif (auth()->user()->program_keahlian_id) {
-            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
-            $dudiQuery->where(function($q) use ($konsentrasiIds) {
-                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
-                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
-                      $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
-                  });
-            });
+        if ($user->role === 'pembimbing_sekolah') {
+            $pembimbing = $user->pembimbingSekolah;
+            if ($pembimbing) {
+                $dudiQuery->whereHas('siswa', function($q) use ($pembimbing) {
+                    $q->where('pembimbing_sekolah_id', $pembimbing->id)
+                      ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id);
+                });
+                
+                $dudis = $dudiQuery->with([
+                    'siswa' => function($q) use ($pembimbing) {
+                        $q->where('pembimbing_sekolah_id', $pembimbing->id)
+                          ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id)
+                          ->with('konsentrasiKeahlian');
+                    },
+                    'zona',
+                    'konsentrasiKeahlians'
+                ])->get();
+            } else {
+                $dudis = collect();
+            }
+        } else {
+            if ($user->konsentrasi_keahlian_id) {
+                $userKonId = $user->konsentrasi_keahlian_id;
+                $dudiQuery->where(function($q) use ($userKonId) {
+                    $q->where('konsentrasi_keahlian_id', $userKonId)
+                      ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                          $sub->where('konsentrasi_keahlians.id', $userKonId);
+                      });
+                });
+            } elseif ($user->program_keahlian_id) {
+                $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id');
+                $dudiQuery->where(function($q) use ($konsentrasiIds) {
+                    $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                      ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                          $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                      });
+                });
+            }
+
+            $dudis = $dudiQuery->with(['siswa.konsentrasiKeahlian', 'zona', 'konsentrasiKeahlians'])->get();
         }
-
-        $dudis = $dudiQuery->with(['siswa.konsentrasiKeahlian', 'zona', 'konsentrasiKeahlians'])->get();
 
         $markers = $dudis->map(function ($dudi) {
             // Group students by konsentrasi keahlian
