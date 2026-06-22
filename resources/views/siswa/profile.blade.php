@@ -229,7 +229,7 @@
                     btn.disabled = false;
                     btnText.textContent = 'Update Lokasi Saat Ini';
                 },
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                { enableHighAccuracy: true, timeout: 30000, maximumAge: 30000 }
             );
         });
     });

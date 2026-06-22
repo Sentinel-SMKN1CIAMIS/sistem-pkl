@@ -525,7 +525,7 @@
 
                         console.error('GPS Error:', error);
                     },
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 30000, maximumAge: 30000 }
                 );
             } else {
                 // Browser doesn't support geolocation

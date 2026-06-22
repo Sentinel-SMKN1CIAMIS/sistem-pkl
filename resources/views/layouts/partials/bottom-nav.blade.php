@@ -47,29 +47,60 @@
                             }
                         }
                     }
+                    $hasChildren = isset($item['children']) && count($item['children']) > 0;
                 @endphp
-                <a href="{{ isset($item['route']) ? route($item['route']) : '#' }}" 
-                   class="flex flex-col items-center justify-center space-y-1 relative group {{ $isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">
-                    <div class="p-1 rounded-xl transition-all duration-300 {{ $isActive ? 'bg-blue-50 dark:bg-blue-500/10' : '' }}">
-                        <i data-lucide="{{ $item['icon'] }}" class="w-6 h-6 {{ $isActive ? 'stroke-[2.5px]' : 'stroke-2' }}"></i>
-                    </div>
-                    <span class="text-[10px] tracking-wide truncate w-16 text-center {{ $isActive ? 'font-bold' : 'font-medium' }}">
-                        {{ Str::limit($item['name'], 12, '') }}
-                    </span>
-                </a>
+                @if($hasChildren)
+                    <button @click="$dispatch('open-submenu-{{ Str::slug($item['name']) }}')"
+                       class="flex flex-col items-center justify-center space-y-1 relative group {{ $isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }} focus:outline-none cursor-pointer">
+                        <div class="p-1 rounded-xl transition-all duration-300 {{ $isActive ? 'bg-blue-50 dark:bg-blue-500/10' : '' }}">
+                            <i data-lucide="{{ $item['icon'] }}" class="w-6 h-6 {{ $isActive ? 'stroke-[2.5px]' : 'stroke-2' }}"></i>
+                        </div>
+                        <span class="text-[10px] tracking-wide truncate w-16 text-center {{ $isActive ? 'font-bold' : 'font-medium' }}">
+                            {{ Str::limit($item['name'], 12, '') }}
+                        </span>
+                    </button>
+                @else
+                    <a href="{{ isset($item['route']) ? route($item['route']) : '#' }}" 
+                       class="flex flex-col items-center justify-center space-y-1 relative group {{ $isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200' }}">
+                        <div class="p-1 rounded-xl transition-all duration-300 {{ $isActive ? 'bg-blue-50 dark:bg-blue-500/10' : '' }}">
+                            <i data-lucide="{{ $item['icon'] }}" class="w-6 h-6 {{ $isActive ? 'stroke-[2.5px]' : 'stroke-2' }}"></i>
+                        </div>
+                        <span class="text-[10px] tracking-wide truncate w-16 text-center {{ $isActive ? 'font-bold' : 'font-medium' }}">
+                            {{ Str::limit($item['name'], 12, '') }}
+                        </span>
+                    </a>
+                @endif
             @endforeach
         </div>
 
         <!-- Center Floating Action Button -->
         @if($centerItem)
             @php
-                $isCenterActive = isset($centerItem['route']) && request()->routeIs($centerItem['route']);
+                $isCenterActive = false;
+                if (isset($centerItem['route']) && request()->routeIs($centerItem['route'])) {
+                    $isCenterActive = true;
+                } elseif (isset($centerItem['children'])) {
+                    foreach ($centerItem['children'] as $child) {
+                        if (isset($child['route']) && request()->routeIs($child['route'])) {
+                            $isCenterActive = true;
+                            break;
+                        }
+                    }
+                }
+                $centerHasChildren = isset($centerItem['children']) && count($centerItem['children']) > 0;
             @endphp
             <div class="absolute left-1/2 -translate-x-1/2 -top-6 flex flex-col items-center">
-                <a href="{{ isset($centerItem['route']) ? route($centerItem['route']) : '#' }}" 
-                   class="w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-600/30 border-4 border-slate-50 dark:border-slate-950 transition-transform transform active:scale-95 z-50">
-                    <i data-lucide="{{ $centerItem['icon'] }}" class="w-6 h-6 stroke-[2.5px]"></i>
-                </a>
+                @if($centerHasChildren)
+                    <button @click="$dispatch('open-submenu-{{ Str::slug($centerItem['name']) }}')" 
+                       class="w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-600/30 border-4 border-slate-50 dark:border-slate-950 transition-transform transform active:scale-95 z-50 focus:outline-none cursor-pointer">
+                        <i data-lucide="{{ $centerItem['icon'] }}" class="w-6 h-6 stroke-[2.5px]"></i>
+                    </button>
+                @else
+                    <a href="{{ isset($centerItem['route']) ? route($centerItem['route']) : '#' }}" 
+                       class="w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-600/30 border-4 border-slate-50 dark:border-slate-950 transition-transform transform active:scale-95 z-50">
+                        <i data-lucide="{{ $centerItem['icon'] }}" class="w-6 h-6 stroke-[2.5px]"></i>
+                    </a>
+                @endif
                 <span class="mt-1 text-[10px] font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">{{ $centerItem['name'] }}</span>
             </div>
         @endif
@@ -245,6 +276,81 @@
         </div>
     </div>
 </div>
+
+<!-- Submenu Sheets (Dynamic) -->
+@foreach(array_merge($leftItems, $centerItem ? [$centerItem] : []) as $item)
+    @if(isset($item['children']) && count($item['children']) > 0)
+        @php
+            $slug = Str::slug($item['name']);
+        @endphp
+        <!-- Submenu Sheet for {{ $item['name'] }} -->
+        <div x-data="{ openMenu: false }" 
+             @open-submenu-{{ $slug }}.window="openMenu = true"
+             class="relative z-[60] lg:hidden"
+             x-cloak>
+            
+            <!-- Backdrop -->
+            <div x-show="openMenu"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+                 @click="openMenu = false"></div>
+
+            <!-- Bottom Sheet -->
+            <div x-show="openMenu"
+                 x-transition:enter="transform transition ease-out duration-300"
+                 x-transition:enter-start="translate-y-full"
+                 x-transition:enter-end="translate-y-0"
+                 x-transition:leave="transform transition ease-in duration-200"
+                 x-transition:leave-start="translate-y-0"
+                 x-transition:leave-end="translate-y-full"
+                 class="fixed inset-x-0 bottom-0 bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden"
+                 @click.away="openMenu = false">
+                
+                <!-- Drag Handle -->
+                <div class="w-full flex justify-center pt-3 pb-2 cursor-pointer" @click="openMenu = false">
+                    <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
+                </div>
+
+                <div class="px-6 pb-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ $item['name'] }}</h3>
+                    </div>
+                    <button @click="openMenu = false" class="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Sheet Content -->
+                <div class="flex-1 overflow-y-auto p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+                    <div class="grid grid-cols-3 gap-x-2 gap-y-6">
+                        @foreach($item['children'] as $child)
+                            @php
+                                $isChildActive = isset($child['route']) && request()->routeIs($child['route']);
+                            @endphp
+                            <a href="{{ isset($child['route']) ? route($child['route']) : '#' }}" class="flex flex-col items-center gap-2 group text-center">
+                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-300
+                                    {{ $isChildActive 
+                                        ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400' 
+                                        : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-700/50 text-slate-600 dark:text-slate-300 hover:border-blue-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 group-hover:scale-105' }}">
+                                    <i data-lucide="{{ $child['icon'] ?? 'circle' }}" class="w-6 h-6 {{ $isChildActive ? 'stroke-[2.5px]' : 'stroke-2' }}"></i>
+                                </div>
+                                <span class="text-[10px] tracking-wide font-medium leading-tight w-full {{ $isChildActive ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-slate-600 dark:text-slate-300' }}">
+                                    {{ $child['name'] }}
+                                </span>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+@endforeach
 
 <style>
     .overflow-y-auto::-webkit-scrollbar {
