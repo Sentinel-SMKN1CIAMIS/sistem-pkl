@@ -311,9 +311,11 @@
 
             const data = {};
             masterKompetensi.forEach(item => {
-                const elemen = item.nama;
-                const cp = item.cp || 'Umum';
-                const tp = item.tp || item.nama;
+                const elemen = item.nama ? item.nama.trim() : '';
+                const cp = item.cp ? item.cp.trim() : 'Umum';
+                const tp = item.tp ? item.tp.trim() : (item.nama ? item.nama.trim() : '');
+
+                if (!elemen) return;
 
                 if (!data[elemen]) {
                     data[elemen] = {};
@@ -327,6 +329,9 @@
                     deskripsi: item.deskripsi
                 });
             });
+
+            let selectedElemenVal = '';
+            let selectedCPVal = '';
 
             function truncateText(text, maxLength = 90) {
                 if (!text) return '';
@@ -445,7 +450,7 @@
 
             function populateElemen() {
                 elemenOptions.innerHTML = '';
-                const selectedElemen = elemenBtnLabel.textContent;
+                const selectedElemen = selectedElemenVal;
                 const keys = Object.keys(data);
                 
                 const searchContainer = document.getElementById('elemen_search_container');
@@ -491,6 +496,7 @@
                 cpBtnLabel.classList.add('text-slate-400', 'dark:text-slate-500');
                 cpOptions.innerHTML = '';
                 hiddenCp.value = '';
+                selectedCPVal = '';
                 
                 const cpIconContainer = document.getElementById('cp_icon_container');
                 if (cpIconContainer) {
@@ -519,14 +525,16 @@
             }
 
             function selectElemen(value) {
+                const trimmedValue = value ? value.trim() : '';
+                selectedElemenVal = trimmedValue;
                 elemenBtnLabel.textContent = value;
                 elemenBtnLabel.classList.remove('text-slate-400', 'dark:text-slate-500');
 
                 resetCP();
                 resetTP();
 
-                if (value && data[value]) {
-                    const cps = Object.keys(data[value]);
+                if (trimmedValue && data[trimmedValue]) {
+                    const cps = Object.keys(data[trimmedValue]);
                     if (cps.length > 0) {
                         cpBtn.disabled = false;
                         cpBtnLabel.textContent = 'Pilih Capaian Pembelajaran (CP)';
@@ -550,7 +558,7 @@
 
             function populateCP(cps) {
                 cpOptions.innerHTML = '';
-                const selectedCP = hiddenCp.value;
+                const selectedCP = selectedCPVal;
                 
                 const searchContainer = document.getElementById('cp_search_container');
                 if (searchContainer) {
@@ -590,17 +598,19 @@
             }
 
             function selectCP(value) {
-                cpBtnLabel.textContent = truncateText(value, 60);
-                hiddenCp.value = value;
+                const trimmedValue = value ? value.trim() : '';
+                cpBtnLabel.textContent = truncateText(trimmedValue, 60);
+                hiddenCp.value = trimmedValue;
+                selectedCPVal = trimmedValue;
 
-                cpFullText.textContent = value;
+                cpFullText.textContent = trimmedValue;
                 if (cpFullTextContainer) cpFullTextContainer.classList.remove('hidden');
 
                 resetTP();
 
-                const selectedElemen = elemenBtnLabel.textContent;
-                if (selectedElemen && value && data[selectedElemen][value]) {
-                    const tps = data[selectedElemen][value];
+                const selectedElemen = selectedElemenVal;
+                if (selectedElemen && trimmedValue && data[selectedElemen] && data[selectedElemen][trimmedValue]) {
+                    const tps = data[selectedElemen][trimmedValue];
                     if (tps.length > 0) {
                         tpBtn.disabled = false;
                         tpBtnLabel.textContent = 'Pilih Tujuan Pembelajaran (TP)';
@@ -673,9 +683,9 @@
                 tpFullText.textContent = text;
                 if (tpFullTextContainer) tpFullTextContainer.classList.remove('hidden');
                 
-                const selectedElemen = elemenBtnLabel.textContent;
-                const selectedCP = hiddenCp.value;
-                if (selectedElemen && selectedCP && data[selectedElemen][selectedCP]) {
+                const selectedElemen = selectedElemenVal;
+                const selectedCP = selectedCPVal;
+                if (selectedElemen && selectedCP && data[selectedElemen] && data[selectedElemen][selectedCP]) {
                     populateTP(data[selectedElemen][selectedCP]);
                 }
                 
@@ -706,8 +716,8 @@
                     selectCP(existingCP);
                     
                     if (existingTPId) {
-                        const selectedElemen = existingElemen;
-                        const selectedCP = existingCP;
+                        const selectedElemen = selectedElemenVal;
+                        const selectedCP = selectedCPVal;
                         if (data[selectedElemen] && data[selectedElemen][selectedCP]) {
                             const found = data[selectedElemen][selectedCP].find(x => x.id == existingTPId);
                             if (found) {
