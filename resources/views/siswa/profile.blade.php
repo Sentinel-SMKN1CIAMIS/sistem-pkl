@@ -110,8 +110,41 @@
                     @csrf
                     @method('PATCH')
 
-                    <!-- Manual DUDI Input Section -->
+                    <!-- Akun & Kontak Siswa -->
                     <div>
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
+                            <i data-lucide="user" class="w-4 h-4 text-blue-400"></i>
+                            Akun & Kontak Siswa
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="email" class="block text-xs font-bold text-slate-500/80 dark:text-slate-400 uppercase mb-2">Email Terdaftar</label>
+                                <div class="relative">
+                                    <input type="email" id="email" value="{{ $siswa->user->email }}" readonly
+                                           class="w-full pl-10 pr-4 py-3 bg-slate-100/50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 rounded-xl text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i data-lucide="mail" class="w-4 h-4 text-slate-400"></i>
+                                    </div>
+                                </div>
+                                <p class="mt-1.5 text-[10px] text-slate-500 italic">Email tidak dapat diubah oleh siswa.</p>
+                            </div>
+                            <div>
+                                <label for="no_hp" class="block text-xs font-bold text-slate-500/80 dark:text-slate-400 uppercase mb-2">Nomor WhatsApp / HP Siswa</label>
+                                <div class="relative">
+                                    <input type="text" name="no_hp" id="no_hp" value="{{ old('no_hp', $siswa->no_hp) }}"
+                                           placeholder="Contoh: 081234567890"
+                                           class="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i data-lucide="phone" class="w-4 h-4 text-slate-400"></i>
+                                    </div>
+                                </div>
+                                <p class="mt-1.5 text-[10px] text-slate-500 italic">Nomor WhatsApp aktif untuk menerima notifikasi.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pembimbing Industri (Manual) -->
+                    <div class="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
                         <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
                             <i data-lucide="building-2" class="w-4 h-4 text-purple-400"></i>
                             Pembimbing Industri (Manual)
@@ -130,34 +163,49 @@
                                        value="{{ old('pembimbing_dudi_jabatan', $siswa->pembimbing_dudi_jabatan) }}"
                                        placeholder="Contoh: HRD / Mentor / Supervisor"
                                        class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="unit_pekerjaan" class="block text-xs font-bold text-slate-500 uppercase mb-2">Unit / Bagian Pekerjaan</label>
-                                <input type="text" name="unit_pekerjaan" id="unit_pekerjaan" 
-                                       value="{{ old('unit_pekerjaan', $siswa->unit_pekerjaan) }}"
-                                       placeholder="Contoh: Divisi IT / Front Office / Bengkel Mesin"
-                                       class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
-                            </div>
+                             </div>
+                             <div class="md:col-span-2">
+                                 <label for="unit_pekerjaan" class="block text-xs font-bold text-slate-500 uppercase mb-2">Unit / Bagian Pekerjaan</label>
+                                 <input type="text" name="unit_pekerjaan" id="unit_pekerjaan" 
+                                        value="{{ old('unit_pekerjaan', $siswa->unit_pekerjaan) }}"
+                                        placeholder="Contoh: Divisi IT / Front Office / Bengkel Mesin"
+                                        class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                             </div>
                         </div>
                         <p class="mt-3 text-[11px] text-slate-500 italic">Isi kolom di atas jika pembimbing industri belum terdaftar di sistem, serta untuk melengkapi unit kerja Anda.</p>
                     </div>
 
+                    <!-- Alamat Tempat PKL / DUDI -->
                     <div class="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
                         <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
-                            <i data-lucide="contact" class="w-4 h-4 text-emerald-400"></i>
-                            Kontak & Alamat DUDI
+                            <i data-lucide="map-pin" class="w-4 h-4 text-emerald-400"></i>
+                            Alamat Tempat PKL / DUDI
                         </h4>
-                        <div class="space-y-6">
-                            <div>
-                                <label for="no_hp" class="block text-xs font-bold text-slate-500 uppercase mb-2">Nomor WhatsApp</label>
-                                <input type="text" name="no_hp" id="no_hp" value="{{ old('no_hp', $siswa->no_hp) }}"
-                                       class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
-                            </div>
-                            <div>
-                                <label for="alamat" class="block text-xs font-bold text-slate-500 uppercase mb-2">Alamat Lengkap</label>
-                                <textarea name="alamat" id="alamat" rows="3"
-                                          class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">{{ old('alamat', $siswa->alamat) }}</textarea>
-                            </div>
+                        @php
+                            $dudiAlamat = '';
+                            $alamatHelper = '';
+                            if ($siswa->dudi_id && $siswa->dudi) {
+                                $dudiAlamat = $siswa->dudi->alamat;
+                                $alamatHelper = 'Menampilkan alamat DUDI aktif: <strong>' . e($siswa->dudi->nama) . '</strong>. Perubahan di bawah akan memperbarui alamat DUDI tersebut.';
+                            } elseif ($siswa->pengajuanPkl) {
+                                if ($siswa->pengajuanPkl->dudi_id && $siswa->pengajuanPkl->dudi) {
+                                    $dudiAlamat = $siswa->pengajuanPkl->dudi->alamat;
+                                    $alamatHelper = 'Menampilkan alamat DUDI pengajuan: <strong>' . e($siswa->pengajuanPkl->dudi->nama) . '</strong>. Perubahan di bawah akan memperbarui alamat DUDI tersebut.';
+                                } else {
+                                    $dudiAlamat = $siswa->pengajuanPkl->alamat;
+                                    $alamatHelper = 'Menampilkan alamat DUDI pengajuan manual: <strong>' . e($siswa->pengajuanPkl->nama_perusahaan) . '</strong>. Perubahan di bawah akan memperbarui alamat pengajuan Anda.';
+                                }
+                            } else {
+                                $dudiAlamat = $siswa->alamat;
+                                $alamatHelper = 'Belum ada DUDI terdaftar atau diajukan. Menyimpan perubahan di bawah akan disimpan sebagai alamat sementara.';
+                            }
+                        @endphp
+                        <div>
+                            <label for="alamat" class="block text-xs font-bold text-slate-500/80 dark:text-slate-400 uppercase mb-2">Alamat Lengkap Tempat PKL / DUDI</label>
+                            <textarea name="alamat" id="alamat" rows="3"
+                                      placeholder="Tulis alamat lengkap tempat PKL / DUDI..."
+                                      class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">{{ old('alamat', $dudiAlamat) }}</textarea>
+                            <p class="mt-1.5 text-[11px] text-slate-500/80 dark:text-slate-400/80 italic">{!! $alamatHelper !!}</p>
                         </div>
                     </div>
 

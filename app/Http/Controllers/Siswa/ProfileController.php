@@ -26,7 +26,21 @@ class ProfileController extends Controller
             'alamat' => 'nullable|string',
         ]);
 
+        // 1. Update siswa attributes
         $siswa->update($request->only(['pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'unit_pekerjaan', 'no_hp', 'alamat']));
+
+        // 2. Synchronize address to DUDI or Pengajuan
+        if ($siswa->dudi) {
+            $siswa->dudi->update(['alamat' => $request->alamat]);
+        } elseif ($siswa->pengajuanPkl) {
+            if ($siswa->pengajuanPkl->dudi_id) {
+                if ($siswa->pengajuanPkl->dudi) {
+                    $siswa->pengajuanPkl->dudi->update(['alamat' => $request->alamat]);
+                }
+            } else {
+                $siswa->pengajuanPkl->update(['alamat' => $request->alamat]);
+            }
+        }
 
         return back()->with('success', 'Profil berhasil diperbarui.');
     }
