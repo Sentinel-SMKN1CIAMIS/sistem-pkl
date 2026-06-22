@@ -68,7 +68,9 @@ class SiswaController extends Controller
             if ($student->status_pkl !== 'sedang_pkl') {
                 $student->status_hari_ini_computed = str_replace('_', ' ', $student->status_pkl);
             } elseif ($absensi) {
-                if ($absensi->waktu_pulang) {
+                if (in_array($absensi->status, ['sakit', 'izin', 'alpha'])) {
+                    $student->status_hari_ini_computed = $absensi->status;
+                } elseif ($absensi->waktu_pulang) {
                     $student->status_hari_ini_computed = 'pulang kerja';
                 } else {
                     $student->status_hari_ini_computed = 'masuk kerja';
@@ -86,21 +88,26 @@ class SiswaController extends Controller
 
         // Calculate attendance status statistics for chart
         $attendanceCounts = [
-            'masuk_kerja' => 0,
-            'pulang_kerja' => 0,
-            'belum_absen' => 0,
-            'lainnya' => 0
+            'hadir' => 0,
+            'sakit' => 0,
+            'izin' => 0,
+            'alpha' => 0,
+            'belum_absen' => 0
         ];
         foreach ($students as $student) {
-            $status = strtolower($student->status_hari_ini_computed);
-            if ($status === 'masuk kerja') {
-                $attendanceCounts['masuk_kerja']++;
-            } elseif ($status === 'pulang kerja') {
-                $attendanceCounts['pulang_kerja']++;
-            } elseif ($status === 'belum absen') {
-                $attendanceCounts['belum_absen']++;
-            } else {
-                $attendanceCounts['lainnya']++;
+            if ($student->status_pkl === 'sedang_pkl') {
+                $status = strtolower($student->status_hari_ini_computed);
+                if (in_array($status, ['masuk kerja', 'pulang kerja', 'hadir'])) {
+                    $attendanceCounts['hadir']++;
+                } elseif ($status === 'sakit') {
+                    $attendanceCounts['sakit']++;
+                } elseif ($status === 'izin') {
+                    $attendanceCounts['izin']++;
+                } elseif ($status === 'alpha') {
+                    $attendanceCounts['alpha']++;
+                } elseif ($status === 'belum absen') {
+                    $attendanceCounts['belum_absen']++;
+                }
             }
         }
 

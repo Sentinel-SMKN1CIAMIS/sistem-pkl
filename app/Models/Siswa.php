@@ -79,7 +79,9 @@ class Siswa extends Model
             ->first();
 
         if ($todayAbsensi) {
-            if ($todayAbsensi->waktu_pulang) {
+            if (in_array($todayAbsensi->status, ['sakit', 'izin', 'alpha'])) {
+                return $todayAbsensi->status;
+            } elseif ($todayAbsensi->waktu_pulang) {
                 return 'pulang kerja';
             } else {
                 return 'masuk kerja';

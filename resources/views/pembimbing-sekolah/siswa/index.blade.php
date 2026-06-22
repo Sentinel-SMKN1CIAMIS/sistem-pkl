@@ -131,10 +131,11 @@
                 </div>
                 <div class="relative h-36 flex items-center justify-center">
                     <canvas id="todayAbsensiChart" 
-                            data-masuk="{{ $attendanceCounts['masuk_kerja'] }}" 
-                            data-pulang="{{ $attendanceCounts['pulang_kerja'] }}" 
-                            data-belum="{{ $attendanceCounts['belum_absen'] }}" 
-                            data-lainnya="{{ $attendanceCounts['lainnya'] }}"></canvas>
+                            data-hadir="{{ $attendanceCounts['hadir'] }}" 
+                            data-sakit="{{ $attendanceCounts['sakit'] }}" 
+                            data-izin="{{ $attendanceCounts['izin'] }}" 
+                            data-alpha="{{ $attendanceCounts['alpha'] }}" 
+                            data-belum="{{ $attendanceCounts['belum_absen'] }}"></canvas>
                 </div>
             </div>
 
@@ -629,6 +630,12 @@
                                              $statusClass = 'bg-blue-500/10 text-blue-500 border-blue-500/20';
                                          } elseif ($hariIni === 'pulang kerja') {
                                              $statusClass = 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
+                                         } elseif ($hariIni === 'sakit') {
+                                             $statusClass = 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+                                         } elseif ($hariIni === 'izin') {
+                                             $statusClass = 'bg-purple-500/10 text-purple-500 border-purple-500/20';
+                                         } elseif ($hariIni === 'alpha') {
+                                             $statusClass = 'bg-red-500/10 text-red-500 border-red-500/20';
                                          } elseif ($hariIni === 'selesai') {
                                              $statusClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
                                          } elseif ($hariIni === 'dibatalkan') {
@@ -691,6 +698,12 @@
                                     $statusClass = 'bg-blue-500/10 text-blue-500 border-blue-500/20';
                                 } elseif ($hariIni === 'pulang kerja') {
                                     $statusClass = 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
+                                } elseif ($hariIni === 'sakit') {
+                                    $statusClass = 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+                                } elseif ($hariIni === 'izin') {
+                                    $statusClass = 'bg-purple-500/10 text-purple-500 border-purple-500/20';
+                                } elseif ($hariIni === 'alpha') {
+                                    $statusClass = 'bg-red-500/10 text-red-500 border-red-500/20';
                                 } elseif ($hariIni === 'selesai') {
                                     $statusClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
                                 } elseif ($hariIni === 'dibatalkan') {
@@ -867,22 +880,24 @@
             // Chart 2: Today's Absensi
             const ctxAbsensi = document.getElementById('todayAbsensiChart');
             if (ctxAbsensi) {
-                const masuk = parseInt(ctxAbsensi.getAttribute('data-masuk')) || 0;
-                const pulang = parseInt(ctxAbsensi.getAttribute('data-pulang')) || 0;
+                const hadir = parseInt(ctxAbsensi.getAttribute('data-hadir')) || 0;
+                const sakit = parseInt(ctxAbsensi.getAttribute('data-sakit')) || 0;
+                const izin = parseInt(ctxAbsensi.getAttribute('data-izin')) || 0;
+                const alpha = parseInt(ctxAbsensi.getAttribute('data-alpha')) || 0;
                 const belum = parseInt(ctxAbsensi.getAttribute('data-belum')) || 0;
-                const lainnya = parseInt(ctxAbsensi.getAttribute('data-lainnya')) || 0;
 
                 new Chart(ctxAbsensi, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Masuk', 'Pulang', 'Belum', 'Lainnya'],
+                        labels: ['Hadir', 'Sakit', 'Izin', 'Alpha', 'Belum Absen'],
                         datasets: [{
-                            data: [masuk, pulang, belum, lainnya],
+                            data: [hadir, sakit, izin, alpha, belum],
                             backgroundColor: [
                                 'rgba(59, 130, 246, 0.85)', 
-                                'rgba(99, 102, 241, 0.85)', 
-                                'rgba(148, 163, 184, 0.6)', 
-                                'rgba(245, 158, 11, 0.85)'
+                                'rgba(245, 158, 11, 0.85)', 
+                                'rgba(139, 92, 246, 0.85)', 
+                                'rgba(244, 63, 94, 0.85)', 
+                                'rgba(148, 163, 184, 0.6)'
                             ],
                             borderColor: 'transparent',
                             hoverOffset: 4
