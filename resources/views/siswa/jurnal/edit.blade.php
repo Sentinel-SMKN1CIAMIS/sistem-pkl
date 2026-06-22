@@ -13,6 +13,17 @@
             <form action="{{ route('siswa.jurnal.update', $jurnal) }}" method="POST" id="jurnal-form" class="space-y-6">
                 @csrf
                 @method('PUT')
+                @php
+                    $oldTpId = old('cp_id', $jurnal->cp_id);
+                    $oldKompetensi = $oldTpId ? \App\Models\Kompetensi::find($oldTpId) : null;
+                    $oldElemen = $oldKompetensi ? $oldKompetensi->nama : '';
+                    $oldCP = $oldKompetensi ? $oldKompetensi->cp : '';
+                @endphp
+                <div id="jurnal-metadata" class="hidden"
+                     data-kompetensis='@json($kompetensis)'
+                     data-old-elemen="{{ $oldElemen }}"
+                     data-old-cp="{{ $oldCP }}"
+                     data-old-tpid="{{ $oldTpId }}"></div>
                 <input type="hidden" name="foto_cropped" id="foto-cropped-input">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -46,7 +57,7 @@
                                     <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500"></i>
                                 </span>
                             </button>
-                            <div id="elemen_dropdown" class="hidden custom-dropdown absolute left-0 right-0 mt-2 max-h-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 flex flex-col overflow-hidden">
+                            <div id="elemen_dropdown" class="hidden custom-dropdown absolute left-0 right-0 mt-2 max-h-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden">
                                 <div id="elemen_search_container" class="p-2 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-10">
                                     <div class="relative">
                                         <input type="text" id="elemen_search" placeholder="Cari elemen..." autocomplete="off" class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
@@ -72,7 +83,7 @@
                                     <i data-lucide="lock" class="w-4 h-4 text-slate-400/80 dark:text-slate-500/80"></i>
                                 </span>
                             </button>
-                            <div id="cp_dropdown" class="hidden custom-dropdown absolute left-0 right-0 mt-2 max-h-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 flex flex-col overflow-hidden">
+                            <div id="cp_dropdown" class="hidden custom-dropdown absolute left-0 right-0 mt-2 max-h-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden">
                                 <div id="cp_search_container" class="p-2 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-10">
                                     <div class="relative">
                                         <input type="text" id="cp_search" placeholder="Cari CP..." autocomplete="off" class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
@@ -105,7 +116,7 @@
                                     <i data-lucide="lock" class="w-4 h-4 text-slate-400/80 dark:text-slate-500/80"></i>
                                 </span>
                             </button>
-                            <div id="tp_dropdown" class="hidden custom-dropdown absolute left-0 right-0 mt-2 max-h-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 flex flex-col overflow-hidden">
+                            <div id="tp_dropdown" class="hidden custom-dropdown absolute left-0 right-0 mt-2 max-h-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden">
                                 <div id="tp_search_container" class="p-2 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-10">
                                     <div class="relative">
                                         <input type="text" id="tp_search" placeholder="Cari TP..." autocomplete="off" class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
@@ -130,7 +141,7 @@
 
                     <!-- Status Absensi dan Alasan Alpha -->
                     <div class="md:col-span-2">
-                        <div id="attendance-status-box" class="hidden p-4 rounded-xl text-sm flex items-center gap-3">
+                        <div id="attendance-status-box" class="hidden p-4 rounded-xl text-sm items-center gap-3">
                             <span id="attendance-status-text" class="font-medium"></span>
                         </div>
                         
@@ -252,6 +263,8 @@
     @push('scripts')
     <style>
         .custom-dropdown {
+            display: flex;
+            flex-direction: column;
             opacity: 0;
             transform: translateY(-8px) scale(0.98);
             transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
@@ -270,7 +283,8 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             // Cascading Dropdown Master Data & Logic
-            const masterKompetensi = @json($kompetensis);
+            const dataEl = document.getElementById('jurnal-metadata');
+            const masterKompetensi = JSON.parse(dataEl.getAttribute('data-kompetensis') || '[]');
             const hiddenKompetensiId = document.getElementById('kompetensi_id');
             const hiddenCp = document.getElementById('hidden_cp');
             const hiddenTpId = document.getElementById('cp_id');
@@ -299,15 +313,9 @@
             const tpFullText = document.getElementById('tp_full_text');
 
             // Old / Existing values for recovery (or current journal data)
-            @php
-                $oldTpId = old('cp_id', $jurnal->cp_id);
-                $oldKompetensi = $oldTpId ? \App\Models\Kompetensi::find($oldTpId) : null;
-                $oldElemen = $oldKompetensi ? $oldKompetensi->nama : '';
-                $oldCP = $oldKompetensi ? $oldKompetensi->cp : '';
-            @endphp
-            const existingElemen = @json($oldElemen);
-            const existingCP = @json($oldCP);
-            const existingTPId = @json($oldTpId);
+            const existingElemen = dataEl.getAttribute('data-old-elemen') || '';
+            const existingCP = dataEl.getAttribute('data-old-cp') || '';
+            const existingTPId = dataEl.getAttribute('data-old-tpid') || '';
 
             const data = {};
             masterKompetensi.forEach(item => {

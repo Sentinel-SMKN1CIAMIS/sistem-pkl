@@ -286,7 +286,7 @@
         <!-- Submenu Sheet for {{ $item['name'] }} -->
         <div x-data="{ openMenu: false }" 
              @open-submenu-{{ $slug }}.window="openMenu = true"
-             class="relative z-[60] lg:hidden"
+             class="relative z-60 lg:hidden"
              x-cloak>
             
             <!-- Backdrop -->
