@@ -24,6 +24,20 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <div class="flex items-center gap-3 mb-2">
+                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                <span class="font-bold">Terjadi kesalahan input:</span>
+            </div>
+            <ul class="list-disc pl-8 space-y-1 text-xs">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <!-- Quick Stats Grid (4 columns on mobile & desktop) -->
     <div class="grid grid-cols-4 sm:grid-cols-4 gap-3 sm:gap-6 mb-6">
         <!-- Total Siswa -->
@@ -160,7 +174,13 @@
     </div>
 
     <!-- Interactive Tabs with Alpine.js -->
-    <div x-data="{ activeTab: 'belum-isi' }" class="space-y-6">
+    <div x-data="{ 
+        activeTab: 'belum-isi', 
+        changePasswordModalOpen: false, 
+        selectedStudent: { id: null, nama: '', actionUrl: '' },
+        password: '',
+        password_confirmation: ''
+    }" class="space-y-6">
         <!-- Scrollable Tabs container for mobile -->
         <div class="flex flex-nowrap overflow-x-auto no-scrollbar border-b border-slate-200/50 dark:border-slate-700/50 gap-2 pb-0.5">
             <button @click="activeTab = 'belum-isi'" 
@@ -553,7 +573,8 @@
                             <th class="px-6 py-4">Penempatan DUDI</th>
                             <th class="px-6 py-4">Rekap Jurnal</th>
                             <th class="px-6 py-4">Absensi Hadir</th>
-                            <th class="px-6 py-4 text-right">Status Hari Ini</th>
+                            <th class="px-6 py-4 text-center">Status Hari Ini</th>
+                            <th class="px-6 py-4 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200/30 dark:divide-slate-700/50 text-sm">
@@ -601,7 +622,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-slate-700 dark:text-slate-300 font-semibold">
                                     {{ $item->absensi_count }} Hari
                                 </td>
-                                 <td class="px-6 py-4 text-right whitespace-nowrap">
+                                 <td class="px-6 py-4 text-center whitespace-nowrap">
                                      @php
                                          $hariIni = strtolower($item->status_hari_ini_computed);
                                          if ($hariIni === 'masuk kerja') {
@@ -621,6 +642,22 @@
                                      <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border {{ $statusClass }}">
                                          {{ $item->status_hari_ini_computed }}
                                      </span>
+                                 </td>
+                                 <td class="px-6 py-4 text-right whitespace-nowrap">
+                                     <button type="button" 
+                                             @click="
+                                                 selectedStudent = { 
+                                                     id: {{ $item->id }}, 
+                                                     nama: '{{ addslashes($item->nama_lengkap) }}', 
+                                                     actionUrl: '{{ route('pembimbing_sekolah.siswa.change_password', $item->id) }}' 
+                                                 };
+                                                 changePasswordModalOpen = true;
+                                                 password = '';
+                                                 password_confirmation = '';
+                                             "
+                                             class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer border border-transparent">
+                                         <i data-lucide="key" class="w-3.5 h-3.5"></i> Ganti Password
+                                     </button>
                                  </td>
                             </tr>
                         @empty
@@ -705,6 +742,22 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-800/40">
+                            <button type="button" 
+                                    @click="
+                                         selectedStudent = { 
+                                             id: {{ $item->id }}, 
+                                             nama: '{{ addslashes($item->nama_lengkap) }}', 
+                                             actionUrl: '{{ route('pembimbing_sekolah.siswa.change_password', $item->id) }}' 
+                                         };
+                                         changePasswordModalOpen = true;
+                                         password = '';
+                                         password_confirmation = '';
+                                    "
+                                    class="w-full text-center inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer">
+                                <i data-lucide="key" class="w-4 h-4"></i> Ganti Password
+                            </button>
+                        </div>
                     </div>
                 @empty
                     <div class="text-center py-8 text-slate-500 dark:text-slate-400 italic text-sm">
@@ -713,6 +766,63 @@
                 @endforelse
             </div>
         </div>
+
+        <!-- Floating Change Password Modal (Popup) -->
+        <template x-teleport="body">
+            <div x-show="changePasswordModalOpen" 
+                 class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
+                 x-transition.opacity.duration.300ms x-cloak>
+                 
+                 <div @click.away="changePasswordModalOpen = false" 
+                      class="glass-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-900 animate-fade-in-up text-left flex flex-col">
+                      
+                      <!-- Modal Header -->
+                      <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
+                          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                              <i data-lucide="key" class="text-blue-500 w-5 h-5"></i>
+                              Ubah Password Siswa
+                          </h3>
+                          <button @click="changePasswordModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                              <i data-lucide="x" class="w-5 h-5"></i>
+                          </button>
+                      </div>
+
+                      <!-- Modal Body -->
+                      <form :action="selectedStudent.actionUrl" method="POST" class="p-6 space-y-4">
+                          @csrf
+                          @method('PUT')
+                          
+                          <div>
+                              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Siswa</label>
+                              <div class="px-3 py-2 bg-slate-100 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 rounded-xl text-sm font-semibold border border-slate-200/20" x-text="selectedStudent.nama"></div>
+                          </div>
+
+                          <div class="space-y-2">
+                              <label for="password" class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Password Baru</label>
+                              <input type="password" name="password" id="password" required x-model="password" placeholder="Minimal 8 karakter"
+                                     class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm text-slate-800 dark:text-slate-200">
+                          </div>
+
+                          <div class="space-y-2">
+                              <label for="password_confirmation" class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Konfirmasi Password Baru</label>
+                              <input type="password" name="password_confirmation" id="password_confirmation" required x-model="password_confirmation" placeholder="Ulangi password baru"
+                                     class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm text-slate-800 dark:text-slate-200">
+                          </div>
+
+                          <!-- Action Buttons -->
+                          <div class="pt-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end gap-3">
+                              <button type="button" @click="changePasswordModalOpen = false" class="px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-colors border border-slate-200/50 dark:border-slate-700/50">
+                                  Batal
+                              </button>
+                              <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+                                  <i data-lucide="check" class="w-4 h-4"></i>
+                                  Simpan Password
+                              </button>
+                          </div>
+                      </form>
+                 </div>
+            </div>
+        </template>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

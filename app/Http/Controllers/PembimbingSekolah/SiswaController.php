@@ -211,4 +211,30 @@ class SiswaController extends Controller
 
         return redirect()->back()->with('success', "Notifikasi pengingat berhasil dikirim ke {$count} siswa sekaligus.");
     }
+
+    public function changePassword(Request $request, Siswa $siswa)
+    {
+        $teacher = auth()->user()->pembimbingSekolah;
+        
+        if (!$teacher) {
+            return redirect()->back()->with('error', 'Profil pembimbing sekolah tidak ditemukan.');
+        }
+
+        // Verify advisor permission
+        if ($siswa->pembimbing_sekolah_id !== $teacher->id && $siswa->pembimbing_sekolah_umum_id !== $teacher->id) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki wewenang untuk mengubah password siswa ini.');
+        }
+
+        // Validate the password
+        $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        // Update student's user password
+        $siswa->user->update([
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password)
+        ]);
+
+        return redirect()->back()->with('success', 'Password siswa ' . $siswa->nama_lengkap . ' berhasil diubah.');
+    }
 }

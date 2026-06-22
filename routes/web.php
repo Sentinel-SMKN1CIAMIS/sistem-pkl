@@ -62,6 +62,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('siswa', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'index'])->name('siswa.index');
         Route::post('siswa/remind-all', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'remindAll'])->name('siswa.remind_all');
         Route::post('siswa/{siswa}/remind', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'remind'])->name('siswa.remind');
+        Route::put('siswa/{siswa}/change-password', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'changePassword'])->name('siswa.change_password');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'index'])->name('jurnal.index');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'update'])->name('jurnal.update');
         Route::post('jurnal/{jurnal}/approve', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'approve'])->name('jurnal.approve');
