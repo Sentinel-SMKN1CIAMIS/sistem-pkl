@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'view-only' => \App\Http\Middleware\ViewOnlyMiddleware::class,
         ]);
         
+        $middleware->web(append: [
+            \App\Http\Middleware\LogUserActivity::class,
+        ]);
+        
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/dashboard');
     })
