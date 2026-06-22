@@ -8,7 +8,7 @@
     <!-- Filters Form -->
     <div class="glass-card p-4 mb-6 text-slate-700 dark:text-slate-300 bg-white/5">
         <form action="{{ route('admin.logs.index') }}" method="GET" class="flex flex-col gap-4">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
                 <!-- Search Input -->
                 <div class="md:col-span-2 relative">
                     <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
@@ -47,12 +47,12 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex gap-2">
+                <div class="md:col-span-2 flex gap-2">
                     <button type="submit" class="flex-1 px-6 py-2.5 bg-slate-800 dark:bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-700 dark:hover:bg-slate-600 transition-all text-sm cursor-pointer shadow-md border border-transparent">
                         Filter
                     </button>
                     @if(request()->anyFilled(['search', 'action_type', 'role', 'start_date', 'end_date']))
-                        <a href="{{ route('admin.logs.index') }}" class="px-4 py-2.5 text-slate-500 hover:text-red-400 text-sm flex items-center justify-center gap-2 transition-colors border border-slate-200/50 dark:border-slate-700 rounded-xl bg-slate-100/30">
+                        <a href="{{ route('admin.logs.index') }}" class="flex-1 px-4 py-2.5 text-slate-700 dark:text-slate-300 hover:text-red-400 text-sm flex items-center justify-center gap-2 transition-colors border border-slate-200/50 dark:border-slate-700 rounded-xl bg-slate-100/30">
                             <i data-lucide="x-circle" class="w-4 h-4"></i> Reset
                         </a>
                     @endif
