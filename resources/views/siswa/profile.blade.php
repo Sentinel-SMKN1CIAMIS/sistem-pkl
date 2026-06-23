@@ -145,34 +145,55 @@
 
                     <!-- Pembimbing Industri (Manual) -->
                     <div class="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
-                        <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
-                            <i data-lucide="building-2" class="w-4 h-4 text-purple-400"></i>
-                            Pembimbing Industri (Manual)
-                        </h4>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <i data-lucide="building-2" class="w-4 h-4 text-purple-400"></i>
+                                Pembimbing Industri (Manual)
+                            </h4>
+                            @if($siswa->pembimbing_dudi_id)
+                                <span class="px-2.5 py-1 text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1 w-fit">
+                                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                                    Terverifikasi (Akun Aktif)
+                                </span>
+                            @endif
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="pembimbing_dudi_nama" class="block text-xs font-bold text-slate-500 uppercase mb-2">Nama Pembimbing Industri</label>
                                 <input type="text" name="pembimbing_dudi_nama" id="pembimbing_dudi_nama" 
-                                       value="{{ old('pembimbing_dudi_nama', $siswa->pembimbing_dudi_nama) }}"
+                                       value="{{ old('pembimbing_dudi_nama', $siswa->pembimbing_dudi_id ? ($siswa->pembimbingDudi->nama_lengkap ?? '') : $siswa->pembimbing_dudi_nama) }}"
                                        placeholder="Nama Pembimbing di Industri"
-                                       class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                                       @if($siswa->pembimbing_dudi_id) disabled class="w-full px-4 py-3 bg-slate-100/50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 rounded-xl text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed" @else class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm" @endif>
                             </div>
                             <div>
                                 <label for="pembimbing_dudi_jabatan" class="block text-xs font-bold text-slate-500 uppercase mb-2">Jabatan Pembimbing</label>
                                 <input type="text" name="pembimbing_dudi_jabatan" id="pembimbing_dudi_jabatan" 
-                                       value="{{ old('pembimbing_dudi_jabatan', $siswa->pembimbing_dudi_jabatan) }}"
+                                       value="{{ old('pembimbing_dudi_jabatan', $siswa->pembimbing_dudi_id ? ($siswa->pembimbingDudi->jabatan ?? '') : $siswa->pembimbing_dudi_jabatan) }}"
                                        placeholder="Contoh: HRD / Mentor / Supervisor"
-                                       class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                                       @if($siswa->pembimbing_dudi_id) disabled class="w-full px-4 py-3 bg-slate-100/50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 rounded-xl text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed" @else class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm" @endif>
                              </div>
-                             <div class="md:col-span-2">
-                                 <label for="unit_pekerjaan" class="block text-xs font-bold text-slate-500 uppercase mb-2">Unit / Bagian Pekerjaan</label>
+                             <div>
+                                 <label for="pembimbing_dudi_no_hp" class="block text-xs font-bold text-slate-500 uppercase mb-2">No. HP / WhatsApp Pembimbing</label>
+                                 <input type="text" name="pembimbing_dudi_no_hp" id="pembimbing_dudi_no_hp" 
+                                        value="{{ old('pembimbing_dudi_no_hp', $siswa->pembimbing_dudi_id ? ($siswa->pembimbingDudi->no_hp ?? '') : $siswa->pembimbing_dudi_no_hp) }}"
+                                        placeholder="Contoh: 08123456789"
+                                        @if($siswa->pembimbing_dudi_id) disabled class="w-full px-4 py-3 bg-slate-100/50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 rounded-xl text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed" @else class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm" @endif>
+                             </div>
+                             <div>
+                                 <label for="unit_pekerjaan" class="block text-xs font-bold text-slate-500 uppercase mb-2">Unit / Bagian Pekerjaan (Opsional)</label>
                                  <input type="text" name="unit_pekerjaan" id="unit_pekerjaan" 
                                         value="{{ old('unit_pekerjaan', $siswa->unit_pekerjaan) }}"
                                         placeholder="Contoh: Divisi IT / Front Office / Bengkel Mesin"
                                         class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
                              </div>
                         </div>
-                        <p class="mt-3 text-[11px] text-slate-500 italic">Isi kolom di atas jika pembimbing industri belum terdaftar di sistem, serta untuk melengkapi unit kerja Anda.</p>
+                        <p class="mt-3 text-[11px] text-slate-500 italic">
+                            @if($siswa->pembimbing_dudi_id)
+                                Akun pembimbing industri telah aktif di sistem. Hubungi Pokja atau Pembimbing Anda jika ingin memperbarui data pembimbing.
+                            @else
+                                Isi kolom di atas jika pembimbing industri belum terdaftar di sistem, serta untuk melengkapi unit kerja Anda.
+                            @endif
+                        </p>
                     </div>
 
                     <!-- Alamat Tempat PKL / DUDI -->
