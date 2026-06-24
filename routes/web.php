@@ -162,6 +162,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         });
         Route::get('kompetensi/import-pdf/preview', [\App\Http\Controllers\Pokja\KompetensiController::class, 'showImportPdfPreview'])->name('kompetensi.import-pdf.preview');
         Route::post('kompetensi/import-pdf/store', [\App\Http\Controllers\Pokja\KompetensiController::class, 'storeImportPdf'])->name('kompetensi.import-pdf.store');
+        Route::post('kompetensi/reorder', [\App\Http\Controllers\Pokja\KompetensiController::class, 'reorder'])->name('kompetensi.reorder');
         Route::resource('kompetensi', \App\Http\Controllers\Pokja\KompetensiController::class);
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
         

@@ -88,11 +88,16 @@
 
                     <!-- Elemen List -->
                     <div x-show="openKonsentrasi" x-transition>
-                        <div class="p-4 space-y-4">
+                        <div class="p-4 space-y-4 elemen-list">
                             @foreach($konsentrasiGroup['elemen'] as $elemenName => $elemenGroup)
                                 <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm" x-data="{ openElemen: false }">
                                     <button @click="openElemen = !openElemen" class="w-full flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                         <div class="flex items-center gap-3">
+                                            @if(auth()->user()->role !== 'kepala_sekolah')
+                                            <div class="cursor-move text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 drag-handle" @click.stop>
+                                                <i data-lucide="grip-vertical" class="w-4 h-4"></i>
+                                            </div>
+                                            @endif
                                             <div class="w-6 h-6 rounded-md bg-emerald-500/10 flex items-center justify-center shrink-0">
                                                 <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
                                             </div>
@@ -110,18 +115,24 @@
 
                                     <!-- CP List -->
                                     <div x-show="openElemen" x-transition>
-                                        <div class="p-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 space-y-4">
+                                        <div class="p-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 space-y-4 cp-list">
                                             @foreach($elemenGroup as $cpName => $tpList)
-                                                <div class="pl-2 border-l-2 border-indigo-200 dark:border-indigo-800">
+                                                <div class="pl-2 border-l-2 border-indigo-200 dark:border-indigo-800 cp-item">
                                                     <div class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mb-2 pl-2 tracking-wide uppercase flex items-center gap-1.5">
+                                                        @if(auth()->user()->role !== 'kepala_sekolah')
+                                                        <i data-lucide="grip-vertical" class="w-3 h-3 cursor-move text-slate-400 hover:text-slate-600 drag-handle"></i>
+                                                        @endif
                                                         <i data-lucide="target" class="w-3 h-3"></i> CP: {{ $cpName }}
                                                     </div>
                                                     
-                                                    <div class="space-y-2 pl-2">
+                                                    <div class="space-y-2 pl-2 tp-list">
                                                         @foreach($tpList as $item)
-                                                            <div class="flex items-start justify-between gap-4 p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm transition-all group">
+                                                            <div class="flex items-start justify-between gap-4 p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm transition-all group tp-item" data-id="{{ $item->id }}">
                                                                 <div class="flex-1">
                                                                     <div class="flex items-start gap-2">
+                                                                        @if(auth()->user()->role !== 'kepala_sekolah')
+                                                                        <i data-lucide="grip-vertical" class="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-move mt-0.5 shrink-0 drag-handle"></i>
+                                                                        @endif
                                                                         <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0"></i>
                                                                         <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{{ $item->tp ?? 'Tanpa TP' }}</p>
                                                                     </div>
@@ -155,4 +166,41 @@
             @endforeach
         </div>
     @endif
+
+    @push('scripts')
+    @if(auth()->user()->role !== 'kepala_sekolah')
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const reorderUrl = "{{ route('pokja.kompetensi.reorder') }}";
+            const csrfToken = "{{ csrf_token() }}";
+
+            function saveOrder() {
+                const orderedIds = Array.from(document.querySelectorAll('.tp-item')).map(el => el.getAttribute('data-id'));
+                
+                fetch(reorderUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ ordered_ids: orderedIds })
+                }).catch(err => console.error('Failed to save order', err));
+            }
+
+            const sortableOptions = {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'opacity-50',
+                onEnd: saveOrder
+            };
+
+            document.querySelectorAll('.elemen-list').forEach(el => new Sortable(el, sortableOptions));
+            document.querySelectorAll('.cp-list').forEach(el => new Sortable(el, sortableOptions));
+            document.querySelectorAll('.tp-list').forEach(el => new Sortable(el, sortableOptions));
+        });
+    </script>
+    @endif
+    @endpush
 </x-app-layout>

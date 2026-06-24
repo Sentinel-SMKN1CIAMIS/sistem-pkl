@@ -29,7 +29,8 @@ class KompetensiController extends Controller
             });
         }
 
-        $compentencies = $query->orderBy('konsentrasi_keahlian_id')
+        $compentencies = $query->orderBy('sort_order', 'asc')
+                               ->orderBy('konsentrasi_keahlian_id')
                                ->orderBy('nama')
                                ->orderBy('cp')
                                ->get();
@@ -139,6 +140,19 @@ class KompetensiController extends Controller
 
         return redirect()->route('pokja.kompetensi.index')
             ->with('success', 'Tujuan Pembelajaran berhasil dihapus.');
+    }
+
+    public function reorder(Request $request)
+    {
+        $orderedIds = $request->input('ordered_ids');
+        
+        if (!empty($orderedIds) && is_array($orderedIds)) {
+            foreach ($orderedIds as $index => $id) {
+                Kompetensi::where('id', $id)->update(['sort_order' => $index]);
+            }
+        }
+        
+        return response()->json(['success' => true]);
     }
 
     public function showImportPdfForm()
