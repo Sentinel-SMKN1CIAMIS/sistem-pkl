@@ -27,15 +27,17 @@
 
     <div x-data="{ importPanelOpen: false, guideModalOpen: false }">
         <div class="mb-6 pokja-header-container">
-            <p class="text-slate-600 dark:text-slate-400">Daftar mentor / pembimbing dari pihak industri (DUDI).</p>
+            <div class="flex-1">
+                <p class="text-slate-600 dark:text-slate-400 text-sm">Daftar mentor / pembimbing dari pihak industri (DUDI).</p>
+            </div>
             @if(auth()->user()->role !== 'kepala_sekolah')
-            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
-                    <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
+                    <i data-lucide="upload-cloud" class="w-4 h-4"></i>
                     Impor Pembimbing
                 </button>
-                <a href="{{ route('pokja.pembimbing_dudi.create') }}" class="pokja-btn px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
-                    <i data-lucide="user-plus" class="w-5 h-5"></i>
+                <a href="{{ route('pokja.pembimbing_dudi.create') }}" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
                     Tambah Pembimbing
                 </a>
             </div>
@@ -60,7 +62,7 @@
                         Impor Data Pembimbing DUDI
                     </h3>
                     <button @click="importPanelOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                        <i data-lucide="x" class="w-5 h-5"></i>
+                        <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
                 
@@ -157,7 +159,7 @@
                               Panduan Impor Data Pembimbing DUDI
                           </h3>
                           <button @click="guideModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                              <i data-lucide="x" class="w-5 h-5"></i>
+                              <i data-lucide="x" class="w-4 h-4"></i>
                           </button>
                       </div>
 
@@ -274,7 +276,7 @@
     @if(session('import_errors'))
         <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm">
             <h4 class="font-bold mb-2 flex items-center gap-2">
-                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 shrink-0"></i>
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
                 Gagal Mengimpor Data Pembimbing DUDI. Silakan periksa beberapa kesalahan berikut:
             </h4>
             <ul class="list-disc pl-5 space-y-1 text-xs">
@@ -287,7 +289,7 @@
 
     @if(session('success'))
         <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
             {{ session('success') }}
         </div>
     @endif

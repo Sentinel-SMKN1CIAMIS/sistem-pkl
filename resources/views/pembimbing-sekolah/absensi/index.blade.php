@@ -3,15 +3,17 @@
 
     <div x-data="{ isModalOpen: false }">
         <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <p class="text-slate-600 dark:text-slate-400">Monitoring absensi harian siswa bimbingan Anda selama PKL.</p>
-            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <button type="button" @click="isModalOpen = true" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 justify-center">
-                    <i data-lucide="edit" class="w-5 h-5"></i>
-                    Ubah/Tambah Absensi
+            <div class="flex-1">
+                <p class="text-slate-600 dark:text-slate-400 text-sm">Monitoring absensi harian siswa bimbingan Anda selama PKL.</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+                <button type="button" @click="isModalOpen = true" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 justify-center whitespace-nowrap">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                    Ubah / Tambah Absensi
                 </button>
-                <a href="{{ route('pembimbing_sekolah.absensi.export', request()->all()) }}" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 justify-center">
-                    <i data-lucide="download-cloud" class="w-5 h-5"></i>
-                    Ekspor Rekapan (PDF)
+                <a href="{{ route('pembimbing_sekolah.absensi.export', request()->all()) }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 justify-center whitespace-nowrap">
+                    <i data-lucide="download-cloud" class="w-4 h-4"></i>
+                    Ekspor Rekapan
                 </a>
             </div>
         </div>

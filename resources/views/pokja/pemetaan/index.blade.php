@@ -24,7 +24,7 @@
         </div>
         
         <div class="flex items-center gap-3">
-            <a href="{{ route('shared.pemetaan.maps') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+            <a href="{{ route('shared.pemetaan.maps') }}" class="px-4 py-2 text-sm whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
                 <i data-lucide="map" class="w-4 h-4"></i> Lihat Peta
             </a>
             <div class="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">

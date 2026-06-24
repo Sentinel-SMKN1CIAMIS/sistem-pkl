@@ -2,15 +2,17 @@
     <x-slot name="header">Kelola Tujuan Pembelajaran (TP)</x-slot>
 
     <div class="mb-6 flex justify-between items-center">
-        <p class="text-slate-600 dark:text-slate-400">Kelola Elemen Kompetensi dan Tujuan Pembelajaran per Konsentrasi Keahlian.</p>
+        <div class="flex-1">
+                <p class="text-slate-600 dark:text-slate-400 text-sm">Kelola Elemen Kompetensi dan Tujuan Pembelajaran per Konsentrasi Keahlian.</p>
+            </div>
         @if(auth()->user()->role !== 'kepala_sekolah')
         <div class="flex gap-3">
-            <a href="{{ route('pokja.kompetensi.import-pdf.form') }}" class="px-5 py-2.5 bg-slate-800 dark:bg-slate-700/50 hover:bg-slate-700 hover:text-white dark:hover:bg-slate-600 border border-slate-700 dark:border-slate-600/50 text-slate-200 font-medium rounded-xl shadow-lg transition-all flex items-center gap-2">
-                <i data-lucide="file-text" class="w-5 h-5 text-emerald-500"></i>
+            <a href="{{ route('pokja.kompetensi.import-pdf.form') }}" class="px-4 py-2 text-sm whitespace-nowrap bg-slate-800 dark:bg-slate-700/50 hover:bg-slate-700 hover:text-white dark:hover:bg-slate-600 border border-slate-700 dark:border-slate-600/50 text-slate-200 font-medium rounded-xl shadow-lg transition-all flex items-center gap-2">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
                 Scan & Import Buku Pedoman (PDF)
             </a>
-            <a href="{{ route('pokja.kompetensi.create') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
-                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+            <a href="{{ route('pokja.kompetensi.create') }}" class="px-4 py-2 text-sm whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
                 Tambah TP
             </a>
         </div>
@@ -19,7 +21,7 @@
 
     @if(session('success'))
         <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
             {{ session('success') }}
         </div>
     @endif

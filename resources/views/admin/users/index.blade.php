@@ -60,7 +60,7 @@
                 <template x-for="id in selectedIds" :key="id">
                     <input type="hidden" name="ids[]" :value="id">
                 </template>
-                <button type="submit" class="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-medium rounded-xl shadow-lg shadow-red-500/25 transition-all gap-2 flex items-center transform hover:scale-[1.02] active:scale-[0.98]">
+                <button type="submit" class="px-4 py-2 text-sm whitespace-nowrap bg-red-600 hover:bg-red-500 text-white font-medium rounded-xl shadow-lg shadow-red-500/25 transition-all gap-2 flex items-center transform hover:scale-[1.02] active:scale-[0.98]">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                     Hapus Terpilih (<span x-text="selectedIds.length"></span>)
                 </button>
@@ -70,7 +70,7 @@
 
     @if(session('success'))
         <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
             {{ session('success') }}
         </div>
     @endif

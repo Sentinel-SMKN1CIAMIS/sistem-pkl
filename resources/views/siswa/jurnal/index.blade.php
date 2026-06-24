@@ -36,18 +36,18 @@
         <!-- Header & Top Actions -->
         <div class="mb-6 jurnal-header-container">
             <p class="text-slate-600 dark:text-slate-400 max-w-xl">Catat setiap aktivitas pengerjaan atau pembelajaran di industri sesuai format resmi.</p>
-            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-                <a href="{{ route('siswa.jurnal.export') }}" target="_blank" class="w-full sm:w-auto px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-2 shadow-sm">
-                    <i data-lucide="printer" class="w-5 h-5"></i>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0 mt-4 sm:mt-0">
+                <a href="{{ route('siswa.jurnal.export') }}" target="_blank" class="w-full md:w-auto shrink-0 px-4 py-2 text-sm whitespace-nowrap bg-white dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-2 shadow-sm">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
                     Cetak Jurnal
                 </a>
-                <a href="{{ route('siswa.jurnal.portofolio') }}" target="_blank" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2">
-                    <i data-lucide="book" class="w-5 h-5"></i>
+                <a href="{{ route('siswa.jurnal.portofolio') }}" target="_blank" class="w-full md:w-auto shrink-0 px-4 py-2 text-sm whitespace-nowrap bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="book" class="w-4 h-4"></i>
                     Cetak Portofolio
                 </a>
                 @if(auth()->user()->siswa?->status_pkl === 'selesai')
-                <a href="{{ route('siswa.jurnal.sertifikat') }}" class="w-full sm:w-auto px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-xl shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2">
-                    <i data-lucide="award" class="w-5 h-5"></i>
+                <a href="{{ route('siswa.jurnal.sertifikat') }}" class="w-full md:w-auto shrink-0 px-4 py-2 text-sm whitespace-nowrap bg-amber-500 hover:bg-amber-400 text-white font-medium rounded-xl shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="award" class="w-4 h-4"></i>
                     Cetak Sertifikat
                 </a>
                 @endif
@@ -56,21 +56,21 @@
 
         @if(session('success'))
             <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
-                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
                 {{ session('success') }}
             </div>
         @endif
 
         @if(session('error'))
             <div class="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center gap-3">
-                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
                 {{ session('error') }}
             </div>
         @endif
 
         @if(!$hasAbsenToday)
             <div class="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 dark:text-amber-400 text-sm flex items-center gap-3">
-                <i data-lucide="info" class="w-5 h-5 shrink-0"></i>
+                <i data-lucide="info" class="w-4 h-4"></i>
                 <div>
                     <span class="font-bold">Perhatian:</span> Anda belum melakukan absensi hari ini. Silakan melakukan 
                     <a href="{{ route('siswa.absensi.index') }}" class="underline font-semibold hover:text-amber-400 dark:hover:text-amber-300">absensi terlebih dahulu</a> 
@@ -98,13 +98,13 @@
                 </h2>
                 <div class="flex items-center gap-1 sm:gap-2">
                     <a href="{{ route('siswa.jurnal.index', ['month' => $prevMonth->format('m'), 'year' => $prevMonth->format('Y')]) }}" class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
-                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
                     </a>
                     <a href="{{ route('siswa.jurnal.index') }}" class="px-3 py-2 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
                         Bulan Ini
                     </a>
                     <a href="{{ route('siswa.jurnal.index', ['month' => $nextMonth->format('m'), 'year' => $nextMonth->format('Y')]) }}" class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
                     </a>
                 </div>
             </div>
@@ -304,24 +304,24 @@
                                     @if($isTodayStr)
                                         @if($hasAbsenToday)
                                             <a href="{{ route('siswa.jurnal.create', ['date' => $dayData['date']]) }}" class="inline-flex px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all items-center gap-2 hover:-translate-y-0.5">
-                                                <i data-lucide="plus" class="w-5 h-5"></i>
+                                                <i data-lucide="plus" class="w-4 h-4"></i>
                                                 Isi Jurnal Sekarang
                                             </a>
                                         @else
                                             <div class="inline-flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-200 dark:border-amber-800/50 text-sm font-medium">
-                                                <i data-lucide="info" class="w-5 h-5 shrink-0"></i>
+                                                <i data-lucide="info" class="w-4 h-4"></i>
                                                 <span>Silakan absensi hari ini terlebih dahulu untuk mengisi jurnal.</span>
                                             </div>
                                         @endif
                                     @elseif($isAllowedBackdate)
                                         <a href="{{ route('siswa.jurnal.create', ['date' => $dayData['date']]) }}" class="inline-flex px-6 py-3 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all items-center gap-2 hover:-translate-y-0.5">
-                                            <i data-lucide="plus" class="w-5 h-5"></i>
+                                            <i data-lucide="plus" class="w-4 h-4"></i>
                                             Isi Jurnal Susulan
                                         </a>
                                         <p class="text-xs text-slate-400 mt-3">Sisa waktu susulan: {{ $maxBackdateDays - $diffInDays }} hari lagi</p>
                                     @else
                                         <div class="inline-flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-800/50 text-sm font-medium">
-                                            <i data-lucide="x-circle" class="w-5 h-5 shrink-0"></i>
+                                            <i data-lucide="x-circle" class="w-4 h-4"></i>
                                             <span>Batas waktu pengisian jurnal ({{ $maxBackdateDays }} hari) sudah lewat.</span>
                                         </div>
                                     @endif
@@ -354,7 +354,7 @@
                     <button @click="imageModalOpen = false" 
                             class="absolute -top-12 right-0 md:-top-4 md:-right-12 z-50 p-2.5 text-white bg-slate-800/80 hover:bg-red-600 border border-slate-700/50 rounded-full shadow-xl transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500"
                             title="Tutup (Esc)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
