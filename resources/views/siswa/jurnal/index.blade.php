@@ -149,7 +149,7 @@
                         @endphp
                         
                         <button type="button" 
-                            @click="selectedDate = '{{ $dayData['date'] }}'"
+                            @click="selectedDate = '{{ $dayData['date'] }}'; $nextTick(() => { document.getElementById('jurnal-detail-area')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) })"
                             :class="selectedDate === '{{ $dayData['date'] }}' ? 'ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-800 scale-105 z-10' : ''"
                             class="relative flex flex-col items-center justify-center py-2 px-1 sm:p-3 rounded-xl border {{ $bgClass }} {{ $isToday }} hover:scale-105 hover:shadow-md transition-all duration-200 cursor-pointer">
                             
@@ -174,7 +174,7 @@
         </div>
 
         <!-- Jurnal Details Area -->
-        <div class="mt-6 min-h-[300px]">
+        <div id="jurnal-detail-area" class="mt-6 min-h-[300px]">
             @foreach($calendar as $dayData)
                 @if($dayData['is_current_month'])
                     <div x-show="selectedDate === '{{ $dayData['date'] }}'" 
