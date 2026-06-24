@@ -47,7 +47,7 @@
                 ]
             ],
             [
-                'name' => 'Akademik & Jurusan',
+                'name' => 'Akademik',
                 'icon' => 'book',
                 'children' => [
                     ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],
@@ -112,7 +112,7 @@
                 ]
             ],
             [
-                'name' => 'Akademik & Jurusan',
+                'name' => 'Akademik',
                 'icon' => 'book',
                 'children' => [
                     ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],

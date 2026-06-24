@@ -115,7 +115,7 @@
                     ]
                 ],
                 [
-                    'name' => 'Akademik & Jurusan',
+                    'name' => 'Akademik',
                     'icon' => 'book',
                     'children' => [
                         ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],
@@ -181,7 +181,7 @@
                     ]
                 ],
                 [
-                    'name' => 'Akademik & Jurusan',
+                    'name' => 'Akademik',
                     'icon' => 'book',
                     'children' => [
                         ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],
@@ -217,7 +217,7 @@
         <div class="flex items-center justify-center p-6 border-b border-slate-200/50 dark:border-slate-700/50">
             <div class="flex items-center gap-3">
                 <img src="{{ $appLogoActive ?: asset('logo.png') }}" alt="Logo" class="w-10 h-10 object-contain rounded-xl">
-                <h1 class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600 dark:from-blue-300 dark:to-blue-500 drop-shadow-sm transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-md cursor-default">{{ $appName }}</h1>
+                <h1 class="text-2xl font-black tracking-tighter text-blue-600 dark:text-blue-400 drop-shadow-sm transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-md cursor-default">{{ $appName }}</h1>
             </div>
         </div>
 
@@ -233,7 +233,7 @@
             <!-- Mobile Logo (Hidden on Desktop) -->
             <div class="flex lg:hidden items-center gap-2.5">
                 <img src="{{ $appLogoActive ?? asset('logo.png') }}" alt="Logo" class="w-8 h-8 object-contain rounded-lg">
-                <h1 class="text-xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600 dark:from-blue-300 dark:to-blue-500 drop-shadow-sm">{{ $appName ?? config('app.name', 'MAS-PKL') }}</h1>
+                <h1 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400 drop-shadow-sm">{{ $appName ?? config('app.name', 'MAS-PKL') }}</h1>
             </div>
             
             <div class="ml-auto flex items-center gap-4">
@@ -363,12 +363,12 @@
         </header>
 
         <!-- Main Scrollable Area -->
-        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 sm:p-6 lg:p-8 lg:pb-8 relative">
+        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-36 sm:p-6 sm:pb-36 lg:p-8 lg:pb-8 relative">
             <div class="mx-auto max-w-7xl animate-fade-in-up">
                 <!-- Page Header -->
                 @if (isset($header))
                     <header class="mb-8">
-                        <h2 class="text-3xl font-bold text-gradient tracking-tight">
+                        <h2 class="text-3xl font-bold text-blue-600 dark:text-blue-400 tracking-tight">
                             {{ $header }}
                         </h2>
                     </header>
@@ -774,6 +774,71 @@
             });
 
             observer.observe(document.body, { childList: true, subtree: true });
+
+            // Auto-submit GET forms (Search & Filters)
+            const filterForms = document.querySelectorAll('form[method="GET"]');
+            
+            // Restore focus if needed
+            const focusedInputName = sessionStorage.getItem('autoSubmitFocusedInput');
+            if (focusedInputName) {
+                const inputToFocus = document.querySelector(`[name="${focusedInputName}"]`);
+                if (inputToFocus && (inputToFocus.type === 'text' || inputToFocus.type === 'search')) {
+                    setTimeout(() => {
+                        inputToFocus.focus();
+                        const val = inputToFocus.value;
+                        inputToFocus.value = '';
+                        inputToFocus.value = val;
+                    }, 50);
+                }
+                sessionStorage.removeItem('autoSubmitFocusedInput');
+            }
+
+            filterForms.forEach(form => {
+                if (form.classList.contains('no-auto-submit') || (form.getAttribute('action') && form.getAttribute('action').includes('logout'))) return;
+
+                let timeout = null;
+                const submitForm = (activeElement) => {
+                    if (activeElement && activeElement.name) {
+                        sessionStorage.setItem('autoSubmitFocusedInput', activeElement.name);
+                    }
+                    form.submit();
+                };
+
+                const inputs = form.querySelectorAll('input, select, textarea');
+                let hasAutoSubmitInputs = false;
+
+                inputs.forEach(input => {
+                    if (input.type === 'hidden') return;
+                    hasAutoSubmitInputs = true;
+
+                    if (input.type === 'text' || input.type === 'search') {
+                        input.addEventListener('input', (e) => {
+                            clearTimeout(timeout);
+                            timeout = setTimeout(() => {
+                                submitForm(e.target);
+                            }, 800); // 800ms debounce
+                        });
+                        
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                clearTimeout(timeout);
+                                submitForm(e.target);
+                            }
+                        });
+                    } else {
+                        input.addEventListener('change', (e) => {
+                            submitForm(e.target);
+                        });
+                    }
+                });
+
+                // Hide submit button if the form has auto-submittable inputs
+                if (hasAutoSubmitInputs) {
+                    const submitBtns = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+                    submitBtns.forEach(btn => btn.style.display = 'none');
+                }
+            });
         });
     </script>
 

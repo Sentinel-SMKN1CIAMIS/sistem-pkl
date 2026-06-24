@@ -344,8 +344,8 @@
                 Filter
             </button>
             @if(request()->anyFilled(['search', 'konsentrasi', 'sort']))
-                <a href="{{ route('pokja.siswa.index') }}" class="px-4 py-2 text-slate-500 hover:text-red-400 text-sm flex items-center gap-2 transition-colors">
-                    <i data-lucide="x-circle" class="w-4 h-4"></i> Reset
+                <a href="{{ route('pokja.siswa.index') }}" class="px-4 py-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold rounded-xl transition-all text-sm flex items-center justify-center gap-2 border border-red-200/50 dark:border-red-500/20">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Filter
                 </a>
             @endif
         </form>
