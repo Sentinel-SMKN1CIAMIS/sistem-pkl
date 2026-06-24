@@ -29,16 +29,65 @@ class KompetensiController extends Controller
             });
         }
 
-        $compentencies = $query->latest()->paginate(10)->withQueryString();
-        $concentrations = KonsentrasiKeahlian::all();
+        $compentencies = $query->orderBy('konsentrasi_keahlian_id')
+                               ->orderBy('nama')
+                               ->orderBy('cp')
+                               ->get();
 
-        return view('pokja.kompetensi.index', compact('compentencies', 'concentrations'));
+        $concentrations = KonsentrasiKeahlian::all();
+        $concentrationsDict = $concentrations->keyBy('id');
+
+        $groupedCompetencies = [];
+        foreach ($compentencies as $comp) {
+            $konsentrasiId = $comp->konsentrasi_keahlian_id;
+            $elemen = $comp->nama ?: 'Tanpa Elemen';
+            $cp = $comp->cp ?: 'Umum';
+            
+            if (!isset($groupedCompetencies[$konsentrasiId])) {
+                $groupedCompetencies[$konsentrasiId] = [
+                    'konsentrasi' => $concentrationsDict[$konsentrasiId] ?? null,
+                    'elemen' => []
+                ];
+            }
+            
+            if (!isset($groupedCompetencies[$konsentrasiId]['elemen'][$elemen])) {
+                $groupedCompetencies[$konsentrasiId]['elemen'][$elemen] = [];
+            }
+            
+            if (!isset($groupedCompetencies[$konsentrasiId]['elemen'][$elemen][$cp])) {
+                $groupedCompetencies[$konsentrasiId]['elemen'][$elemen][$cp] = [];
+            }
+            
+            $groupedCompetencies[$konsentrasiId]['elemen'][$elemen][$cp][] = $comp;
+        }
+
+        return view('pokja.kompetensi.index', compact('groupedCompetencies', 'concentrations', 'compentencies'));
+    }
+
+    private function getUniqueOptions($column)
+    {
+        $rawOptions = Kompetensi::select($column)->distinct()->whereNotNull($column)->where($column, '!=', '')->pluck($column);
+        $options = [];
+        $seen = [];
+
+        foreach ($rawOptions as $opt) {
+            $normalized = strtolower(preg_replace('/[^a-z0-9]+/i', '', $opt));
+            if (!isset($seen[$normalized])) {
+                $seen[$normalized] = true;
+                $options[] = $opt;
+            }
+        }
+        
+        return $options;
     }
 
     public function create()
     {
         $concentrations = KonsentrasiKeahlian::all();
-        return view('pokja.kompetensi.create', compact('concentrations'));
+        $elemens = $this->getUniqueOptions('nama');
+        $cps = $this->getUniqueOptions('cp');
+        
+        return view('pokja.kompetensi.create', compact('concentrations', 'elemens', 'cps'));
     }
 
     public function store(Request $request)
@@ -46,8 +95,8 @@ class KompetensiController extends Controller
         $request->validate([
             'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
             'nama' => 'required|string|max:500',
+            'cp' => 'required|string|max:500',
             'tp' => 'nullable|string|max:500',
-            'cp' => 'nullable|string|max:500',
             'kategori' => 'nullable|string|max:100',
             'deskripsi' => 'nullable|string'
         ]);
@@ -61,7 +110,10 @@ class KompetensiController extends Controller
     public function edit(Kompetensi $kompetensi)
     {
         $concentrations = KonsentrasiKeahlian::all();
-        return view('pokja.kompetensi.edit', compact('kompetensi', 'concentrations'));
+        $elemens = $this->getUniqueOptions('nama');
+        $cps = $this->getUniqueOptions('cp');
+        
+        return view('pokja.kompetensi.edit', compact('kompetensi', 'concentrations', 'elemens', 'cps'));
     }
 
     public function update(Request $request, Kompetensi $kompetensi)
@@ -69,8 +121,8 @@ class KompetensiController extends Controller
         $request->validate([
             'konsentrasi_keahlian_id' => 'required|exists:konsentrasi_keahlians,id',
             'nama' => 'required|string|max:500',
+            'cp' => 'required|string|max:500',
             'tp' => 'nullable|string|max:500',
-            'cp' => 'nullable|string|max:500',
             'kategori' => 'nullable|string|max:100',
             'deskripsi' => 'nullable|string'
         ]);

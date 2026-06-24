@@ -25,25 +25,51 @@
                         </select>
                     </div>
 
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-2" x-data="{ open: false, search: '', options: {{ json_encode($elemens ?? []) }} }">
                         <label for="nama" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Elemen Kompetensi</label>
-                        <textarea name="nama" id="nama" rows="2" required
-                                  class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all font-mono text-sm"
-                                  placeholder="Contoh: Pemrograman Dasar"></textarea>
+                        <div class="relative">
+                            <textarea name="nama" id="nama" rows="2" required x-model="search" @focus="open = true" @click.away="open = false"
+                                      class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all text-sm"
+                                      placeholder="Ketik Elemen baru atau pilih dari daftar..."></textarea>
+                            
+                            <div x-show="open && options.filter(o => o.toLowerCase().includes(search.toLowerCase())).length > 0" 
+                                 x-transition
+                                 class="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl">
+                                <template x-for="option in options.filter(o => o.toLowerCase().includes(search.toLowerCase()))" :key="option">
+                                    <div @click="search = option; open = false" 
+                                         class="px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer text-sm text-slate-700 dark:text-slate-300 border-b border-slate-100 dark:border-slate-700/50 last:border-0 transition-colors">
+                                        <span x-text="option"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2" x-data="{ open: false, search: '', options: {{ json_encode($cps ?? []) }} }">
+                        <label for="cp" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Capaian Pembelajaran (CP)</label>
+                        <div class="relative">
+                            <textarea name="cp" id="cp" rows="3" required x-model="search" @focus="open = true" @click.away="open = false"
+                                      class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all text-sm"
+                                      placeholder="Ketik CP baru atau pilih dari daftar..."></textarea>
+                            
+                            <div x-show="open && options.filter(o => o.toLowerCase().includes(search.toLowerCase())).length > 0" 
+                                 x-transition
+                                 class="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl">
+                                <template x-for="option in options.filter(o => o.toLowerCase().includes(search.toLowerCase()))" :key="option">
+                                    <div @click="search = option; open = false" 
+                                         class="px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer text-sm text-slate-700 dark:text-slate-300 border-b border-slate-100 dark:border-slate-700/50 last:border-0 transition-colors">
+                                        <span x-text="option"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="md:col-span-2">
-                        <label for="tp" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tujuan Pembelajaran (TP)</label>
+                        <label for="tp" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tujuan Pembelajaran (TP) - Opsional</label>
                         <textarea name="tp" id="tp" rows="3"
                                   class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all text-sm"
                                   placeholder="Contoh: Siswa mampu menjelaskan konsep dasar pemrograman prosedural"></textarea>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <label for="cp" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Capaian Pembelajaran (CP) - Opsional</label>
-                        <textarea name="cp" id="cp" rows="2"
-                                  class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 placeholder-slate-500 transition-all text-sm"
-                                  placeholder="Contoh: Menyajikan hasil observasi..."></textarea>
                     </div>
 
                     <div>
