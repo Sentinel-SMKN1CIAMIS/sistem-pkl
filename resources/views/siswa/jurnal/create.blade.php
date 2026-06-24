@@ -30,7 +30,7 @@
                         <label for="tanggal" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tanggal Kegiatan</label>
                         <div class="relative">
                             <input type="date" name="tanggal" id="tanggal" 
-                                   value="{{ old('tanggal', date('Y-m-d')) }}"
+                                   value="{{ old('tanggal', request('date', date('Y-m-d'))) }}"
                                    min="{{ $minDate }}"
                                    max="{{ $maxDate }}"
                                    required

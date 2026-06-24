@@ -38,6 +38,45 @@ class AbsensiController extends Controller
         return view('pembimbing-sekolah.absensi.index', compact('absensis', 'students'));
     }
 
+    public function storeManual(Request $request)
+    {
+        $request->validate([
+            'siswa_id' => 'required|exists:siswas,id',
+            'tanggal' => 'required|date|before_or_equal:today',
+            'status' => 'required|in:hadir,sakit,izin,alpha',
+            'keterangan' => 'nullable|string|max:255',
+        ]);
+
+        $teacher = auth()->user()->pembimbingSekolah;
+
+        // Verify that the student is supervised by this teacher
+        $student = \App\Models\Siswa::where('id', $request->siswa_id)
+            ->where(function($q) use ($teacher) {
+                $q->where('pembimbing_sekolah_id', $teacher->id)
+                  ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
+            })->first();
+
+        if (!$student) {
+            return back()->with('error', 'Siswa tidak ditemukan atau tidak berada di bawah bimbingan Anda.');
+        }
+
+        // Create or Update Absensi
+        $absensi = Absensi::updateOrCreate(
+            [
+                'siswa_id' => $student->id,
+                'tanggal' => $request->tanggal,
+            ],
+            [
+                'status' => $request->status,
+                'keterangan' => $request->keterangan ?? ($request->status == 'alpha' ? 'Diubah secara manual oleh pembimbing' : null),
+                'approval_status' => 'approved', // Auto approve since it's manual by teacher
+                'approved_by' => auth()->id(),
+            ]
+        );
+
+        return back()->with('success', 'Status absensi siswa berhasil disimpan.');
+    }
+
     public function export(Request $request)
     {
         $teacher = auth()->user()->pembimbingSekolah;

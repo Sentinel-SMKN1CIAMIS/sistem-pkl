@@ -68,6 +68,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('jurnal/{jurnal}/approve', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'approve'])->name('jurnal.approve');
         Route::post('jurnal/{jurnal}/reject', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'reject'])->name('jurnal.reject');
         Route::get('absensi', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'index'])->name('absensi.index');
+        Route::post('absensi/store-manual', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'storeManual'])->name('absensi.store-manual');
         Route::get('absensi/export', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'export'])->name('absensi.export');
         Route::get('absensi/approval', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'index'])->name('absensi.approval.index');
         Route::patch('absensi/{absensi}/approve', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'approve'])->name('absensi.approve');

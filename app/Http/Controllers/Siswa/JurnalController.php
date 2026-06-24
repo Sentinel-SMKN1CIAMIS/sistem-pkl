@@ -64,21 +64,94 @@ class JurnalController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
         if ($redirect = $this->requirePkl()) return $redirect;
 
         $siswa = auth()->user()->siswa;
+        
+        $month = $request->query('month', now()->format('m'));
+        $year = $request->query('year', now()->format('Y'));
+        
+        $currentDate = \Carbon\Carbon::createFromDate($year, $month, 1);
+        $daysInMonth = $currentDate->daysInMonth;
+        
         $jurnals = Jurnal::where('siswa_id', $siswa->id)
+            ->whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
             ->with(['kompetensi', 'tujuanPembelajaran'])
-            ->latest('tanggal')
-            ->paginate(10);
+            ->get()
+            ->keyBy(function($item) {
+                return \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d');
+            });
+            
+        $absensis = \App\Models\Absensi::where('siswa_id', $siswa->id)
+            ->whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->get()
+            ->keyBy(function($item) {
+                return \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d');
+            });
+            
+        $startDayOfWeek = $currentDate->copy()->startOfMonth()->dayOfWeekIso;
+        $calendar = [];
+        
+        for ($i = 1; $i < $startDayOfWeek; $i++) {
+            $calendar[] = [
+                'date' => null,
+                'is_current_month' => false,
+            ];
+        }
+        
+        $today = now()->format('Y-m-d');
+        
+        $maxBackdateDays = Jurnal::getMaxBackdateDays();
+        
+        for ($i = 1; $i <= $daysInMonth; $i++) {
+            $dateObj = $currentDate->copy()->day($i);
+            $dateStr = $dateObj->format('Y-m-d');
+            $jurnal = $jurnals->get($dateStr);
+            $absensi = $absensis->get($dateStr);
+            
+            $diffInDays = \Carbon\Carbon::parse($dateStr)->diffInDays(\Carbon\Carbon::today(), false);
+            
+            $status = 'belum_diisi';
+            if ($jurnal) {
+                $status = $jurnal->approval_status ?? 'pending';
+            } elseif ($dateStr > $today) {
+                $status = 'akan_datang';
+            } elseif ($absensi && in_array($absensi->status, ['izin', 'sakit'])) {
+                $status = 'libur';
+            } elseif ($diffInDays > $maxBackdateDays) {
+                $status = 'terlewat';
+            }
+            
+            $calendar[] = [
+                'date' => $dateStr,
+                'day' => $i,
+                'is_current_month' => true,
+                'is_today' => $dateStr === $today,
+                'status' => $status,
+                'jurnal' => $jurnal,
+                'absensi' => $absensi,
+            ];
+        }
+        
+        $endDayOfWeek = $currentDate->copy()->endOfMonth()->dayOfWeekIso;
+        for ($i = $endDayOfWeek; $i < 7; $i++) {
+            $calendar[] = [
+                'date' => null,
+                'is_current_month' => false,
+            ];
+        }
             
         $hasAbsenToday = \App\Models\Absensi::where('siswa_id', $siswa->id)
             ->where('tanggal', \Carbon\Carbon::today()->toDateString())
             ->exists();
             
-        return view('siswa.jurnal.index', compact('jurnals', 'hasAbsenToday'));
+        $maxBackdateDays = Jurnal::getMaxBackdateDays();
+            
+        return view('siswa.jurnal.index', compact('calendar', 'currentDate', 'hasAbsenToday', 'maxBackdateDays'));
     }
 
     public function create()
