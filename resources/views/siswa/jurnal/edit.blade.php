@@ -463,7 +463,7 @@
                 
                 const searchContainer = document.getElementById('elemen_search_container');
                 if (searchContainer) {
-                    if (keys.length <= 1) {
+                    if (keys.length < 10) {
                         searchContainer.classList.add('hidden');
                     } else {
                         searchContainer.classList.remove('hidden');
@@ -570,7 +570,7 @@
                 
                 const searchContainer = document.getElementById('cp_search_container');
                 if (searchContainer) {
-                    if (cps.length <= 1) {
+                    if (cps.length < 10) {
                         searchContainer.classList.add('hidden');
                     } else {
                         searchContainer.classList.remove('hidden');
@@ -648,7 +648,7 @@
                 
                 const searchContainer = document.getElementById('tp_search_container');
                 if (searchContainer) {
-                    if (tps.length <= 1) {
+                    if (tps.length < 10) {
                         searchContainer.classList.add('hidden');
                     } else {
                         searchContainer.classList.remove('hidden');
