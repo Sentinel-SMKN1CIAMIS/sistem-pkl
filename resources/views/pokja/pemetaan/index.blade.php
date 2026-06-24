@@ -24,7 +24,7 @@
         </div>
         
         <div class="flex items-center gap-3">
-            <a href="{{ route('shared.pemetaan.maps') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+            <a href="{{ route('shared.pemetaan.maps') }}" class="px-4 py-2 text-sm whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
                 <i data-lucide="map" class="w-4 h-4"></i> Lihat Peta
             </a>
             <div class="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
@@ -61,8 +61,9 @@
                         <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Tempat PKL (DUDI)</th>
                         <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Pembimbing Sekolah</th>
                         <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Pembimbing DUDI</th>
-                        <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Status</th>
+                        @if(auth()->user()->role !== 'kepala_sekolah')
                         <th class="px-6 py-4 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center whitespace-nowrap">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-700/50">
@@ -91,13 +92,21 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
-                                @if($siswa->pembimbingSekolah)
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
-                                        {{ $siswa->pembimbingSekolah->nama_lengkap }}
-                                    </span>
-                                @else
-                                    <span class="text-xs text-slate-500 dark:text-slate-400 italic">Belum ditentukan</span>
-                                @endif
+                                <div class="flex flex-col gap-1 items-start">
+                                    @if($siswa->pembimbingSekolah)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
+                                            KJ: {{ $siswa->pembimbingSekolah->nama_lengkap }}
+                                        </span>
+                                    @endif
+                                    @if($siswa->pembimbingSekolahUmum)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolahUmum->nama_lengkap) }}">
+                                            UM: {{ $siswa->pembimbingSekolahUmum->nama_lengkap }}
+                                        </span>
+                                    @endif
+                                    @if(!$siswa->pembimbingSekolah && !$siswa->pembimbingSekolahUmum)
+                                        <span class="text-xs text-slate-500 dark:text-slate-400 italic">Belum ditentukan</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 @if($siswa->pembimbingDudi)
@@ -110,23 +119,24 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
-                                    $isComplete = $siswa->dudi_id && $siswa->pembimbing_sekolah_id && $siswa->pembimbing_dudi_id;
+                                    $isComplete = $siswa->dudi_id && $siswa->pembimbing_sekolah_id && $siswa->pembimbing_sekolah_umum_id && $siswa->pembimbing_dudi_id;
                                 @endphp
                                 @if($isComplete)
                                     <span class="px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[9px] font-black border border-emerald-500/20 uppercase tracking-tighter">Lengkap</span>
                                 @else
                                     <span class="px-2 py-1 rounded-lg bg-red-500/10 text-red-400 text-[9px] font-black border border-red-500/20 uppercase tracking-tighter">Belum Lengkap</span>
                                 @endif
-                            </td>
+                            @if(auth()->user()->role !== 'kepala_sekolah')
                             <td class="px-6 py-4 text-center whitespace-nowrap">
                                 <a href="{{ route('pokja.siswa.edit', $siswa->id) }}" class="inline-flex items-center justify-center p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-400 hover:text-blue-400">
                                     <i data-lucide="edit-3" class="w-4 h-4"></i>
                                 </a>
                             </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 5 : 6 }}" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center gap-2">
                                     <i data-lucide="users" class="w-12 h-12 text-slate-700"></i>
                                     <p class="text-slate-500 dark:text-slate-400 font-medium">Tidak ada data siswa ditemukan.</p>

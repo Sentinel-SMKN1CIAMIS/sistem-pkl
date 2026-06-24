@@ -32,10 +32,12 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('jurnal/export', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'export'])->name('jurnal.export');
         Route::get('jurnal/portofolio', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'portofolio'])->name('jurnal.portofolio');
         Route::get('jurnal/sertifikat', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'sertifikat'])->name('jurnal.sertifikat');
+        Route::get('jurnal/check-attendance', [\App\Http\Controllers\Siswa\JurnalController::class, 'checkAttendance'])->name('jurnal.check-attendance');
         Route::resource('jurnal', \App\Http\Controllers\Siswa\JurnalController::class);
         Route::get('absensi', [\App\Http\Controllers\Siswa\AbsensiController::class, 'index'])->name('absensi.index');
         Route::post('absensi/clock-in', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockIn'])->name('absensi.clock-in');
         Route::post('absensi/clock-out', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockOut'])->name('absensi.clock-out');
+        Route::post('absensi/request-early-leave', [\App\Http\Controllers\Siswa\AbsensiController::class, 'requestEarlyLeave'])->name('absensi.request-early-leave');
         Route::post('absensi/submit-absence-request', [\App\Http\Controllers\Siswa\AbsensiController::class, 'submitAbsenceRequest'])->name('absensi.submit-absence-request');
         Route::get('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'index'])->name('laporan.index');
         Route::post('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'store'])->name('laporan.store');
@@ -58,15 +60,20 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::middleware('role:pembimbing_sekolah')->prefix('pembimbing_sekolah')->name('pembimbing_sekolah.')->group(function () {
         Route::post('bulk-acc', [DashboardController::class, 'bulkAcc'])->name('bulk_acc');
         Route::get('siswa', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'index'])->name('siswa.index');
+        Route::post('siswa/remind-all', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'remindAll'])->name('siswa.remind_all');
+        Route::post('siswa/{siswa}/remind', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'remind'])->name('siswa.remind');
+        Route::put('siswa/{siswa}/change-password', [\App\Http\Controllers\PembimbingSekolah\SiswaController::class, 'changePassword'])->name('siswa.change_password');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'index'])->name('jurnal.index');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'update'])->name('jurnal.update');
         Route::post('jurnal/{jurnal}/approve', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'approve'])->name('jurnal.approve');
         Route::post('jurnal/{jurnal}/reject', [\App\Http\Controllers\PembimbingSekolah\JurnalController::class, 'reject'])->name('jurnal.reject');
         Route::get('absensi', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'index'])->name('absensi.index');
+        Route::post('absensi/store-manual', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'storeManual'])->name('absensi.store-manual');
         Route::get('absensi/export', [\App\Http\Controllers\PembimbingSekolah\AbsensiController::class, 'export'])->name('absensi.export');
         Route::get('absensi/approval', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'index'])->name('absensi.approval.index');
         Route::patch('absensi/{absensi}/approve', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'approve'])->name('absensi.approve');
         Route::patch('absensi/{absensi}/reject', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'reject'])->name('absensi.reject');
+
         Route::get('laporan', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'index'])->name('laporan.index');
         Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
     });
@@ -76,6 +83,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('jurnal', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'index'])->name('jurnal.index');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'update'])->name('jurnal.update');
         Route::get('absensi', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'index'])->name('absensi.index');
+        Route::patch('absensi/{absensi}/approve-early-leave', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'approveEarlyLeave'])->name('absensi.approve-early-leave');
+        Route::patch('absensi/{absensi}/reject-early-leave', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'rejectEarlyLeave'])->name('absensi.reject-early-leave');
         Route::get('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'index'])->name('feedback.index');
         Route::get('feedback/create', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'create'])->name('feedback.create');
         Route::post('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'store'])->name('feedback.store');
@@ -96,8 +105,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
     });
 
-    // Shared Map Routes - Accessible by Pokja, Kaprog, Pembimbing Sekolah
-    Route::middleware('role:pokja,kaprog,pembimbing_sekolah,super_admin')->group(function () {
+    // Shared Map Routes - Accessible by Pokja, Kaprog, Pembimbing Sekolah, Kepala Sekolah
+    Route::middleware('role:pokja,kaprog,pembimbing_sekolah,super_admin,kepala_sekolah')->group(function () {
         Route::get('peta-dudi', [\App\Http\Controllers\Pokja\PemetaanController::class, 'maps'])->name('shared.pemetaan.maps');
         Route::get('peta-dudi/data', [\App\Http\Controllers\Pokja\PemetaanController::class, 'mapsData'])->name('shared.pemetaan.maps.data');
     });
@@ -118,8 +127,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::post('pesan/{user}', [\App\Http\Controllers\PesanController::class, 'store'])->name('pesan.store');
     Route::get('pesan/{user}/poll', [\App\Http\Controllers\PesanController::class, 'poll'])->name('pesan.poll');
 
-    // Shared Admin Routes (Super Admin & Pokja)
-    Route::middleware('role:super_admin,pokja')->prefix('admin')->name('admin.')->group(function () {
+    // Shared Admin Routes (Super Admin, Pokja, Kepala Sekolah)
+    Route::middleware(['role:super_admin,pokja,kepala_sekolah', 'view-only'])->prefix('admin')->name('admin.')->group(function () {
         Route::post('program_keahlian/reorder', [\App\Http\Controllers\ProgramKeahlianController::class, 'reorder'])->name('program_keahlian.reorder');
         Route::resource('program_keahlian', \App\Http\Controllers\ProgramKeahlianController::class);
         Route::post('konsentrasi_keahlian/reorder', [\App\Http\Controllers\KonsentrasiKeahlianController::class, 'reorder'])->name('konsentrasi_keahlian.reorder');
@@ -145,7 +154,14 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     });
 
     // Pokja Routes - with group membership check
-    Route::middleware(['role:pokja,super_admin', 'pokja-group'])->prefix('pokja')->name('pokja.')->group(function () {
+    Route::middleware(['role:pokja,super_admin,kepala_sekolah', 'pokja-group', 'view-only'])->prefix('pokja')->name('pokja.')->group(function () {
+        Route::get('kompetensi/import-pdf', [\App\Http\Controllers\Pokja\KompetensiController::class, 'showImportPdfForm'])->name('kompetensi.import-pdf.form');
+        Route::post('kompetensi/import-pdf/parse', [\App\Http\Controllers\Pokja\KompetensiController::class, 'parseImportPdf'])->name('kompetensi.import-pdf.parse');
+        Route::get('kompetensi/import-pdf/parse', function() {
+            return redirect()->route('pokja.kompetensi.import-pdf.form');
+        });
+        Route::get('kompetensi/import-pdf/preview', [\App\Http\Controllers\Pokja\KompetensiController::class, 'showImportPdfPreview'])->name('kompetensi.import-pdf.preview');
+        Route::post('kompetensi/import-pdf/store', [\App\Http\Controllers\Pokja\KompetensiController::class, 'storeImportPdf'])->name('kompetensi.import-pdf.store');
         Route::resource('kompetensi', \App\Http\Controllers\Pokja\KompetensiController::class);
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
         
@@ -171,6 +187,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('zona/geojson', [\App\Http\Controllers\Pokja\ZonaController::class, 'geojson'])->name('zona.geojson');
 
         Route::get('monitoring', [\App\Http\Controllers\Pokja\MonitoringController::class, 'index'])->name('monitoring.index');
+        Route::get('monitoring/{pembimbingSekolah}', [\App\Http\Controllers\Pokja\MonitoringController::class, 'show'])->name('monitoring.show');
+        Route::post('monitoring/{pembimbingSekolah}/note', [\App\Http\Controllers\Pokja\MonitoringController::class, 'storeNote'])->name('monitoring.storeNote');
         Route::get('evaluasi', [\App\Http\Controllers\Pokja\EvaluasiController::class, 'index'])->name('evaluasi.index');
         Route::get('feedback', [\App\Http\Controllers\Pokja\FeedbackController::class, 'index'])->name('feedback.index');
         Route::get('feedback/{feedback}/print', [\App\Http\Controllers\Pokja\FeedbackController::class, 'print'])->name('feedback.print');
@@ -178,6 +196,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // Pengaturan Pokja
         Route::get('pengaturan/sertifikat', [\App\Http\Controllers\Pokja\PengaturanController::class, 'sertifikat'])->name('pengaturan.sertifikat');
         Route::post('pengaturan/sertifikat', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSertifikat'])->name('pengaturan.sertifikat.update');
+        Route::get('pengaturan/surat-pengantar', [\App\Http\Controllers\Pokja\PengaturanController::class, 'suratPengantar'])->name('pengaturan.surat_pengantar');
+        Route::post('pengaturan/surat-pengantar', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSuratPengantar'])->name('pengaturan.surat_pengantar.update');
 
         // Import & Template Routes
         Route::get('import/panduan', [\App\Http\Controllers\Pokja\ImportController::class, 'showPanduan'])->name('import.panduan');

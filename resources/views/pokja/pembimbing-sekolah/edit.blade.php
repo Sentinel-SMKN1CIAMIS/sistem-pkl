@@ -196,8 +196,9 @@
                                 <tbody id="siswa-list-body" class="divide-y divide-slate-100 dark:divide-slate-900 bg-white dark:bg-slate-950/30">
                                     @foreach($students as $siswa)
                                         @php
-                                            $isCurrentAdvisor = $siswa->pembimbing_sekolah_id === $pembimbing_sekolah->id;
-                                            $hasOtherAdvisor = $siswa->pembimbing_sekolah_id && !$isCurrentAdvisor;
+                                            $isCurrentAdvisor = ($pembimbing_sekolah->tipe === 'umum')
+                                                ? ($siswa->pembimbing_sekolah_umum_id === $pembimbing_sekolah->id)
+                                                : ($siswa->pembimbing_sekolah_id === $pembimbing_sekolah->id);
                                         @endphp
                                         <tr class="siswa-row hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors"
                                             data-nama="{{ strtolower($siswa->nama_lengkap) }}"
@@ -217,19 +218,27 @@
                                                 <div class="text-slate-700 dark:text-slate-300 font-medium">{{ $siswa->kelas }}</div>
                                                 <div class="text-xs text-slate-500 dark:text-slate-400">{{ $siswa->konsentrasiKeahlian->nama }}</div>
                                             </td>
-                                            <td class="p-3">
+                                            <td class="p-3 flex flex-col gap-1 items-start">
                                                 @if($isCurrentAdvisor)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-500/10 text-blue-500 dark:text-blue-400 border border-blue-500/20">
                                                         Dibimbing guru ini
                                                     </span>
-                                                @elseif($hasOtherAdvisor)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
-                                                        {{ $siswa->pembimbingSekolah->nama_lengkap }}
-                                                    </span>
                                                 @else
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-400">
-                                                        Belum diplot
-                                                    </span>
+                                                    @if($siswa->pembimbingSekolah)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
+                                                            KJ: {{ $siswa->pembimbingSekolah->nama_lengkap }}
+                                                        </span>
+                                                    @endif
+                                                    @if($siswa->pembimbingSekolahUmum)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolahUmum->nama_lengkap) }}">
+                                                            UM: {{ $siswa->pembimbingSekolahUmum->nama_lengkap }}
+                                                        </span>
+                                                    @endif
+                                                    @if(!$siswa->pembimbingSekolah && !$siswa->pembimbingSekolahUmum)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-400">
+                                                            Belum diplot
+                                                        </span>
+                                                    @endif
                                                 @endif
                                             </td>
                                         </tr>

@@ -28,8 +28,8 @@ class PokjaGroupMiddleware
             return $next($request);
         }
 
-        // Super admin has full access
-        if ($user->role === 'super_admin') {
+        // Super admin and Kepala Sekolah have full access bypass
+        if ($user->role === 'super_admin' || $user->role === 'kepala_sekolah') {
             return $next($request);
         }
 

@@ -16,7 +16,7 @@
         $navItems = [
             ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
             ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
-            ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
+            ['name' => 'Validasi Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
             ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
             ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
             ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
@@ -32,7 +32,7 @@
             ['name' => 'Feedback Sekolah', 'route' => 'pembimbing_dudi.feedback.index', 'icon' => 'message-square-plus'],
             ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
-    } elseif ($role === 'pokja') {
+    } elseif ($role === 'pokja' || $role === 'kepala_sekolah') {
         $navItems = [
             ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
             [
@@ -47,7 +47,7 @@
                 ]
             ],
             [
-                'name' => 'Akademik & Jurusan',
+                'name' => 'Akademik',
                 'icon' => 'book',
                 'children' => [
                     ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],
@@ -74,9 +74,20 @@
                     ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
                 ]
             ],
-            ['name' => 'Pengaturan', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'settings'],
-            ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
         ];
+
+        if ($role !== 'kepala_sekolah') {
+            $navItems[] = [
+                'name' => 'Pengaturan',
+                'icon' => 'settings',
+                'children' => [
+                    ['name' => 'Template Sertifikat', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'award'],
+                    ['name' => 'Template Surat PKL', 'route' => 'pokja.pengaturan.surat_pengantar', 'icon' => 'file-text'],
+                ]
+            ];
+        }
+
+        $navItems[] = ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'];
     } elseif ($role === 'kaprog') {
         $navItems = [
             ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
@@ -101,7 +112,7 @@
                 ]
             ],
             [
-                'name' => 'Akademik & Jurusan',
+                'name' => 'Akademik',
                 'icon' => 'book',
                 'children' => [
                     ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],
@@ -121,7 +132,7 @@
             'icon' => 'user-check',
             'children' => [
                 ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
-                ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
+                ['name' => 'Validasi Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
                 ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
                 ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
                 ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],

@@ -139,7 +139,7 @@ class SiswaPklLogicTest extends TestCase
         // Assert student notification is sent
         $this->assertDatabaseHas('notifikasis', [
             'to_user_id' => $this->siswa->user_id,
-            'judul' => 'Pembimbing Sekolah Ditugaskan',
+            'judul' => 'Pembimbing Sekolah (Kejuruan) Ditugaskan',
         ]);
     }
 
@@ -256,7 +256,7 @@ class SiswaPklLogicTest extends TestCase
     /**
      * Test Jurnal access control based on today's attendance.
      */
-    public function test_student_cannot_access_create_journal_without_absen_today()
+    public function test_student_can_access_create_journal_without_absen_today()
     {
         $this->siswa->update([
             'dudi_id' => $this->dudi->id,
@@ -266,15 +266,14 @@ class SiswaPklLogicTest extends TestCase
 
         $this->actingAs($this->siswa->user);
 
-        // Access index page - check hasAbsenToday is false
+        // Access index page
         $response = $this->get(route('siswa.jurnal.index'));
         $response->assertStatus(200);
         $response->assertViewHas('hasAbsenToday', false);
 
-        // Try to access create page directly
+        // Try to access create page directly (should succeed now)
         $responseCreate = $this->get(route('siswa.jurnal.create'));
-        $responseCreate->assertRedirect(route('siswa.jurnal.index'));
-        $responseCreate->assertSessionHas('error', 'Anda belum melakukan absensi hari ini. Silakan melakukan absensi terlebih dahulu sebelum mengisi jurnal.');
+        $responseCreate->assertStatus(200);
     }
 
     public function test_student_can_access_create_journal_after_absen_today()
@@ -425,5 +424,47 @@ class SiswaPklLogicTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('no_telp');
+    }
+
+    public function test_notifications_sent_to_kaprog_and_pokja_on_submission()
+    {
+        // 1. Create Kaprog associated with RPL program keahlian
+        $kaprog = User::create([
+            'name' => 'Kaprog RPL',
+            'username' => 'kaprog_rpl',
+            'email' => 'kaprog_rpl@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'kaprog',
+            'is_active' => true,
+            'force_password_change' => false,
+            'program_keahlian_id' => $this->konsentrasi->program_keahlian_id,
+        ]);
+
+        $this->actingAs($this->siswa->user);
+
+        // 2. Submit a new PKL proposal
+        $response = $this->post(route('siswa.pengajuan_pkl.store'), [
+            'nama_perusahaan' => 'PT Test Notifikasi',
+            'pimpinan' => 'Pimpinan Test',
+            'alamat' => 'Alamat Test',
+            'kota' => 'Kota Test',
+            'no_telp' => '08123456789',
+        ]);
+
+        $response->assertRedirect(route('siswa.pengajuan_pkl.status'));
+
+        // 3. Assert notification was sent to Kaprog
+        $this->assertDatabaseHas('notifikasis', [
+            'to_user_id' => $kaprog->id,
+            'judul' => 'Pengajuan Tempat PKL Baru',
+            'pesan' => "Siswa {$this->siswa->nama_lengkap} mengajukan tempat PKL baru di PT Test Notifikasi.",
+        ]);
+
+        // 4. Assert notification was sent to Pokja
+        $this->assertDatabaseHas('notifikasis', [
+            'to_user_id' => $this->pokja->id,
+            'judul' => 'Pengajuan Tempat PKL Baru',
+            'pesan' => "Siswa {$this->siswa->nama_lengkap} mengajukan tempat PKL baru di PT Test Notifikasi.",
+        ]);
     }
 }

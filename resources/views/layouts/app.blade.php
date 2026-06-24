@@ -84,7 +84,7 @@
             $navItems = [
                 ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
                 ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
-                ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
+                ['name' => 'Validasi Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
                 ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
                 ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
                 ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
@@ -100,7 +100,7 @@
                 ['name' => 'Feedback Sekolah', 'route' => 'pembimbing_dudi.feedback.index', 'icon' => 'message-square-plus'],
                 ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
             ];
-        } elseif ($role === 'pokja') {
+        } elseif ($role === 'pokja' || $role === 'kepala_sekolah') {
             $navItems = [
                 ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
                 [
@@ -115,7 +115,7 @@
                     ]
                 ],
                 [
-                    'name' => 'Akademik & Jurusan',
+                    'name' => 'Akademik',
                     'icon' => 'book',
                     'children' => [
                         ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],
@@ -142,9 +142,20 @@
                         ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
                     ]
                 ],
-                ['name' => 'Pengaturan', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'settings'],
-                ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
             ];
+
+            if ($role !== 'kepala_sekolah') {
+                $navItems[] = [
+                    'name' => 'Pengaturan',
+                    'icon' => 'settings',
+                    'children' => [
+                        ['name' => 'Template Sertifikat', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'award'],
+                        ['name' => 'Template Surat PKL', 'route' => 'pokja.pengaturan.surat_pengantar', 'icon' => 'file-text'],
+                    ]
+                ];
+            }
+
+            $navItems[] = ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'];
         } elseif ($role === 'kaprog') {
             $navItems = [
                 ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
@@ -170,7 +181,7 @@
                     ]
                 ],
                 [
-                    'name' => 'Akademik & Jurusan',
+                    'name' => 'Akademik',
                     'icon' => 'book',
                     'children' => [
                         ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],
@@ -190,7 +201,7 @@
                 'icon' => 'user-check',
                 'children' => [
                     ['name' => 'Siswa Bimbingan', 'route' => 'pembimbing_sekolah.siswa.index', 'icon' => 'users'],
-                    ['name' => 'Monitoring Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
+                    ['name' => 'Validasi Jurnal', 'route' => 'pembimbing_sekolah.jurnal.index', 'icon' => 'activity'],
                     ['name' => 'Kehadiran Siswa', 'route' => 'pembimbing_sekolah.absensi.index', 'icon' => 'calendar'],
                     ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
                     ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
@@ -206,7 +217,7 @@
         <div class="flex items-center justify-center p-6 border-b border-slate-200/50 dark:border-slate-700/50">
             <div class="flex items-center gap-3">
                 <img src="{{ $appLogoActive ?: asset('logo.png') }}" alt="Logo" class="w-10 h-10 object-contain rounded-xl">
-                <h1 class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600 dark:from-blue-300 dark:to-blue-500 drop-shadow-sm transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-md cursor-default">{{ $appName }}</h1>
+                <h1 class="text-2xl font-black tracking-tighter text-blue-600 dark:text-blue-400 drop-shadow-sm transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-md cursor-default">{{ $appName }}</h1>
             </div>
         </div>
 
@@ -222,7 +233,7 @@
             <!-- Mobile Logo (Hidden on Desktop) -->
             <div class="flex lg:hidden items-center gap-2.5">
                 <img src="{{ $appLogoActive ?? asset('logo.png') }}" alt="Logo" class="w-8 h-8 object-contain rounded-lg">
-                <h1 class="text-xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-600 dark:from-blue-300 dark:to-blue-500 drop-shadow-sm">{{ $appName ?? config('app.name', 'MAS-PKL') }}</h1>
+                <h1 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400 drop-shadow-sm">{{ $appName ?? config('app.name', 'MAS-PKL') }}</h1>
             </div>
             
             <div class="ml-auto flex items-center gap-4">
@@ -291,7 +302,13 @@
                         
                         <div class="hidden md:flex flex-col text-left">
                             <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight truncate max-w-[150px]">{{ auth()->user()?->name ?? 'Guest User' }}</span>
-                            <span class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5">{{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}</span>
+                            <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5">
+                                @if(auth()->user()?->role === 'pembimbing_sekolah' && auth()->user()->pembimbingSekolah)
+                                    Pembimbing {{ auth()->user()->pembimbingSekolah->tipe === 'keduanya' ? 'Kejuruan & Umum' : (auth()->user()->pembimbingSekolah->tipe === 'kejuruan' ? 'Kejuruan' : 'Umum') }}
+                                @else
+                                    {{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}
+                                @endif
+                            </span>
                         </div>
                         
                         <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform duration-200 group-hover:text-slate-600 dark:group-hover:text-slate-300" :class="profileMenuOpen ? 'rotate-180' : ''"></i>
@@ -310,7 +327,13 @@
                         
                         <div class="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/20 border-b border-slate-200/50 dark:border-slate-700/50">
                             <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{{ auth()->user()?->name ?? 'Guest User' }}</p>
-                            <p class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5">{{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}</p>
+                             <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase mt-0.5">
+                                 @if(auth()->user()?->role === 'pembimbing_sekolah' && auth()->user()->pembimbingSekolah)
+                                     Pembimbing {{ auth()->user()->pembimbingSekolah->tipe === 'keduanya' ? 'Kejuruan & Umum' : (auth()->user()->pembimbingSekolah->tipe === 'kejuruan' ? 'Kejuruan' : 'Umum') }}
+                                 @else
+                                     {{ str_replace('_', ' ', auth()->user()?->role ?? 'Guest') }}
+                                 @endif
+                             </p>
                         </div>
 
                         <div class="p-1.5 space-y-1">
@@ -340,12 +363,12 @@
         </header>
 
         <!-- Main Scrollable Area -->
-        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 sm:p-6 lg:p-8 lg:pb-8 relative">
+        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-36 sm:p-6 sm:pb-36 lg:p-8 lg:pb-8 relative">
             <div class="mx-auto max-w-7xl animate-fade-in-up">
                 <!-- Page Header -->
                 @if (isset($header))
                     <header class="mb-8">
-                        <h2 class="text-3xl font-bold text-gradient tracking-tight">
+                        <h2 class="text-3xl font-bold text-blue-600 dark:text-blue-400 tracking-tight">
                             {{ $header }}
                         </h2>
                     </header>
@@ -751,6 +774,71 @@
             });
 
             observer.observe(document.body, { childList: true, subtree: true });
+
+            // Auto-submit GET forms (Search & Filters)
+            const filterForms = document.querySelectorAll('form[method="GET"]');
+            
+            // Restore focus if needed
+            const focusedInputName = sessionStorage.getItem('autoSubmitFocusedInput');
+            if (focusedInputName) {
+                const inputToFocus = document.querySelector(`[name="${focusedInputName}"]`);
+                if (inputToFocus && (inputToFocus.type === 'text' || inputToFocus.type === 'search')) {
+                    setTimeout(() => {
+                        inputToFocus.focus();
+                        const val = inputToFocus.value;
+                        inputToFocus.value = '';
+                        inputToFocus.value = val;
+                    }, 50);
+                }
+                sessionStorage.removeItem('autoSubmitFocusedInput');
+            }
+
+            filterForms.forEach(form => {
+                if (form.classList.contains('no-auto-submit') || (form.getAttribute('action') && form.getAttribute('action').includes('logout'))) return;
+
+                let timeout = null;
+                const submitForm = (activeElement) => {
+                    if (activeElement && activeElement.name) {
+                        sessionStorage.setItem('autoSubmitFocusedInput', activeElement.name);
+                    }
+                    form.submit();
+                };
+
+                const inputs = form.querySelectorAll('input, select, textarea');
+                let hasAutoSubmitInputs = false;
+
+                inputs.forEach(input => {
+                    if (input.type === 'hidden') return;
+                    hasAutoSubmitInputs = true;
+
+                    if (input.type === 'text' || input.type === 'search') {
+                        input.addEventListener('input', (e) => {
+                            clearTimeout(timeout);
+                            timeout = setTimeout(() => {
+                                submitForm(e.target);
+                            }, 800); // 800ms debounce
+                        });
+                        
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                clearTimeout(timeout);
+                                submitForm(e.target);
+                            }
+                        });
+                    } else {
+                        input.addEventListener('change', (e) => {
+                            submitForm(e.target);
+                        });
+                    }
+                });
+
+                // Hide submit button if the form has auto-submittable inputs
+                if (hasAutoSubmitInputs) {
+                    const submitBtns = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+                    submitBtns.forEach(btn => btn.style.display = 'none');
+                }
+            });
         });
     </script>
 

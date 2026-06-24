@@ -44,17 +44,21 @@
 
     <div x-data="{ importPanelOpen: false, guideModalOpen: false }">
         <div class="mb-6 pokja-header-container">
-            <p class="text-slate-600 dark:text-slate-400">Total data siswa yang terdaftar dalam sistem PKL.</p>
-            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
-                    <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+            <div class="flex-1">
+                <p class="text-slate-600 dark:text-slate-400 text-sm">Total data siswa yang terdaftar dalam sistem PKL.</p>
+            </div>
+            @if(auth()->user()->role !== 'kepala_sekolah')
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
+                    <i data-lucide="upload-cloud" class="w-4 h-4"></i>
                     Impor Siswa
                 </button>
-                <a href="{{ route('pokja.siswa.create') }}" class="pokja-btn px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
-                    <i data-lucide="user-plus" class="w-5 h-5"></i>
+                <a href="{{ route('pokja.siswa.create') }}" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
                     Tambah Siswa
                 </a>
             </div>
+            @endif
         </div>
 
         <!-- Inline Import Panel (Directly on the main page layout, occupying full width!) -->
@@ -75,7 +79,7 @@
                         Impor Data Siswa Massal
                     </h3>
                     <button @click="importPanelOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                        <i data-lucide="x" class="w-5 h-5"></i>
+                        <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
                 
@@ -171,7 +175,7 @@
                               Panduan Impor Data Siswa Massal
                           </h3>
                           <button @click="guideModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                              <i data-lucide="x" class="w-5 h-5"></i>
+                              <i data-lucide="x" class="w-4 h-4"></i>
                           </button>
                       </div>
 
@@ -291,7 +295,7 @@
     @if(session('import_errors'))
         <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm">
             <h4 class="font-bold mb-2 flex items-center gap-2">
-                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 shrink-0"></i>
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
                 Gagal Mengimpor Data Siswa. Silakan periksa beberapa kesalahan berikut:
             </h4>
             <ul class="list-disc pl-5 space-y-1 text-xs">
@@ -304,7 +308,7 @@
 
     @if(session('success'))
         <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
             {{ session('success') }}
         </div>
     @endif
@@ -342,8 +346,8 @@
                 Filter
             </button>
             @if(request()->anyFilled(['search', 'konsentrasi', 'sort']))
-                <a href="{{ route('pokja.siswa.index') }}" class="px-4 py-2 text-slate-500 hover:text-red-400 text-sm flex items-center gap-2 transition-colors">
-                    <i data-lucide="x-circle" class="w-4 h-4"></i> Reset
+                <a href="{{ route('pokja.siswa.index') }}" class="px-4 py-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold rounded-xl transition-all text-sm flex items-center justify-center gap-2 border border-red-200/50 dark:border-red-500/20">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Filter
                 </a>
             @endif
         </form>
@@ -358,7 +362,9 @@
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Konsentrasi Keahlian / Kelas</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Penempatan</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+                        @if(auth()->user()->role !== 'kepala_sekolah')
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right whitespace-nowrap">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-700/50">
@@ -389,10 +395,17 @@
                                     @endif
 
                                     <!-- Guru Pembimbing -->
-                                    @if($item->pembimbingSekolah)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($item->pembimbingSekolah->nama_lengkap) }}">
-                                            Guru: {{ $item->pembimbingSekolah->nama_lengkap }}
-                                        </span>
+                                    @if($item->pembimbingSekolah || $item->pembimbingSekolahUmum)
+                                        @if($item->pembimbingSekolah)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($item->pembimbingSekolah->nama_lengkap) }}">
+                                                KJ: {{ $item->pembimbingSekolah->nama_lengkap }}
+                                            </span>
+                                        @endif
+                                        @if($item->pembimbingSekolahUmum)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($item->pembimbingSekolahUmum->nama_lengkap) }}">
+                                                UM: {{ $item->pembimbingSekolahUmum->nama_lengkap }}
+                                            </span>
+                                        @endif
                                     @else
                                         <span class="text-[10px] text-slate-500/80 bg-slate-500/5 px-2 py-0.5 rounded border border-slate-500/10 font-bold uppercase tracking-wider">Guru: Belum diplot</span>
                                     @endif
@@ -419,6 +432,7 @@
                                     {{ $item->status_hari_ini }}
                                 </span>
                             </td>
+                            @if(auth()->user()->role !== 'kepala_sekolah')
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <div x-data="{ open: false }" class="relative flex justify-end" x-on:click.away="open = false">
                                     <button x-on:click="open = !open" class="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
@@ -448,10 +462,11 @@
                                     </div>
                                 </div>
                             </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
+                            <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 4 : 5 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
                                 Belum ada data siswa.
                             </td>
                         </tr>

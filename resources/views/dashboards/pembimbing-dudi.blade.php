@@ -76,7 +76,7 @@
                             {{ $absensiCounts['hadir'] ?? 0 }},
                             {{ $absensiCounts['izin'] ?? 0 }},
                             {{ $absensiCounts['sakit'] ?? 0 }},
-                            {{ $absensiCounts['alpa'] ?? 0 }}
+                            {{ $absensiCounts['alpha'] ?? $absensiCounts['alpa'] ?? 0 }}
                         ],
                         backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
                         borderWidth: 0

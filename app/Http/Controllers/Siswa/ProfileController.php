@@ -21,12 +21,31 @@ class ProfileController extends Controller
         $request->validate([
             'pembimbing_dudi_nama' => 'nullable|string|max:255',
             'pembimbing_dudi_jabatan' => 'nullable|string|max:255',
+            'pembimbing_dudi_no_hp' => 'nullable|string|max:20',
             'unit_pekerjaan' => 'nullable|string|max:255',
             'no_hp' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
         ]);
 
-        $siswa->update($request->only(['pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'unit_pekerjaan', 'no_hp', 'alamat']));
+        // 1. Update siswa attributes
+        $updateFields = ['unit_pekerjaan', 'no_hp', 'alamat'];
+        if (!$siswa->pembimbing_dudi_id) {
+            $updateFields = array_merge($updateFields, ['pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'pembimbing_dudi_no_hp']);
+        }
+        $siswa->update($request->only($updateFields));
+
+        // 2. Synchronize address to DUDI or Pengajuan
+        if ($siswa->dudi) {
+            $siswa->dudi->update(['alamat' => $request->alamat]);
+        } elseif ($siswa->pengajuanPkl) {
+            if ($siswa->pengajuanPkl->dudi_id) {
+                if ($siswa->pengajuanPkl->dudi) {
+                    $siswa->pengajuanPkl->dudi->update(['alamat' => $request->alamat]);
+                }
+            } else {
+                $siswa->pengajuanPkl->update(['alamat' => $request->alamat]);
+            }
+        }
 
         return back()->with('success', 'Profil berhasil diperbarui.');
     }

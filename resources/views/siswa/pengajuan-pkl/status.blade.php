@@ -117,7 +117,7 @@
                                 </span>
                             @elseif($pengajuan->status === 'disetujui')
                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium whitespace-nowrap">
-                                    <i data-lucide="check" class="w-3 h-3"></i> {{ $pengajuan->dudi_id ? 'Disetujui' : 'Disetujui Pokja' }}
+                                    <i data-lucide="check" class="w-3 h-3"></i> {{ !$pengajuan->is_manual ? 'Disetujui' : 'Disetujui Pokja' }}
                                 </span>
                             @else
                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-medium whitespace-nowrap">
@@ -154,7 +154,7 @@
                 </div>
 
                 @if($pengajuan->status === 'disetujui')
-                    @if($pengajuan->dudi_id)
+                    @if(!$pengajuan->is_manual)
                         <!-- Alur DUDI Terdaftar: Tanpa Surat Pengantar & Bukti Balasan -->
                         <div class="mt-6 p-5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl shadow-sm">
                             <div class="flex items-start gap-3">

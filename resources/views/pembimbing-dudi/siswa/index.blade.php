@@ -43,12 +43,23 @@
                                 <span class="text-xs text-slate-500 dark:text-slate-400">Kelas {{ $item->kelas }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($item->pembimbingSekolah)
-                                    <span class="text-sm text-slate-700 dark:text-slate-300 block font-medium">{{ $item->pembimbingSekolah->nama_lengkap }}</span>
-                                    <span class="text-xs text-slate-500 dark:text-slate-400">{{ $item->pembimbingSekolah->no_hp }}</span>
-                                @else
-                                    <span class="text-xs text-slate-500 italic">Belum ditentukan</span>
-                                @endif
+                                <div class="flex flex-col gap-2">
+                                    @if($item->pembimbingSekolah)
+                                        <div>
+                                            <span class="text-[10px] font-bold text-blue-500 uppercase tracking-wider block">KJ: {{ $item->pembimbingSekolah->nama_lengkap }}</span>
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">{{ $item->pembimbingSekolah->no_hp }}</span>
+                                        </div>
+                                    @endif
+                                    @if($item->pembimbingSekolahUmum)
+                                        <div>
+                                            <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider block">UM: {{ $item->pembimbingSekolahUmum->nama_lengkap }}</span>
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">{{ $item->pembimbingSekolahUmum->no_hp }}</span>
+                                        </div>
+                                    @endif
+                                    @if(!$item->pembimbingSekolah && !$item->pembimbingSekolahUmum)
+                                        <span class="text-xs text-slate-500 italic">Belum ditentukan</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-4">

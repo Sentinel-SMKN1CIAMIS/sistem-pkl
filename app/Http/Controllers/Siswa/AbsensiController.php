@@ -55,8 +55,11 @@ class AbsensiController extends Controller
 
         $request->validate([
             'signature' => 'required', // Base64 signature
-            'latitude' => 'nullable',
-            'longitude' => 'nullable',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ], [
+            'latitude.required' => 'Lokasi GPS wajib diaktifkan untuk melakukan absensi.',
+            'longitude.required' => 'Lokasi GPS wajib diaktifkan untuk melakukan absensi.',
         ]);
 
         $siswa = auth()->user()->siswa;
@@ -87,6 +90,11 @@ class AbsensiController extends Controller
             'longitude' => $request->longitude,
         ]);
 
+        // Auto-update status PKL to 'sedang_pkl' on first attendance
+        if ($siswa->status_pkl === 'belum_mulai') {
+            $siswa->update(['status_pkl' => 'sedang_pkl']);
+        }
+
         return redirect()->route('siswa.absensi.index')->with('success', 'Berhasil melakukan Absen Datang.');
     }
 
@@ -109,18 +117,33 @@ class AbsensiController extends Controller
             return back()->with('error', 'Anda sudah melakukan absen pulang hari ini.');
         }
 
-        // T5.2: Check if 7 hours have passed since clock-in
+        // Check if at least 1 hour has passed since clock-in
         $clockInTime = Carbon::parse($absensi->tanggal . ' ' . $absensi->waktu_datang);
         $now = Carbon::now();
+        $oneHourLater = $clockInTime->copy()->addHour();
+
+        if ($now < $oneHourLater) {
+            return back()->with('error', 'Anda belum bisa melakukan absen pulang. Minimal 1 jam setelah absen datang.');
+        }
+
+        // Check if 7 hours have passed OR early leave approved
         $sevenHoursLater = $clockInTime->copy()->addHours(7);
 
         if ($now < $sevenHoursLater) {
-            $diffInMinutes = $now->diffInMinutes($sevenHoursLater);
-            $hours = intdiv($diffInMinutes, 60);
-            $minutes = $diffInMinutes % 60;
-            return back()->with('error', "Anda baru bisa absen pulang setelah 7 jam sejak absen datang. Sisa waktu: $hours jam $minutes menit.");
+            // Less than 7 hours - MUST have approval
+            if ($absensi->early_leave_request_status !== 'approved') {
+                return back()->with('error', 'Anda belum bisa pulang sebelum 7 jam. Silakan ajukan izin pulang cepat ke pembimbing DUDI terlebih dahulu.');
+            }
+
+            // Approved - can clock out early
+            $absensi->update([
+                'waktu_pulang' => Carbon::now()->toTimeString(),
+            ]);
+
+            return redirect()->route('siswa.absensi.index')->with('success', 'Berhasil melakukan Absen Pulang (Izin disetujui).');
         }
 
+        // Normal clock out (>= 7 hours)
         $absensi->update([
             'waktu_pulang' => Carbon::now()->toTimeString(),
         ]);
@@ -134,16 +157,12 @@ class AbsensiController extends Controller
         if ($redirect = $this->requirePkl()) return $redirect;
 
         $request->validate([
-            'status' => 'required|in:izin,sakit,alpa',
+            'status' => 'required|in:izin,sakit',
             'alasan' => 'required|min:10',
-            'tanggal' => 'required|date|before_or_equal:today|after_or_equal:-7 days',
-        ], [
-            'tanggal.before_or_equal' => 'Tanggal tidak boleh melebihi hari ini.',
-            'tanggal.after_or_equal' => 'Tanggal tidak boleh lebih dari 7 hari yang lalu.',
         ]);
 
         $siswa = auth()->user()->siswa;
-        $tanggal = Carbon::parse($request->tanggal);
+        $tanggal = Carbon::today();
 
         // Check if already submitted for today
         $exists = Absensi::where('siswa_id', $siswa->id)
@@ -151,7 +170,7 @@ class AbsensiController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Anda sudah memiliki absensi untuk tanggal tersebut.');
+            return back()->with('error', 'Anda sudah memiliki absensi untuk hari ini.');
         }
 
         Absensi::create([
@@ -163,5 +182,59 @@ class AbsensiController extends Controller
         ]);
 
         return back()->with('success', 'Berhasil mengajukan permintaan ' . $request->status . '. Menunggu persetujuan guru pembimbing.');
+    }
+
+    // Request early leave (pulang cepat) - requires approval from Pembimbing DUDI
+    public function requestEarlyLeave(Request $request)
+    {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
+        $request->validate([
+            'early_leave_reason' => 'required|string|min:10',
+        ], [
+            'early_leave_reason.required' => 'Alasan izin pulang cepat wajib diisi.',
+            'early_leave_reason.min' => 'Alasan minimal 10 karakter.',
+        ]);
+
+        $siswa = auth()->user()->siswa;
+        $today = Carbon::today();
+
+        $absensi = Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', $today)
+            ->first();
+
+        if (!$absensi) {
+            return back()->with('error', 'Anda belum melakukan absen datang hari ini.');
+        }
+
+        if ($absensi->early_leave_request_status === 'pending') {
+            return back()->with('error', 'Anda sudah mengajukan izin pulang cepat. Menunggu persetujuan pembimbing DUDI.');
+        }
+
+        $absensi->update([
+            'early_leave_request_status' => 'pending',
+            'early_leave_reason' => $request->early_leave_reason,
+            'early_leave_requested_at' => now(),
+        ]);
+
+        // Create notification for Pembimbing DUDI
+        $pembimbingDudi = $siswa->pembimbingDudi;
+        if (!$pembimbingDudi && $siswa->dudi) {
+            $pembimbingDudi = $siswa->dudi->pembimbingDudi()->first();
+        }
+        
+        if ($pembimbingDudi && $pembimbingDudi->user_id) {
+            \App\Models\Notifikasi::create([
+                'from_user_id' => auth()->id(),
+                'to_user_id' => $pembimbingDudi->user_id,
+                'judul' => 'Permintaan Izin Pulang Cepat',
+                'pesan' => $siswa->nama_lengkap . ' mengajukan izin pulang cepat pada tanggal ' . Carbon::today()->isoFormat('D MMMM YYYY') . '. Alasan: ' . $request->early_leave_reason,
+                'tipe' => 'early_leave_request',
+                'link' => route('pembimbing_dudi.absensi.index'),
+                'is_read' => 0,
+            ]);
+        }
+
+        return back()->with('success', 'Permintaan izin pulang cepat telah diajukan. Menunggu persetujuan pembimbing DUDI.');
     }
 }

@@ -22,19 +22,27 @@ class PesanController extends Controller
         // 1. If has siswa profile
         if ($role === 'siswa') {
             $siswa = $user->siswa;
-            if ($siswa && $siswa->pembimbing_sekolah_id) {
-                $guru = \App\Models\PembimbingSekolah::with('user')
-                    ->find($siswa->pembimbing_sekolah_id);
-                if ($guru && $guru->user) {
-                    $kontak->push($guru->user);
+            if ($siswa) {
+                if ($siswa->pembimbing_sekolah_id) {
+                    $guru = \App\Models\PembimbingSekolah::with('user')
+                        ->find($siswa->pembimbing_sekolah_id);
+                    if ($guru && $guru->user) {
+                        $kontak->push($guru->user);
+                    }
                 }
-            }
-
-            if ($siswa && $siswa->pembimbing_dudi_id) {
-                $mentor = \App\Models\PembimbingDudi::with('user')
-                    ->find($siswa->pembimbing_dudi_id);
-                if ($mentor && $mentor->user) {
-                    $kontak->push($mentor->user);
+                if ($siswa->pembimbing_sekolah_umum_id) {
+                    $guruUmum = \App\Models\PembimbingSekolah::with('user')
+                        ->find($siswa->pembimbing_sekolah_umum_id);
+                    if ($guruUmum && $guruUmum->user) {
+                        $kontak->push($guruUmum->user);
+                    }
+                }
+                if ($siswa->pembimbing_dudi_id) {
+                    $mentor = \App\Models\PembimbingDudi::with('user')
+                        ->find($siswa->pembimbing_dudi_id);
+                    if ($mentor && $mentor->user) {
+                        $kontak->push($mentor->user);
+                    }
                 }
             }
 
@@ -45,9 +53,10 @@ class PesanController extends Controller
         if ($user->pembimbingSekolah) {
             $guru = $user->pembimbingSekolah;
             $students = \App\Models\Siswa::with('user')
-                ->where('pembimbing_sekolah_id' . '', $guru->id)
+                ->where('pembimbing_sekolah_id', $guru->id)
+                ->orWhere('pembimbing_sekolah_umum_id', $guru->id)
                 ->get()
-                ->pluck('user' . '')
+                ->pluck('user')
                 ->filter();
             $kontak = $kontak->merge($students);
         }
@@ -71,10 +80,18 @@ class PesanController extends Controller
             $kontak = $kontak->merge($others);
         }
 
+        // Kepala Sekolah
+        if ($role === 'kepala_sekolah') {
+            $allowedUsers = User::whereIn('role', ['pokja', 'kaprog'])
+                ->where('is_active', true)
+                ->get();
+            $kontak = $kontak->merge($allowedUsers);
+        }
+
         // 5. Kaprog
         if ($role === 'kaprog') {
-            // Pokja & Super Admin
-            $pokjas = User::whereIn('role' . '', ['pokja', 'super_admin'])->where('is_active' . '', true)->where('id' . '', '!=', $user->id)->get();
+            // Pokja, Super Admin, & Kepala Sekolah
+            $pokjas = User::whereIn('role' . '', ['pokja', 'super_admin', 'kepala_sekolah'])->where('is_active' . '', true)->where('id' . '', '!=', $user->id)->get();
             $kontak = $kontak->merge($pokjas);
 
             if ($user->program_keahlian_id) {
@@ -279,6 +296,7 @@ class PesanController extends Controller
                 'mine'     => $m->from_user_id === $authId,
                 'time'     => $m->created_at->format('H:i'),
                 'read'     => $m->dibaca_at !== null,
+                'is_broadcast' => $m->is_broadcast,
             ]);
 
         // Tandai sebagai dibaca

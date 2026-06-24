@@ -64,9 +64,19 @@
                         <small>{{ $item->siswa->nis }}</small>
                     </td>
                     <td>{{ $item->siswa->dudi->nama ?? '-' }}</td>
-                    <td align="center">{{ $item->waktu_masuk ? \Carbon\Carbon::parse($item->waktu_masuk)->format('H:i') : '-' }}</td>
+                    <td align="center">{{ $item->waktu_datang ? \Carbon\Carbon::parse($item->waktu_datang)->format('H:i') : '-' }}</td>
                     <td align="center">{{ $item->waktu_pulang ? \Carbon\Carbon::parse($item->waktu_pulang)->format('H:i') : '-' }}</td>
-                    <td>{{ $item->status }}</td>
+                    <td>
+                        @php
+                            $statusLabels = [
+                                'hadir' => 'Hadir',
+                                'izin' => 'Izin',
+                                'sakit' => 'Sakit',
+                                'alpha' => 'Alpa',
+                            ];
+                        @endphp
+                        {{ $statusLabels[$item->status] ?? ucfirst($item->status) }}
+                    </td>
                 </tr>
             @endforeach
         </tbody>

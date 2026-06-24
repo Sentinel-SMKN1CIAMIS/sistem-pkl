@@ -46,9 +46,11 @@
                         <span class="text-xs text-slate-400 dark:text-slate-500 font-mono">
                             {{ $item->created_at->translatedFormat('d F Y, H:i') }}
                         </span>
+                        @if(auth()->user()->role !== 'kepala_sekolah')
                         <a href="{{ route('pokja.feedback.print', $item->id) }}" target="_blank" class="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-500 transition-all" title="Cetak Feedback Resmi">
                             <i data-lucide="printer" class="w-4 h-4"></i>
                         </a>
+                        @endif
                     </div>
                 </div>
                 <div class="text-sm text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl space-y-3">

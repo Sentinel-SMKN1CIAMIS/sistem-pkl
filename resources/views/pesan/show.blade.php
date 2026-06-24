@@ -56,7 +56,11 @@
                             <div class="flex items-center justify-between gap-1">
                                 <span class="text-xs text-slate-400 dark:text-slate-500 truncate">
                                     @if($meta->last_msg)
-                                        {{ $meta->last_msg->from_user_id === auth()->id() ? 'Anda: ' : '' }}{{ $meta->last_msg->isi }}
+                                        {{ $meta->last_msg->from_user_id === auth()->id() ? 'Anda: ' : '' }}
+                                        @if($meta->last_msg->is_broadcast)
+                                            <span class="font-semibold text-indigo-500 dark:text-indigo-400">📢</span>
+                                        @endif
+                                        {{ $meta->last_msg->isi }}
                                     @else
                                         <span class="italic">Belum ada pesan</span>
                                     @endif
@@ -109,10 +113,15 @@
                 @foreach($messages as $msg)
                     @php $mine = $msg->from_user_id === auth()->id(); @endphp
                     <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $msg->id }}">
-                        <div class="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm
+                        <div class="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm relative
                             {{ $mine
-                                ? 'bg-blue-600 text-white rounded-br-sm'
-                                : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-sm' }}">
+                                ? ($msg->is_broadcast ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-blue-600 text-white rounded-br-sm')
+                                : ($msg->is_broadcast ? 'bg-indigo-50 dark:bg-indigo-900/40 text-slate-800 dark:text-slate-100 border border-indigo-200 dark:border-indigo-700/50 rounded-bl-sm' : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-sm') }}">
+                            @if($msg->is_broadcast)
+                                <div class="text-[10px] font-semibold mb-1 opacity-80 flex items-center gap-1 {{ $mine ? 'text-indigo-200' : 'text-indigo-600 dark:text-indigo-300' }}">
+                                    <i data-lucide="megaphone" class="w-3 h-3"></i> Broadcast
+                                </div>
+                            @endif
                             <p class="whitespace-pre-wrap break-words">{{ $msg->isi }}</p>
                             <p class="text-[10px] mt-1 {{ $mine ? 'text-blue-200' : 'text-slate-400' }} text-right flex items-center justify-end gap-1">
                                 {{ $msg->created_at->format('H:i') }}
@@ -247,14 +256,22 @@
     // Render satu bubble baru
     function renderBubble(msg) {
         const mine = msg.mine;
+        const is_broadcast = msg.is_broadcast;
         const wrap = document.createElement('div');
         wrap.className = `flex ${mine ? 'justify-end' : 'justify-start'}`;
         wrap.dataset.msgId = msg.id;
+        
+        const mineClasses = is_broadcast ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-blue-600 text-white rounded-br-sm';
+        const theirClasses = is_broadcast ? 'bg-indigo-50 dark:bg-indigo-900/40 text-slate-800 dark:text-slate-100 border border-indigo-200 dark:border-indigo-700/50 rounded-bl-sm' : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-sm';
+        
+        let broadcastHeader = '';
+        if (is_broadcast) {
+            broadcastHeader = `<div class="text-[10px] font-semibold mb-1 opacity-80 flex items-center gap-1 ${mine ? 'text-indigo-200' : 'text-indigo-600 dark:text-indigo-300'}"><i data-lucide="megaphone" class="w-3 h-3"></i> Broadcast</div>`;
+        }
+
         wrap.innerHTML = `
-            <div class="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm
-                ${mine
-                    ? 'bg-blue-600 text-white rounded-br-sm'
-                    : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-sm'}">
+            <div class="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm relative ${mine ? mineClasses : theirClasses}">
+                ${broadcastHeader}
                 <p class="whitespace-pre-wrap break-words">${escHtml(msg.isi)}</p>
                 <p class="text-[10px] mt-1 ${mine ? 'text-blue-200' : 'text-slate-400'} text-right">
                     ${msg.time}

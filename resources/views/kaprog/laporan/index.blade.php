@@ -46,11 +46,17 @@
                             @endif
                         </td>
                         <td class="py-3 px-4">
-                            @if($siswa->pembimbingSekolah)
-                                <span class="text-slate-800 dark:text-slate-200">{{ $siswa->pembimbingSekolah->nama_lengkap }}</span>
-                            @else
-                                <span class="text-slate-400 italic">Belum diplot</span>
-                            @endif
+                            <div class="flex flex-col gap-1 items-start">
+                                @if($siswa->pembimbingSekolah)
+                                    <span class="text-xs font-bold text-blue-500 uppercase tracking-wider block">KJ: {{ $siswa->pembimbingSekolah->nama_lengkap }}</span>
+                                @endif
+                                @if($siswa->pembimbingSekolahUmum)
+                                    <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider block">UM: {{ $siswa->pembimbingSekolahUmum->nama_lengkap }}</span>
+                                @endif
+                                @if(!$siswa->pembimbingSekolah && !$siswa->pembimbingSekolahUmum)
+                                    <span class="text-slate-400 italic">Belum diplot</span>
+                                @endif
+                            </div>
                         </td>
                         <td class="py-3 px-4">
                             @if($siswa->dudi_id)

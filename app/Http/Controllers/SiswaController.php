@@ -12,7 +12,7 @@ class SiswaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = \App\Models\Siswa::with(['user', 'konsentrasiKeahlian', 'dudi', 'pembimbingSekolah']);
+        $query = \App\Models\Siswa::with(['user', 'konsentrasiKeahlian', 'dudi', 'pembimbingSekolah', 'pembimbingSekolahUmum']);
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -152,6 +152,7 @@ class SiswaController extends Controller
         ]);
 
         $oldPembimbingId = $siswa->pembimbing_sekolah_id;
+        $oldPembimbingUmumId = $siswa->pembimbing_sekolah_umum_id;
         $oldStatusPkl = $siswa->status_pkl;
 
         $data = $request->all();
@@ -160,6 +161,7 @@ class SiswaController extends Controller
         if (isset($data['status_pkl']) && $data['status_pkl'] === 'dibatalkan') {
             $data['dudi_id'] = null;
             $data['pembimbing_sekolah_id'] = null;
+            $data['pembimbing_sekolah_umum_id'] = null;
             $data['pembimbing_dudi_id'] = null;
 
             // Handle pengajuan tempat PKL lama: reject dan hapus bukti balasan
@@ -183,7 +185,7 @@ class SiswaController extends Controller
         // Update user name if changed
         $siswa->user->update(['name' => $request->nama_lengkap, 'username' => $request->nis]);
 
-        // Kirim notifikasi jika Pembimbing Sekolah ditugaskan/berubah
+        // Kirim notifikasi jika Pembimbing Sekolah Kejuruan ditugaskan/berubah
         if ($siswa->pembimbing_sekolah_id && $siswa->pembimbing_sekolah_id != $oldPembimbingId) {
             $pembimbing = \App\Models\PembimbingSekolah::find($siswa->pembimbing_sekolah_id);
             if ($pembimbing) {
@@ -191,7 +193,7 @@ class SiswaController extends Controller
                 \App\Models\Notifikasi::create([
                     'to_user_id' => $pembimbing->user_id,
                     'judul'      => 'Penugasan Bimbingan Baru',
-                    'pesan'      => "Anda telah ditugaskan sebagai Pembimbing Sekolah untuk siswa {$siswa->nama_lengkap} (NIS: {$siswa->nis}).",
+                    'pesan'      => "Anda telah ditugaskan sebagai Pembimbing Sekolah (Kejuruan) untuk siswa {$siswa->nama_lengkap} (NIS: {$siswa->nis}).",
                     'link'       => route('pembimbing_sekolah.siswa.index'),
                     'is_read'    => false,
                 ]);
@@ -199,8 +201,32 @@ class SiswaController extends Controller
                 // Notifikasi untuk Siswa
                 \App\Models\Notifikasi::create([
                     'to_user_id' => $siswa->user_id,
-                    'judul'      => 'Pembimbing Sekolah Ditugaskan',
-                    'pesan'      => "Anda telah dibimbing oleh Guru Pembimbing Sekolah: {$pembimbing->nama_lengkap}.",
+                    'judul'      => 'Pembimbing Sekolah (Kejuruan) Ditugaskan',
+                    'pesan'      => "Anda telah dibimbing oleh Guru Pembimbing Sekolah (Kejuruan): {$pembimbing->nama_lengkap}.",
+                    'link'       => route('dashboard'),
+                    'is_read'    => false,
+                ]);
+            }
+        }
+
+        // Kirim notifikasi jika Pembimbing Sekolah Umum ditugaskan/berubah
+        if ($siswa->pembimbing_sekolah_umum_id && $siswa->pembimbing_sekolah_umum_id != $oldPembimbingUmumId) {
+            $pembimbingUmum = \App\Models\PembimbingSekolah::find($siswa->pembimbing_sekolah_umum_id);
+            if ($pembimbingUmum) {
+                // Notifikasi untuk Guru Pembimbing Umum
+                \App\Models\Notifikasi::create([
+                    'to_user_id' => $pembimbingUmum->user_id,
+                    'judul'      => 'Penugasan Bimbingan Baru',
+                    'pesan'      => "Anda telah ditugaskan sebagai Pembimbing Sekolah (Umum) untuk siswa {$siswa->nama_lengkap} (NIS: {$siswa->nis}).",
+                    'link'       => route('pembimbing_sekolah.siswa.index'),
+                    'is_read'    => false,
+                ]);
+
+                // Notifikasi untuk Siswa
+                \App\Models\Notifikasi::create([
+                    'to_user_id' => $siswa->user_id,
+                    'judul'      => 'Pembimbing Sekolah (Umum) Ditugaskan',
+                    'pesan'      => "Anda telah dibimbing oleh Guru Pembimbing Sekolah (Umum): {$pembimbingUmum->nama_lengkap}.",
                     'link'       => route('dashboard'),
                     'is_read'    => false,
                 ]);

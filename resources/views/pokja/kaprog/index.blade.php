@@ -27,17 +27,21 @@
 
     <div x-data="{ importPanelOpen: false, guideModalOpen: false }">
         <div class="mb-6 pokja-header-container">
-            <p class="text-slate-600 dark:text-slate-400">Daftar Kepala Program Keahlian (Kaprog) per program keahlian.</p>
-            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
-                    <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+            <div class="flex-1">
+                <p class="text-slate-600 dark:text-slate-400 text-sm">Daftar Kepala Program Keahlian (Kaprog) per program keahlian.</p>
+            </div>
+            @if(auth()->user()->role !== 'kepala_sekolah')
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
+                    <i data-lucide="upload-cloud" class="w-4 h-4"></i>
                     Impor Kaprog
                 </button>
-                <a href="{{ route('pokja.kaprog.create') }}" class="pokja-btn px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
-                    <i data-lucide="user-plus" class="w-5 h-5"></i>
+                <a href="{{ route('pokja.kaprog.create') }}" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
                     Tambah Kaprog
                 </a>
             </div>
+            @endif
         </div>
 
         <!-- Inline Import Panel -->
@@ -58,7 +62,7 @@
                         Impor Data Akun Kaprog
                     </h3>
                     <button @click="importPanelOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                        <i data-lucide="x" class="w-5 h-5"></i>
+                        <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
                 
@@ -154,7 +158,7 @@
                               Panduan Impor Data Akun Kaprog
                           </h3>
                           <button @click="guideModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                              <i data-lucide="x" class="w-5 h-5"></i>
+                              <i data-lucide="x" class="w-4 h-4"></i>
                           </button>
                       </div>
 
@@ -254,7 +258,7 @@
     @if(session('import_errors'))
         <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm">
             <h4 class="font-bold mb-2 flex items-center gap-2">
-                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 shrink-0"></i>
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
                 Gagal Mengimpor Data Kaprog. Silakan periksa kesalahan berikut:
             </h4>
             <ul class="list-disc pl-5 space-y-1 text-xs">
@@ -267,7 +271,7 @@
 
     @if(session('success'))
         <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
             {{ session('success') }}
         </div>
     @endif
@@ -319,7 +323,9 @@
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Lengkap</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Username</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Program Keahlian</th>
+                        @if(auth()->user()->role !== 'kepala_sekolah')
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right whitespace-nowrap">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-700/50">
@@ -347,6 +353,7 @@
                                     {{ $item->programKeahlian->nama ?? 'Belum Ditentukan' }}
                                 </span>
                             </td>
+                            @if(auth()->user()->role !== 'kepala_sekolah')
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <div x-data="{ open: false }" class="relative flex justify-end" x-on:click.away="open = false">
                                     <button x-on:click="open = !open" class="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
@@ -376,10 +383,11 @@
                                     </div>
                                 </div>
                             </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
+                            <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 3 : 4 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
                                 Belum ada data akun Kaprog.
                             </td>
                         </tr>

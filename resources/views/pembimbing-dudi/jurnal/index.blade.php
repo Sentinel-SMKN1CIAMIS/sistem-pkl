@@ -44,7 +44,7 @@
                             <div class="mt-4">
                                 <div class="flex items-center gap-2 mb-2 flex-wrap">
                                     <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400">
-                                        {{ $item->kompetensi->nama }}
+                                        {{ $item->kompetensi?->nama ?? 'Tidak Ada Kompetensi' }}
                                     </span>
                                     @if($item->tujuanPembelajaran)
                                         <span class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-[10px] text-blue-600 dark:text-blue-300 font-medium">
@@ -109,7 +109,7 @@
                             <div class="md:col-span-3 lg:col-span-2">
                                 <button type="submit" 
                                         class="w-full flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white">
-                                    <i data-lucide="save" class="w-4 h-4"></i> SIMPAN SARAN
+                                    <i data-lucide="send" class="w-4 h-4"></i> KIRIM SARAN
                                 </button>
                             </div>
                         </form>

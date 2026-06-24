@@ -36,7 +36,11 @@ class PembimbingDudiController extends Controller
     public function create()
     {
         $dudis = \App\Models\Dudi::all();
-        return view('pokja.pembimbing-dudi.create', compact('dudis'));
+        $manualMentors = \App\Models\Siswa::whereNotNull('pembimbing_dudi_nama')
+            ->whereNull('pembimbing_dudi_id')
+            ->with('dudi')
+            ->get();
+        return view('pokja.pembimbing-dudi.create', compact('dudis', 'manualMentors'));
     }
 
     public function store(Request $request)
@@ -49,6 +53,7 @@ class PembimbingDudiController extends Controller
             'password' => 'required|min:6',
             'dudi_id' => 'required|exists:dudis,id',
             'no_hp' => 'nullable|string',
+            'siswa_id' => 'nullable|exists:siswas,id',
         ]);
 
         $user = \App\Models\User::create([
@@ -59,7 +64,16 @@ class PembimbingDudiController extends Controller
             'role' => 'pembimbing_dudi',
         ]);
 
-        \App\Models\PembimbingDudi::create(array_merge($request->all(), ['user_id' => $user->id]));
+        $pembimbingDudi = \App\Models\PembimbingDudi::create(array_merge($request->all(), ['user_id' => $user->id]));
+
+        if ($request->filled('siswa_id')) {
+            $siswa = \App\Models\Siswa::find($request->siswa_id);
+            if ($siswa) {
+                $siswa->update([
+                    'pembimbing_dudi_id' => $pembimbingDudi->id
+                ]);
+            }
+        }
 
         return redirect()->route('pokja.pembimbing_dudi.index')
             ->with('success', 'Pembimbing DUDI berhasil ditambahkan.');

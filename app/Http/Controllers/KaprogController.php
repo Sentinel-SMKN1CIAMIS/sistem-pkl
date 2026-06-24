@@ -13,7 +13,7 @@ class KaprogController extends Controller
         
         // If user is kaprog without assigned program, show no data
         if (!$user->program_keahlian_id) {
-            $siswas = Siswa::with(['dudi', 'pembimbingSekolah', 'konsentrasiKeahlian'])
+            $siswas = Siswa::with(['dudi', 'pembimbingSekolah', 'pembimbingSekolahUmum', 'konsentrasiKeahlian'])
                 ->where('konsentrasi_keahlian_id', -1) // Non-existent ID to return empty paginated result
                 ->latest()
                 ->paginate(15);
@@ -29,7 +29,7 @@ class KaprogController extends Controller
         // Filter siswas by Kaprog's assigned program keahlian (all concentrations under it)
         $allowedIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id')->toArray();
 
-        $siswas = Siswa::with(['dudi', 'pembimbingSekolah', 'konsentrasiKeahlian'])
+        $siswas = Siswa::with(['dudi', 'pembimbingSekolah', 'pembimbingSekolahUmum', 'konsentrasiKeahlian'])
             ->whereIn('konsentrasi_keahlian_id', $allowedIds)
             ->latest()
             ->paginate(15);

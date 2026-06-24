@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 
 class ActivityLog extends Model
 {
+    use Prunable;
+
     protected $fillable = [
         'user_id',
         'action',
@@ -14,6 +17,14 @@ class ActivityLog extends Model
         'user_agent',
         'location'
     ];
+
+    /**
+     * Get the prunable model query.
+     */
+    public function prunable()
+    {
+        return static::where('created_at', '<', now()->subDays(90));
+    }
 
     public function user()
     {
@@ -26,18 +37,20 @@ class ActivityLog extends Model
             return 'Localhost';
         }
 
-        try {
-            $response = \Illuminate\Support\Facades\Http::timeout(2)
-                ->get("http://ip-api.com/json/{$ip}?fields=city,regionName,country");
-            
-            if ($response->successful()) {
-                $data = $response->json();
-                return ($data['city'] ?? '') . ', ' . ($data['regionName'] ?? '') . ' (' . ($data['country'] ?? '') . ')';
+        return cache()->remember("ip_loc_" . md5($ip), now()->addDays(7), function () use ($ip) {
+            try {
+                $response = \Illuminate\Support\Facades\Http::timeout(2)
+                    ->get("http://ip-api.com/json/{$ip}?fields=city,regionName,country");
+                
+                if ($response->successful()) {
+                    $data = $response->json();
+                    return ($data['city'] ?? '') . ', ' . ($data['regionName'] ?? '') . ' (' . ($data['country'] ?? '') . ')';
+                }
+            } catch (\Exception $e) {
+                // Silence is golden
             }
-        } catch (\Exception $e) {
-            // Silence is golden
-        }
 
-        return 'Unknown';
+            return 'Unknown';
+        });
     }
 }

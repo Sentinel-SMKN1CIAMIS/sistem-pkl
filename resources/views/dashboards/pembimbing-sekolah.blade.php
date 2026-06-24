@@ -3,77 +3,137 @@
         <span id="bulk-acc-trigger" class="cursor-default select-none">Dashboard Pembimbing Sekolah</span>
     </x-slot>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="glass-card p-6 border-l-4 border-blue-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Total Siswa Bimbingan</p>
-                    <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $stats['siswa_count'] ?? 0 }}</h3>
+    @php
+        $pembimbingProfile = auth()->user()->pembimbingSekolah;
+        $tipeLabel = '';
+        if ($pembimbingProfile) {
+            if ($pembimbingProfile->tipe === 'kejuruan') {
+                $tipeLabel = 'Kejuruan (Produktif)';
+            } elseif ($pembimbingProfile->tipe === 'umum') {
+                $tipeLabel = 'Umum (Normatif / Adaptif)';
+            } else {
+                $tipeLabel = 'Kejuruan & Umum';
+            }
+        }
+    @endphp
+
+    @if($pembimbingProfile)
+        <div class="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-600 to-indigo-700 p-5 sm:p-6 text-white shadow-xl shadow-blue-500/10 mb-6">
+            <!-- Decorative background glow circles -->
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white shrink-0 border border-white/20 shadow-inner">
+                        <i data-lucide="user-check" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-[9px] sm:text-xs font-bold text-blue-200 uppercase tracking-widest block">Selamat Datang</span>
+                        <h3 class="text-base sm:text-xl font-black tracking-tight leading-tight">{{ $pembimbingProfile->nama_lengkap }}</h3>
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-blue-100 mt-1">
+                            <span>NIP: <span class="font-mono font-bold">{{ $pembimbingProfile->nip ?? '-' }}</span></span>
+                            <span class="text-blue-300/60 hidden sm:inline">•</span>
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-white/20 text-white border border-white/10 uppercase tracking-wider block sm:inline-block">{{ $tipeLabel }}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                    <i data-lucide="users" class="w-6 h-6 text-blue-500"></i>
-                </div>
+                @if($pembimbingProfile->konsentrasiKeahlian)
+                    <div class="px-4 py-2.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-xl text-xs font-semibold text-blue-100 self-start md:self-center shadow-sm max-w-full">
+                        <span class="text-blue-200 block text-[9px] uppercase tracking-wider mb-0.5">Konsentrasi</span>
+                        <span class="font-bold text-white block sm:inline leading-snug">{{ $pembimbingProfile->konsentrasiKeahlian->nama }}</span>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
+
+    <!-- Counter Stats: Compact grid-cols-3 on mobile to prevent layout bloat -->
+    <div class="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-6 mb-8">
+        <!-- Total Siswa -->
+        <div class="glass-card p-3 sm:p-6 border-t-4 border-blue-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-2 transition-all duration-200 hover:scale-[1.02]">
+            <div class="text-center sm:text-left">
+                <span class="hidden sm:block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Siswa Bimbingan</span>
+                <span class="text-xl sm:text-3xl font-black text-slate-800 dark:text-white leading-none">{{ $stats['siswa_count'] ?? 0 }}</span>
+                <span class="block sm:hidden text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Siswa</span>
+            </div>
+            <div class="hidden sm:flex w-12 h-12 bg-blue-500/10 rounded-xl items-center justify-center text-blue-500 shrink-0">
+                <i data-lucide="users" class="w-6 h-6"></i>
             </div>
         </div>
 
-        <div class="glass-card p-6 border-l-4 border-amber-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Jurnal Menunggu Validasi</p>
-                    <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $stats['jurnal_pending'] ?? 0 }}</h3>
-                </div>
-                <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center">
-                    <i data-lucide="alert-triangle" class="w-6 h-6 text-amber-500"></i>
-                </div>
+        <!-- Menunggu Validasi -->
+        <div class="glass-card p-3 sm:p-6 border-t-4 border-amber-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-2 transition-all duration-200 hover:scale-[1.02]">
+            <div class="text-center sm:text-left">
+                <span class="hidden sm:block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Jurnal Pending</span>
+                <span class="text-xl sm:text-3xl font-black text-slate-800 dark:text-white leading-none">{{ $stats['jurnal_pending'] ?? 0 }}</span>
+                <span class="block sm:hidden text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Pending</span>
+            </div>
+            <div class="hidden sm:flex w-12 h-12 bg-amber-500/10 rounded-xl items-center justify-center text-amber-500 shrink-0">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
             </div>
         </div>
 
-        <div class="glass-card p-6 border-l-4 border-emerald-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Total Jurnal Bimbingan</p>
-                    <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $stats['jurnal_masuk'] ?? 0 }}</h3>
-                </div>
-                <div class="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                    <i data-lucide="check-square" class="w-6 h-6 text-emerald-500"></i>
-                </div>
+        <!-- Total Jurnal -->
+        <div class="glass-card p-3 sm:p-6 border-t-4 border-emerald-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-2 transition-all duration-200 hover:scale-[1.02]">
+            <div class="text-center sm:text-left">
+                <span class="hidden sm:block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Total Jurnal</span>
+                <span class="text-xl sm:text-3xl font-black text-slate-800 dark:text-white leading-none">{{ $stats['jurnal_masuk'] ?? 0 }}</span>
+                <span class="block sm:hidden text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Jurnal</span>
+            </div>
+            <div class="hidden sm:flex w-12 h-12 bg-emerald-500/10 rounded-xl items-center justify-center text-emerald-500 shrink-0">
+                <i data-lucide="check-square" class="w-6 h-6"></i>
             </div>
         </div>
     </div>
 
     <!-- Quick Actions (Mobile Only) -->
     <div class="block lg:hidden mt-8 mb-8">
-        <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200 mb-4">Aksi Cepat</h3>
-        <div class="grid grid-cols-2 gap-4">
-            <a href="{{ route('pembimbing_sekolah.absensi.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-blue-600/10 border hover:border-blue-500/30 transition-all group">
-                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                    <i data-lucide="calendar" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-blue-400"></i>
+        <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Aksi Cepat</h3>
+        <div class="grid grid-cols-2 gap-3.5">
+            <!-- Kehadiran Siswa -->
+            <a href="{{ route('pembimbing_sekolah.absensi.index') }}" 
+               class="glass-card p-4 flex flex-col items-center justify-center gap-2.5 border border-slate-200/50 dark:border-slate-800 hover:bg-blue-500/5 hover:border-blue-500/30 transition-all duration-300 group rounded-2xl">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 text-blue-500 shrink-0">
+                    <i data-lucide="calendar" class="w-5 h-5"></i>
                 </div>
-                <span class="text-xs font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Kehadiran Siswa</span>
+                <span class="text-[11px] font-bold text-center text-slate-700 dark:text-slate-300 group-hover:text-blue-500 transition-colors uppercase tracking-wider">Daftar Hadir</span>
             </a>
-            <a href="{{ route('pembimbing_sekolah.absensi.approval.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-emerald-600/10 border hover:border-emerald-500/30 transition-all group">
-                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
-                    <i data-lucide="check-circle" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-emerald-400"></i>
+            
+            <!-- Persetujuan Absensi -->
+            <a href="{{ route('pembimbing_sekolah.absensi.approval.index') }}" 
+               class="glass-card p-4 flex flex-col items-center justify-center gap-2.5 border border-slate-200/50 dark:border-slate-800 hover:bg-emerald-500/5 hover:border-emerald-500/30 transition-all duration-300 group rounded-2xl">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 text-emerald-500 shrink-0">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
                 </div>
-                <span class="text-xs font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Persetujuan Absensi</span>
+                <span class="text-[11px] font-bold text-center text-slate-700 dark:text-slate-300 group-hover:text-emerald-500 transition-colors uppercase tracking-wider">Izin Absen</span>
             </a>
-            <a href="{{ route('pembimbing_sekolah.laporan.index') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-purple-600/10 border hover:border-purple-500/30 transition-all group">
-                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                    <i data-lucide="file-check" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-purple-400"></i>
+
+            <!-- Evaluasi Laporan -->
+            <a href="{{ route('pembimbing_sekolah.laporan.index') }}" 
+               class="glass-card p-4 flex flex-col items-center justify-center gap-2.5 border border-slate-200/50 dark:border-slate-800 hover:bg-purple-500/5 hover:border-purple-500/30 transition-all duration-300 group rounded-2xl">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 text-purple-500 shrink-0">
+                    <i data-lucide="file-check" class="w-5 h-5"></i>
                 </div>
-                <span class="text-xs font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Evaluasi Laporan</span>
+                <span class="text-[11px] font-bold text-center text-slate-700 dark:text-slate-300 group-hover:text-purple-500 transition-colors uppercase tracking-wider">Evaluasi Lap.</span>
             </a>
-            <a href="{{ route('shared.pemetaan.maps') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-amber-600/10 border hover:border-amber-500/30 transition-all group">
-                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
-                    <i data-lucide="map" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-amber-400"></i>
+
+            <!-- Peta DUDI -->
+            <a href="{{ route('shared.pemetaan.maps') }}" 
+               class="glass-card p-4 flex flex-col items-center justify-center gap-2.5 border border-slate-200/50 dark:border-slate-800 hover:bg-amber-500/5 hover:border-amber-500/30 transition-all duration-300 group rounded-2xl">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 text-amber-500 shrink-0">
+                    <i data-lucide="map" class="w-5 h-5"></i>
                 </div>
-                <span class="text-xs font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Peta DUDI</span>
+                <span class="text-[11px] font-bold text-center text-slate-700 dark:text-slate-300 group-hover:text-amber-500 transition-colors uppercase tracking-wider">Peta DUDI</span>
             </a>
-            <a href="{{ route('panduan.interaktif') }}" class="glass p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-indigo-600/10 border hover:border-indigo-500/30 transition-all group col-span-2">
-                <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center group-hover:bg-indigo-500/20 transition-colors">
-                    <i data-lucide="sparkles" class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-indigo-400"></i>
+
+            <!-- Panduan Interaktif -->
+            <a href="{{ route('panduan.interaktif') }}" 
+               class="glass-card p-4 flex flex-col items-center justify-center gap-2.5 border border-slate-200/50 dark:border-slate-800 hover:bg-indigo-500/5 hover:border-indigo-500/30 transition-all duration-300 group rounded-2xl col-span-2">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 text-indigo-500 shrink-0">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
                 </div>
-                <span class="text-xs font-medium text-center text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Panduan Interaktif</span>
+                <span class="text-[11px] font-bold text-center text-slate-700 dark:text-slate-300 group-hover:text-indigo-500 transition-colors uppercase tracking-wider font-semibold">Panduan Interaktif</span>
             </a>
         </div>
     </div>

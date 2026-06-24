@@ -61,6 +61,7 @@ class DummyDataSeeder extends Seeder
                 'konsentrasi_keahlian_id' => $pplg->id,
                 'nip' => '198701012010011001',
                 'nama_lengkap' => 'Budi Santoso, S.Kom',
+                'tipe' => 'kejuruan',
             ]);
 
             // Pembimbing DUDI

@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'force.password.change' => \App\Http\Middleware\ForcePasswordChange::class,
             'pokja-group' => \App\Http\Middleware\PokjaGroupMiddleware::class,
+            'view-only' => \App\Http\Middleware\ViewOnlyMiddleware::class,
+        ]);
+        
+        $middleware->web(append: [
+            \App\Http\Middleware\LogUserActivity::class,
         ]);
         
         $middleware->redirectGuestsTo('/login');

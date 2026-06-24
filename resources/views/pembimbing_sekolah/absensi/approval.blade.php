@@ -1,6 +1,20 @@
 <x-app-layout>
     <x-slot name="header">Persetujuan Kehadiran Siswa</x-slot>
 
+    @if(session('success'))
+        <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 text-slate-700 dark:text-slate-300">
         <!-- Pending Requests -->
         <div class="lg:col-span-2">
@@ -19,13 +33,13 @@
                                 <div class="flex items-start justify-between mb-4">
                                     <div>
                                         <h4 class="font-bold text-slate-900 dark:text-slate-100">{{ $absence->siswa->user->name }}</h4>
-                                        <p class="text-sm text-slate-600 dark:text-slate-400">{{ \Carbon\Carbon::parse($absence->tanggal)->format('d MMMM Y') }}</p>
+                                        <p class="text-sm text-slate-600 dark:text-slate-400">{{ \Carbon\Carbon::parse($absence->tanggal)->isoFormat('D MMMM YYYY') }}</p>
                                     </div>
                                     @php
                                         $statusConfig = [
                                             'izin' => ['bg' => 'bg-blue-500/10', 'text' => 'text-blue-400', 'label' => 'Izin'],
                                             'sakit' => ['bg' => 'bg-red-500/10', 'text' => 'text-red-400', 'label' => 'Sakit'],
-                                            'alpa' => ['bg' => 'bg-gray-500/10', 'text' => 'text-gray-400', 'label' => 'Alpa'],
+                                            'alpha' => ['bg' => 'bg-gray-500/10', 'text' => 'text-gray-400', 'label' => 'Alpa'],
                                         ];
                                         $config = $statusConfig[$absence->status] ?? [];
                                     @endphp
@@ -41,22 +55,24 @@
                                     </div>
                                 @endif
 
-                                <div class="flex gap-3">
+                                <div class="flex gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
                                     <!-- Approve Form -->
-                                    <form action="{{ route('pembimbing_sekolah.absensi.approve', $absence) }}" method="POST" class="flex-1">
+                                    <form action="{{ route('pembimbing_sekolah.absensi.approve', $absence) }}" method="POST" class="flex-1 min-w-[80px]">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" class="w-full px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                                        <button type="submit" class="w-full px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors font-medium text-xs sm:text-sm flex items-center justify-center gap-1 sm:gap-2">
                                             <i data-lucide="check" class="w-4 h-4"></i>
                                             Setujui
                                         </button>
                                     </form>
 
                                     <!-- Reject Modal Trigger -->
-                                    <button type="button" onclick="openRejectModal({{ $absence->id }})" class="flex-1 px-4 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                                    <button type="button" onclick="openRejectModal({{ $absence->id }})" class="flex-1 min-w-[80px] px-3 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors font-medium text-xs sm:text-sm flex items-center justify-center gap-1 sm:gap-2">
                                         <i data-lucide="x" class="w-4 h-4"></i>
                                         Tolak
                                     </button>
+
+
                                 </div>
                             </div>
                         @endforeach
@@ -145,26 +161,14 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="fixed bottom-4 right-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
-            {{ session('success') }}
-        </div>
-    @endif
 
-    @if(session('error'))
-        <div class="fixed bottom-4 right-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3">
-            <i data-lucide="alert-circle" class="w-5 h-5"></i>
-            {{ session('error') }}
-        </div>
-    @endif
 
     @push('scripts')
     <script>
         function openRejectModal(absenceId) {
             const modal = document.getElementById('reject-modal');
             const form = document.getElementById('reject-form');
-            form.action = `/pembimbing-sekolah/absensi/${absenceId}/reject`;
+            form.action = `/pembimbing_sekolah/absensi/${absenceId}/reject`;
             modal.classList.remove('hidden');
         }
 
@@ -178,6 +182,8 @@
                 closeRejectModal();
             }
         });
+
+
     </script>
     @endpush
 </x-app-layout>

@@ -26,7 +26,7 @@ class PembimbingSekolahController extends Controller
     {
         $concentrations = \App\Models\KonsentrasiKeahlian::all();
         $existingClasses = \App\Models\Siswa::distinct('kelas')->pluck('kelas')->filter()->values();
-        $students = \App\Models\Siswa::with(['konsentrasiKeahlian', 'pembimbingSekolah'])->get();
+        $students = \App\Models\Siswa::with(['konsentrasiKeahlian', 'pembimbingSekolah', 'pembimbingSekolahUmum'])->get();
         
         // Fetch users who can be connected as a PembimbingSekolah but don't have a profile yet
         $existingUsers = \App\Models\User::whereIn('role', ['kaprog', 'pokja', 'super_admin'])
@@ -91,8 +91,9 @@ class PembimbingSekolahController extends Controller
         }
 
         if ($request->has('siswa_ids') && is_array($request->siswa_ids)) {
+            $column = ($request->tipe === 'umum') ? 'pembimbing_sekolah_umum_id' : 'pembimbing_sekolah_id';
             \App\Models\Siswa::whereIn('id', $request->siswa_ids)
-                ->update(['pembimbing_sekolah_id' => $pembimbing->id]);
+                ->update([$column => $pembimbing->id]);
         }
 
         return redirect()->route('pokja.pembimbing_sekolah.index')
@@ -101,7 +102,10 @@ class PembimbingSekolahController extends Controller
 
     public function show(\App\Models\PembimbingSekolah $pembimbing_sekolah)
     {
-        $students = $pembimbing_sekolah->siswa()->with(['konsentrasiKeahlian', 'dudi'])->get();
+        $students = \App\Models\Siswa::where('pembimbing_sekolah_id', $pembimbing_sekolah->id)
+            ->orWhere('pembimbing_sekolah_umum_id', $pembimbing_sekolah->id)
+            ->with(['konsentrasiKeahlian', 'dudi'])
+            ->get();
         return view('pokja.pembimbing-sekolah.show', compact('pembimbing_sekolah', 'students'));
     }
 
@@ -110,7 +114,7 @@ class PembimbingSekolahController extends Controller
         $concentrations = \App\Models\KonsentrasiKeahlian::all();
         $existingClasses = \App\Models\Siswa::distinct('kelas')->pluck('kelas')->filter()->values();
         $currentClasses = $pembimbing_sekolah->kelasDiajar()->pluck('kelas')->toArray();
-        $students = \App\Models\Siswa::with(['konsentrasiKeahlian', 'pembimbingSekolah'])->get();
+        $students = \App\Models\Siswa::with(['konsentrasiKeahlian', 'pembimbingSekolah', 'pembimbingSekolahUmum'])->get();
         return view('pokja.pembimbing-sekolah.edit', compact('pembimbing_sekolah', 'concentrations', 'existingClasses', 'currentClasses', 'students'));
     }
 
@@ -151,16 +155,20 @@ class PembimbingSekolahController extends Controller
 
         // Sync mentored students
         $selectedSiswaIds = $request->input('siswa_ids', []);
+        $oldTipe = $pembimbing_sekolah->getOriginal('tipe');
+        $newTipe = $pembimbing_sekolah->tipe;
+        
+        $oldColumn = ($oldTipe === 'umum') ? 'pembimbing_sekolah_umum_id' : 'pembimbing_sekolah_id';
+        $newColumn = ($newTipe === 'umum') ? 'pembimbing_sekolah_umum_id' : 'pembimbing_sekolah_id';
 
-        // Detach students previously mentored by this advisor but no longer selected
-        \App\Models\Siswa::where('pembimbing_sekolah_id', $pembimbing_sekolah->id)
-            ->whereNotIn('id', $selectedSiswaIds)
-            ->update(['pembimbing_sekolah_id' => null]);
+        // Detach old references
+        \App\Models\Siswa::where($oldColumn, $pembimbing_sekolah->id)
+            ->update([$oldColumn => null]);
 
-        // Attach newly selected students to this advisor
+        // Attach new references
         if (!empty($selectedSiswaIds)) {
             \App\Models\Siswa::whereIn('id', $selectedSiswaIds)
-                ->update(['pembimbing_sekolah_id' => $pembimbing_sekolah->id]);
+                ->update([$newColumn => $pembimbing_sekolah->id]);
         }
 
         return redirect()->route('pokja.pembimbing_sekolah.index')
