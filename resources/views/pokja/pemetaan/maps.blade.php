@@ -31,8 +31,41 @@
         <div class="glass-card p-4 border-l-4 border-amber-500">
             <p class="text-[10px] text-amber-400 font-black uppercase tracking-widest leading-none mb-1">Siswa di DUDI</p>
             <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $totalSiswa }}</p>
-        </div>
     </div>
+
+    {{-- Filter Bar --}}
+    @if(in_array(auth()->user()->role, ['pokja', 'super_admin', 'kepala_sekolah', 'kaprog']))
+        <div class="glass-card p-4 mb-6">
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="filter" class="w-4 h-4 text-blue-400"></i> Filter Peta
+                </h4>
+                <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                    @if(in_array(auth()->user()->role, ['pokja', 'super_admin', 'kepala_sekolah']))
+                    <div>
+                        <select id="filter-program-keahlian" class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Semua Program Keahlian (Jurusan)</option>
+                            @foreach($programKeahlians as $prog)
+                                <option value="{{ $prog->id }}">{{ $prog->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+                    
+                    @if(in_array(auth()->user()->role, ['pokja', 'super_admin', 'kepala_sekolah', 'kaprog']))
+                    <div class="{{ !in_array(auth()->user()->role, ['pokja', 'super_admin', 'kepala_sekolah']) ? 'md:col-span-2' : '' }}">
+                        <select id="filter-konsentrasi-keahlian" class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Semua Konsentrasi Keahlian (Kelas)</option>
+                            @foreach($konsentrasiKeahlians as $kon)
+                                <option value="{{ $kon->id }}" data-program="{{ $kon->program_keahlian_id }}">{{ $kon->nama }} ({{ $kon->kode }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
 
     {{-- Legend --}}
     <div class="glass-card p-4 mb-6">
@@ -116,6 +149,8 @@
 
         // Fetch data
         const dataUrl = @json(route('shared.pemetaan.maps.data', [], true));
+        
+        // Load static zones once on load
         fetch(dataUrl)
             .then(r => r.json())
             .then(data => {
@@ -137,86 +172,143 @@
                         });
                     });
                 }
+            })
+            .catch(err => console.error('Failed to load map zones:', err));
 
-                // Render DUDI markers
-                if (data.markers && data.markers.length > 0) {
-                    const escapeHTML = (str) => {
-                        if (!str) return '';
-                        return String(str).replace(/[&<>'"]/g, 
-                            tag => ({
-                                '&': '&amp;',
-                                '<': '&lt;',
-                                '>': '&gt;',
-                                "'": '&#39;',
-                                '"': '&quot;'
-                            }[tag])
-                        );
-                    };
+        const escapeHTML = (str) => {
+            if (!str) return '';
+            return String(str).replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag])
+            );
+        };
 
-                    data.markers.forEach(d => {
-                        const color = colorMap[d.jenis_industri] || colorMap['lainnya'];
-                        const icon = L.divIcon({
-                            html: `<div class="marker-icon" style="background:${color}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></div>`,
-                            className: '',
-                            iconSize: [32, 32],
-                            iconAnchor: [16, 16],
-                        });
+        // Function to load and render DUDI markers
+        function loadMarkers(progId = '', konId = '') {
+            // Clear existing markers
+            clusterGroup.clearLayers();
 
-                        // Build hover tooltip content (jurusan summary)
-                        let tooltipHtml = `<strong>${escapeHTML(d.nama)}</strong>`;
-                        if (d.total_siswa > 0) {
-                            tooltipHtml += `<br><span style="color:#6b7280;font-size:11px">${d.total_siswa} Siswa</span>`;
-                            const jurusanEntries = Object.entries(d.jurusan);
-                            if (jurusanEntries.length > 0) {
-                                tooltipHtml += '<br>';
-                                jurusanEntries.forEach(([nama, count]) => {
-                                    tooltipHtml += `<span style="font-size:11px">• ${escapeHTML(nama)}: <strong>${count}</strong></span><br>`;
-                                });
-                            }
-                        } else {
-                            tooltipHtml += `<br><span style="color:#9ca3af;font-size:11px">Belum ada siswa</span>`;
-                        }
+            let queryParams = [];
+            if (progId) queryParams.push(`program_keahlian_id=${progId}`);
+            if (konId) queryParams.push(`konsentrasi_keahlian_id=${konId}`);
+            const queryString = queryParams.length > 0 ? '?' + queryParams.join('&') : '';
 
-                        // Build popup content (full detail on click)
-                        let popupHtml = `
-                            <div style="min-width:220px">
-                                <h3 style="font-weight:700;font-size:14px;margin:0 0 4px 0">${escapeHTML(d.nama)}</h3>
-                                <p style="color:#6b7280;font-size:12px;margin:0 0 8px 0">${escapeHTML(d.alamat) || '-'}${d.kota ? ', '+escapeHTML(d.kota) : ''}</p>
-                                <div style="border-top:1px solid #e2e8f0;padding-top:8px;margin-top:8px">
-                                    <p style="font-size:11px;color:#6b7280;margin:0"><strong>Jenis:</strong> ${escapeHTML(labelMap[d.jenis_industri]) || '-'}</p>
-                                    ${d.nama_pimpinan ? `<p style="font-size:11px;color:#6b7280;margin:2px 0"><strong>Pimpinan:</strong> ${escapeHTML(d.nama_pimpinan)}</p>` : ''}
-                                    ${d.no_telepon ? `<p style="font-size:11px;color:#6b7280;margin:2px 0"><strong>Telepon:</strong> ${escapeHTML(d.no_telepon)}</p>` : ''}
-                                    ${d.zona ? `<p style="font-size:11px;color:#3b82f6;margin:2px 0"><strong>Zona:</strong> ${escapeHTML(d.zona)}</p>` : ''}
-                                </div>`;
-
-                        if (d.siswa_list && d.siswa_list.length > 0) {
-                            popupHtml += `<div style="border-top:1px solid #e2e8f0;padding-top:8px;margin-top:8px"><p style="font-size:11px;font-weight:700;margin:0 0 4px 0">Siswa PKL (${d.total_siswa}):</p>`;
-                            d.siswa_list.forEach(s => {
-                                popupHtml += `<p style="font-size:11px;margin:1px 0;color:#374151">• ${escapeHTML(s.nama)} <span style="color:#9ca3af">(${escapeHTML(s.jurusan)})</span></p>`;
+            fetch(dataUrl + queryString)
+                .then(r => r.json())
+                .then(data => {
+                    // Render DUDI markers
+                    if (data.markers && data.markers.length > 0) {
+                        data.markers.forEach(d => {
+                            const color = colorMap[d.jenis_industri] || colorMap['lainnya'];
+                            const icon = L.divIcon({
+                                html: `<div class="marker-icon" style="background:${color}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></div>`,
+                                className: '',
+                                iconSize: [32, 32],
+                                iconAnchor: [16, 16],
                             });
+
+                            // Build hover tooltip content (jurusan summary)
+                            let tooltipHtml = `<strong>${escapeHTML(d.nama)}</strong>`;
+                            if (d.total_siswa > 0) {
+                                tooltipHtml += `<br><span style="color:#6b7280;font-size:11px">${d.total_siswa} Siswa</span>`;
+                                const jurusanEntries = Object.entries(d.jurusan);
+                                if (jurusanEntries.length > 0) {
+                                    tooltipHtml += '<br>';
+                                    jurusanEntries.forEach(([nama, count]) => {
+                                        tooltipHtml += `<span style="font-size:11px">• ${escapeHTML(nama)}: <strong>${count}</strong></span><br>`;
+                                    });
+                                }
+                            } else {
+                                tooltipHtml += `<br><span style="color:#9ca3af;font-size:11px">Belum ada siswa</span>`;
+                            }
+
+                            // Build popup content (full detail on click)
+                            let popupHtml = `
+                                <div style="min-width:220px">
+                                    <h3 style="font-weight:700;font-size:14px;margin:0 0 4px 0">${escapeHTML(d.nama)}</h3>
+                                    <p style="color:#6b7280;font-size:12px;margin:0 0 8px 0">${escapeHTML(d.alamat) || '-'}${d.kota ? ', '+escapeHTML(d.kota) : ''}</p>
+                                    <div style="border-top:1px solid #e2e8f0;padding-top:8px;margin-top:8px">
+                                        <p style="font-size:11px;color:#6b7280;margin:0"><strong>Jenis:</strong> ${escapeHTML(labelMap[d.jenis_industri]) || '-'}</p>
+                                        ${d.nama_pimpinan ? `<p style="font-size:11px;color:#6b7280;margin:2px 0"><strong>Pimpinan:</strong> ${escapeHTML(d.nama_pimpinan)}</p>` : ''}
+                                        ${d.no_telepon ? `<p style="font-size:11px;color:#6b7280;margin:2px 0"><strong>Telepon:</strong> ${escapeHTML(d.no_telepon)}</p>` : ''}
+                                        ${d.zona ? `<p style="font-size:11px;color:#3b82f6;margin:2px 0"><strong>Zona:</strong> ${escapeHTML(d.zona)}</p>` : ''}
+                                    </div>`;
+
+                            if (d.siswa_list && d.siswa_list.length > 0) {
+                                popupHtml += `<div style="border-top:1px solid #e2e8f0;padding-top:8px;margin-top:8px"><p style="font-size:11px;font-weight:700;margin:0 0 4px 0">Siswa PKL (${d.total_siswa}):</p>`;
+                                d.siswa_list.forEach(s => {
+                                    popupHtml += `<p style="font-size:11px;margin:1px 0;color:#374151">• ${escapeHTML(s.nama)} <span style="color:#9ca3af">(${escapeHTML(s.jurusan)})</span></p>`;
+                                });
+                                popupHtml += '</div>';
+                            }
                             popupHtml += '</div>';
+
+                            const marker = L.marker([d.lat, d.lng], { icon })
+                                .bindTooltip(tooltipHtml, { direction: 'top', offset: [0, -16] })
+                                .bindPopup(popupHtml, { maxWidth: 320 });
+
+                            clusterGroup.addLayer(marker);
+                        });
+                    }
+
+                    map.addLayer(clusterGroup);
+
+                    // Fit bounds if markers exist
+                    if (data.markers && data.markers.length > 0) {
+                        const bounds = data.markers.map(d => [d.lat, d.lng]);
+                        if (bounds.length > 0) {
+                            map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
                         }
-                        popupHtml += '</div>';
+                    }
+                })
+                .catch(err => console.error('Failed to load map markers:', err));
+        }
 
-                        const marker = L.marker([d.lat, d.lng], { icon })
-                            .bindTooltip(tooltipHtml, { direction: 'top', offset: [0, -16] })
-                            .bindPopup(popupHtml, { maxWidth: 320 });
+        // Initial load of markers
+        loadMarkers();
 
-                        clusterGroup.addLayer(marker);
+        // Listen for filter changes
+        const progFilter = document.getElementById('filter-program-keahlian');
+        const konFilter = document.getElementById('filter-konsentrasi-keahlian');
+
+        if (progFilter) {
+            progFilter.addEventListener('change', function() {
+                const progId = this.value;
+                
+                // Filter Konsentrasi options based on selected Program Keahlian
+                if (konFilter) {
+                    konFilter.value = ''; // Reset class select
+                    const options = konFilter.querySelectorAll('option');
+                    options.forEach(opt => {
+                        if (opt.value === '') {
+                            opt.style.display = 'block';
+                        } else {
+                            const parentProgId = opt.getAttribute('data-program');
+                            if (!progId || parentProgId === progId) {
+                                opt.style.display = 'block';
+                            } else {
+                                opt.style.display = 'none';
+                            }
+                        }
                     });
                 }
+                
+                loadMarkers(progId, '');
+            });
+        }
 
-                map.addLayer(clusterGroup);
-
-                // Fit bounds if markers exist
-                if (data.markers && data.markers.length > 0) {
-                    const bounds = data.markers.map(d => [d.lat, d.lng]);
-                    if (bounds.length > 0) {
-                        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
-                    }
-                }
-            })
-            .catch(err => console.error('Failed to load map data:', err));
+        if (konFilter) {
+            konFilter.addEventListener('change', function() {
+                const konId = this.value;
+                const progId = progFilter ? progFilter.value : '';
+                loadMarkers(progId, konId);
+            });
+        }
     });
     </script>
 </x-app-layout>

@@ -142,13 +142,32 @@ class PemetaanController extends Controller
         $totalZona = Zona::count();
         $totalSiswa = (clone $siswaQuery)->whereNotNull('dudi_id')->count();
 
-        return view('pokja.pemetaan.maps', compact('totalDudi', 'dudiWithCoords', 'totalZona', 'totalSiswa'));
+        $programKeahlians = collect();
+        $konsentrasiKeahlians = collect();
+
+        if (in_array($user->role, ['pokja', 'super_admin', 'kepala_sekolah'])) {
+            $programKeahlians = \App\Models\ProgramKeahlian::orderBy('nama')->get();
+            $konsentrasiKeahlians = \App\Models\KonsentrasiKeahlian::orderBy('nama')->get();
+        } elseif ($user->role === 'kaprog' && $user->program_keahlian_id) {
+            $konsentrasiKeahlians = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)
+                ->orderBy('nama')
+                ->get();
+        }
+
+        return view('pokja.pemetaan.maps', compact(
+            'totalDudi', 
+            'dudiWithCoords', 
+            'totalZona', 
+            'totalSiswa',
+            'programKeahlians',
+            'konsentrasiKeahlians'
+        ));
     }
 
     /**
      * Return DUDI data as JSON for map markers
      */
-    public function mapsData()
+    public function mapsData(Request $request)
     {
         $dudiQuery = Dudi::whereNotNull('latitude')->whereNotNull('longitude');
         $user = auth()->user();
@@ -160,18 +179,8 @@ class PemetaanController extends Controller
                     $q->where('pembimbing_sekolah_id', $pembimbing->id)
                       ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id);
                 });
-                
-                $dudis = $dudiQuery->with([
-                    'siswa' => function($q) use ($pembimbing) {
-                        $q->where('pembimbing_sekolah_id', $pembimbing->id)
-                          ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id)
-                          ->with('konsentrasiKeahlian');
-                    },
-                    'zona',
-                    'konsentrasiKeahlians'
-                ])->get();
             } else {
-                $dudis = collect();
+                return response()->json(['markers' => [], 'zonas' => []]);
             }
         } else {
             if ($user->konsentrasi_keahlian_id) {
@@ -191,7 +200,42 @@ class PemetaanController extends Controller
                       });
                 });
             }
+        }
 
+        // Apply filters from request
+        if ($request->filled('program_keahlian_id')) {
+            $progId = $request->program_keahlian_id;
+            $konIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $progId)->pluck('id');
+            $dudiQuery->where(function($q) use ($konIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $konIds)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konIds) {
+                      $sub->whereIn('konsentrasi_keahlians.id', $konIds);
+                  });
+            });
+        }
+
+        if ($request->filled('konsentrasi_keahlian_id')) {
+            $konId = $request->konsentrasi_keahlian_id;
+            $dudiQuery->where(function($q) use ($konId) {
+                $q->where('konsentrasi_keahlian_id', $konId)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konId) {
+                      $sub->where('konsentrasi_keahlians.id', $konId);
+                  });
+            });
+        }
+
+        // Load relations
+        if ($user->role === 'pembimbing_sekolah' && isset($pembimbing)) {
+            $dudis = $dudiQuery->with([
+                'siswa' => function($q) use ($pembimbing) {
+                    $q->where('pembimbing_sekolah_id', $pembimbing->id)
+                      ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id)
+                      ->with('konsentrasiKeahlian');
+                },
+                'zona',
+                'konsentrasiKeahlians'
+            ])->get();
+        } else {
             $dudis = $dudiQuery->with(['siswa.konsentrasiKeahlian', 'zona', 'konsentrasiKeahlians'])->get();
         }
 

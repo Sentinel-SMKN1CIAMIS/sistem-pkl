@@ -180,7 +180,7 @@
                                         @if($siswa->pembimbing_dudi_id) disabled class="w-full px-4 py-3 bg-slate-100/50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 rounded-xl text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed" @else class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm" @endif>
                              </div>
                              <div>
-                                 <label for="unit_pekerjaan" class="block text-xs font-bold text-slate-500 uppercase mb-2">Unit / Bagian Pekerjaan (Opsional)</label>
+                                 <label for="unit_pekerjaan" class="block text-xs font-bold text-slate-500 uppercase mb-2">Divisi / Bagian Pekerjaan (Opsional)</label>
                                  <input type="text" name="unit_pekerjaan" id="unit_pekerjaan" 
                                         value="{{ old('unit_pekerjaan', $siswa->unit_pekerjaan) }}"
                                         placeholder="Contoh: Divisi IT / Front Office / Bengkel Mesin"
@@ -191,7 +191,7 @@
                             @if($siswa->pembimbing_dudi_id)
                                 Akun pembimbing industri telah aktif di sistem. Hubungi Pokja atau Pembimbing Anda jika ingin memperbarui data pembimbing.
                             @else
-                                Isi kolom di atas jika pembimbing industri belum terdaftar di sistem, serta untuk melengkapi unit kerja Anda.
+                                Isi kolom di atas jika pembimbing industri belum terdaftar di sistem, serta untuk melengkapi bagian pekerjaan Anda.
                             @endif
                         </p>
                     </div>

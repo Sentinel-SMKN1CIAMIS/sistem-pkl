@@ -21,12 +21,12 @@
                         :class="filterOpen ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'">
                     <i data-lucide="filter" class="w-4 h-4"></i> 
                     Filter
-                    @if(request()->hasAny(['status', 'tanggal_dari', 'tanggal_sampai']))
+                    @if(request()->hasAny(['status', 'tanggal_dari', 'tanggal_sampai', 'siswa_id', 'bulan', 'minggu', 'tahun']))
                         <span class="w-2 h-2 bg-red-500 rounded-full"></span>
                     @endif
                 </button>
 
-                @if(request()->hasAny(['search', 'status', 'tanggal_dari', 'tanggal_sampai']))
+                @if(request()->hasAny(['search', 'status', 'tanggal_dari', 'tanggal_sampai', 'siswa_id', 'bulan', 'minggu', 'tahun']))
                 <a href="{{ route('pembimbing_sekolah.jurnal.index') }}" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-xl transition-all flex items-center gap-2">
                     <i data-lucide="x" class="w-4 h-4"></i> Reset
                 </a>
@@ -38,6 +38,10 @@
                 <input type="hidden" name="status" value="{{ request('status') }}">
                 <input type="hidden" name="tanggal_dari" value="{{ request('tanggal_dari') }}">
                 <input type="hidden" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}">
+                <input type="hidden" name="siswa_id" value="{{ request('siswa_id') }}">
+                <input type="hidden" name="bulan" value="{{ request('bulan') }}">
+                <input type="hidden" name="minggu" value="{{ request('minggu') }}">
+                <input type="hidden" name="tahun" value="{{ request('tahun', date('Y')) }}">
             </form>
 
             {{-- Filter Panel (Collapsible) --}}
@@ -54,7 +58,20 @@
                     {{-- Preserve search value --}}
                     <input type="hidden" name="search" value="{{ request('search') }}">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {{-- Filter Siswa --}}
+                        <div class="md:col-span-2 lg:col-span-2">
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-2">Siswa</label>
+                            <select name="siswa_id" 
+                                    onchange="document.getElementById('filterForm').submit()"
+                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
+                                <option value="">Semua Siswa</option>
+                                @foreach($siswas as $s)
+                                    <option value="{{ $s->id }}" {{ request('siswa_id') == $s->id ? 'selected' : '' }}>{{ $s->nama_lengkap }} ({{ $s->nis }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         {{-- Filter Status --}}
                         <div>
                             <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-2">Status Approval</label>
@@ -65,6 +82,59 @@
                                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                                 <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
                                 <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                            </select>
+                        </div>
+
+                        {{-- Filter Bulan --}}
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-2">Bulan</label>
+                            <select name="bulan" 
+                                    onchange="if(this.value === '') { document.getElementById('filter-minggu').value = ''; } document.getElementById('filterForm').submit()"
+                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
+                                <option value="">Semua Bulan</option>
+                                @php
+                                    $months = [
+                                        '1' => 'Januari', '2' => 'Februari', '3' => 'Maret', '4' => 'April',
+                                        '5' => 'Mei', '6' => 'Juni', '7' => 'Juli', '8' => 'Agustus',
+                                        '9' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+                                    ];
+                                @endphp
+                                @foreach($months as $num => $name)
+                                    <option value="{{ $num }}" {{ request('bulan') == $num ? 'selected' : '' }}>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Filter Minggu --}}
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-2">Minggu</label>
+                            <select name="minggu" 
+                                    id="filter-minggu"
+                                    onchange="document.getElementById('filterForm').submit()"
+                                    {{ !request('bulan') ? 'disabled' : '' }}
+                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                <option value="">Semua Minggu</option>
+                                <option value="1" {{ request('minggu') == '1' ? 'selected' : '' }}>Minggu 1 (Tgl 1-7)</option>
+                                <option value="2" {{ request('minggu') == '2' ? 'selected' : '' }}>Minggu 2 (Tgl 8-14)</option>
+                                <option value="3" {{ request('minggu') == '3' ? 'selected' : '' }}>Minggu 3 (Tgl 15-21)</option>
+                                <option value="4" {{ request('minggu') == '4' ? 'selected' : '' }}>Minggu 4 (Tgl 22-28)</option>
+                                <option value="5" {{ request('minggu') == '5' ? 'selected' : '' }}>Minggu 5 (Tgl 29+)</option>
+                            </select>
+                        </div>
+
+                        {{-- Filter Tahun --}}
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-2">Tahun</label>
+                            <select name="tahun" 
+                                    onchange="document.getElementById('filterForm').submit()"
+                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
+                                @php
+                                    $currentYear = (int)date('Y');
+                                    $years = range($currentYear - 2, $currentYear + 2);
+                                @endphp
+                                @foreach($years as $y)
+                                    <option value="{{ $y }}" {{ request('tahun', date('Y')) == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                @endforeach
                             </select>
                         </div>
 

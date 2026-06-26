@@ -67,7 +67,7 @@ class UserController extends Controller
     {
         $request->validate([
             'username' => 'required|string|unique:users,username',
-            'role' => 'required|in:siswa,pembimbing_sekolah,pembimbing_dudi,pokja,super_admin,kepala_sekolah',
+            'role' => 'required|in:siswa,pembimbing_sekolah,pembimbing_dudi,pokja,super_admin,kepala_sekolah,kaprog',
             'password' => 'required|string|min:8|confirmed'
         ]);
 
@@ -95,7 +95,7 @@ class UserController extends Controller
     {
         $request->validate([
             'username' => 'required|string|unique:users,username,' . $user->id,
-            'role' => 'required|in:siswa,pembimbing_sekolah,pembimbing_dudi,pokja,super_admin,kepala_sekolah',
+            'role' => 'required|in:siswa,pembimbing_sekolah,pembimbing_dudi,pokja,super_admin,kepala_sekolah,kaprog',
             'password' => 'nullable|string|min:8|confirmed'
         ]);
 

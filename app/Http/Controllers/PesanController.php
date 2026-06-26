@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pesan;
 use App\Models\User;
+use App\Models\Notifikasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -239,6 +240,16 @@ class PesanController extends Controller
             'isi'          => $request->isi,
         ]);
 
+        // Create notification
+        Notifikasi::create([
+            'from_user_id' => Auth::id(),
+            'to_user_id'   => $user->id,
+            'judul'        => 'Pesan Baru',
+            'pesan'        => Auth::user()->name . ': ' . \Illuminate\Support\Str::limit($request->isi, 50),
+            'tipe'         => 'pesan_baru',
+            'is_read'      => 0
+        ]);
+
         if ($request->expectsJson()) {
             return response()->json([
                 'ok' => true, 
@@ -266,6 +277,15 @@ class PesanController extends Controller
                 'to_user_id'   => $k->id,
                 'isi'          => $request->isi,
                 'is_broadcast' => true,
+            ]);
+
+            Notifikasi::create([
+                'from_user_id' => $authId,
+                'to_user_id'   => $k->id,
+                'judul'        => 'Pesan Broadcast Baru',
+                'pesan'        => Auth::user()->name . ': ' . \Illuminate\Support\Str::limit($request->isi, 50),
+                'tipe'         => 'pesan_broadcast',
+                'is_read'      => 0
             ]);
         }
 

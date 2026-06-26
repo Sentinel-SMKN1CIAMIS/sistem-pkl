@@ -139,15 +139,49 @@ class ForcePasswordChangeTest extends TestCase
     {
         $roles = ['super_admin', 'pokja', 'kaprog', 'pembimbing_sekolah', 'pembimbing_dudi'];
 
+        $prog = \App\Models\ProgramKeahlian::firstOrCreate(['kode' => 'RPL'], ['nama' => 'Rekayasa Perangkat Lunak']);
+        $konsentrasi = \App\Models\KonsentrasiKeahlian::firstOrCreate(
+            ['kode' => 'RPL'],
+            [
+                'program_keahlian_id' => $prog->id,
+                'nama' => 'Rekayasa Perangkat Lunak',
+                'durasi_pkl_bulan' => 6,
+            ]
+        );
+
         foreach ($roles as $role) {
             $user = User::factory()->create([
                 'force_password_change' => true,
                 'role' => $role,
             ]);
 
+            // Create profile based on role to avoid 500 errors in DashboardController
+            if ($role === 'pembimbing_sekolah') {
+                \App\Models\PembimbingSekolah::create([
+                    'user_id' => $user->id,
+                    'nip' => '12345678',
+                    'nama_lengkap' => $user->name ?? 'Pembimbing',
+                    'tipe' => 'kejuruan',
+                    'konsentrasi_keahlian_id' => $konsentrasi->id,
+                ]);
+            } elseif ($role === 'pembimbing_dudi') {
+                $dudi = \App\Models\Dudi::create([
+                    'nama' => 'DUDI Test',
+                    'alamat' => 'Alamat DUDI',
+                    'konsentrasi_keahlian_id' => $konsentrasi->id,
+                    'kota' => 'Ciamis',
+                    'bidang_usaha' => 'IT',
+                ]);
+                \App\Models\PembimbingDudi::create([
+                    'user_id' => $user->id,
+                    'dudi_id' => $dudi->id,
+                    'nama_lengkap' => $user->name ?? 'Mentor',
+                ]);
+            }
+
             // Non-siswa users should access dashboard normally
             $response = $this->actingAs($user)->get('/dashboard');
-            // May be 200 or 500 depending on role setup, but should NOT redirect
+            // May be 200 or 403 depending on role setup, but should NOT redirect
             $this->assertTrue(in_array($response->getStatusCode(), [200, 403, 500]));
         }
     }

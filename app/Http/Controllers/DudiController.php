@@ -86,6 +86,7 @@ class DudiController extends Controller
             'email' => 'nullable|email',
             'nama_pimpinan' => 'nullable|string',
             'bidang_usaha' => 'nullable|string',
+            'jenis_industri' => 'required|string|in:pemerintahan,industri,layanan,perdagangan,pendidikan,kesehatan,teknologi,pertanian,lainnya',
         ]);
 
         $data = $request->all();
@@ -127,6 +128,7 @@ class DudiController extends Controller
             'email' => 'nullable|email',
             'nama_pimpinan' => 'nullable|string',
             'bidang_usaha' => 'nullable|string',
+            'jenis_industri' => 'required|string|in:pemerintahan,industri,layanan,perdagangan,pendidikan,kesehatan,teknologi,pertanian,lainnya',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
         ]);

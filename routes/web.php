@@ -92,10 +92,15 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     
     // Kaprog Routes
     Route::middleware('role:kaprog')->prefix('kaprog')->name('kaprog.')->group(function () {
+        Route::get('laporan/export', [\App\Http\Controllers\KaprogController::class, 'export'])->name('laporan.export');
         Route::get('laporan', [\App\Http\Controllers\KaprogController::class, 'index'])->name('laporan.index');
         
         // Data DUDI (Read-Only)
         Route::get('dudi', [\App\Http\Controllers\DudiController::class, 'index'])->name('dudi.index');
+
+        // Monitoring Pembimbing (View Only)
+        Route::get('monitoring', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'index'])->name('monitoring.index');
+        Route::get('monitoring/{pembimbingSekolah}', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'show'])->name('monitoring.show');
         
         // Pengajuan PKL
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
