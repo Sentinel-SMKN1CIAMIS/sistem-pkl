@@ -17,23 +17,48 @@ class SiswaController extends Controller
             return redirect()->back()->with('error', 'Profil pembimbing sekolah tidak ditemukan.');
         }
 
-        $query = Siswa::where(function($q) use ($teacher) {
+        $today = \Carbon\Carbon::today()->toDateString();
+        $tab = $request->input('tab', 'belum-isi');
+        $perPage = $request->input('per_page', 15);
+
+        // Jika user melakukan pencarian, otomatis pindah ke tab 'semua-siswa' agar mencari di seluruh data
+        if ($request->filled('search')) {
+            $tab = 'semua-siswa';
+        }
+
+        $baseQuery = Siswa::where(function($q) use ($teacher) {
+            $q->where('pembimbing_sekolah_id', $teacher->id)
+              ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
+        });
+
+        // 1. Calculate counts for badges
+        $totalStudentsCount = (clone $baseQuery)->count();
+        $hasFilledTodayCount = (clone $baseQuery)->whereHas('jurnal', function($q) use ($today) {
+            $q->where('tanggal', $today);
+        })->count();
+        $notFilledTodayCount = $totalStudentsCount - $hasFilledTodayCount;
+        
+        // Students with pending journals
+        $studentsPendingApprovalCount = (clone $baseQuery)->whereHas('jurnal', function($q) {
+            $q->where('approval_status', 'pending');
+        })->count();
+
+        // Total pending journals sum
+        $pendingJurnalsSum = \App\Models\Jurnal::where('approval_status', 'pending')
+            ->whereHas('siswa', function($q) use ($teacher) {
                 $q->where('pembimbing_sekolah_id', $teacher->id)
                   ->orWhere('pembimbing_sekolah_umum_id', $teacher->id);
-            })
-            ->with(['konsentrasiKeahlian', 'dudi'])
+            })->count();
+
+        // 2. Query for the active tab (Paginated)
+        $query = clone $baseQuery;
+        $query->with(['konsentrasiKeahlian', 'dudi'])
             ->withCount([
                 'jurnal',
                 'absensi',
-                'jurnal as approved_jurnal_count' => function($q) {
-                    $q->where('approval_status', 'approved');
-                },
-                'jurnal as pending_jurnal_count' => function($q) {
-                    $q->where('approval_status', 'pending');
-                },
-                'jurnal as rejected_jurnal_count' => function($q) {
-                    $q->where('approval_status', 'rejected');
-                }
+                'jurnal as approved_jurnal_count' => function($q) { $q->where('approval_status', 'approved'); },
+                'jurnal as pending_jurnal_count' => function($q) { $q->where('approval_status', 'pending'); },
+                'jurnal as rejected_jurnal_count' => function($q) { $q->where('approval_status', 'rejected'); }
             ]);
 
         if ($request->filled('search')) {
@@ -44,27 +69,38 @@ class SiswaController extends Controller
             });
         }
 
-        $students = $query->get();
-        $today = \Carbon\Carbon::today()->toDateString();
-        
-        // Fetch today's journals for these students
+        if ($tab === 'belum-isi') {
+            $query->whereDoesntHave('jurnal', function($q) use ($today) {
+                $q->where('tanggal', $today);
+            });
+        } elseif ($tab === 'sudah-isi') {
+            $query->whereHas('jurnal', function($q) use ($today) {
+                $q->where('tanggal', $today);
+            });
+        } elseif ($tab === 'butuh-approval') {
+            $query->whereHas('jurnal', function($q) {
+                $q->where('approval_status', 'pending');
+            });
+        }
+
+        $students = $query->paginate($perPage)->withQueryString();
+
+        // 3. Compute 'status hari ini' and append today's journal for the paginated items
         $todayJournals = \App\Models\Jurnal::whereIn('siswa_id', $students->pluck('id'))
             ->where('tanggal', $today)
             ->get()
             ->keyBy('siswa_id');
 
-        // Fetch today's attendance for these students to prevent N+1 queries
-        $todayAbsensi = \App\Models\Absensi::whereIn('siswa_id', $students->pluck('id'))
+        $todayAbsensiPaginated = \App\Models\Absensi::whereIn('siswa_id', $students->pluck('id'))
             ->whereDate('created_at', $today)
             ->get()
             ->keyBy('siswa_id');
 
-        $students = $students->map(function($student) use ($todayJournals, $todayAbsensi) {
+        $students->getCollection()->transform(function($student) use ($todayJournals, $todayAbsensiPaginated) {
             $student->has_filled_today = isset($todayJournals[$student->id]);
             $student->today_journal = $todayJournals[$student->id] ?? null;
             
-            // Compute status hari ini in memory
-            $absensi = $todayAbsensi[$student->id] ?? null;
+            $absensi = $todayAbsensiPaginated[$student->id] ?? null;
             if ($student->status_pkl !== 'sedang_pkl') {
                 $student->status_hari_ini_computed = str_replace('_', ' ', $student->status_pkl);
             } elseif ($absensi) {
@@ -81,44 +117,42 @@ class SiswaController extends Controller
             return $student;
         });
 
-        // Grouping for tabs/filters
-        $studentsNotFilledToday = $students->filter(fn($s) => !$s->has_filled_today);
-        $studentsHasFilledToday = $students->filter(fn($s) => $s->has_filled_today);
-        $studentsPendingApproval = $students->filter(fn($s) => $s->pending_jurnal_count > 0);
+        // 4. Analytics calculations (lightweight queries over all students)
+        $allStudentsForAnalytics = (clone $baseQuery)->with('dudi:id,nama')->get(['id', 'status_pkl', 'dudi_id']);
+        $allTodayAbsensi = \App\Models\Absensi::whereIn('siswa_id', $allStudentsForAnalytics->pluck('id'))
+            ->whereDate('created_at', $today)
+            ->get(['siswa_id', 'status', 'waktu_pulang'])
+            ->keyBy('siswa_id');
 
-        // Calculate attendance status statistics for chart
         $attendanceCounts = [
-            'hadir' => 0,
-            'sakit' => 0,
-            'izin' => 0,
-            'alpha' => 0,
-            'belum_absen' => 0
+            'hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0, 'belum_absen' => 0
         ];
-        foreach ($students as $student) {
+        $dudiRawCounts = [];
+
+        foreach ($allStudentsForAnalytics as $student) {
+            // Count Attendance
             if ($student->status_pkl === 'sedang_pkl') {
-                $status = strtolower($student->status_hari_ini_computed);
-                if (in_array($status, ['masuk kerja', 'pulang kerja', 'hadir'])) {
-                    $attendanceCounts['hadir']++;
-                } elseif ($status === 'sakit') {
-                    $attendanceCounts['sakit']++;
-                } elseif ($status === 'izin') {
-                    $attendanceCounts['izin']++;
-                } elseif ($status === 'alpha') {
-                    $attendanceCounts['alpha']++;
-                } elseif ($status === 'belum absen') {
-                    $attendanceCounts['belum_absen']++;
+                $absensi = $allTodayAbsensi[$student->id] ?? null;
+                $status = 'belum_absen';
+                if ($absensi) {
+                    if (in_array($absensi->status, ['sakit', 'izin', 'alpha'])) {
+                        $status = $absensi->status;
+                    } else {
+                        $status = 'hadir'; // masuk kerja / pulang kerja
+                    }
+                }
+                
+                if (isset($attendanceCounts[$status])) {
+                    $attendanceCounts[$status]++;
                 }
             }
-        }
 
-        // Calculate DUDI distribution for chart
-        $dudiRawCounts = [];
-        foreach ($students as $student) {
+            // Count DUDI
             $dudiName = $student->dudi ? $student->dudi->nama : 'Belum diplot';
             $dudiRawCounts[$dudiName] = ($dudiRawCounts[$dudiName] ?? 0) + 1;
         }
-        arsort($dudiRawCounts);
 
+        arsort($dudiRawCounts);
         $dudiCounts = [];
         $otherDudiCount = 0;
         $idx = 0;
@@ -136,11 +170,15 @@ class SiswaController extends Controller
 
         return view('pembimbing-sekolah.siswa.index', compact(
             'students',
-            'studentsNotFilledToday',
-            'studentsHasFilledToday',
-            'studentsPendingApproval',
+            'totalStudentsCount',
+            'hasFilledTodayCount',
+            'notFilledTodayCount',
+            'studentsPendingApprovalCount',
+            'pendingJurnalsSum',
             'attendanceCounts',
-            'dudiCounts'
+            'dudiCounts',
+            'tab',
+            'perPage'
         ));
     }
 

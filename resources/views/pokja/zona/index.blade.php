@@ -12,10 +12,22 @@
         {{-- Sidebar: Zona List --}}
         <div class="lg:col-span-1 space-y-4">
             <div class="glass-card p-6">
-                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> Daftar Zona
-                </h3>
-                <div id="zona-list" class="space-y-3 max-h-[50vh] overflow-y-auto">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> Daftar Zona
+                    </h3>
+                    <form method="GET" action="{{ route('pokja.zona.index') }}" class="flex items-center gap-2">
+                        <label for="per_page" class="text-xs font-bold text-slate-500 uppercase">Baris:</label>
+                        <select name="per_page" id="per_page" onchange="this.form.submit()" class="px-2 py-1 text-xs border border-slate-200/50 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                            <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
+                            <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+                        </select>
+                    </form>
+                </div>
+                <div id="zona-list" class="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
                     @forelse($zonas as $zona)
                         <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 zona-item" data-id="{{ $zona->id }}">
                             <div class="flex items-center gap-3">
@@ -34,6 +46,9 @@
                     @empty
                         <p class="text-sm text-slate-500 italic text-center py-4">Belum ada zona. Gambar polygon di peta untuk menambah.</p>
                     @endforelse
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    {{ $zonas->links() }}
                 </div>
             </div>
 

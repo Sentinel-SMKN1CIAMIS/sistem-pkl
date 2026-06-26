@@ -9,17 +9,48 @@ class PembimbingSekolahController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $query = \App\Models\PembimbingSekolah::with(['user', 'konsentrasiKeahlian'])->latest();
+
+        $search = $request->input('search');
+        $tipe = $request->input('tipe', 'semua');
+        $konsentrasi_id = $request->input('konsentrasi_keahlian_id', 'semua');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
+
+        if ($tipe !== 'semua') {
+            $query->where('tipe', $tipe);
+        }
+
+        if ($konsentrasi_id !== 'semua') {
+            $query->where('konsentrasi_keahlian_id', $konsentrasi_id);
+        }
+
         if (auth()->user()->konsentrasi_keahlian_id) {
             $query->where('konsentrasi_keahlian_id', auth()->user()->konsentrasi_keahlian_id);
         } elseif (auth()->user()->program_keahlian_id) {
             $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
             $query->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
         }
-        $teachers = $query->paginate(10);
-        return view('pokja.pembimbing-sekolah.index', compact('teachers'));
+
+        $teachers = $query->paginate(15)->withQueryString();
+
+        // Data for filters
+        $konsentrasiQuery = \App\Models\KonsentrasiKeahlian::query();
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $konsentrasiQuery->where('id', auth()->user()->konsentrasi_keahlian_id);
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiQuery->whereIn('id', $konsentrasiIds ?? []);
+        }
+        $concentrations = $konsentrasiQuery->orderBy('kode')->get();
+
+        return view('pokja.pembimbing-sekolah.index', compact('teachers', 'concentrations'));
     }
 
     public function create()

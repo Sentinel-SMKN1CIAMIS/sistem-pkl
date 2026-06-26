@@ -15,6 +15,7 @@ class PemetaanController extends Controller
     public function index(Request $request)
     {
         $search = $request->search;
+        $perPage = $request->input('per_page', 15);
         
         $query = Siswa::with(['dudi', 'pembimbingSekolah', 'pembimbingSekolahUmum', 'pembimbingDudi', 'konsentrasiKeahlian']);
         
@@ -25,12 +26,42 @@ class PemetaanController extends Controller
             $query->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
         }
 
+        $konsentrasi_id = $request->input('konsentrasi_id', 'semua');
+        $status = $request->input('status', 'semua');
+
         $siswas = $query->when($search, function($query) use ($search) {
-                $query->where('nama_lengkap', 'like', "%{$search}%")
+                $query->where(function($q) use ($search) {
+                    $q->where('nama_lengkap', 'like', "%{$search}%")
                       ->orWhere('nis', 'like', "%{$search}%");
+                });
+            })
+            ->when($status === 'lengkap', function($query) {
+                $query->whereNotNull('dudi_id')
+                      ->whereNotNull('pembimbing_sekolah_id')
+                      ->whereNotNull('pembimbing_sekolah_umum_id')
+                      ->whereNotNull('pembimbing_dudi_id');
+            })
+            ->when($status === 'belum-lengkap', function($query) {
+                $query->where(function($q) {
+                    $q->whereNull('dudi_id')
+                      ->orWhereNull('pembimbing_sekolah_id')
+                      ->orWhereNull('pembimbing_sekolah_umum_id')
+                      ->orWhereNull('pembimbing_dudi_id');
+                });
+            })
+            ->when($konsentrasi_id !== 'semua', function($query) use ($konsentrasi_id) {
+                $query->where('konsentrasi_keahlian_id', $konsentrasi_id);
+            })
+            ->when($status === 'belum-lengkap', function($query) {
+                $query->where(function($q) {
+                    $q->whereNull('dudi_id')
+                      ->orWhereNull('pembimbing_sekolah_id')
+                      ->orWhereNull('pembimbing_sekolah_umum_id')
+                      ->orWhereNull('pembimbing_dudi_id');
+                });
             })
             ->latest()
-            ->paginate(15)
+            ->paginate($perPage)
             ->withQueryString();
 
         $baseSiswaQuery = Siswa::query();
@@ -48,7 +79,16 @@ class PemetaanController extends Controller
             ->whereNotNull('pembimbing_dudi_id')
             ->count();
         
-        return view('pokja.pemetaan.index', compact('siswas', 'totalSiswa', 'terpetakan'));
+        $konsentrasiQuery = \App\Models\KonsentrasiKeahlian::query();
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $konsentrasiQuery->where('id', auth()->user()->konsentrasi_keahlian_id);
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $konsentrasiQuery->whereIn('id', $konsentrasiIds);
+        }
+        $konsentrasiList = $konsentrasiQuery->orderBy('kode')->get(['id', 'kode']);
+
+        return view('pokja.pemetaan.index', compact('siswas', 'totalSiswa', 'terpetakan', 'perPage', 'konsentrasiList'));
     }
 
     /**

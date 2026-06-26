@@ -56,7 +56,7 @@
         <div class="glass-card p-3 sm:p-6 border-t-4 border-emerald-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-1 transition-all duration-200 hover:scale-[1.02]">
             <div class="text-center sm:text-left">
                 <span class="hidden sm:block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Sudah Isi</span>
-                <span class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white mt-1 leading-none block">{{ $studentsHasFilledToday->count() }}</span>
+                <span class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white mt-1 leading-none block">{{ $hasFilledTodayCount }}</span>
                 <span class="block sm:hidden text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Sudah</span>
             </div>
             <div class="hidden sm:flex p-2.5 bg-emerald-500/10 rounded-xl text-emerald-500 shrink-0">
@@ -68,7 +68,7 @@
         <div class="glass-card p-3 sm:p-6 border-t-4 border-rose-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-1 transition-all duration-200 hover:scale-[1.02]">
             <div class="text-center sm:text-left">
                 <span class="hidden sm:block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Belum Isi</span>
-                <span class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white mt-1 leading-none block">{{ $studentsNotFilledToday->count() }}</span>
+                <span class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white mt-1 leading-none block">{{ $notFilledTodayCount }}</span>
                 <span class="block sm:hidden text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Belum</span>
             </div>
             <div class="hidden sm:flex p-2.5 bg-rose-500/10 rounded-xl text-rose-500 shrink-0">
@@ -80,7 +80,7 @@
         <div class="glass-card p-3 sm:p-6 border-t-4 border-amber-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-1 transition-all duration-200 hover:scale-[1.02]">
             <div class="text-center sm:text-left">
                 <span class="hidden sm:block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pending</span>
-                <span class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white mt-1 leading-none block">{{ $studentsPendingApproval->sum('pending_jurnal_count') }}</span>
+                <span class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white mt-1 leading-none block">{{ $pendingJurnalsSum }}</span>
                 <span class="block sm:hidden text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Pending</span>
             </div>
             <div class="hidden sm:flex p-2.5 bg-amber-500/10 rounded-xl text-amber-500 shrink-0">
@@ -119,8 +119,8 @@
                 </div>
                 <div class="relative h-36 flex items-center justify-center">
                     <canvas id="todayJurnalChart" 
-                            data-filled="{{ $studentsHasFilledToday->count() }}" 
-                            data-unfilled="{{ $studentsNotFilledToday->count() }}"></canvas>
+                            data-filled="{{ $hasFilledTodayCount }}" 
+                            data-unfilled="{{ $notFilledTodayCount }}"></canvas>
                 </div>
             </div>
 
@@ -156,17 +156,28 @@
     <!-- Search Form (Responsive Layout) -->
     <div class="glass-card p-4 mb-6">
         <form action="{{ route('pembimbing_sekolah.siswa.index') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
+            <input type="hidden" name="tab" value="{{ $tab }}">
             <div class="flex-1 relative">
                 <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Siswa bimbingan berdasarkan nama atau NIS..." 
                        class="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm text-slate-800 dark:text-slate-200">
+            </div>
+            <div class="flex items-center gap-2">
+                <label for="per_page" class="hidden sm:block text-xs font-bold text-slate-500 uppercase whitespace-nowrap">Baris:</label>
+                <select name="per_page" id="per_page" onchange="this.form.submit()" class="w-full sm:w-auto px-3 py-2 text-sm border border-slate-200/50 dark:border-slate-700/50 bg-slate-100 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 rounded-xl focus:ring-blue-500 focus:border-blue-500">
+                    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                    <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
+                    <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                    <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+                </select>
             </div>
             <div class="flex gap-2">
                 <button type="submit" class="flex-1 sm:flex-initial px-6 py-2.5 bg-slate-800 dark:bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-700 transition-all text-sm cursor-pointer shadow-md">
                     Cari
                 </button>
                 @if(request('search'))
-                    <a href="{{ route('pembimbing_sekolah.siswa.index') }}" class="px-4 py-2.5 text-slate-500 hover:text-red-400 text-sm flex items-center justify-center gap-2 transition-colors border border-slate-200/50 dark:border-slate-700 rounded-xl bg-slate-100/30">
+                    <a href="{{ route('pembimbing_sekolah.siswa.index', ['tab' => $tab, 'per_page' => $perPage]) }}" class="px-4 py-2.5 text-slate-500 hover:text-red-400 text-sm flex items-center justify-center gap-2 transition-colors border border-slate-200/50 dark:border-slate-700 rounded-xl bg-slate-100/30">
                         <i data-lucide="x-circle" class="w-4 h-4"></i> Reset
                     </a>
                 @endif
@@ -184,42 +195,39 @@
     }" class="space-y-6">
         <!-- Scrollable Tabs container for mobile -->
         <div class="flex flex-nowrap overflow-x-auto no-scrollbar border-b border-slate-200/50 dark:border-slate-700/50 gap-2 pb-0.5">
-            <button @click="activeTab = 'belum-isi'" 
-                    :class="activeTab === 'belum-isi' ? 'border-rose-500 text-rose-500' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
-                    class="px-4 py-2.5 border-b-2 font-bold text-sm transition-all flex items-center gap-2 cursor-pointer shrink-0">
+            <a href="{{ route('pembimbing_sekolah.siswa.index', ['tab' => 'belum-isi', 'per_page' => $perPage, 'search' => request('search')]) }}" 
+               class="px-4 py-2.5 border-b-2 font-bold text-sm transition-all flex items-center gap-2 shrink-0 {{ $tab === 'belum-isi' ? 'border-rose-500 text-rose-500' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300' }}">
                 Belum Isi
-                <span class="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/10 text-rose-500 font-black">{{ $studentsNotFilledToday->count() }}</span>
-            </button>
-            <button @click="activeTab = 'sudah-isi'" 
-                    :class="activeTab === 'sudah-isi' ? 'border-emerald-500 text-emerald-500' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
-                    class="px-4 py-2.5 border-b-2 font-bold text-sm transition-all flex items-center gap-2 cursor-pointer shrink-0">
+                <span class="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/10 text-rose-500 font-black">{{ $notFilledTodayCount }}</span>
+            </a>
+            <a href="{{ route('pembimbing_sekolah.siswa.index', ['tab' => 'sudah-isi', 'per_page' => $perPage, 'search' => request('search')]) }}" 
+               class="px-4 py-2.5 border-b-2 font-bold text-sm transition-all flex items-center gap-2 shrink-0 {{ $tab === 'sudah-isi' ? 'border-emerald-500 text-emerald-500' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300' }}">
                 Sudah Isi
-                <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/10 text-emerald-500 font-black">{{ $studentsHasFilledToday->count() }}</span>
-            </button>
-            <button @click="activeTab = 'butuh-approval'" 
-                    :class="activeTab === 'butuh-approval' ? 'border-amber-500 text-amber-500' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
-                    class="px-4 py-2.5 border-b-2 font-bold text-sm transition-all flex items-center gap-2 cursor-pointer shrink-0">
+                <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/10 text-emerald-500 font-black">{{ $hasFilledTodayCount }}</span>
+            </a>
+            <a href="{{ route('pembimbing_sekolah.siswa.index', ['tab' => 'butuh-approval', 'per_page' => $perPage, 'search' => request('search')]) }}" 
+               class="px-4 py-2.5 border-b-2 font-bold text-sm transition-all flex items-center gap-2 shrink-0 {{ $tab === 'butuh-approval' ? 'border-amber-500 text-amber-500' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300' }}">
                 Butuh Approval
-                <span class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/10 text-amber-500 font-black">{{ $studentsPendingApproval->count() }}</span>
-            </button>
-            <button @click="activeTab = 'semua-siswa'" 
-                    :class="activeTab === 'semua-siswa' ? 'border-blue-500 text-blue-500' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
-                    class="px-4 py-2.5 border-b-2 font-bold text-sm transition-all flex items-center gap-2 cursor-pointer shrink-0">
+                <span class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/10 text-amber-500 font-black">{{ $studentsPendingApprovalCount }}</span>
+            </a>
+            <a href="{{ route('pembimbing_sekolah.siswa.index', ['tab' => 'semua-siswa', 'per_page' => $perPage, 'search' => request('search')]) }}" 
+               class="px-4 py-2.5 border-b-2 font-bold text-sm transition-all flex items-center gap-2 shrink-0 {{ $tab === 'semua-siswa' ? 'border-blue-500 text-blue-500' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300' }}">
                 Semua & Rekap
-                <span class="px-2 py-0.5 rounded-full text-[10px] bg-blue-500/10 text-blue-500 font-black">{{ $students->count() }}</span>
-            </button>
+                <span class="px-2 py-0.5 rounded-full text-[10px] bg-blue-500/10 text-blue-500 font-black">{{ $totalStudentsCount }}</span>
+            </a>
         </div>
 
         <!-- Tab Content Panes -->
         
         <!-- Tab 1: Belum Isi Hari Ini -->
-        <div x-show="activeTab === 'belum-isi'" class="glass-card overflow-hidden">
+        @if($tab === 'belum-isi')
+        <div class="glass-card overflow-hidden">
             <div class="p-5 border-b border-slate-200/30 dark:border-slate-800/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Siswa Belum Mengisi Jurnal Hari Ini</h4>
                     <p class="text-xs text-slate-500 mt-1">Kirim pesan teguran / WhatsApp secara instan untuk mengingatkan siswa.</p>
                 </div>
-                @if($studentsNotFilledToday->count() > 0)
+                @if($notFilledTodayCount > 0)
                     <form action="{{ route('pembimbing_sekolah.siswa.remind_all') }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-rose-500/20 cursor-pointer">
@@ -241,7 +249,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200/30 dark:divide-slate-700/50 text-sm">
-                        @forelse($studentsNotFilledToday as $item)
+                        @forelse($students as $item)
                             <tr class="hover:bg-slate-100/50 dark:hover:bg-slate-800/20 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-3">
@@ -301,7 +309,7 @@
 
             <!-- Mobile Card View -->
             <div class="block md:hidden p-4 space-y-4">
-                @forelse($studentsNotFilledToday as $item)
+                @forelse($students as $item)
                     <div class="glass-card p-4 flex flex-col gap-4 border border-slate-200/50 dark:border-slate-800 bg-white/5">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-rose-500/10 text-rose-500 font-bold flex items-center justify-center shrink-0">
@@ -347,10 +355,18 @@
                     </div>
                 @endforelse
             </div>
+            @if($students->hasPages())
+                <div class="p-4 border-t border-slate-200/50 dark:border-slate-800">
+                    {{ $students->appends(request()->except('page'))->links() }}
+                </div>
+            @endif
         </div>
+        @endif
+
 
         <!-- Tab 2: Sudah Isi Hari Ini -->
-        <div x-show="activeTab === 'sudah-isi'" class="glass-card overflow-hidden" x-cloak>
+        @if($tab === 'sudah-isi')
+        <div class="glass-card overflow-hidden" x-cloak>
             <div class="p-5 border-b border-slate-200/30 dark:border-slate-800/50">
                 <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Siswa Sudah Mengisi Jurnal Hari Ini</h4>
             </div>
@@ -367,7 +383,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200/30 dark:divide-slate-700/50 text-sm">
-                        @forelse($studentsHasFilledToday as $item)
+                        @forelse($students as $item)
                             <tr class="hover:bg-slate-100/50 dark:hover:bg-slate-800/20 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-3">
@@ -419,7 +435,7 @@
 
             <!-- Mobile Card View -->
             <div class="block md:hidden p-4 space-y-4">
-                @forelse($studentsHasFilledToday as $item)
+                @forelse($students as $item)
                     <div class="glass-card p-4 flex flex-col gap-3 border border-slate-200/50 dark:border-slate-800 bg-white/5">
                         <div class="flex items-center justify-between gap-3">
                             <div class="flex items-center gap-3 min-w-0">
@@ -463,10 +479,18 @@
                     </div>
                 @endforelse
             </div>
+            @if($students->hasPages())
+                <div class="p-4 border-t border-slate-200/50 dark:border-slate-800">
+                    {{ $students->appends(request()->except('page'))->links() }}
+                </div>
+            @endif
+        </div>
+        @endif
         </div>
 
         <!-- Tab 3: Jurnal Butuh Persetujuan -->
-        <div x-show="activeTab === 'butuh-approval'" class="glass-card overflow-hidden" x-cloak>
+        @if($tab === 'butuh-approval')
+        <div class="glass-card overflow-hidden" x-cloak>
             <div class="p-5 border-b border-slate-200/30 dark:border-slate-800/50">
                 <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Jurnal Menunggu Persetujuan Anda</h4>
             </div>
@@ -483,7 +507,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200/30 dark:divide-slate-700/50 text-sm">
-                        @forelse($studentsPendingApproval as $item)
+                        @forelse($students as $item)
                             <tr class="hover:bg-slate-100/50 dark:hover:bg-slate-800/20 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-3">
@@ -525,7 +549,7 @@
 
             <!-- Mobile Card View -->
             <div class="block md:hidden p-4 space-y-4">
-                @forelse($studentsPendingApproval as $item)
+                @forelse($students as $item)
                     <div class="glass-card p-4 flex flex-col gap-3 border border-slate-200/50 dark:border-slate-800 bg-white/5">
                         <div class="flex items-center justify-between gap-3">
                             <div class="flex items-center gap-3 min-w-0">
@@ -557,10 +581,17 @@
                     </div>
                 @endforelse
             </div>
+            @if($students->hasPages())
+                <div class="p-4 border-t border-slate-200/50 dark:border-slate-800">
+                    {{ $students->appends(request()->except('page'))->links() }}
+                </div>
+            @endif
         </div>
+        @endif
 
         <!-- Tab 4: Semua Siswa & Rekap -->
-        <div x-show="activeTab === 'semua-siswa'" class="glass-card overflow-hidden" x-cloak>
+        @if($tab === 'semua-siswa')
+        <div class="glass-card overflow-hidden" x-cloak>
             <div class="p-5 border-b border-slate-200/30 dark:border-slate-800/50">
                 <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Semua Siswa Bimbingan & Rekapitulasi Jurnal</h4>
             </div>
@@ -778,7 +809,13 @@
                     </div>
                 @endforelse
             </div>
+            @if($students->hasPages())
+                <div class="p-4 border-t border-slate-200/50 dark:border-slate-800">
+                    {{ $students->appends(request()->except('page'))->links() }}
+                </div>
+            @endif
         </div>
+        @endif
 
         <!-- Floating Change Password Modal (Popup) -->
         <template x-teleport="body">

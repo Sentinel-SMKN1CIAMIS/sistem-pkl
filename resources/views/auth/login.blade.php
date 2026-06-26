@@ -57,7 +57,7 @@
                     <input type="checkbox" name="remember" class="w-4 h-4 rounded bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900">
                     <span class="text-sm text-slate-600 dark:text-slate-400">Ingat Saya</span>
                 </label>
-                <a href="#" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">Lupa Password?</a>
+                <!-- <a href="#" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">Lupa Password?</a> -->
             </div>
 
             <!-- Submit -->

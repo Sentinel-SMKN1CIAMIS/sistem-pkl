@@ -40,13 +40,40 @@
 
     <!-- Search and Filter -->
     <div class="glass-card mb-6 p-4">
-        <form action="{{ route('pokja.pemetaan.index') }}" method="GET" class="flex gap-4">
+        <form action="{{ route('pokja.pemetaan.index') }}" method="GET" class="flex flex-col sm:flex-row gap-4">
             <div class="flex-1 relative">
                 <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400"></i>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama siswa atau NIS..." 
                        class="w-full pl-10 pr-4 py-2.5 bg-white/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 dark:text-slate-200">
             </div>
-            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+            <div class="flex items-center gap-2">
+                <label for="status" class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap">Status:</label>
+                <select name="status" id="status" class="px-3 py-2 text-sm border border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 rounded-xl focus:ring-blue-500 focus:border-blue-500">
+                    <option value="semua" {{ request('status') === 'semua' ? 'selected' : '' }}>Semua</option>
+                    <option value="lengkap" {{ request('status') === 'lengkap' ? 'selected' : '' }}>Lengkap</option>
+                    <option value="belum-lengkap" {{ request('status') === 'belum-lengkap' ? 'selected' : '' }}>Belum Lengkap</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+                <label for="konsentrasi_id" class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap">Program:</label>
+                <select name="konsentrasi_id" id="konsentrasi_id" class="px-3 py-2 text-sm border border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 rounded-xl focus:ring-blue-500 focus:border-blue-500">
+                    <option value="semua">Semua</option>
+                    @foreach($konsentrasiList as $k)
+                        <option value="{{ $k->id }}" {{ request('konsentrasi_id') == $k->id ? 'selected' : '' }}>{{ $k->kode }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+                <label for="per_page" class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap">Baris per Halaman:</label>
+                <select name="per_page" id="per_page" class="px-3 py-2 text-sm border border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 rounded-xl focus:ring-blue-500 focus:border-blue-500">
+                    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                    <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
+                    <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                    <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+                </select>
+            </div>
+            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2">
                 FILTER
             </button>
         </form>

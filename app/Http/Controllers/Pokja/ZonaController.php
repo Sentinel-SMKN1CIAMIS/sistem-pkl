@@ -9,10 +9,11 @@ use Illuminate\Http\Request;
 
 class ZonaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $zonas = Zona::withCount('dudis')->orderBy('nomor_zona')->get();
-        return view('pokja.zona.index', compact('zonas'));
+        $perPage = $request->input('per_page', 15);
+        $zonas = Zona::withCount('dudis')->orderBy('nomor_zona')->paginate($perPage)->withQueryString();
+        return view('pokja.zona.index', compact('zonas', 'perPage'));
     }
 
     public function store(Request $request)

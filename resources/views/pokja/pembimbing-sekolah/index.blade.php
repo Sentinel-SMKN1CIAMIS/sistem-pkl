@@ -25,13 +25,17 @@
         }
     </style>
 
-    <div x-data="{ importPanelOpen: false, guideModalOpen: false }">
+    <div x-data="{ importPanelOpen: false, guideModalOpen: false, showFilters: {{ request()->hasAny(['search', 'tipe', 'konsentrasi_keahlian_id']) && (request('search') != '' || request('tipe') != 'semua' || request('konsentrasi_keahlian_id') != 'semua') ? 'true' : 'false' }} }">
         <div class="mb-6 pokja-header-container">
             <div class="flex-1">
                 <p class="text-slate-600 dark:text-slate-400 text-sm">Daftar guru pembimbing sekolah per konsentrasi keahlian.</p>
             </div>
             @if(auth()->user()->role !== 'kepala_sekolah')
             <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+                <button @click="showFilters = !showFilters" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-all gap-2 cursor-pointer shadow-sm">
+                    <i data-lucide="filter" class="w-4 h-4"></i>
+                    Filter & Cari
+                </button>
                 <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
                     <i data-lucide="upload-cloud" class="w-4 h-4"></i>
                     Impor Pembimbing
@@ -42,6 +46,53 @@
                 </a>
             </div>
             @endif
+        </div>
+
+        <!-- Filters Panel -->
+        <div class="w-full mb-6" x-show="showFilters" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4"
+             x-cloak>
+            <form action="{{ route('pokja.pembimbing_sekolah.index') }}" method="GET" class="glass-card rounded-2xl border border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 p-4 space-y-4 shadow-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Pencarian</label>
+                        <div class="relative">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau NIP..." class="w-full pl-9 pr-4 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Tipe Guru</label>
+                        <select name="tipe" class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300 transition-all">
+                            <option value="semua" {{ request('tipe') === 'semua' ? 'selected' : '' }}>Semua Tipe</option>
+                            <option value="kejuruan" {{ request('tipe') === 'kejuruan' ? 'selected' : '' }}>Kejuruan</option>
+                            <option value="umum" {{ request('tipe') === 'umum' ? 'selected' : '' }}>Umum</option>
+                            <option value="keduanya" {{ request('tipe') === 'keduanya' ? 'selected' : '' }}>Keduanya</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Konsentrasi Keahlian</label>
+                        <select name="konsentrasi_keahlian_id" class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300 transition-all">
+                            <option value="semua" {{ request('konsentrasi_keahlian_id') === 'semua' ? 'selected' : '' }}>Semua Konsentrasi</option>
+                            @foreach($concentrations as $k)
+                                <option value="{{ $k->id }}" {{ request('konsentrasi_keahlian_id') == $k->id ? 'selected' : '' }}>{{ $k->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
+                    <a href="{{ route('pokja.pembimbing_sekolah.index') }}" class="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors inline-flex items-center justify-center">Reset Filter</a>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all inline-flex items-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        Terapkan Filter
+                    </button>
+                </div>
+            </form>
         </div>
 
         <!-- Inline Import Panel (Directly on the main page layout, occupying full width!) -->
