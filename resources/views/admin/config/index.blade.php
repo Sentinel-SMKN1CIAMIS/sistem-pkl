@@ -214,5 +214,50 @@
                 </div>
             @endif
         </div>
+
+        <!-- System Error Log Section -->
+        <div class="mt-8 glass-card p-6 shadow-xl relative overflow-hidden">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-2 rounded-lg bg-red-500/10 text-red-400">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Log Error Sistem (laravel.log)</h4>
+                    <p class="text-[11px] text-slate-500 leading-normal">Menampilkan 10 error terakhir yang tercatat oleh sistem.</p>
+                </div>
+            </div>
+
+            @if(count($errorLogs) > 0)
+                <div class="overflow-x-auto">
+                    <div class="max-h-96 overflow-y-auto pr-2 rounded-xl border border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/20">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200/50 dark:border-slate-800/50 text-[10px] font-black text-slate-400 uppercase tracking-wider sticky top-0 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm z-10">
+                                    <th class="py-3 px-4 w-40 whitespace-nowrap">Waktu</th>
+                                    <th class="py-3 px-4">Pesan Error</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200/50 dark:divide-slate-800/50">
+                                @foreach($errorLogs as $log)
+                                    <tr class="text-slate-600 dark:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-slate-800/30 transition-all group">
+                                        <td class="py-3 px-4 font-mono text-[10px] font-bold tracking-tight align-top whitespace-nowrap text-slate-500">
+                                            {{ $log['timestamp'] }}
+                                        </td>
+                                        <td class="py-3 px-4 align-top">
+                                            <div class="font-mono text-[10px] text-red-500/80 dark:text-red-400/80 break-words whitespace-pre-wrap max-w-2xl leading-relaxed">{{ $log['message'] }}</div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @else
+                <div class="py-8 text-center text-slate-500 border border-dashed border-slate-200/50 dark:border-slate-800/50 rounded-2xl">
+                    <i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mx-auto mb-2 opacity-50"></i>
+                    <p class="text-xs">Sistem berjalan dengan baik. Tidak ada error log yang ditemukan.</p>
+                </div>
+            @endif
+        </div>
     </div>
 </x-app-layout>
