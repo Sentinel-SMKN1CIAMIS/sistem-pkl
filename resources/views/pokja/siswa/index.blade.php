@@ -314,42 +314,75 @@
     @endif
 
     <!-- Filters -->
-    <div class="glass-card p-4 mb-6">
-        <form action="{{ route('pokja.siswa.index') }}" method="GET" class="flex flex-col md:flex-row gap-4">
-            <div class="flex-1 relative">
-                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama atau NIS..." 
-                       class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+    <div class="glass-card p-4 mb-6" x-data="{ showAdvanced: {{ request()->hasAny(['sort_by', 'sort_dir']) ? 'true' : 'false' }} }">
+        <form action="{{ route('pokja.siswa.index') }}" method="GET" class="space-y-3">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="flex-1 relative">
+                    <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama atau NIS..." 
+                           class="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm text-slate-800 dark:text-slate-200">
+                </div>
+                
+                <div class="md:w-64">
+                    <select name="konsentrasi" onchange="this.form.submit()" 
+                            class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm text-slate-800 dark:text-slate-200">
+                        <option value="">Semua Konsentrasi</option>
+                        @foreach($concentrations as $c)
+                            <option value="{{ $c->id }}" {{ request('konsentrasi') == $c->id ? 'selected' : '' }}>{{ $c->nama }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex gap-2 items-center">
+                    <button type="button" @click="showAdvanced = !showAdvanced" class="px-3 py-2.5 text-slate-500 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-colors border border-slate-200/50 dark:border-slate-700/50" title="Filter Lanjutan">
+                        <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+                    </button>
+                    <button type="submit" class="flex-1 sm:flex-initial px-6 py-2.5 bg-slate-800 dark:bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-700 transition-all text-sm cursor-pointer shadow-md">
+                        Cari
+                    </button>
+                    @if(request()->anyFilled(['search', 'konsentrasi', 'sort_by', 'sort_dir']))
+                        <a href="{{ route('pokja.siswa.index') }}" class="px-3 py-2.5 text-slate-500 hover:text-red-400 flex items-center justify-center transition-colors border border-slate-200/50 dark:border-slate-700 rounded-xl bg-slate-100/30" title="Reset">
+                            <i data-lucide="x-circle" class="w-5 h-5"></i>
+                        </a>
+                    @endif
+                </div>
             </div>
-            <div class="md:w-64">
-                <select name="konsentrasi" onchange="this.form.submit()" 
-                        class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
-                    <option value="">Semua Konsentrasi</option>
-                    @foreach($concentrations as $c)
-                        <option value="{{ $c->id }}" {{ request('konsentrasi') == $c->id ? 'selected' : '' }}>{{ $c->nama }}</option>
-                    @endforeach
-                </select>
+
+            <!-- Advanced Filters (Sorting) -->
+            <div x-show="showAdvanced" 
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-cloak
+                 class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
+                 
+                <div class="flex items-center gap-2 mb-3 px-1">
+                    <i data-lucide="sliders" class="w-4 h-4 text-blue-500"></i>
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Pengaturan Lanjutan</h4>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 shadow-inner">
+                    <!-- Sort By -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Urutkan Berdasarkan</label>
+                        <select name="sort_by" onchange="this.form.submit()" class="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                            <option value="created_at" {{ request('sort_by') === 'created_at' || !request('sort_by') ? 'selected' : '' }}>Waktu Pendaftaran</option>
+                            <option value="nama_lengkap" {{ request('sort_by') === 'nama_lengkap' ? 'selected' : '' }}>Nama Lengkap (A-Z)</option>
+                            <option value="nis" {{ request('sort_by') === 'nis' ? 'selected' : '' }}>NIS</option>
+                            <option value="kelas" {{ request('sort_by') === 'kelas' ? 'selected' : '' }}>Kelas</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort Dir -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Arah Urutan</label>
+                        <select name="sort_dir" onchange="this.form.submit()" class="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                            <option value="desc" {{ request('sort_dir') === 'desc' || !request('sort_dir') ? 'selected' : '' }}>Menurun (Terbaru / Z-A)</option>
+                            <option value="asc" {{ request('sort_dir') === 'asc' ? 'selected' : '' }}>Menaik (Terlama / A-Z)</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div class="md:w-56">
-                <select name="sort" onchange="this.form.submit()" 
-                        class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
-                    <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Terbaru Dibuat</option>
-                    <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Terlama Dibuat</option>
-                    <option value="name_asc" {{ request('sort') === 'name_asc' ? 'selected' : '' }}>Nama Lengkap (A-Z)</option>
-                    <option value="name_desc" {{ request('sort') === 'name_desc' ? 'selected' : '' }}>Nama Lengkap (Z-A)</option>
-                    <option value="nis_asc" {{ request('sort') === 'nis_asc' ? 'selected' : '' }}>NIS (Kecil ke Besar)</option>
-                    <option value="nis_desc" {{ request('sort') === 'nis_desc' ? 'selected' : '' }}>NIS (Besar ke Kecil)</option>
-                    <option value="kelas_asc" {{ request('sort') === 'kelas_asc' ? 'selected' : '' }}>Kelas (A-Z)</option>
-                </select>
-            </div>
-            <button type="submit" class="hidden md:block px-6 py-2 bg-slate-800 dark:bg-slate-700 text-white font-medium rounded-xl hover:bg-slate-700 transition-all text-sm">
-                Filter
-            </button>
-            @if(request()->anyFilled(['search', 'konsentrasi', 'sort']))
-                <a href="{{ route('pokja.siswa.index') }}" class="px-4 py-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold rounded-xl transition-all text-sm flex items-center justify-center gap-2 border border-red-200/50 dark:border-red-500/20">
-                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Filter
-                </a>
-            @endif
         </form>
     </div>
 

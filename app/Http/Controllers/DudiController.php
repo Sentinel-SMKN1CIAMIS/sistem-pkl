@@ -50,7 +50,17 @@ class DudiController extends Controller
             });
         }
 
-        $dudis = $query->latest()->paginate(10)->withQueryString();
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        $allowedSorts = ['nama', 'kota', 'nama_pimpinan', 'created_at'];
+
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortDir === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->latest();
+        }
+
+        $dudis = $query->paginate(15)->withQueryString();
         $concentrations = $user->getFilteredKonsentrasi();
 
         return view('pokja.dudi.index', compact('dudis', 'concentrations'));

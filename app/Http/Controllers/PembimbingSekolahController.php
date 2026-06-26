@@ -11,7 +11,7 @@ class PembimbingSekolahController extends Controller
      */
     public function index(Request $request)
     {
-        $query = \App\Models\PembimbingSekolah::with(['user', 'konsentrasiKeahlian'])->latest();
+        $query = \App\Models\PembimbingSekolah::with(['user', 'konsentrasiKeahlian']);
 
         $search = $request->input('search');
         $tipe = $request->input('tipe', 'semua');
@@ -37,6 +37,16 @@ class PembimbingSekolahController extends Controller
         } elseif (auth()->user()->program_keahlian_id) {
             $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
             $query->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+        }
+
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        $allowedSorts = ['nama_lengkap', 'nip', 'tipe', 'created_at'];
+
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortDir === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->latest();
         }
 
         $teachers = $query->paginate(15)->withQueryString();

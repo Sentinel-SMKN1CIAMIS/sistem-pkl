@@ -9,9 +9,9 @@ class PembimbingDudiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $query = \App\Models\PembimbingDudi::with(['user', 'dudi'])->latest();
+        $query = \App\Models\PembimbingDudi::with(['user', 'dudi']);
         if (auth()->user()->konsentrasi_keahlian_id) {
             $userKonId = auth()->user()->konsentrasi_keahlian_id;
             $query->whereHas('dudi', function($q) use ($userKonId) {
@@ -29,7 +29,28 @@ class PembimbingDudiController extends Controller
                   });
             });
         }
-        $mentors = $query->paginate(10);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhereHas('dudi', function($d) use ($search) {
+                      $d->where('nama', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        $allowedSorts = ['nama_lengkap', 'created_at'];
+
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortDir === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->latest();
+        }
+
+        $mentors = $query->paginate(15)->withQueryString();
         return view('pokja.pembimbing-dudi.index', compact('mentors'));
     }
 

@@ -83,6 +83,16 @@ class SiswaController extends Controller
             });
         }
 
+        $sortBy = $request->input('sort_by', 'nama_lengkap');
+        $sortDir = $request->input('sort_dir', 'asc');
+        $allowedSorts = ['nama_lengkap', 'nis', 'kelas'];
+        
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortDir === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->orderBy('nama_lengkap', 'asc');
+        }
+
         $students = $query->paginate($perPage)->withQueryString();
 
         // 3. Compute 'status hari ini' and append today's journal for the paginated items

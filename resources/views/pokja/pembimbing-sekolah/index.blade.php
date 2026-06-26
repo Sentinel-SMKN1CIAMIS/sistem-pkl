@@ -25,7 +25,7 @@
         }
     </style>
 
-    <div x-data="{ importPanelOpen: false, guideModalOpen: false, showFilters: {{ request()->hasAny(['search', 'tipe', 'konsentrasi_keahlian_id']) && (request('search') != '' || request('tipe') != 'semua' || request('konsentrasi_keahlian_id') != 'semua') ? 'true' : 'false' }} }">
+    <div x-data="{ importPanelOpen: false, guideModalOpen: false, showFilters: {{ request()->hasAny(['search', 'tipe', 'konsentrasi_keahlian_id', 'sort_by', 'sort_dir']) && (request('search') != '' || request('tipe') != 'semua' || request('konsentrasi_keahlian_id') != 'semua' || request('sort_by') != '' || request('sort_dir') != '') ? 'true' : 'false' }} }">
         <div class="mb-6 pokja-header-container">
             <div class="flex-1">
                 <p class="text-slate-600 dark:text-slate-400 text-sm">Daftar guru pembimbing sekolah per konsentrasi keahlian.</p>
@@ -83,6 +83,32 @@
                                 <option value="{{ $k->id }}" {{ request('konsentrasi_keahlian_id') == $k->id ? 'selected' : '' }}>{{ $k->nama }}</option>
                             @endforeach
                         </select>
+                    </div>
+                </div>
+
+                <!-- Advanced Sorting -->
+                <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
+                    <div class="flex items-center gap-2 mb-3 px-1">
+                        <i data-lucide="sliders" class="w-4 h-4 text-blue-500"></i>
+                        <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Pengaturan Lanjutan</h4>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 shadow-inner">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Urutkan Berdasarkan</label>
+                            <select name="sort_by" class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300 transition-all">
+                                <option value="created_at" {{ request('sort_by') === 'created_at' || !request('sort_by') ? 'selected' : '' }}>Waktu Ditambahkan</option>
+                                <option value="nama_lengkap" {{ request('sort_by') === 'nama_lengkap' ? 'selected' : '' }}>Nama Lengkap (A-Z)</option>
+                                <option value="nip" {{ request('sort_by') === 'nip' ? 'selected' : '' }}>NIP</option>
+                                <option value="tipe" {{ request('sort_by') === 'tipe' ? 'selected' : '' }}>Tipe Pembimbing</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Arah Urutan</label>
+                            <select name="sort_dir" class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300 transition-all">
+                                <option value="desc" {{ request('sort_dir') === 'desc' || !request('sort_dir') ? 'selected' : '' }}>Menurun (Terbaru / Z-A)</option>
+                                <option value="asc" {{ request('sort_dir') === 'asc' ? 'selected' : '' }}>Menaik (Terlama / A-Z)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
