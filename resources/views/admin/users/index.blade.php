@@ -93,10 +93,95 @@
            class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'siswa' ? 'border-b-2 border-emerald-500 text-emerald-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
             Siswa
         </a>
-        <a href="{{ route('admin.users.index', ['filter' => 'other']) }}" 
-           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'other' ? 'border-b-2 border-amber-500 text-amber-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
-            Lainnya
+        <a href="{{ route('admin.users.index', ['filter' => 'pokja']) }}" 
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'pokja' ? 'border-b-2 border-amber-500 text-amber-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+            Pokja
         </a>
+        <a href="{{ route('admin.users.index', ['filter' => 'kaprog']) }}" 
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'kaprog' ? 'border-b-2 border-orange-500 text-orange-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+            Kaprog
+        </a>
+        <a href="{{ route('admin.users.index', ['filter' => 'kepala_sekolah']) }}" 
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'kepala_sekolah' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+            Kepala Sekolah
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="glass-card p-4 mb-6" x-data="{ showAdvanced: {{ request()->hasAny(['sort_by', 'sort_dir', 'per_page']) ? 'true' : 'false' }} }">
+        <form action="{{ route('admin.users.index') }}" method="GET" class="space-y-3">
+            <input type="hidden" name="filter" value="{{ $filter }}">
+            
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="flex-1 relative">
+                    <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari username atau nama..." 
+                           class="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm text-slate-800 dark:text-slate-200">
+                </div>
+                
+                <div class="flex gap-2 items-center">
+                    <button type="button" @click="showAdvanced = !showAdvanced" class="px-3 py-2.5 text-slate-500 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-colors border border-slate-200/50 dark:border-slate-700/50" title="Filter Lanjutan">
+                        <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+                    </button>
+                    <button type="submit" class="flex-1 sm:flex-initial px-6 py-2.5 bg-slate-800 dark:bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-700 transition-all text-sm cursor-pointer shadow-md">
+                        Cari
+                    </button>
+                    @if(request()->anyFilled(['search', 'sort_by', 'sort_dir', 'per_page']))
+                        <a href="{{ route('admin.users.index', ['filter' => $filter]) }}" class="px-3 py-2.5 text-slate-500 hover:text-red-400 flex items-center justify-center transition-colors border border-slate-200/50 dark:border-slate-700 rounded-xl bg-slate-100/30" title="Reset">
+                            <i data-lucide="x-circle" class="w-5 h-5"></i>
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Advanced Filters (Sorting & Pagination) -->
+            <div x-show="showAdvanced" 
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-cloak
+                 class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
+                 
+                <div class="flex items-center gap-2 mb-3 px-1">
+                    <i data-lucide="sliders" class="w-4 h-4 text-blue-500"></i>
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Pengaturan Lanjutan</h4>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 shadow-inner">
+                    <!-- Sort By -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Urutkan Berdasarkan</label>
+                        <select name="sort_by" onchange="this.form.submit()" class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                            <option value="created_at" {{ request('sort_by') === 'created_at' || !request('sort_by') ? 'selected' : '' }}>Waktu Mendaftar</option>
+                            <option value="username" {{ request('sort_by') === 'username' ? 'selected' : '' }}>Username (A-Z)</option>
+                            <option value="name" {{ request('sort_by') === 'name' ? 'selected' : '' }}>Nama (A-Z)</option>
+                            <option value="role" {{ request('sort_by') === 'role' ? 'selected' : '' }}>Role</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort Dir -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Arah Urutan</label>
+                        <select name="sort_dir" onchange="this.form.submit()" class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                            <option value="desc" {{ request('sort_dir') === 'desc' || !request('sort_dir') ? 'selected' : '' }}>Menurun (Terbaru / Z-A)</option>
+                            <option value="asc" {{ request('sort_dir') === 'asc' ? 'selected' : '' }}>Menaik (Terlama / A-Z)</option>
+                        </select>
+                    </div>
+
+                    <!-- Per Page -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Baris Per Halaman</label>
+                        <select name="per_page" id="per_page" onchange="this.form.submit()" class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10 Baris</option>
+                            <option value="15" {{ (!isset($perPage) && !request('per_page')) || $perPage == 15 ? 'selected' : '' }}>15 Baris</option>
+                            <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25 Baris</option>
+                            <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50 Baris</option>
+                            <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100 Baris</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 
     <div class="glass-card overflow-hidden">
@@ -108,6 +193,7 @@
                             <input type="checkbox" x-model="selectAll" @change="toggleAll" class="rounded-sm border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-900 w-4 h-4 cursor-pointer">
                         </th>
                         <th class="px-6 py-4 whitespace-nowrap">Username</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Nama Lengkap</th>
                         <th class="px-6 py-4 whitespace-nowrap">Role</th>
                         <th class="px-6 py-4 whitespace-nowrap">Terdaftar</th>
                         <th class="px-6 py-4 text-right whitespace-nowrap">Aksi</th>
@@ -126,6 +212,9 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-slate-800 dark:text-slate-200 font-bold font-mono">{{ $user->username }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-slate-700 dark:text-slate-300">{{ $user->name ?: '-' }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php

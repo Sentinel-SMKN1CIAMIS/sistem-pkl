@@ -12,8 +12,29 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $filter = $request->get('filter', 'all');
+        $search = $request->get('search');
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $perPage = $request->get('per_page', 15);
         
-        $query = User::latest();
+        if (!in_array($perPage, [10, 15, 25, 50, 100])) {
+            $perPage = 15;
+        }
+        
+        $allowedSorts = ['created_at', 'username', 'role', 'name'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'created_at';
+        }
+        $sortDir = strtolower($sortDir) === 'asc' ? 'asc' : 'desc';
+        
+        $query = User::query();
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('username', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
         
         // Filter berdasarkan role
         if ($filter === 'super_admin') {
@@ -22,13 +43,19 @@ class UserController extends Controller
             $query->whereIn('role', ['pembimbing_sekolah', 'pembimbing_dudi']);
         } elseif ($filter === 'siswa') {
             $query->where('role', 'siswa');
-        } elseif ($filter === 'other') {
-            $query->whereIn('role', ['pokja', 'kaprog', 'kepala_sekolah']);
+        } elseif ($filter === 'pokja') {
+            $query->where('role', 'pokja');
+        } elseif ($filter === 'kaprog') {
+            $query->where('role', 'kaprog');
+        } elseif ($filter === 'kepala_sekolah') {
+            $query->where('role', 'kepala_sekolah');
         }
         
-        $users = $query->paginate(15);
+        $query->orderBy($sortBy, $sortDir);
         
-        return view('admin.users.index', compact('users', 'filter'));
+        $users = $query->paginate($perPage)->withQueryString();
+        
+        return view('admin.users.index', compact('users', 'filter', 'perPage'));
     }
 
     public function create()
