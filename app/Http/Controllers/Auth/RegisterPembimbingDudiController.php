@@ -30,11 +30,11 @@ class RegisterPembimbingDudiController extends Controller
     public function register(Request $request)
     {
         // Normalize phone number to 08... format
-        if ($request->has('no_hp')) {
+        if ($request->filled('no_hp')) {
             $clean_no_hp = str_replace([' ', '-', '+'], '', $request->no_hp);
             if (str_starts_with($clean_no_hp, '62')) {
                 $clean_no_hp = '0' . substr($clean_no_hp, 2);
-            } elseif (!str_starts_with($clean_no_hp, '0')) {
+            } elseif (!str_starts_with($clean_no_hp, '0') && $clean_no_hp !== '') {
                 $clean_no_hp = '0' . $clean_no_hp;
             }
             $request->merge(['no_hp' => $clean_no_hp]);
@@ -51,8 +51,12 @@ class RegisterPembimbingDudiController extends Controller
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#\-_])[a-zA-Z\d@$!%*?&#\-_]+$/',
                 'confirmed'
             ],
-            'jabatan' => 'required|string|max:100',
-            'no_hp' => 'required|string|max:20',
+            'jabatan' => 'nullable|string|max:100',
+            'no_hp' => [
+                'required',
+                'string',
+                'regex:/^0[0-9]{8,13}$/',
+            ],
             'dudi_id' => 'required|exists:dudis,id',
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
@@ -68,8 +72,8 @@ class RegisterPembimbingDudiController extends Controller
             'password.min' => 'Password harus minimal 8 karakter.',
             'password.regex' => 'Password harus mengandung huruf besar, huruf kecil, angka, dan karakter spesial (@$!%*?&#-_).',
             'password.confirmed' => 'Konfirmasi password tidak sesuai.',
-            'jabatan.required' => 'Jabatan wajib diisi.',
             'no_hp.required' => 'Nomor HP wajib diisi.',
+            'no_hp.regex' => 'Format nomor HP tidak valid. Harus diawali dengan angka 0 atau +62 dan berisi 9-14 digit angka.',
             'dudi_id.required' => 'Perusahaan wajib dipilih.',
             'dudi_id.exists' => 'Perusahaan yang dipilih tidak valid.',
             'latitude.required' => 'Koordinat latitude harus ditentukan di peta.',

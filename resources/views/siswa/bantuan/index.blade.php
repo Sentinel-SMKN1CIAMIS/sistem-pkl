@@ -121,6 +121,33 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Pergantian Pembimbing Industri -->
+            <div class="glass-card rounded-xl overflow-hidden transition-all duration-200">
+                <button @click="activeAccordion === 5 ? activeAccordion = null : activeAccordion = 5" 
+                        class="w-full flex items-center justify-between py-6 px-6 text-left bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                            <i data-lucide="user-x" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">Bagaimana jika Pembimbing Industri saya diganti?</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" 
+                       :class="activeAccordion === 5 ? 'rotate-180' : ''"></i>
+                </button>
+                <div class="overflow-hidden transition-all duration-300 ease-in-out" 
+                     :style="activeAccordion === 5 ? 'max-height: 400px; opacity: 1;' : 'max-height: 0; opacity: 0;'">
+                    <div class="p-6 pt-0 text-sm md:text-base text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
+                        <p class="mt-4">Jika Pembimbing Industri Anda diganti (karena pindah tugas, mutasi, atau dialihkan ke staf lain), ikuti alur berikut:</p>
+                        <ol class="list-decimal list-inside space-y-3 mt-2">
+                            <li>Laporkan pergantian pembimbing ini kepada <strong>Pembimbing Sekolah</strong> Anda atau tim <strong>Pokja PKL</strong> sekolah.</li>
+                            <li>Tim Pokja akan menghapus tautan akun pembimbing lama pada profil Anda di panel admin (mengubah statusnya kembali menjadi mode Manual).</li>
+                            <li>Setelah status kembali menjadi mode Manual, Anda dapat masuk ke menu <strong>Profil Saya</strong> dan memperbarui data Nama, Jabatan, dan No. HP pembimbing baru secara mandiri.</li>
+                            <li>Minta pembimbing industri pengganti Anda untuk mendaftarkan akun barunya di halaman registrasi pembimbing DUDI agar akun barunya dapat ditautkan secara resmi.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Sidebar Contact -->

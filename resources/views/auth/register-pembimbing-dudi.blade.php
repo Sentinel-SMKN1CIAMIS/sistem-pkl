@@ -53,11 +53,12 @@
                     <i data-lucide="user" class="w-4 h-4"></i> Profil Pembimbing Industri
                 </h3>
                 <hr class="border-slate-200 dark:border-slate-800" />
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">Kolom bertanda <span class="text-rose-500 font-bold">*</span> wajib diisi.</p>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Nama Lengkap -->
                     <div class="md:col-span-2">
-                        <label for="nama_lengkap" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap</label>
+                        <label for="nama_lengkap" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap <span class="text-rose-500 font-bold">*</span></label>
                         <input id="nama_lengkap" name="nama_lengkap" type="text" value="{{ old('nama_lengkap') }}" required autofocus
                                class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all"
                                placeholder="Nama lengkap Pembimbing Industri">
@@ -65,15 +66,15 @@
 
                     <!-- Jabatan -->
                     <div>
-                        <label for="jabatan" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jabatan di Perusahaan</label>
-                        <input id="jabatan" name="jabatan" type="text" value="{{ old('jabatan') }}" required
+                        <label for="jabatan" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jabatan di Perusahaan <span class="text-slate-400 dark:text-slate-500 font-normal">(Opsional)</span></label>
+                        <input id="jabatan" name="jabatan" type="text" value="{{ old('jabatan') }}"
                                class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all"
                                placeholder="Contoh: HRD, Manager, Staf Administrasi">
                     </div>
 
                     <!-- Nomor HP (WhatsApp) -->
                     <div>
-                        <label for="no_hp" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">No. HP / WhatsApp (Format: +62 8xxx)</label>
+                        <label for="no_hp" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">No. HP / WhatsApp <span class="text-rose-500 font-bold">*</span></label>
                         <div class="relative flex items-center">
                             <!-- Static Prefix -->
                             <span class="absolute left-4 text-sm font-semibold text-slate-500 pointer-events-none select-none">
@@ -88,7 +89,7 @@
 
                     <!-- Username -->
                     <div>
-                        <label for="username" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Username (Terisi Otomatis)</label>
+                        <label for="username" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Username (Terisi Otomatis) <span class="text-rose-500 font-bold">*</span></label>
                         <input id="username" name="username" type="text" value="{{ old('username') }}" required
                                class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all font-mono"
                                placeholder="username_otomatis">
@@ -96,7 +97,7 @@
 
                     <!-- Email -->
                     <div>
-                        <label for="email" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email (Terisi Otomatis)</label>
+                        <label for="email" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email (Terisi Otomatis) <span class="text-rose-500 font-bold">*</span></label>
                         <input id="email" name="email" type="email" value="{{ old('email') }}" required
                                class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all font-mono"
                                placeholder="email@dudi.pkl.id">
@@ -104,7 +105,7 @@
 
                     <!-- Password -->
                     <div>
-                        <label for="password" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
+                        <label for="password" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Password <span class="text-rose-500 font-bold">*</span></label>
                         <div class="relative">
                             <input id="password" name="password" :type="showPassword ? 'text' : 'password'" required x-model="password"
                                    class="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all"
@@ -118,7 +119,7 @@
 
                     <!-- Konfirmasi Password -->
                     <div>
-                        <label for="password_confirmation" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi Password</label>
+                        <label for="password_confirmation" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi Password <span class="text-rose-500 font-bold">*</span></label>
                         <div class="relative">
                             <input id="password_confirmation" name="password_confirmation" :type="showConfirmation ? 'text' : 'password'" required x-model="password_confirmation"
                                    class="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all"
@@ -176,19 +177,90 @@
                 </h3>
                 <hr class="border-slate-200 dark:border-slate-800" />
 
-                <!-- Dropdown Pilih DUDI -->
-                <div>
-                    <label for="dudi_id" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Perusahaan / Instansi</label>
-                    <select name="dudi_id" id="dudi_id" required
-                            class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all">
-                        <option value="" disabled selected>-- Pilih Perusahaan / DUDI --</option>
+                <!-- Searchable Dropdown Pilih DUDI -->
+                <div x-data="{
+                    open: false,
+                    search: '',
+                    selectedId: '{{ old('dudi_id') }}',
+                    selectedLabel: '',
+                    dudis: {{ json_encode($dudis->map(fn($d) => ['id' => $d->id, 'nama' => $d->nama, 'lat' => $d->latitude, 'lng' => $d->longitude, 'alamat' => $d->alamat])) }},
+                    init() {
+                        if (this.selectedId) {
+                            let found = this.dudis.find(d => d.id == this.selectedId);
+                            if (found) {
+                                this.selectedLabel = found.nama;
+                                this.selectDudi(found);
+                            }
+                        }
+                    },
+                    get filteredDudis() {
+                        if (this.search === '') return this.dudis;
+                        return this.dudis.filter(d => d.nama.toLowerCase().includes(this.search.toLowerCase()));
+                    },
+                    selectDudi(dudi) {
+                        this.selectedId = dudi.id;
+                        this.selectedLabel = dudi.nama;
+                        this.open = false;
+                        this.search = '';
+                        
+                        // Populate hidden native select so Laravel backend receives it
+                        const nativeSelect = document.getElementById('dudi_id');
+                        nativeSelect.value = dudi.id;
+                        
+                        // Trigger native change event for map updating
+                        const event = new Event('change');
+                        nativeSelect.dispatchEvent(event);
+                    }
+                }" class="relative">
+                    <label for="dudi_search_input" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Perusahaan / Instansi <span class="text-rose-500 font-bold">*</span></label>
+                    
+                    <!-- Hidden Select for form submission -->
+                    <select name="dudi_id" id="dudi_id" class="hidden" required>
+                        <option value="">-- Pilih --</option>
                         @foreach ($dudis as $dudi)
                             <option value="{{ $dudi->id }}" data-lat="{{ $dudi->latitude }}" data-lng="{{ $dudi->longitude }}" data-alamat="{{ $dudi->alamat }}" {{ old('dudi_id') == $dudi->id ? 'selected' : '' }}>
                                 {{ $dudi->nama }}
                             </option>
                         @endforeach
                     </select>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Pilih nama instansi/perusahaan tempat Anda bertugas sebagai pembimbing.</p>
+
+                    <!-- Search Input Trigger -->
+                    <div class="relative">
+                        <input id="dudi_search_input" type="text" 
+                               class="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all cursor-pointer"
+                               placeholder="Cari nama perusahaan..."
+                               x-model="search"
+                               @focus="open = true"
+                               @click.away="open = false; if (selectedId && search === '') { search = ''; }"
+                               x-bind:value="selectedId ? (open ? search : selectedLabel) : search">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                            <i data-lucide="search" class="h-4 w-4"></i>
+                        </div>
+                    </div>
+
+                    <!-- Dropdown Options Panel -->
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl shadow-lg focus:outline-hidden text-sm"
+                         x-cloak>
+                        <template x-for="dudi in filteredDudis" :key="dudi.id">
+                            <div @mousedown="selectDudi(dudi)" 
+                                 class="px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer text-slate-700 dark:text-slate-300 flex flex-col transition-colors duration-150 border-b border-slate-100/50 dark:border-slate-800/50 last:border-0">
+                                <span class="font-semibold text-slate-800 dark:text-slate-100" x-text="dudi.nama"></span>
+                                <span class="text-[10px] text-slate-500 truncate" x-text="dudi.alamat || 'Alamat tidak terdaftar'"></span>
+                            </div>
+                        </template>
+                        <div x-show="filteredDudis.length === 0" class="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs text-center font-medium">
+                            Perusahaan tidak ditemukan.
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Ketik untuk mencari instansi/perusahaan tempat Anda bertugas sebagai pembimbing.</p>
                 </div>
 
                 <!-- Info Alamat DUDI terpilih -->
@@ -201,10 +273,37 @@
 
                 <!-- Leaflet Map Integration -->
                 <div class="space-y-3 pt-2">
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Tentukan Lokasi Koordinat Kantor</label>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Tentukan Lokasi Koordinat Kantor <span class="text-rose-500 font-bold">*</span></label>
                     <p class="text-xs text-slate-500 dark:text-slate-400">
                         Klik pada peta atau geser penanda merah di bawah untuk menandai lokasi tepat gerbang/pintu masuk kantor Anda. Siswa akan melakukan presensi kehadiran berdasarkan koordinat ini.
                     </p>
+
+                    <!-- Search Location Input (Google Maps-like Search) -->
+                    <div class="relative">
+                        <div class="relative">
+                            <input id="map_search" type="text" 
+                                   class="w-full pl-10 pr-20 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-slate-800 dark:text-slate-200 transition-all font-sans"
+                                   placeholder="Cari koordinat, nama jalan, alamat, gedung, atau daerah...">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+                            </div>
+                            <button type="button" id="btn_search_map"
+                                    class="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1 shadow-xs">
+                                Cari
+                            </button>
+                        </div>
+                        <div id="search_results_container" class="absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl shadow-lg hidden max-h-48 overflow-y-auto text-xs">
+                        </div>
+                    </div>
+
+                    <!-- Gunakan Lokasi GPS Saat Ini Button -->
+                    <div class="flex justify-end">
+                        <button type="button" id="btn-detect-gps"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors cursor-pointer">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                            Gunakan Lokasi GPS Saat Ini
+                        </button>
+                    </div>
 
                     <!-- Coordinates Read-only input -->
                     <div class="grid grid-cols-2 gap-4">
@@ -446,6 +545,140 @@
         if (oldLat && oldLng) {
             setMarkerLocation(parseFloat(oldLat), parseFloat(oldLng));
         }
+
+        // --- JS Logic 4: Search Map Location (Nominatim Geocoding) ---
+        const mapSearchInput = document.getElementById('map_search');
+        const btnSearchMap = document.getElementById('btn_search_map');
+        const searchResultsContainer = document.getElementById('search_results_container');
+
+        async function performMapSearch() {
+            const query = mapSearchInput.value.trim();
+            if (query.length < 3) return;
+
+            // Check if query is coordinates: lat, lng (e.g. -7.3312, 108.2834)
+            const coordRegex = /^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/;
+            const match = query.match(coordRegex);
+            if (match) {
+                const lat = parseFloat(match[1]);
+                const lon = parseFloat(match[2]);
+                if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+                    setMarkerLocation(lat, lon);
+                    searchResultsContainer.classList.add('hidden');
+                    return;
+                }
+            }
+
+            btnSearchMap.disabled = true;
+            btnSearchMap.innerText = 'Mencari...';
+
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=id`);
+                const data = await response.json();
+
+                searchResultsContainer.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100/50 dark:border-slate-800 last:border-b-0 text-slate-700 dark:text-slate-300 transition-colors duration-150';
+                        div.innerText = item.display_name;
+                        div.addEventListener('click', () => {
+                            const lat = parseFloat(item.lat);
+                            const lon = parseFloat(item.lon);
+                            setMarkerLocation(lat, lon);
+                            searchResultsContainer.classList.add('hidden');
+                            mapSearchInput.value = item.display_name;
+                        });
+                        searchResultsContainer.appendChild(div);
+                    });
+                    searchResultsContainer.classList.remove('hidden');
+                } else {
+                    searchResultsContainer.innerHTML = '<div class="px-3 py-3 text-center text-slate-500 font-medium">Lokasi tidak ditemukan.</div>';
+                    searchResultsContainer.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error fetching geocoding:', error);
+            } finally {
+                btnSearchMap.disabled = false;
+                btnSearchMap.innerText = 'Cari';
+            }
+        }
+
+        btnSearchMap.addEventListener('click', performMapSearch);
+        mapSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performMapSearch();
+            }
+        });
+
+        // Auto search as user types (with 500ms debounce)
+        let searchTimeout = null;
+        mapSearchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            if (query.length < 3) {
+                searchResultsContainer.classList.add('hidden');
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                performMapSearch();
+            }, 500);
+        });
+
+        // Hide search results click away
+        document.addEventListener('click', function(e) {
+            if (!mapSearchInput.contains(e.target) && !searchResultsContainer.contains(e.target) && !btnSearchMap.contains(e.target)) {
+                searchResultsContainer.classList.add('hidden');
+            }
+        });
+
+        // --- JS Logic 5: Geolocation (GPS) ---
+        const btnDetectGps = document.getElementById('btn-detect-gps');
+
+        btnDetectGps.addEventListener('click', function() {
+            if (!navigator.geolocation) {
+                alert('Browser Anda tidak mendukung Geolocation.');
+                return;
+            }
+
+            const originalText = btnDetectGps.innerHTML;
+            btnDetectGps.disabled = true;
+            btnDetectGps.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Mendeteksi GPS...
+            `;
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    setMarkerLocation(lat, lng);
+                    
+                    btnDetectGps.disabled = false;
+                    btnDetectGps.innerHTML = originalText;
+                },
+                function(error) {
+                    let msg = 'Gagal mendapatkan lokasi GPS.';
+                    if (error.code === 1) msg = 'Izin akses lokasi (GPS) ditolak. Aktifkan GPS dan izinkan akses lokasi pada browser Anda.';
+                    else if (error.code === 2) msg = 'Koneksi GPS tidak tersedia atau tidak akurat.';
+                    else if (error.code === 3) msg = 'Waktu deteksi lokasi habis (timeout).';
+                    
+                    alert(msg);
+                    btnDetectGps.disabled = false;
+                    btnDetectGps.innerHTML = originalText;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 8000,
+                    maximumAge: 0
+                }
+            );
+        });
 
         // Run lucide icons replacement
         if (typeof lucide !== 'undefined') {
