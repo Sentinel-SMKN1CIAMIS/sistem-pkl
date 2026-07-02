@@ -107,24 +107,24 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200/50 dark:border-slate-700/50">
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Siswa</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">DUDI / Industri</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-center whitespace-nowrap">Jurnal Kegiatan</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-center whitespace-nowrap">Kehadiran / Absensi</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider leading-snug">Siswa</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider leading-snug">DUDI / Industri</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-center leading-snug">Jurnal Kegiatan</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-center leading-snug">Kehadiran / Absensi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200/50 dark:divide-slate-700/50">
                             @forelse($students as $siswa)
                                 <tr class="hover:bg-slate-50/30 dark:hover:bg-slate-800/10 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 block">{{ $siswa->nama_lengkap }}</span>
-                                        <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $siswa->kelas }} ({{ $siswa->nis }})</span>
+                                    <td class="px-4 py-3 min-w-[180px]">
+                                        <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 block leading-snug">{{ $siswa->nama_lengkap }}</span>
+                                        <span class="text-xs text-slate-500 dark:text-slate-400 font-medium block mt-0.5">{{ $siswa->kelas }} ({{ $siswa->nis }})</span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-800 dark:text-slate-200 font-medium">
+                                    <td class="px-4 py-3 text-sm text-slate-800 dark:text-slate-200 font-medium min-w-[180px] leading-snug">
                                         {{ $siswa->dudi?->nama ?: 'Belum ditempatkan' }}
                                     </td>
                                     <!-- Jurnal Stats Column -->
-                                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                                    <td class="px-4 py-3 text-center">
                                         <div class="flex flex-col items-center justify-center">
                                             <div class="flex items-center gap-1 text-xs">
                                                 <span class="font-bold text-slate-800 dark:text-slate-200">{{ $siswa->total_jurnals_count - $siswa->pending_jurnals_count }} Valid</span>
@@ -142,7 +142,7 @@
                                         </div>
                                     </td>
                                     <!-- Absensi Stats Column -->
-                                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                                    <td class="px-4 py-3 text-center">
                                         <div class="flex flex-col items-center justify-center">
                                             <div class="flex items-center gap-1 text-xs">
                                                 <span class="font-bold text-slate-800 dark:text-slate-200">{{ $siswa->total_absensis_count - $siswa->pending_absensis_count }} Valid</span>
