@@ -86,6 +86,17 @@ class DashboardController extends Controller
                         })->where(['status' => 'pending'])->count(),
                         'jurnal_masuk' => $jurnalMasuk,
                         'weeks_evaluated' => $weeksEvaluatedData,
+                        'monitoring_notes' => \App\Models\MonitoringPembimbing::with('pokjaUser:id,name')
+                            ->where('pembimbing_sekolah_id', $teacher->id)
+                            ->orderBy('created_at', 'desc')
+                            ->take(3)
+                            ->get()
+                            ->map(fn($note) => [
+                                'tanggal' => $note->tanggal,
+                                'catatan' => $note->catatan,
+                                'status' => $note->status,
+                                'pokja' => $note->pokjaUser?->name ?? 'Tim Pokja'
+                            ])->toArray(),
                     ];
                 });
                 return view('dashboards.pembimbing-sekolah', compact('stats'));

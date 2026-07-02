@@ -155,7 +155,35 @@
                         data-weeks-evaluated='{!! json_encode($stats["weeks_evaluated"] ?? [0, 0, 0, 0]) !!}'></canvas>
             </div>
         </div>
+        </div>
     </div>
+
+    <!-- Catatan & Peringatan Pokja -->
+    @if(isset($stats['monitoring_notes']) && count($stats['monitoring_notes']) > 0)
+    <div class="mt-8 mb-8">
+        <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <i data-lucide="bell-ring" class="w-4 h-4 text-amber-500"></i>
+            Catatan & Evaluasi Pokja
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($stats['monitoring_notes'] as $note)
+                <div class="glass-card p-5 border-l-4 {{ $note['status'] === 'rejected' || str_contains(strtolower($note['status']), 'peringatan') || str_contains(strtolower($note['status']), 'pending') ? 'border-amber-500' : 'border-blue-500' }}">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md {{ $note['status'] === 'rejected' || str_contains(strtolower($note['status']), 'peringatan') || str_contains(strtolower($note['status']), 'pending') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400' }}">
+                            {{ $note['status'] }}
+                        </span>
+                        <span class="text-[10px] font-bold text-slate-400">{{ \Carbon\Carbon::parse($note['tanggal'])->isoFormat('D MMM YYYY') }}</span>
+                    </div>
+                    <p class="text-sm text-slate-700 dark:text-slate-300 mb-3">{{ $note['catatan'] }}</p>
+                    <div class="text-[10px] font-bold text-slate-500 flex items-center gap-1.5">
+                        <i data-lucide="user" class="w-3 h-3"></i>
+                        Oleh: {{ $note['pokja'] }}
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
