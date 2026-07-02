@@ -11,6 +11,10 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
+    
+    // Register Pembimbing DUDI Routes
+    Route::get('/register-pembimbing-dudi', [\App\Http\Controllers\Auth\RegisterPembimbingDudiController::class, 'showRegistrationForm'])->name('register.pembimbing_dudi.show');
+    Route::post('/register-pembimbing-dudi', [\App\Http\Controllers\Auth\RegisterPembimbingDudiController::class, 'register'])->name('register.pembimbing_dudi.store');
 });
 
 // Force Change Password Routes - Available during auth but guest on this specific route

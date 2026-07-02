@@ -59,14 +59,45 @@ class ImportController extends Controller
             $sheet->setCellValue($colLetter . '1', $header);
         }
         
-        // Populate example row
-        foreach ($exampleRow as $colIndex => $value) {
-            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
-            if (is_numeric($value) && strlen($value) > 8) {
-                $sheet->setCellValueExplicit($colLetter . '2', $value, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-            } else {
-                $sheet->setCellValue($colLetter . '2', $value);
+        // Populate example row and formulas
+        if ($type === 'pembimbing_dudi') {
+            // Row 2 is the example row, but uses formulas for username, email, password
+            $sheet->setCellValue('A2', 'Eko Prasetyo');
+            $sheet->setCellValue('B2', '=IF(A2="","",LOWER(SUBSTITUTE(A2," ","")))');
+            $sheet->setCellValue('C2', '=IF(B2="","",B2&"@dudi.pkl.id")');
+            $sheet->setCellValue('D2', '=IF(A2="","","pembimbing123")');
+            $sheet->setCellValue('E2', 'Senior Developer');
+            $sheet->setCellValueExplicit('F2', '085712345678', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValue('G2', 'PT Solusi Digital');
+
+            // Populate formulas for rows 3 to 200
+            for ($row = 3; $row <= 200; $row++) {
+                $sheet->setCellValue('B' . $row, '=IF(A' . $row . '="","",LOWER(SUBSTITUTE(A' . $row . '," ","")))');
+                $sheet->setCellValue('C' . $row, '=IF(B' . $row . '="","",B' . $row . '&"@dudi.pkl.id")');
+                $sheet->setCellValue('D' . $row, '=IF(A' . $row . '="","","pembimbing123")');
             }
+
+            // Set column F (no_hp) format to Text to preserve leading zeros
+            $sheet->getStyle('F2:F200')->getNumberFormat()->setFormatCode('@');
+        } else {
+            // Populate example row for other types
+            foreach ($exampleRow as $colIndex => $value) {
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
+                if (is_numeric($value) && strlen($value) > 8) {
+                    $sheet->setCellValueExplicit($colLetter . '2', $value, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                } else {
+                    $sheet->setCellValue($colLetter . '2', $value);
+                }
+            }
+        }
+
+        // Apply text formatting for phone numbers in other templates to preserve leading zeros
+        if ($type === 'siswa') {
+            $sheet->getStyle('H2:H200')->getNumberFormat()->setFormatCode('@');
+        } elseif ($type === 'dudi') {
+            $sheet->getStyle('H2:H200')->getNumberFormat()->setFormatCode('@');
+        } elseif ($type === 'pembimbing_sekolah') {
+            $sheet->getStyle('G2:G200')->getNumberFormat()->setFormatCode('@');
         }
         
         // Styling headers
