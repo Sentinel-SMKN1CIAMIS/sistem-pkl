@@ -38,6 +38,16 @@
   .text-gradient {
     @apply bg-clip-text text-transparent bg-linear-to-r from-slate-900 via-blue-700 to-indigo-800 dark:from-white dark:via-blue-400 dark:to-indigo-300;
   }
+
+  .dynamic-badge {
+    background-color: hsla(var(--hue), 85%, 45%, 0.08);
+    border-color: hsla(var(--hue), 85%, 45%, 0.2);
+    color: hsl(var(--hue), 85%, 35%);
+  }
+
+  .dark .dynamic-badge {
+    color: hsl(var(--hue), 85%, 70%);
+  }
 }
 
 body {

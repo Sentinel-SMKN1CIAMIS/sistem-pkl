@@ -1,19 +1,10 @@
 <x-app-layout>
     @php
         $getUniqueBadgeClass = function($name) {
-            if (!$name) return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
-            $palettes = [
-                'bg-blue-500/10 text-blue-500 dark:text-blue-400 border-blue-500/20',
-                'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20',
-                'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border-indigo-500/20',
-                'bg-purple-500/10 text-purple-500 dark:text-purple-400 border-purple-500/20',
-                'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20',
-                'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20',
-                'bg-sky-500/10 text-sky-500 dark:text-sky-400 border-sky-500/20',
-                'bg-teal-500/10 text-teal-500 dark:text-teal-400 border-teal-500/20',
-            ];
+            if (!$name) return 'background-color: rgba(148, 163, 184, 0.1); color: rgb(148, 163, 184); border-color: rgba(148, 163, 184, 0.2);';
             $hash = crc32($name);
-            return $palettes[abs($hash) % count($palettes)];
+            $hue = abs($hash) % 360;
+            return "--hue: {$hue};";
         };
     @endphp
     <x-slot name="header">Tambah Pembimbing Sekolah</x-slot>
@@ -253,12 +244,12 @@
                                             </td>
                                             <td class="p-3 flex flex-col gap-1 items-start">
                                                 @if($siswa->pembimbingSekolah)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
+                                                    <span style="{{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border dynamic-badge">
                                                         KJ: {{ $siswa->pembimbingSekolah->nama_lengkap }}
                                                     </span>
                                                 @endif
                                                 @if($siswa->pembimbingSekolahUmum)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolahUmum->nama_lengkap) }}">
+                                                    <span style="{{ $getUniqueBadgeClass($siswa->pembimbingSekolahUmum->nama_lengkap) }}" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border dynamic-badge">
                                                         UM: {{ $siswa->pembimbingSekolahUmum->nama_lengkap }}
                                                     </span>
                                                 @endif
