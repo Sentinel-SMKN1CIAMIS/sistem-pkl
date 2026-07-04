@@ -85,16 +85,20 @@
            class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'super_admin' ? 'border-b-2 border-red-500 text-red-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
             Super Admin
         </a>
-        <a href="{{ route('admin.users.index', ['filter' => 'guru']) }}" 
-           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'guru' ? 'border-b-2 border-purple-500 text-purple-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
-            Guru Pembimbing
+        <a href="{{ route('admin.users.index', ['filter' => 'pembimbing_sekolah']) }}" 
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'pembimbing_sekolah' ? 'border-b-2 border-purple-500 text-purple-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+            Pembimbing Sekolah
+        </a>
+        <a href="{{ route('admin.users.index', ['filter' => 'pembimbing_dudi']) }}" 
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'pembimbing_dudi' ? 'border-b-2 border-amber-500 text-amber-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+            Pembimbing DUDI
         </a>
         <a href="{{ route('admin.users.index', ['filter' => 'siswa']) }}" 
            class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'siswa' ? 'border-b-2 border-emerald-500 text-emerald-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
             Siswa
         </a>
         <a href="{{ route('admin.users.index', ['filter' => 'pokja']) }}" 
-           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'pokja' ? 'border-b-2 border-amber-500 text-amber-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
+           class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {{ $filter === 'pokja' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}">
             Pokja
         </a>
         <a href="{{ route('admin.users.index', ['filter' => 'kaprog']) }}" 
@@ -224,6 +228,7 @@
                                         'siswa' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
                                         'pembimbing_sekolah' => 'bg-purple-500/10 text-purple-400 border-purple-500/20',
                                         'pembimbing_dudi' => 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                                        'kaprog' => 'bg-orange-500/10 text-orange-400 border-orange-500/20',
                                         'kepala_sekolah' => 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
                                     ];
                                 @endphp

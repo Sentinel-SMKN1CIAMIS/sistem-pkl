@@ -80,6 +80,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
         Route::get('laporan', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'index'])->name('laporan.index');
         Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
+        Route::get('profile', [\App\Http\Controllers\PembimbingSekolah\ProfileController::class, 'index'])->name('profile.index');
+        Route::patch('profile', [\App\Http\Controllers\PembimbingSekolah\ProfileController::class, 'update'])->name('profile.update');
     });
 
     Route::middleware('role:pembimbing_dudi')->prefix('pembimbing_dudi')->name('pembimbing_dudi.')->group(function () {
@@ -92,6 +94,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'index'])->name('feedback.index');
         Route::get('feedback/create', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'create'])->name('feedback.create');
         Route::post('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'store'])->name('feedback.store');
+        Route::get('profile', [\App\Http\Controllers\PembimbingDudi\ProfileController::class, 'index'])->name('profile.index');
+        Route::patch('profile', [\App\Http\Controllers\PembimbingDudi\ProfileController::class, 'update'])->name('profile.update');
     });
     
     // Kaprog Routes

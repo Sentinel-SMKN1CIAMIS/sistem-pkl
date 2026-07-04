@@ -554,7 +554,7 @@ class ImportController extends Controller
                     'username' => 'required|alpha_dash|max:50',
                     'email' => 'required|email',
                     'password' => 'required|min:6',
-                    'jabatan' => 'required|string|max:100',
+                    'jabatan' => 'nullable|string|max:100',
                     'no_hp' => 'nullable',
                     'nama_perusahaan' => 'required',
                 ]);

@@ -39,6 +39,10 @@ class UserController extends Controller
         // Filter berdasarkan role
         if ($filter === 'super_admin') {
             $query->where('role', 'super_admin');
+        } elseif ($filter === 'pembimbing_sekolah') {
+            $query->where('role', 'pembimbing_sekolah');
+        } elseif ($filter === 'pembimbing_dudi') {
+            $query->where('role', 'pembimbing_dudi');
         } elseif ($filter === 'guru') {
             $query->whereIn('role', ['pembimbing_sekolah', 'pembimbing_dudi']);
         } elseif ($filter === 'siswa') {
