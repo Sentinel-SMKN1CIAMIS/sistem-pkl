@@ -25,13 +25,44 @@
         }
     </style>
 
-    <div x-data="{ importPanelOpen: false, guideModalOpen: false }">
+    <div x-data="{ 
+        importPanelOpen: false, 
+        guideModalOpen: false,
+        selectedMentors: [],
+        toggleAll(checked) {
+            if (checked) {
+                this.selectedMentors = [
+                    @foreach($mentors as $item)
+                        '{{ $item->id }}',
+                    @endforeach
+                ];
+            } else {
+                this.selectedMentors = [];
+            }
+        },
+        getPdfExportUrl() {
+            let baseUrl = '{{ route('pokja.pembimbing_dudi.export-pdf') }}';
+            let params = new URLSearchParams(window.location.search);
+            if (this.selectedMentors.length > 0) {
+                params.set('ids', this.selectedMentors.join(','));
+            }
+            return baseUrl + '?' + params.toString();
+        },
+        getExcelExportUrl() {
+            let baseUrl = '{{ route('pokja.pembimbing_dudi.export-excel') }}';
+            let params = new URLSearchParams(window.location.search);
+            if (this.selectedMentors.length > 0) {
+                params.set('ids', this.selectedMentors.join(','));
+            }
+            return baseUrl + '?' + params.toString();
+        }
+    }">
         <div class="mb-6 pokja-header-container">
             <div class="flex-1">
                 <p class="text-slate-600 dark:text-slate-400 text-sm">Daftar mentor / pembimbing dari pihak industri (DUDI).</p>
             </div>
             @if(auth()->user()->role !== 'kepala_sekolah')
-            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+            <div class="flex flex-wrap gap-2 w-full md:w-auto shrink-0">
                 <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
                     <i data-lucide="upload-cloud" class="w-4 h-4"></i>
                     Impor Pembimbing
@@ -39,6 +70,16 @@
                 <a href="{{ route('pokja.pembimbing_dudi.create') }}" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
                     <i data-lucide="user-plus" class="w-4 h-4"></i>
                     Tambah Pembimbing
+                </a>
+                <a :href="getPdfExportUrl()" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-red-600 hover:bg-red-500 text-white font-medium rounded-xl shadow-lg shadow-red-500/25 transition-all gap-2" target="_blank">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    Export PDF
+                    <span x-show="selectedMentors.length > 0" class="bg-red-800 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1" x-text="selectedMentors.length" x-cloak></span>
+                </a>
+                <a :href="getExcelExportUrl()" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    Export Excel
+                    <span x-show="selectedMentors.length > 0" class="bg-emerald-850 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1" x-text="selectedMentors.length" x-cloak></span>
                 </a>
             </div>
             @endif
@@ -271,7 +312,6 @@
                  </div>
             </div>
         </template>
-    </div>
 
     @if(session('import_errors'))
         <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm">
@@ -360,6 +400,11 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="border-b border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-800/30">
+                        @if(auth()->user()->role !== 'kepala_sekolah')
+                        <th class="w-12 px-6 py-4">
+                            <input type="checkbox" :checked="selectedMentors.length === {{ count($mentors) }} && {{ count($mentors) }} > 0" @change="toggleAll($el.checked)" class="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 bg-transparent">
+                        </th>
+                        @endif
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Mentor</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Perusahaan</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Jabatan</th>
@@ -371,7 +416,12 @@
                 </thead>
                 <tbody class="divide-y divide-slate-700/50">
                     @forelse($mentors as $item)
-                        <tr class="hover:bg-white dark:bg-slate-800/20 transition-colors group">
+                        <tr class="hover:bg-white dark:bg-slate-800/20 transition-colors group" :class="selectedMentors.includes('{{ $item->id }}') ? 'bg-blue-500/5 dark:bg-blue-500/10' : ''">
+                            @if(auth()->user()->role !== 'kepala_sekolah')
+                            <td class="px-6 py-4 whitespace-nowrap w-12">
+                                <input type="checkbox" value="{{ $item->id }}" x-model="selectedMentors" class="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 bg-transparent">
+                            </td>
+                            @endif
                             <td class="px-6 py-4 text-slate-900 dark:text-slate-100 whitespace-nowrap">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-purple-400 font-bold">
@@ -428,7 +478,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 4 : 5 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
+                            <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 4 : 6 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
                                 Belum ada data pembimbing DUDI.
                             </td>
                         </tr>
@@ -441,5 +491,6 @@
                 {{ $mentors->links() }}
             </div>
         @endif
+    </div>
     </div>
 </x-app-layout>

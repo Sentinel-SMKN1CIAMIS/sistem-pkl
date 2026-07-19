@@ -187,6 +187,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);
+        Route::get('pembimbing_dudi/export-pdf', [\App\Http\Controllers\PembimbingDudiController::class, 'exportPdf'])->name('pembimbing_dudi.export-pdf');
+        Route::get('pembimbing_dudi/export-excel', [\App\Http\Controllers\PembimbingDudiController::class, 'exportExcel'])->name('pembimbing_dudi.export-excel');
         Route::resource('pembimbing_dudi', \App\Http\Controllers\PembimbingDudiController::class);
         Route::resource('kaprog', \App\Http\Controllers\Pokja\KaprogController::class);
         Route::get('pemetaan', [\App\Http\Controllers\Pokja\PemetaanController::class, 'index'])->name('pemetaan.index');
@@ -212,6 +214,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('pengaturan/sertifikat', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSertifikat'])->name('pengaturan.sertifikat.update');
         Route::get('pengaturan/surat-pengantar', [\App\Http\Controllers\Pokja\PengaturanController::class, 'suratPengantar'])->name('pengaturan.surat_pengantar');
         Route::post('pengaturan/surat-pengantar', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSuratPengantar'])->name('pengaturan.surat_pengantar.update');
+        Route::get('pengaturan/kop-laporan', [\App\Http\Controllers\Pokja\PengaturanController::class, 'kopLaporan'])->name('pengaturan.kop_laporan');
+        Route::post('pengaturan/kop-laporan', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateKopLaporan'])->name('pengaturan.kop_laporan.update');
 
         // Import & Template Routes
         Route::get('import/panduan', [\App\Http\Controllers\Pokja\ImportController::class, 'showPanduan'])->name('import.panduan');
