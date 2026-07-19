@@ -28,59 +28,85 @@
     <div x-data="{ 
         importPanelOpen: false, 
         guideModalOpen: false,
-        selectedMentors: [],
+        selectedMentors: JSON.parse(localStorage.getItem('selectedPembimbingDudi') || '[]'),
+        init() {
+            this.$watch('selectedMentors', value => {
+                localStorage.setItem('selectedPembimbingDudi', JSON.stringify(value));
+            });
+        },
         toggleAll(checked) {
             if (checked) {
-                this.selectedMentors = [
+                @foreach($mentors as $item)
+                    if (!this.selectedMentors.includes('{{ $item->id }}')) this.selectedMentors.push('{{ $item->id }}');
+                @endforeach
+            } else {
+                let pageIds = [
                     @foreach($mentors as $item)
                         '{{ $item->id }}',
                     @endforeach
                 ];
-            } else {
-                this.selectedMentors = [];
+                this.selectedMentors = this.selectedMentors.filter(id => !pageIds.includes(id));
             }
         },
         getPdfExportUrl() {
             let baseUrl = '{{ route('pokja.pembimbing_dudi.export-pdf') }}';
             let params = new URLSearchParams(window.location.search);
-            if (this.selectedMentors.length > 0) {
-                params.set('ids', this.selectedMentors.join(','));
+            let allIds = JSON.parse(localStorage.getItem('selectedPembimbingDudi') || '[]');
+            if (allIds.length > 0) {
+                params.set('ids', allIds.join(','));
             }
             return baseUrl + '?' + params.toString();
         },
         getExcelExportUrl() {
             let baseUrl = '{{ route('pokja.pembimbing_dudi.export-excel') }}';
             let params = new URLSearchParams(window.location.search);
-            if (this.selectedMentors.length > 0) {
-                params.set('ids', this.selectedMentors.join(','));
+            let allIds = JSON.parse(localStorage.getItem('selectedPembimbingDudi') || '[]');
+            if (allIds.length > 0) {
+                params.set('ids', allIds.join(','));
             }
             return baseUrl + '?' + params.toString();
         }
     }">
         <div class="mb-6 pokja-header-container">
-            <div class="flex-1">
+            <div class="flex-1 min-w-0">
                 <p class="text-slate-600 dark:text-slate-400 text-sm">Daftar mentor / pembimbing dari pihak industri (DUDI).</p>
             </div>
             @if(auth()->user()->role !== 'kepala_sekolah')
-            <div class="flex flex-wrap gap-2 w-full md:w-auto shrink-0">
-                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
-                    <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                    Impor Pembimbing
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
+                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-lg transition-all gap-1.5 cursor-pointer border border-slate-200 dark:border-slate-700">
+                    <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i>
+                    Impor
                 </button>
-                <a href="{{ route('pokja.pembimbing_dudi.create') }}" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
-                    <i data-lucide="user-plus" class="w-4 h-4"></i>
-                    Tambah Pembimbing
+                <a href="{{ route('pokja.pembimbing_dudi.create') }}" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-sm shadow-blue-500/20 transition-all gap-1.5">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                    Tambah
                 </a>
-                <a :href="getPdfExportUrl()" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-red-600 hover:bg-red-500 text-white font-medium rounded-xl shadow-lg shadow-red-500/25 transition-all gap-2" target="_blank">
-                    <i data-lucide="file-text" class="w-4 h-4"></i>
-                    Export PDF
-                    <span x-show="selectedMentors.length > 0" class="bg-red-800 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1" x-text="selectedMentors.length" x-cloak></span>
+
+                <div class="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+
+                <a :href="getPdfExportUrl()" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-semibold rounded-lg border border-red-200 dark:border-red-800 transition-all gap-1.5" target="_blank">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                    PDF
+                    <span x-show="selectedMentors.length > 0" class="bg-red-600 text-white text-[9px] px-1 py-0.5 rounded-full font-bold leading-none" x-text="selectedMentors.length" x-cloak></span>
                 </a>
-                <a :href="getExcelExportUrl()" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all gap-2">
-                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                    Export Excel
-                    <span x-show="selectedMentors.length > 0" class="bg-emerald-850 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1" x-text="selectedMentors.length" x-cloak></span>
+                <a :href="getExcelExportUrl()" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold rounded-lg border border-emerald-200 dark:border-emerald-800 transition-all gap-1.5">
+                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+                    Excel
+                    <span x-show="selectedMentors.length > 0" class="bg-emerald-600 text-white text-[9px] px-1 py-0.5 rounded-full font-bold leading-none" x-text="selectedMentors.length" x-cloak></span>
                 </a>
+
+                <template x-teleport="body">
+                    <div x-show="selectedMentors.length > 0" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg text-xs" x-cloak>
+                        <span class="text-slate-600 dark:text-slate-400">
+                            <span class="font-bold text-blue-600 dark:text-blue-400" x-text="selectedMentors.length"></span> data terpilih
+                            <span class="text-slate-400">(dari semua halaman)</span>
+                        </span>
+                        <button @click="selectedMentors = []; localStorage.removeItem('selectedPembimbingDudi')" class="px-2.5 py-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-semibold">
+                            <i data-lucide="x-circle" class="w-3.5 h-3.5 inline"></i>
+                            Hapus Pilihan
+                        </button>
+                    </div>
+                </template>
             </div>
             @endif
         </div>
