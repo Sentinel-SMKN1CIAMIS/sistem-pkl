@@ -167,9 +167,10 @@
         }
         table.data th, table.data td { 
             border: 1px solid #cbd5e1; 
-            padding: 5px 7px; 
-            font-size: 8px;
+            padding: 5px 6px; 
+            font-size: 7.5px;
             vertical-align: middle;
+            white-space: nowrap;
         }
         table.data th { 
             background-color: #1e3a8a; 
@@ -178,6 +179,7 @@
             font-weight: bold; 
             text-transform: uppercase;
             letter-spacing: 0.3px;
+            font-size: 7.5px;
         }
         table.data tr:nth-child(even) {
             background-color: #f8fafc;
@@ -185,9 +187,13 @@
         table.data tr {
             page-break-inside: avoid;
         }
-        table.data td.wrap {
-            word-wrap: break-word;
-            word-break: break-word;
+        table.data td.multi-line {
+            white-space: normal;
+            line-height: 1.3;
+        }
+        table.data td.multi-line div {
+            font-size: 7px;
+            margin: 1px 0;
         }
 
         .text-center { text-align: center; }
@@ -339,13 +345,13 @@
     <table class="data">
         <thead>
             <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 20%;">Nama Lengkap</th>
-                <th style="width: 13%;">Username</th>
+                <th style="width: 4%;">No</th>
+                <th style="width: 18%;">Nama Lengkap</th>
+                <th style="width: 12%;">Username</th>
                 <th style="width: 18%;">Email</th>
-                <th style="width: 11%;">Password</th>
-                <th style="width: 20%;">Perusahaan (DUDI)</th>
-                <th style="width: 13%;">Jabatan / No. HP</th>
+                <th style="width: 10%;">Password</th>
+                <th style="width: 22%;">Perusahaan (DUDI)</th>
+                <th style="width: 16%;">Jabatan / No. HP</th>
             </tr>
         </thead>
         <tbody>
@@ -354,11 +360,11 @@
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td class="font-medium">{{ $mentor->nama_lengkap }}</td>
                     <td class="text-center">{{ $mentor->user->username }}</td>
-                    <td class="wrap">{{ $mentor->user->email }}</td>
+                    <td>{{ $mentor->user->email }}</td>
                     <td class="text-center code-font">pembimbing123</td>
-                    <td class="wrap">{{ $mentor->dudi->nama }}</td>
-                    <td style="font-size: 7.5px;">
-                        <div style="margin-bottom: 2px;"><strong>Jabatan:</strong> {{ $mentor->jabatan ?? '-' }}</div>
+                    <td>{{ $mentor->dudi->nama }}</td>
+                    <td class="multi-line">
+                        <div><strong>Jabatan:</strong> {{ $mentor->jabatan ?? '-' }}</div>
                         <div><strong>No. HP:</strong> {{ $mentor->no_hp ?? '-' }}</div>
                     </td>
                 </tr>
