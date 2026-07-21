@@ -16,6 +16,13 @@ class Siswa extends Model
             if ($siswa->dudi_id && ($siswa->pembimbing_sekolah_id || $siswa->pembimbing_sekolah_umum_id) && $siswa->status_pkl === 'belum_mulai') {
                 $siswa->status_pkl = 'sedang_pkl';
             }
+
+            if ($siswa->dudi_id && !$siswa->pembimbing_dudi_id && ($siswa->isDirty('dudi_id') || !$siswa->exists)) {
+                $pembimbingDudi = \App\Models\PembimbingDudi::where('dudi_id', $siswa->dudi_id)->first();
+                if ($pembimbingDudi) {
+                    $siswa->pembimbing_dudi_id = $pembimbingDudi->id;
+                }
+            }
         });
     }
     public function user()

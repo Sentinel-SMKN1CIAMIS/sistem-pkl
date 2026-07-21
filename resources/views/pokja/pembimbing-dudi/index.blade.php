@@ -28,6 +28,7 @@
     <div x-data="{ 
         importPanelOpen: false, 
         guideModalOpen: false,
+        pdfOrientationModal: false,
         selectedMentors: JSON.parse(localStorage.getItem('selectedPembimbingDudi') || '[]'),
         init() {
             this.$watch('selectedMentors', value => {
@@ -48,13 +49,14 @@
                 this.selectedMentors = this.selectedMentors.filter(id => !pageIds.includes(id));
             }
         },
-        getPdfExportUrl() {
+        getPdfExportUrl(orientation) {
             let baseUrl = '{{ route('pokja.pembimbing_dudi.export-pdf') }}';
             let params = new URLSearchParams(window.location.search);
             let allIds = JSON.parse(localStorage.getItem('selectedPembimbingDudi') || '[]');
             if (allIds.length > 0) {
                 params.set('ids', allIds.join(','));
             }
+            params.set('orientation', orientation);
             return baseUrl + '?' + params.toString();
         },
         getExcelExportUrl() {
@@ -84,11 +86,11 @@
 
                 <div class="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
 
-                <a :href="getPdfExportUrl()" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-semibold rounded-lg border border-red-200 dark:border-red-800 transition-all gap-1.5" target="_blank">
+                <button @click="pdfOrientationModal = true" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-semibold rounded-lg border border-red-200 dark:border-red-800 transition-all gap-1.5">
                     <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
                     PDF
                     <span x-show="selectedMentors.length > 0" class="bg-red-600 text-white text-[9px] px-1 py-0.5 rounded-full font-bold leading-none" x-text="selectedMentors.length" x-cloak></span>
-                </a>
+                </button>
                 <a :href="getExcelExportUrl()" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold rounded-lg border border-emerald-200 dark:border-emerald-800 transition-all gap-1.5">
                     <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
                     Excel
@@ -518,5 +520,90 @@
             </div>
         @endif
     </div>
+
+    <!-- PDF Orientation Modal -->
+    <template x-teleport="body">
+        <div x-show="pdfOrientationModal" 
+             class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
+             x-transition.opacity.duration.300ms 
+             x-cloak>
+             
+             <div @click.away="pdfOrientationModal = false" 
+                  class="glass-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-900 animate-fade-in-up text-left">
+                  
+                  <!-- Modal Header -->
+                  <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+                      <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                          <i data-lucide="file-text" class="text-red-500"></i>
+                          Pilih Orientasi Laporan PDF
+                      </h3>
+                      <button @click="pdfOrientationModal = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                          <i data-lucide="x" class="w-4 h-4"></i>
+                      </button>
+                  </div>
+
+                  <!-- Modal Body -->
+                  <div class="p-6 space-y-4">
+                      <p class="text-sm text-slate-600 dark:text-slate-400">
+                          Pilih format orientasi halaman untuk laporan PDF yang akan diunduh:
+                      </p>
+
+                      <!-- Landscape Option -->
+                      <a :href="getPdfExportUrl('landscape')" 
+                         @click="pdfOrientationModal = false"
+                         target="_blank"
+                         class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl transition-all cursor-pointer group">
+                          <div class="w-12 h-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center shrink-0 group-hover:border-blue-500 transition-colors">
+                              <svg class="w-8 h-6 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <rect x="3" y="6" width="18" height="12" rx="1" stroke-width="2"/>
+                                  <line x1="7" y1="10" x2="17" y2="10" stroke-width="1.5"/>
+                                  <line x1="7" y1="13" x2="13" y2="13" stroke-width="1.5"/>
+                              </svg>
+                          </div>
+                          <div class="flex-1">
+                              <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-1 flex items-center gap-2">
+                                  Landscape (Horizontal)
+                                  <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold rounded">Rekomendasi</span>
+                              </h4>
+                              <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                  Format horizontal dengan tabel lebar. Cocok untuk data dengan banyak kolom dan lebih mudah dibaca.
+                              </p>
+                          </div>
+                      </a>
+
+                      <!-- Portrait Option -->
+                      <a :href="getPdfExportUrl('portrait')" 
+                         @click="pdfOrientationModal = false"
+                         target="_blank"
+                         class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl transition-all cursor-pointer group">
+                          <div class="w-12 h-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center shrink-0 group-hover:border-blue-500 transition-colors">
+                              <svg class="w-6 h-8 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <rect x="6" y="3" width="12" height="18" rx="1" stroke-width="2"/>
+                                  <line x1="9" y1="7" x2="15" y2="7" stroke-width="1.5"/>
+                                  <line x1="9" y1="10" x2="15" y2="10" stroke-width="1.5"/>
+                                  <line x1="9" y1="13" x2="13" y2="13" stroke-width="1.5"/>
+                              </svg>
+                          </div>
+                          <div class="flex-1">
+                              <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-1">
+                                  Portrait (Vertikal)
+                              </h4>
+                              <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                  Format vertikal dengan tabel compact. Cocok untuk cetak dokumen standar dengan kolom yang ringkas dan efisien.
+                              </p>
+                          </div>
+                      </a>
+                  </div>
+
+                  <!-- Modal Footer -->
+                  <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end bg-slate-50/50 dark:bg-slate-800/30">
+                      <button type="button" @click="pdfOrientationModal = false" class="px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-colors border border-slate-200/50 dark:border-slate-700/50">
+                          Batal
+                      </button>
+                  </div>
+             </div>
+        </div>
+    </template>
+
     </div>
 </x-app-layout>

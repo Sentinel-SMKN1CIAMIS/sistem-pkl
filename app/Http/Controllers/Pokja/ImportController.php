@@ -589,13 +589,17 @@ class ImportController extends Controller
                         'is_active' => true,
                     ]);
 
-                    PembimbingDudi::create([
+                    $pembimbingDudi = PembimbingDudi::create([
                         'user_id' => $user->id,
                         'dudi_id' => $dudis[$dudiName],
                         'nama_lengkap' => $row['nama_lengkap'],
                         'jabatan' => $row['jabatan'],
                         'no_hp' => $row['no_hp'] ?: null,
                     ]);
+
+                    Siswa::where('dudi_id', $dudis[$dudiName])
+                        ->whereNull('pembimbing_dudi_id')
+                        ->update(['pembimbing_dudi_id' => $pembimbingDudi->id]);
 
                     $importCount++;
                 }

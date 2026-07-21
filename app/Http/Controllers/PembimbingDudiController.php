@@ -97,6 +97,10 @@ class PembimbingDudiController extends Controller
             }
         }
 
+        \App\Models\Siswa::where('dudi_id', $pembimbingDudi->dudi_id)
+            ->whereNull('pembimbing_dudi_id')
+            ->update(['pembimbing_dudi_id' => $pembimbingDudi->id]);
+
         return redirect()->route('pokja.pembimbing_dudi.index')
             ->with('success', 'Pembimbing DUDI berhasil ditambahkan.');
     }
@@ -116,8 +120,20 @@ class PembimbingDudiController extends Controller
             'no_hp' => 'nullable|string',
         ]);
 
+        $oldDudiId = $pembimbing_dudi->dudi_id;
+
         $pembimbing_dudi->update($request->all());
         $pembimbing_dudi->user->update(['name' => $request->nama_lengkap]);
+
+        if ($oldDudiId != $pembimbing_dudi->dudi_id) {
+            \App\Models\Siswa::where('pembimbing_dudi_id', $pembimbing_dudi->id)
+                ->where('dudi_id', $oldDudiId)
+                ->update(['pembimbing_dudi_id' => null]);
+        }
+
+        \App\Models\Siswa::where('dudi_id', $pembimbing_dudi->dudi_id)
+            ->whereNull('pembimbing_dudi_id')
+            ->update(['pembimbing_dudi_id' => $pembimbing_dudi->id]);
 
         return redirect()->route('pokja.pembimbing_dudi.index')
             ->with('success', 'Data pembimbing DUDI berhasil diperbarui.');
@@ -188,9 +204,21 @@ class PembimbingDudiController extends Controller
             $kopData[$key] = $configs->get($key) ?? $default;
         }
 
-        $pdf = Pdf::loadView('pokja.pembimbing-dudi.export-pdf', array_merge(compact('mentors'), $kopData))
-            ->setPaper('a4', 'landscape');
-        $fileName = 'data-akun-pembimbing-dudi-' . now()->format('Y-m-d') . '.pdf';
+        // Ambil parameter orientasi dari request, default landscape
+        $orientation = $request->input('orientation', 'landscape');
+        // Validasi orientasi, hanya terima 'landscape' atau 'portrait'
+        if (!in_array($orientation, ['landscape', 'portrait'])) {
+            $orientation = 'landscape';
+        }
+
+        // Pilih view berdasarkan orientasi
+        $view = $orientation === 'portrait' 
+            ? 'pokja.pembimbing-dudi.export-pdf-portrait' 
+            : 'pokja.pembimbing-dudi.export-pdf';
+
+        $pdf = Pdf::loadView($view, array_merge(compact('mentors'), $kopData))
+            ->setPaper('a4', $orientation);
+        $fileName = 'data-akun-pembimbing-dudi-' . $orientation . '-' . now()->format('Y-m-d') . '.pdf';
 
         return $pdf->download($fileName);
     }
