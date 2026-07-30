@@ -67,7 +67,7 @@
                                class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
                     </div>
 
-                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
                          <div>
                             <label for="nama_pimpinan" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nama Pimpinan / HRD</label>
                             <input type="text" name="nama_pimpinan" id="nama_pimpinan" value="{{ old('nama_pimpinan', $dudi->nama_pimpinan) }}"
@@ -79,6 +79,21 @@
                             <input type="text" name="bidang_usaha" id="bidang_usaha" value="{{ old('bidang_usaha', $dudi->bidang_usaha) }}"
                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all"
                                    placeholder="Contoh: IT, Kuliner, Otomotif">
+                        </div>
+                        <div>
+                            <label for="jenis_industri" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Jenis Industri</label>
+                            <select name="jenis_industri" id="jenis_industri" required
+                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                                <option value="pemerintahan" {{ old('jenis_industri', $dudi->jenis_industri) === 'pemerintahan' ? 'selected' : '' }}>Pemerintahan</option>
+                                <option value="industri" {{ old('jenis_industri', $dudi->jenis_industri) === 'industri' ? 'selected' : '' }}>Industri</option>
+                                <option value="layanan" {{ old('jenis_industri', $dudi->jenis_industri) === 'layanan' ? 'selected' : '' }}>Layanan/Jasa</option>
+                                <option value="perdagangan" {{ old('jenis_industri', $dudi->jenis_industri) === 'perdagangan' ? 'selected' : '' }}>Perdagangan</option>
+                                <option value="pendidikan" {{ old('jenis_industri', $dudi->jenis_industri) === 'pendidikan' ? 'selected' : '' }}>Pendidikan</option>
+                                <option value="kesehatan" {{ old('jenis_industri', $dudi->jenis_industri) === 'kesehatan' ? 'selected' : '' }}>Kesehatan</option>
+                                <option value="teknologi" {{ old('jenis_industri', $dudi->jenis_industri) === 'teknologi' ? 'selected' : '' }}>Teknologi</option>
+                                <option value="pertanian" {{ old('jenis_industri', $dudi->jenis_industri) === 'pertanian' ? 'selected' : '' }}>Pertanian</option>
+                                <option value="lainnya" {{ old('jenis_industri', $dudi->jenis_industri ?: 'lainnya') === 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                            </select>
                         </div>
                     </div>
 

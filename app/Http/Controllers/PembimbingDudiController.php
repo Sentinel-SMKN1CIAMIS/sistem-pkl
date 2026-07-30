@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PembimbingDudiController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $query = \App\Models\PembimbingDudi::with(['user', 'dudi'])->latest();
+        $query = \App\Models\PembimbingDudi::with(['user', 'dudi']);
         if (auth()->user()->konsentrasi_keahlian_id) {
             $userKonId = auth()->user()->konsentrasi_keahlian_id;
             $query->whereHas('dudi', function($q) use ($userKonId) {
@@ -29,7 +30,28 @@ class PembimbingDudiController extends Controller
                   });
             });
         }
-        $mentors = $query->paginate(10);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhereHas('dudi', function($d) use ($search) {
+                      $d->where('nama', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        $allowedSorts = ['nama_lengkap', 'created_at'];
+
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortDir === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->latest();
+        }
+
+        $mentors = $query->paginate(15)->withQueryString();
         return view('pokja.pembimbing-dudi.index', compact('mentors'));
     }
 
@@ -75,6 +97,10 @@ class PembimbingDudiController extends Controller
             }
         }
 
+        \App\Models\Siswa::where('dudi_id', $pembimbingDudi->dudi_id)
+            ->whereNull('pembimbing_dudi_id')
+            ->update(['pembimbing_dudi_id' => $pembimbingDudi->id]);
+
         return redirect()->route('pokja.pembimbing_dudi.index')
             ->with('success', 'Pembimbing DUDI berhasil ditambahkan.');
     }
@@ -94,8 +120,20 @@ class PembimbingDudiController extends Controller
             'no_hp' => 'nullable|string',
         ]);
 
+        $oldDudiId = $pembimbing_dudi->dudi_id;
+
         $pembimbing_dudi->update($request->all());
         $pembimbing_dudi->user->update(['name' => $request->nama_lengkap]);
+
+        if ($oldDudiId != $pembimbing_dudi->dudi_id) {
+            \App\Models\Siswa::where('pembimbing_dudi_id', $pembimbing_dudi->id)
+                ->where('dudi_id', $oldDudiId)
+                ->update(['pembimbing_dudi_id' => null]);
+        }
+
+        \App\Models\Siswa::where('dudi_id', $pembimbing_dudi->dudi_id)
+            ->whereNull('pembimbing_dudi_id')
+            ->update(['pembimbing_dudi_id' => $pembimbing_dudi->id]);
 
         return redirect()->route('pokja.pembimbing_dudi.index')
             ->with('success', 'Data pembimbing DUDI berhasil diperbarui.');
@@ -110,5 +148,170 @@ class PembimbingDudiController extends Controller
         }
         return redirect()->route('pokja.pembimbing_dudi.index')
             ->with('success', 'Data pembimbing DUDI berhasil dihapus.');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = \App\Models\PembimbingDudi::with(['user', 'dudi']);
+
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $userKonId = auth()->user()->konsentrasi_keahlian_id;
+            $query->whereHas('dudi', function($q) use ($userKonId) {
+                $q->where('konsentrasi_keahlian_id', $userKonId)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                      $sub->where('konsentrasi_keahlians.id', $userKonId);
+                  });
+            });
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->whereHas('dudi', function($q) use ($konsentrasiIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                      $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                  });
+            });
+        }
+
+        if ($request->filled('ids')) {
+            $ids = explode(',', $request->ids);
+            $query->whereIn('id', $ids);
+        } else {
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nama_lengkap', 'like', "%{$search}%")
+                      ->orWhereHas('dudi', function($d) use ($search) {
+                          $d->where('nama', 'like', "%{$search}%");
+                      });
+                });
+            }
+        }
+
+        $mentors = $query->orderBy('nama_lengkap')->get();
+
+        $kopKeys = [
+            'report_kop_baris_1' => 'PEMERINTAH DAERAH PROVINSI JAWA BARAT',
+            'report_kop_baris_2' => 'DINAS PENDIDIKAN',
+            'report_kop_baris_3' => 'CABANG DINAS PENDIDIKAN WILAYAH XIII',
+            'report_kop_baris_4' => 'SMK NEGERI 1 CIAMIS',
+            'report_kop_baris_5' => 'Jl. Jenderal Sudirman Nomor : 269 Telepon : (0265) 771204',
+            'report_kop_baris_6' => 'Faksimile : (0265) 771204/777719 Website : www.smkn1ciamis.sch.id E-mail : surat@smkn1cms.net',
+            'report_kop_baris_7' => 'Ciamis – 46215',
+        ];
+        $configs = \App\Models\KonfigurasiSistem::whereIn('key', array_keys($kopKeys))->get()->pluck('value', 'key');
+        $kopData = [];
+        foreach ($kopKeys as $key => $default) {
+            $kopData[$key] = $configs->get($key) ?? $default;
+        }
+
+        // Ambil parameter orientasi dari request, default landscape
+        $orientation = $request->input('orientation', 'landscape');
+        // Validasi orientasi, hanya terima 'landscape' atau 'portrait'
+        if (!in_array($orientation, ['landscape', 'portrait'])) {
+            $orientation = 'landscape';
+        }
+
+        // Pilih view berdasarkan orientasi
+        $view = $orientation === 'portrait' 
+            ? 'pokja.pembimbing-dudi.export-pdf-portrait' 
+            : 'pokja.pembimbing-dudi.export-pdf';
+
+        $pdf = Pdf::loadView($view, array_merge(compact('mentors'), $kopData))
+            ->setPaper('a4', $orientation);
+        $fileName = 'data-akun-pembimbing-dudi-' . $orientation . '-' . now()->format('Y-m-d') . '.pdf';
+
+        return $pdf->download($fileName);
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $query = \App\Models\PembimbingDudi::with(['user', 'dudi']);
+
+        if (auth()->user()->konsentrasi_keahlian_id) {
+            $userKonId = auth()->user()->konsentrasi_keahlian_id;
+            $query->whereHas('dudi', function($q) use ($userKonId) {
+                $q->where('konsentrasi_keahlian_id', $userKonId)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($userKonId) {
+                      $sub->where('konsentrasi_keahlians.id', $userKonId);
+                  });
+            });
+        } elseif (auth()->user()->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', auth()->user()->program_keahlian_id)->pluck('id');
+            $query->whereHas('dudi', function($q) use ($konsentrasiIds) {
+                $q->whereIn('konsentrasi_keahlian_id', $konsentrasiIds)
+                  ->orWhereHas('konsentrasiKeahlians', function($sub) use ($konsentrasiIds) {
+                      $sub->whereIn('konsentrasi_keahlians.id', $konsentrasiIds);
+                  });
+            });
+        }
+
+        if ($request->filled('ids')) {
+            $ids = explode(',', $request->ids);
+            $query->whereIn('id', $ids);
+        } else {
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nama_lengkap', 'like', "%{$search}%")
+                      ->orWhereHas('dudi', function($d) use ($search) {
+                          $d->where('nama', 'like', "%{$search}%");
+                      });
+                });
+            }
+        }
+
+        $mentors = $query->orderBy('nama_lengkap')->get();
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $headers = ['No', 'Nama Lengkap', 'Username', 'Email', 'Password', 'Perusahaan (DUDI)', 'Jabatan', 'No. HP'];
+        foreach ($headers as $colIndex => $header) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
+            $sheet->setCellValue($colLetter . '1', $header);
+        }
+
+        foreach ($mentors as $index => $mentor) {
+            $row = $index + 2;
+            $sheet->setCellValue('A' . $row, $index + 1);
+            $sheet->setCellValue('B' . $row, $mentor->nama_lengkap);
+            $sheet->setCellValue('C' . $row, $mentor->user->username);
+            $sheet->setCellValue('D' . $row, $mentor->user->email);
+            $sheet->setCellValue('E' . $row, 'pembimbing123');
+            $sheet->setCellValue('F' . $row, $mentor->dudi->nama);
+            $sheet->setCellValue('G' . $row, $mentor->jabatan);
+            $sheet->setCellValueExplicit('H' . $row, $mentor->no_hp ?? '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+        }
+
+        $totalCols = count($headers);
+        $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalCols);
+
+        $headerRange = 'A1:' . $lastColLetter . '1';
+        $sheet->getStyle($headerRange)->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '1E3A8A']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
+        ]);
+
+        for ($col = 1; $col <= $totalCols; $col++) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+
+        $sheet->getRowDimension('1')->setRowHeight(25);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+        return response()->stream(
+            function () use ($writer) {
+                $writer->save('php://output');
+            },
+            200,
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="data-akun-pembimbing-dudi-' . now()->format('Y-m-d') . '.xlsx"',
+                'Cache-Control' => 'max-age=0',
+            ]
+        );
     }
 }

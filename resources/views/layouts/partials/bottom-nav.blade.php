@@ -233,6 +233,22 @@
                             <div class="flex-1 font-medium text-sm text-slate-700 dark:text-slate-200">Lihat Profil</div>
                             <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
                         </a>
+                    @elseif(auth()->user()?->role === 'pembimbing_sekolah')
+                        <a href="{{ route('pembimbing_sekolah.profile.index') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <div class="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg">
+                                <i data-lucide="user" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1 font-medium text-sm text-slate-700 dark:text-slate-200">Lihat Profil</div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                        </a>
+                    @elseif(auth()->user()?->role === 'pembimbing_dudi')
+                        <a href="{{ route('pembimbing_dudi.profile.index') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <div class="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg">
+                                <i data-lucide="user" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1 font-medium text-sm text-slate-700 dark:text-slate-200">Lihat Profil</div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                        </a>
                     @endif
 
                     <!-- Tentang Aplikasi Option -->

@@ -15,9 +15,9 @@ class JurnalController extends Controller
     {
         $mentor = auth()->user()->pembimbingDudi;
         
-        // Find all students assigned to this mentor's company
+        // Find all students assigned to this mentor
         $jurnals = Jurnal::whereHas('siswa', function($q) use ($mentor) {
-                $q->where('dudi_id', $mentor->dudi_id);
+                $q->where('pembimbing_dudi_id', $mentor->id);
             })
             ->with(['siswa', 'kompetensi', 'tujuanPembelajaran'])
             ->latest('tanggal')

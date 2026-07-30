@@ -40,7 +40,28 @@ class ConfigController extends Controller
             usort($backupFiles, fn($a, $b) => $b['created_at']->timestamp <=> $a['created_at']->timestamp);
         }
 
-        return view('admin.config.index', compact('configs', 'backupFiles'));
+        // Baca log error dari laravel.log
+        $errorLogs = [];
+        $logPath = storage_path('logs/laravel.log');
+        if (file_exists($logPath)) {
+            $logContent = file_get_contents($logPath);
+            preg_match_all('/^\[(.*?)\] .*?\.ERROR: (.*)$/m', $logContent, $matches, PREG_SET_ORDER);
+            
+            // Urutkan dari yang terbaru (reverse)
+            $matches = array_reverse($matches);
+            
+            // Ambil maksimal 10 error terakhir
+            $matches = array_slice($matches, 0, 10);
+            
+            foreach ($matches as $match) {
+                $errorLogs[] = [
+                    'timestamp' => $match[1],
+                    'message' => $match[2]
+                ];
+            }
+        }
+
+        return view('admin.config.index', compact('configs', 'backupFiles', 'errorLogs'));
     }
 
     public function update(Request $request)

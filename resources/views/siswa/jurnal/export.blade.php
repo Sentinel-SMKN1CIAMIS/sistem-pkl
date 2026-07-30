@@ -48,7 +48,7 @@
             <tr>
                 <th width="30">No</th>
                 <th width="120">Hari / Tanggal</th>
-                <th>Unit Kerja / Pekerjaan</th>
+                <th>Pekerjaan</th>
                 <th width="120">Catatan</th>
             </tr>
         </thead>

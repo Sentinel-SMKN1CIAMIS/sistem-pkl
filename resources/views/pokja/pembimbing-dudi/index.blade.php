@@ -25,21 +25,90 @@
         }
     </style>
 
-    <div x-data="{ importPanelOpen: false, guideModalOpen: false }">
+    <div x-data="{ 
+        importPanelOpen: false, 
+        guideModalOpen: false,
+        pdfOrientationModal: false,
+        selectedMentors: JSON.parse(localStorage.getItem('selectedPembimbingDudi') || '[]'),
+        init() {
+            this.$watch('selectedMentors', value => {
+                localStorage.setItem('selectedPembimbingDudi', JSON.stringify(value));
+            });
+        },
+        toggleAll(checked) {
+            if (checked) {
+                @foreach($mentors as $item)
+                    if (!this.selectedMentors.includes('{{ $item->id }}')) this.selectedMentors.push('{{ $item->id }}');
+                @endforeach
+            } else {
+                let pageIds = [
+                    @foreach($mentors as $item)
+                        '{{ $item->id }}',
+                    @endforeach
+                ];
+                this.selectedMentors = this.selectedMentors.filter(id => !pageIds.includes(id));
+            }
+        },
+        getPdfExportUrl(orientation) {
+            let baseUrl = '{{ route('pokja.pembimbing_dudi.export-pdf') }}';
+            let params = new URLSearchParams(window.location.search);
+            let allIds = JSON.parse(localStorage.getItem('selectedPembimbingDudi') || '[]');
+            if (allIds.length > 0) {
+                params.set('ids', allIds.join(','));
+            }
+            params.set('orientation', orientation);
+            return baseUrl + '?' + params.toString();
+        },
+        getExcelExportUrl() {
+            let baseUrl = '{{ route('pokja.pembimbing_dudi.export-excel') }}';
+            let params = new URLSearchParams(window.location.search);
+            let allIds = JSON.parse(localStorage.getItem('selectedPembimbingDudi') || '[]');
+            if (allIds.length > 0) {
+                params.set('ids', allIds.join(','));
+            }
+            return baseUrl + '?' + params.toString();
+        }
+    }">
         <div class="mb-6 pokja-header-container">
-            <div class="flex-1">
+            <div class="flex-1 min-w-0">
                 <p class="text-slate-600 dark:text-slate-400 text-sm">Daftar mentor / pembimbing dari pihak industri (DUDI).</p>
             </div>
             @if(auth()->user()->role !== 'kepala_sekolah')
-            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
-                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
-                    <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                    Impor Pembimbing
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
+                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-lg transition-all gap-1.5 cursor-pointer border border-slate-200 dark:border-slate-700">
+                    <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i>
+                    Impor
                 </button>
-                <a href="{{ route('pokja.pembimbing_dudi.create') }}" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
-                    <i data-lucide="user-plus" class="w-4 h-4"></i>
-                    Tambah Pembimbing
+                <a href="{{ route('pokja.pembimbing_dudi.create') }}" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-sm shadow-blue-500/20 transition-all gap-1.5">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                    Tambah
                 </a>
+
+                <div class="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+
+                <button @click="pdfOrientationModal = true" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-semibold rounded-lg border border-red-200 dark:border-red-800 transition-all gap-1.5">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                    PDF
+                    <span x-show="selectedMentors.length > 0" class="bg-red-600 text-white text-[9px] px-1 py-0.5 rounded-full font-bold leading-none" x-text="selectedMentors.length" x-cloak></span>
+                </button>
+                <a :href="getExcelExportUrl()" class="pokja-btn px-3 py-1.5 text-xs whitespace-nowrap bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold rounded-lg border border-emerald-200 dark:border-emerald-800 transition-all gap-1.5">
+                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+                    Excel
+                    <span x-show="selectedMentors.length > 0" class="bg-emerald-600 text-white text-[9px] px-1 py-0.5 rounded-full font-bold leading-none" x-text="selectedMentors.length" x-cloak></span>
+                </a>
+
+                <template x-teleport="body">
+                    <div x-show="selectedMentors.length > 0" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg text-xs" x-cloak>
+                        <span class="text-slate-600 dark:text-slate-400">
+                            <span class="font-bold text-blue-600 dark:text-blue-400" x-text="selectedMentors.length"></span> data terpilih
+                            <span class="text-slate-400">(dari semua halaman)</span>
+                        </span>
+                        <button @click="selectedMentors = []; localStorage.removeItem('selectedPembimbingDudi')" class="px-2.5 py-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-semibold">
+                            <i data-lucide="x-circle" class="w-3.5 h-3.5 inline"></i>
+                            Hapus Pilihan
+                        </button>
+                    </div>
+                </template>
             </div>
             @endif
         </div>
@@ -271,7 +340,6 @@
                  </div>
             </div>
         </template>
-    </div>
 
     @if(session('import_errors'))
         <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm">
@@ -294,11 +362,77 @@
         </div>
     @endif
 
+    <!-- Search & Filters -->
+    <div class="glass-card p-4 mb-6" x-data="{ showAdvanced: {{ request()->hasAny(['sort_by', 'sort_dir']) ? 'true' : 'false' }} }">
+        <form action="{{ request()->url() }}" method="GET" class="space-y-3">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1 relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama Pembimbing atau Industri..." 
+                           class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                </div>
+                
+                <div class="flex gap-2 items-center">
+                    <button type="button" @click="showAdvanced = !showAdvanced" class="px-3 py-2 text-slate-500 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-colors border border-slate-200/50 dark:border-slate-700/50" title="Filter Lanjutan">
+                        <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+                    </button>
+                    <button type="submit" class="hidden md:block px-6 py-2 bg-slate-800 dark:bg-slate-700 text-white font-medium rounded-xl hover:bg-slate-700 transition-all text-sm">
+                        Cari
+                    </button>
+                    @if(request()->anyFilled(['search', 'sort_by', 'sort_dir']))
+                        <a href="{{ request()->url() }}" class="px-3 py-2 text-slate-500 hover:text-red-400 flex items-center justify-center transition-colors border border-slate-200/50 dark:border-slate-700 rounded-xl bg-slate-100/30" title="Reset">
+                            <i data-lucide="x-circle" class="w-5 h-5"></i>
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Advanced Filters (Sorting) -->
+            <div x-show="showAdvanced" 
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-cloak
+                 class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
+                 
+                <div class="flex items-center gap-2 mb-3 px-1">
+                    <i data-lucide="sliders" class="w-4 h-4 text-blue-500"></i>
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Pengaturan Lanjutan</h4>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 shadow-inner">
+                    <!-- Sort By -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Urutkan Berdasarkan</label>
+                        <select name="sort_by" onchange="this.form.submit()" class="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                            <option value="created_at" {{ request('sort_by') === 'created_at' || !request('sort_by') ? 'selected' : '' }}>Waktu Ditambahkan</option>
+                            <option value="nama_lengkap" {{ request('sort_by') === 'nama_lengkap' ? 'selected' : '' }}>Nama Lengkap (A-Z)</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort Dir -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Arah Urutan</label>
+                        <select name="sort_dir" onchange="this.form.submit()" class="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                            <option value="desc" {{ request('sort_dir') === 'desc' || !request('sort_dir') ? 'selected' : '' }}>Menurun (Terbaru / Z-A)</option>
+                            <option value="asc" {{ request('sort_dir') === 'asc' ? 'selected' : '' }}>Menaik (Terlama / A-Z)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <div class="glass-card overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="border-b border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-800/30">
+                        @if(auth()->user()->role !== 'kepala_sekolah')
+                        <th class="w-12 px-6 py-4">
+                            <input type="checkbox" :checked="selectedMentors.length === {{ count($mentors) }} && {{ count($mentors) }} > 0" @change="toggleAll($el.checked)" class="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 bg-transparent">
+                        </th>
+                        @endif
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Mentor</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Perusahaan</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Jabatan</th>
@@ -310,7 +444,12 @@
                 </thead>
                 <tbody class="divide-y divide-slate-700/50">
                     @forelse($mentors as $item)
-                        <tr class="hover:bg-white dark:bg-slate-800/20 transition-colors group">
+                        <tr class="hover:bg-white dark:bg-slate-800/20 transition-colors group" :class="selectedMentors.includes('{{ $item->id }}') ? 'bg-blue-500/5 dark:bg-blue-500/10' : ''">
+                            @if(auth()->user()->role !== 'kepala_sekolah')
+                            <td class="px-6 py-4 whitespace-nowrap w-12">
+                                <input type="checkbox" value="{{ $item->id }}" x-model="selectedMentors" class="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 bg-transparent">
+                            </td>
+                            @endif
                             <td class="px-6 py-4 text-slate-900 dark:text-slate-100 whitespace-nowrap">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-purple-400 font-bold">
@@ -367,7 +506,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 4 : 5 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
+                            <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 4 : 6 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
                                 Belum ada data pembimbing DUDI.
                             </td>
                         </tr>
@@ -380,5 +519,91 @@
                 {{ $mentors->links() }}
             </div>
         @endif
+    </div>
+
+    <!-- PDF Orientation Modal -->
+    <template x-teleport="body">
+        <div x-show="pdfOrientationModal" 
+             class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
+             x-transition.opacity.duration.300ms 
+             x-cloak>
+             
+             <div @click.away="pdfOrientationModal = false" 
+                  class="glass-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-900 animate-fade-in-up text-left">
+                  
+                  <!-- Modal Header -->
+                  <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+                      <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                          <i data-lucide="file-text" class="text-red-500"></i>
+                          Pilih Orientasi Laporan PDF
+                      </h3>
+                      <button @click="pdfOrientationModal = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                          <i data-lucide="x" class="w-4 h-4"></i>
+                      </button>
+                  </div>
+
+                  <!-- Modal Body -->
+                  <div class="p-6 space-y-4">
+                      <p class="text-sm text-slate-600 dark:text-slate-400">
+                          Pilih format orientasi halaman untuk laporan PDF yang akan diunduh:
+                      </p>
+
+                      <!-- Landscape Option -->
+                      <a :href="getPdfExportUrl('landscape')" 
+                         @click="pdfOrientationModal = false"
+                         target="_blank"
+                         class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl transition-all cursor-pointer group">
+                          <div class="w-12 h-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center shrink-0 group-hover:border-blue-500 transition-colors">
+                              <svg class="w-8 h-6 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <rect x="3" y="6" width="18" height="12" rx="1" stroke-width="2"/>
+                                  <line x1="7" y1="10" x2="17" y2="10" stroke-width="1.5"/>
+                                  <line x1="7" y1="13" x2="13" y2="13" stroke-width="1.5"/>
+                              </svg>
+                          </div>
+                          <div class="flex-1">
+                              <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-1 flex items-center gap-2">
+                                  Landscape (Horizontal)
+                                  <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold rounded">Rekomendasi</span>
+                              </h4>
+                              <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                  Format horizontal dengan tabel lebar. Cocok untuk data dengan banyak kolom dan lebih mudah dibaca.
+                              </p>
+                          </div>
+                      </a>
+
+                      <!-- Portrait Option -->
+                      <a :href="getPdfExportUrl('portrait')" 
+                         @click="pdfOrientationModal = false"
+                         target="_blank"
+                         class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl transition-all cursor-pointer group">
+                          <div class="w-12 h-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center shrink-0 group-hover:border-blue-500 transition-colors">
+                              <svg class="w-6 h-8 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <rect x="6" y="3" width="12" height="18" rx="1" stroke-width="2"/>
+                                  <line x1="9" y1="7" x2="15" y2="7" stroke-width="1.5"/>
+                                  <line x1="9" y1="10" x2="15" y2="10" stroke-width="1.5"/>
+                                  <line x1="9" y1="13" x2="13" y2="13" stroke-width="1.5"/>
+                              </svg>
+                          </div>
+                          <div class="flex-1">
+                              <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-1">
+                                  Portrait (Vertikal)
+                              </h4>
+                              <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                  Format vertikal dengan tabel compact. Cocok untuk cetak dokumen standar dengan kolom yang ringkas dan efisien.
+                              </p>
+                          </div>
+                      </a>
+                  </div>
+
+                  <!-- Modal Footer -->
+                  <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end bg-slate-50/50 dark:bg-slate-800/30">
+                      <button type="button" @click="pdfOrientationModal = false" class="px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-xl transition-colors border border-slate-200/50 dark:border-slate-700/50">
+                          Batal
+                      </button>
+                  </div>
+             </div>
+        </div>
+    </template>
+
     </div>
 </x-app-layout>

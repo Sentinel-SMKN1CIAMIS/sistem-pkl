@@ -163,11 +163,14 @@ class JurnalController extends Controller
 
         // Check removed: Students can open the form any day to backfill journals.
 
-        $kompetensis = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)->get();
+        $kompetensis = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
+            ->orderBy('sort_order', 'asc')
+            ->get();
         
         // Get CP/TP master data for dropdown (Tujuan Pembelajaran)
         $tujuanPembelajaran = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
             ->whereNotNull('tp')
+            ->orderBy('sort_order', 'asc')
             ->get();
         
         // Get max backdate allowed
@@ -305,9 +308,12 @@ class JurnalController extends Controller
             return redirect()->route('siswa.jurnal.index')->with('error', 'Jurnal yang sudah diproses tidak dapat diedit.');
         }
 
-        $kompetensis = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)->get();
+        $kompetensis = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
+            ->orderBy('sort_order', 'asc')
+            ->get();
         $tujuanPembelajaran = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
             ->whereNotNull('tp')
+            ->orderBy('sort_order', 'asc')
             ->get();
 
         $today = \Carbon\Carbon::today();

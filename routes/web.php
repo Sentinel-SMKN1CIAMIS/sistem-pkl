@@ -11,6 +11,10 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
+    
+    // Register Pembimbing DUDI Routes
+    Route::get('/register-pembimbing-dudi', [\App\Http\Controllers\Auth\RegisterPembimbingDudiController::class, 'showRegistrationForm'])->name('register.pembimbing_dudi.show');
+    Route::post('/register-pembimbing-dudi', [\App\Http\Controllers\Auth\RegisterPembimbingDudiController::class, 'register'])->name('register.pembimbing_dudi.store');
 });
 
 // Force Change Password Routes - Available during auth but guest on this specific route
@@ -76,6 +80,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
         Route::get('laporan', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'index'])->name('laporan.index');
         Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
+        Route::get('profile', [\App\Http\Controllers\PembimbingSekolah\ProfileController::class, 'index'])->name('profile.index');
+        Route::patch('profile', [\App\Http\Controllers\PembimbingSekolah\ProfileController::class, 'update'])->name('profile.update');
     });
 
     Route::middleware('role:pembimbing_dudi')->prefix('pembimbing_dudi')->name('pembimbing_dudi.')->group(function () {
@@ -88,14 +94,21 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'index'])->name('feedback.index');
         Route::get('feedback/create', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'create'])->name('feedback.create');
         Route::post('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'store'])->name('feedback.store');
+        Route::get('profile', [\App\Http\Controllers\PembimbingDudi\ProfileController::class, 'index'])->name('profile.index');
+        Route::patch('profile', [\App\Http\Controllers\PembimbingDudi\ProfileController::class, 'update'])->name('profile.update');
     });
     
     // Kaprog Routes
     Route::middleware('role:kaprog')->prefix('kaprog')->name('kaprog.')->group(function () {
+        Route::get('laporan/export', [\App\Http\Controllers\KaprogController::class, 'export'])->name('laporan.export');
         Route::get('laporan', [\App\Http\Controllers\KaprogController::class, 'index'])->name('laporan.index');
         
         // Data DUDI (Read-Only)
         Route::get('dudi', [\App\Http\Controllers\DudiController::class, 'index'])->name('dudi.index');
+
+        // Monitoring Pembimbing (View Only)
+        Route::get('monitoring', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'index'])->name('monitoring.index');
+        Route::get('monitoring/{pembimbingSekolah}', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'show'])->name('monitoring.show');
         
         // Pengajuan PKL
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
@@ -162,6 +175,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         });
         Route::get('kompetensi/import-pdf/preview', [\App\Http\Controllers\Pokja\KompetensiController::class, 'showImportPdfPreview'])->name('kompetensi.import-pdf.preview');
         Route::post('kompetensi/import-pdf/store', [\App\Http\Controllers\Pokja\KompetensiController::class, 'storeImportPdf'])->name('kompetensi.import-pdf.store');
+        Route::post('kompetensi/reorder', [\App\Http\Controllers\Pokja\KompetensiController::class, 'reorder'])->name('kompetensi.reorder');
         Route::resource('kompetensi', \App\Http\Controllers\Pokja\KompetensiController::class);
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
         
@@ -173,6 +187,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);
+        Route::get('pembimbing_dudi/export-pdf', [\App\Http\Controllers\PembimbingDudiController::class, 'exportPdf'])->name('pembimbing_dudi.export-pdf');
+        Route::get('pembimbing_dudi/export-excel', [\App\Http\Controllers\PembimbingDudiController::class, 'exportExcel'])->name('pembimbing_dudi.export-excel');
         Route::resource('pembimbing_dudi', \App\Http\Controllers\PembimbingDudiController::class);
         Route::resource('kaprog', \App\Http\Controllers\Pokja\KaprogController::class);
         Route::get('pemetaan', [\App\Http\Controllers\Pokja\PemetaanController::class, 'index'])->name('pemetaan.index');
@@ -198,6 +214,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('pengaturan/sertifikat', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSertifikat'])->name('pengaturan.sertifikat.update');
         Route::get('pengaturan/surat-pengantar', [\App\Http\Controllers\Pokja\PengaturanController::class, 'suratPengantar'])->name('pengaturan.surat_pengantar');
         Route::post('pengaturan/surat-pengantar', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSuratPengantar'])->name('pengaturan.surat_pengantar.update');
+        Route::get('pengaturan/kop-laporan', [\App\Http\Controllers\Pokja\PengaturanController::class, 'kopLaporan'])->name('pengaturan.kop_laporan');
+        Route::post('pengaturan/kop-laporan', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateKopLaporan'])->name('pengaturan.kop_laporan.update');
 
         // Import & Template Routes
         Route::get('import/panduan', [\App\Http\Controllers\Pokja\ImportController::class, 'showPanduan'])->name('import.panduan');

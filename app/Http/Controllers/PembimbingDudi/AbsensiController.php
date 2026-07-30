@@ -18,9 +18,9 @@ class AbsensiController extends Controller
             return redirect()->route('dashboard')->with('error', 'Anda bukan Pembimbing DUDI.');
         }
         
-        // Fetch pending early leave requests for students of this DUDI
+        // Fetch pending early leave requests for students of this mentor
         $pendingEarlyLeaves = Absensi::whereHas('siswa', function($q) use ($mentor) {
-                $q->where('dudi_id', $mentor->dudi_id);
+                $q->where('pembimbing_dudi_id', $mentor->id);
             })
             ->where('early_leave_request_status', 'pending')
             ->with(['siswa', 'siswa.user'])
@@ -28,7 +28,7 @@ class AbsensiController extends Controller
             ->get();
 
         $absensis = Absensi::whereHas('siswa', function($q) use ($mentor) {
-                $q->where('dudi_id', $mentor->dudi_id);
+                $q->where('pembimbing_dudi_id', $mentor->id);
             })
             ->with('siswa')
             ->latest('tanggal')
@@ -41,8 +41,8 @@ class AbsensiController extends Controller
     {
         $mentor = auth()->user()->pembimbingDudi;
         
-        // Auth check: Is the student in the same DUDI as the mentor?
-        if (!$mentor || $absensi->siswa->dudi_id !== $mentor->dudi_id) {
+        // Auth check: Is the student assigned to this mentor?
+        if (!$mentor || $absensi->siswa->pembimbing_dudi_id !== $mentor->id) {
             return back()->with('error', 'Tidak diizinkan.');
         }
 
@@ -82,8 +82,8 @@ class AbsensiController extends Controller
 
         $mentor = auth()->user()->pembimbingDudi;
         
-        // Auth check: Is the student in the same DUDI as the mentor?
-        if (!$mentor || $absensi->siswa->dudi_id !== $mentor->dudi_id) {
+        // Auth check: Is the student assigned to this mentor?
+        if (!$mentor || $absensi->siswa->pembimbing_dudi_id !== $mentor->id) {
             return back()->with('error', 'Tidak diizinkan.');
         }
 

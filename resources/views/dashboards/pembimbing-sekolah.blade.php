@@ -51,7 +51,7 @@
     <!-- Counter Stats: Compact grid-cols-3 on mobile to prevent layout bloat -->
     <div class="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-6 mb-8">
         <!-- Total Siswa -->
-        <div class="glass-card p-3 sm:p-6 border-t-4 border-blue-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-2 transition-all duration-200 hover:scale-[1.02]">
+        <a href="{{ route('pembimbing_sekolah.siswa.index') }}" class="glass-card p-3 sm:p-6 border-t-4 border-blue-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-2 transition-all duration-200 hover:scale-[1.02] cursor-pointer hover:bg-white/10 dark:hover:bg-slate-800/50 block">
             <div class="text-center sm:text-left">
                 <span class="hidden sm:block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Siswa Bimbingan</span>
                 <span class="text-xl sm:text-3xl font-black text-slate-800 dark:text-white leading-none">{{ $stats['siswa_count'] ?? 0 }}</span>
@@ -60,10 +60,10 @@
             <div class="hidden sm:flex w-12 h-12 bg-blue-500/10 rounded-xl items-center justify-center text-blue-500 shrink-0">
                 <i data-lucide="users" class="w-6 h-6"></i>
             </div>
-        </div>
+        </a>
 
         <!-- Menunggu Validasi -->
-        <div class="glass-card p-3 sm:p-6 border-t-4 border-amber-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-2 transition-all duration-200 hover:scale-[1.02]">
+        <a href="{{ route('pembimbing_sekolah.jurnal.index') }}" class="glass-card p-3 sm:p-6 border-t-4 border-amber-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-2 transition-all duration-200 hover:scale-[1.02] cursor-pointer hover:bg-white/10 dark:hover:bg-slate-800/50 block">
             <div class="text-center sm:text-left">
                 <span class="hidden sm:block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Jurnal Pending</span>
                 <span class="text-xl sm:text-3xl font-black text-slate-800 dark:text-white leading-none">{{ $stats['jurnal_pending'] ?? 0 }}</span>
@@ -72,10 +72,10 @@
             <div class="hidden sm:flex w-12 h-12 bg-amber-500/10 rounded-xl items-center justify-center text-amber-500 shrink-0">
                 <i data-lucide="alert-triangle" class="w-6 h-6"></i>
             </div>
-        </div>
+        </a>
 
         <!-- Total Jurnal -->
-        <div class="glass-card p-3 sm:p-6 border-t-4 border-emerald-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-2 transition-all duration-200 hover:scale-[1.02]">
+        <a href="{{ route('pembimbing_sekolah.siswa.index') }}" class="glass-card p-3 sm:p-6 border-t-4 border-emerald-500 bg-white/5 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center sm:justify-between gap-2 transition-all duration-200 hover:scale-[1.02] cursor-pointer hover:bg-white/10 dark:hover:bg-slate-800/50 block">
             <div class="text-center sm:text-left">
                 <span class="hidden sm:block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Total Jurnal</span>
                 <span class="text-xl sm:text-3xl font-black text-slate-800 dark:text-white leading-none">{{ $stats['jurnal_masuk'] ?? 0 }}</span>
@@ -84,7 +84,7 @@
             <div class="hidden sm:flex w-12 h-12 bg-emerald-500/10 rounded-xl items-center justify-center text-emerald-500 shrink-0">
                 <i data-lucide="check-square" class="w-6 h-6"></i>
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- Quick Actions (Mobile Only) -->
@@ -155,7 +155,35 @@
                         data-weeks-evaluated='{!! json_encode($stats["weeks_evaluated"] ?? [0, 0, 0, 0]) !!}'></canvas>
             </div>
         </div>
+        </div>
     </div>
+
+    <!-- Catatan & Peringatan Pokja -->
+    @if(isset($stats['monitoring_notes']) && count($stats['monitoring_notes']) > 0)
+    <div class="mt-8 mb-8">
+        <h3 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <i data-lucide="bell-ring" class="w-4 h-4 text-amber-500"></i>
+            Catatan & Evaluasi Pokja
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($stats['monitoring_notes'] as $note)
+                <div class="glass-card p-5 border-l-4 {{ $note['status'] === 'rejected' || str_contains(strtolower($note['status']), 'peringatan') || str_contains(strtolower($note['status']), 'pending') ? 'border-amber-500' : 'border-blue-500' }}">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md {{ $note['status'] === 'rejected' || str_contains(strtolower($note['status']), 'peringatan') || str_contains(strtolower($note['status']), 'pending') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400' }}">
+                            {{ $note['status'] }}
+                        </span>
+                        <span class="text-[10px] font-bold text-slate-400">{{ \Carbon\Carbon::parse($note['tanggal'])->isoFormat('D MMM YYYY') }}</span>
+                    </div>
+                    <p class="text-sm text-slate-700 dark:text-slate-300 mb-3">{{ $note['catatan'] }}</p>
+                    <div class="text-[10px] font-bold text-slate-500 flex items-center gap-1.5">
+                        <i data-lucide="user" class="w-3 h-3"></i>
+                        Oleh: {{ $note['pokja'] }}
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>

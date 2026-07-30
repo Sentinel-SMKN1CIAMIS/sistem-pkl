@@ -151,6 +151,7 @@
                     'children' => [
                         ['name' => 'Template Sertifikat', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'award'],
                         ['name' => 'Template Surat PKL', 'route' => 'pokja.pengaturan.surat_pengantar', 'icon' => 'file-text'],
+                        ['name' => 'Kop Laporan PDF', 'route' => 'pokja.pengaturan.kop_laporan', 'icon' => 'building'],
                     ]
                 ];
             }
@@ -339,6 +340,16 @@
                         <div class="p-1.5 space-y-1">
                             @if(auth()->user()?->role === 'siswa')
                                 <a href="{{ route('siswa.profile.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group/item">
+                                    <i data-lucide="user-circle" class="w-4 h-4 text-slate-400 group-hover/item:text-slate-600 dark:group-hover/item:text-slate-300"></i>
+                                    Lihat Profil
+                                </a>
+                            @elseif(auth()->user()?->role === 'pembimbing_sekolah')
+                                <a href="{{ route('pembimbing_sekolah.profile.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group/item">
+                                    <i data-lucide="user-circle" class="w-4 h-4 text-slate-400 group-hover/item:text-slate-600 dark:group-hover/item:text-slate-300"></i>
+                                    Lihat Profil
+                                </a>
+                            @elseif(auth()->user()?->role === 'pembimbing_dudi')
+                                <a href="{{ route('pembimbing_dudi.profile.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group/item">
                                     <i data-lucide="user-circle" class="w-4 h-4 text-slate-400 group-hover/item:text-slate-600 dark:group-hover/item:text-slate-300"></i>
                                     Lihat Profil
                                 </a>

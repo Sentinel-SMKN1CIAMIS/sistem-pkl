@@ -37,36 +37,17 @@ class SiswaController extends Controller
         }
 
         // Sorting Logic
-        if ($request->filled('sort')) {
-            switch ($request->sort) {
-                case 'oldest':
-                    $query->oldest();
-                    break;
-                case 'name_asc':
-                    $query->orderBy('nama_lengkap' . '', 'asc');
-                    break;
-                case 'name_desc':
-                    $query->orderBy('nama_lengkap' . '', 'desc');
-                    break;
-                case 'nis_asc':
-                    $query->orderBy('nis' . '', 'asc');
-                    break;
-                case 'nis_desc':
-                    $query->orderBy('nis' . '', 'desc');
-                    break;
-                case 'kelas_asc':
-                    $query->orderBy('kelas' . '', 'asc');
-                    break;
-                case 'latest':
-                default:
-                    $query->latest();
-                    break;
-            }
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        $allowedSorts = ['nama_lengkap', 'nis', 'kelas', 'created_at'];
+
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortDir === 'desc' ? 'desc' : 'asc');
         } else {
             $query->latest();
         }
 
-        $students = $query->paginate(10)->withQueryString();
+        $students = $query->paginate(15)->withQueryString();
         $concentrations = $user->getFilteredKonsentrasi();
         
         return view('pokja.siswa.index', compact('students', 'concentrations'));

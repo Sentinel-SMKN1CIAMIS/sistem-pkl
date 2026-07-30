@@ -1,6 +1,9 @@
 <x-app-layout>
     <x-slot name="header">Dashboard Pembimbing DUDI</x-slot>
 
+    <!-- Force Change Password Modal -->
+    <x-force-change-password-modal :forcePasswordChange="$forcePasswordChange ?? false" />
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="glass-card p-6 border-t-4 border-blue-500">
             <div class="flex items-center gap-4">

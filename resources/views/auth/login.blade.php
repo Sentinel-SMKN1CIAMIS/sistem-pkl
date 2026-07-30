@@ -57,7 +57,7 @@
                     <input type="checkbox" name="remember" class="w-4 h-4 rounded bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900">
                     <span class="text-sm text-slate-600 dark:text-slate-400">Ingat Saya</span>
                 </label>
-                <a href="#" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">Lupa Password?</a>
+                <!-- <a href="#" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">Lupa Password?</a> -->
             </div>
 
             <!-- Submit -->
@@ -65,6 +65,12 @@
                 Masuk
             </x-button>
         </form>
+
+        <div class="mt-4 text-center">
+            <a href="{{ route('register.pembimbing_dudi.show') }}" class="text-xs text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 transition-colors font-medium">
+                Registrasi Akun Pembimbing DUDI
+            </a>
+        </div>
 
         <div class="mt-8 text-center border-t border-slate-200/50 dark:border-slate-700/50 pt-6">
             <p class="text-xs text-slate-500 dark:text-slate-400">©2026 RPL SMKN 1 CIAMIS. All rights reserved.</p>

@@ -1,19 +1,10 @@
 <x-app-layout>
     @php
         $getUniqueBadgeClass = function($name) {
-            if (!$name) return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
-            $palettes = [
-                'bg-blue-500/10 text-blue-500 dark:text-blue-400 border-blue-500/20',
-                'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20',
-                'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border-indigo-500/20',
-                'bg-purple-500/10 text-purple-500 dark:text-purple-400 border-purple-500/20',
-                'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20',
-                'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20',
-                'bg-sky-500/10 text-sky-500 dark:text-sky-400 border-sky-500/20',
-                'bg-teal-500/10 text-teal-500 dark:text-teal-400 border-teal-500/20',
-            ];
+            if (!$name) return 'background-color: rgba(148, 163, 184, 0.1); color: rgb(148, 163, 184); border-color: rgba(148, 163, 184, 0.2);';
             $hash = crc32($name);
-            return $palettes[abs($hash) % count($palettes)];
+            $hue = abs($hash) % 360;
+            return "--hue: {$hue};";
         };
     @endphp
     <x-slot name="header">Pemetaan Siswa PKL</x-slot>
@@ -40,13 +31,40 @@
 
     <!-- Search and Filter -->
     <div class="glass-card mb-6 p-4">
-        <form action="{{ route('pokja.pemetaan.index') }}" method="GET" class="flex gap-4">
+        <form action="{{ route('pokja.pemetaan.index') }}" method="GET" class="flex flex-col sm:flex-row gap-4">
             <div class="flex-1 relative">
                 <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400"></i>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama siswa atau NIS..." 
                        class="w-full pl-10 pr-4 py-2.5 bg-white/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 dark:text-slate-200">
             </div>
-            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+            <div class="flex items-center gap-2">
+                <label for="status" class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap">Status:</label>
+                <select name="status" id="status" class="px-3 py-2 text-sm border border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 rounded-xl focus:ring-blue-500 focus:border-blue-500">
+                    <option value="semua" {{ request('status') === 'semua' ? 'selected' : '' }}>Semua</option>
+                    <option value="lengkap" {{ request('status') === 'lengkap' ? 'selected' : '' }}>Lengkap</option>
+                    <option value="belum-lengkap" {{ request('status') === 'belum-lengkap' ? 'selected' : '' }}>Belum Lengkap</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+                <label for="konsentrasi_id" class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap">Program:</label>
+                <select name="konsentrasi_id" id="konsentrasi_id" class="px-3 py-2 text-sm border border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 rounded-xl focus:ring-blue-500 focus:border-blue-500">
+                    <option value="semua">Semua</option>
+                    @foreach($konsentrasiList as $k)
+                        <option value="{{ $k->id }}" {{ request('konsentrasi_id') == $k->id ? 'selected' : '' }}>{{ $k->kode }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+                <label for="per_page" class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap">Baris per Halaman:</label>
+                <select name="per_page" id="per_page" class="px-3 py-2 text-sm border border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 rounded-xl focus:ring-blue-500 focus:border-blue-500">
+                    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                    <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
+                    <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                    <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+                </select>
+            </div>
+            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2">
                 FILTER
             </button>
         </form>
@@ -94,12 +112,12 @@
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 <div class="flex flex-col gap-1 items-start">
                                     @if($siswa->pembimbingSekolah)
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}">
+                                        <span style="{{ $getUniqueBadgeClass($siswa->pembimbingSekolah->nama_lengkap) }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border dynamic-badge">
                                             KJ: {{ $siswa->pembimbingSekolah->nama_lengkap }}
                                         </span>
                                     @endif
                                     @if($siswa->pembimbingSekolahUmum)
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingSekolahUmum->nama_lengkap) }}">
+                                        <span style="{{ $getUniqueBadgeClass($siswa->pembimbingSekolahUmum->nama_lengkap) }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border dynamic-badge">
                                             UM: {{ $siswa->pembimbingSekolahUmum->nama_lengkap }}
                                         </span>
                                     @endif
@@ -110,7 +128,7 @@
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap">
                                 @if($siswa->pembimbingDudi)
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border {{ $getUniqueBadgeClass($siswa->pembimbingDudi->nama_lengkap) }}">
+                                    <span style="{{ $getUniqueBadgeClass($siswa->pembimbingDudi->nama_lengkap) }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border dynamic-badge">
                                         {{ $siswa->pembimbingDudi->nama_lengkap }}
                                     </span>
                                 @else

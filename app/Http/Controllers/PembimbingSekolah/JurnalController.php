@@ -44,7 +44,35 @@ class JurnalController extends Controller
             $query->where('approval_status', $request->status);
         }
 
-        // Filter berdasarkan tanggal
+        // Filter berdasarkan siswa_id
+        if ($request->filled('siswa_id')) {
+            $query->where('siswa_id', $request->siswa_id);
+        }
+
+        // Filter berdasarkan Bulan & Minggu
+        if ($request->filled('bulan')) {
+            $month = (int) $request->bulan;
+            $year = $request->input('tahun', date('Y'));
+
+            if ($request->filled('minggu')) {
+                $week = (int) $request->minggu;
+                $startDay = ($week - 1) * 7 + 1;
+                $daysInMonth = \Carbon\Carbon::create($year, $month)->daysInMonth;
+                $endDay = min($week * 7, $daysInMonth);
+                
+                $startDate = \Carbon\Carbon::create($year, $month, $startDay)->startOfDay()->toDateString();
+                $endDate = \Carbon\Carbon::create($year, $month, $endDay)->endOfDay()->toDateString();
+                
+                $query->whereBetween('tanggal', [$startDate, $endDate]);
+            } else {
+                $query->whereMonth('tanggal', $month)
+                      ->whereYear('tanggal', $year);
+            }
+        } elseif ($request->filled('tahun')) {
+            $query->whereYear('tanggal', $request->tahun);
+        }
+
+        // Filter berdasarkan rentang tanggal manual
         if ($request->filled('tanggal_dari')) {
             $query->whereDate('tanggal', '>=', $request->tanggal_dari);
         }
@@ -55,7 +83,13 @@ class JurnalController extends Controller
 
         $jurnals = $query->paginate(15)->withQueryString();
 
-        return view('pembimbing-sekolah.jurnal.index', compact('jurnals', 'teacher', 'tipe'));
+        $siswas = \App\Models\Siswa::where('pembimbing_sekolah_id', $teacher->id)
+            ->orWhere('pembimbing_sekolah_umum_id', $teacher->id)
+            ->orWhereIn('kelas', $kelasIds)
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'nis']);
+
+        return view('pembimbing-sekolah.jurnal.index', compact('jurnals', 'teacher', 'tipe', 'siswas'));
     }
 
     public function update(Request $request, Jurnal $jurnal)

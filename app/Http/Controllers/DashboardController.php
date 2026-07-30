@@ -86,6 +86,17 @@ class DashboardController extends Controller
                         })->where(['status' => 'pending'])->count(),
                         'jurnal_masuk' => $jurnalMasuk,
                         'weeks_evaluated' => $weeksEvaluatedData,
+                        'monitoring_notes' => \App\Models\MonitoringPembimbing::with('pokjaUser:id,name')
+                            ->where('pembimbing_sekolah_id', $teacher->id)
+                            ->orderBy('created_at', 'desc')
+                            ->take(3)
+                            ->get()
+                            ->map(fn($note) => [
+                                'tanggal' => $note->tanggal,
+                                'catatan' => $note->catatan,
+                                'status' => $note->status,
+                                'pokja' => $note->pokjaUser?->name ?? 'Tim Pokja'
+                            ])->toArray(),
                     ];
                 });
                 return view('dashboards.pembimbing-sekolah', compact('stats'));
@@ -99,7 +110,8 @@ class DashboardController extends Controller
                         })->where(['status' => 'pending'])->count(),
                     ];
                 });
-                return view('dashboards.pembimbing-dudi', compact('stats'));
+                $forcePasswordChange = $user->force_password_change;
+                return view('dashboards.pembimbing-dudi', compact('stats', 'forcePasswordChange'));
             case 'kaprog':
                 $today = \Carbon\Carbon::today();
                 $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_kaprog_{$user->id}_{$today->format('Y-m-d')}", 300, function() use ($today, $user) {

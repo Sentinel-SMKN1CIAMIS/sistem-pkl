@@ -14,8 +14,8 @@ class ChangePasswordController extends Controller
     {
         $user = Auth::user();
         
-        // Only siswa role can access change password
-        if ($user->role !== 'siswa') {
+        // Only siswa and pembimbing_dudi roles can access change password
+        if (!in_array($user->role, ['siswa', 'pembimbing_dudi'])) {
             return redirect()->route('dashboard');
         }
         
@@ -31,8 +31,8 @@ class ChangePasswordController extends Controller
     {
         $user = Auth::user();
 
-        // Only siswa role can change password through this route
-        if ($user->role !== 'siswa') {
+        // Only siswa and pembimbing_dudi roles can change password through this route
+        if (!in_array($user->role, ['siswa', 'pembimbing_dudi'])) {
             if ($request->expectsJson()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
@@ -65,7 +65,7 @@ class ChangePasswordController extends Controller
             ActivityLog::create([
                 'user_id' => $user->id,
                 'action' => 'Password Changed',
-                'description' => 'Siswa mengubah password pada login pertama kali',
+                'description' => ($user->role === 'siswa' ? 'Siswa' : 'Pembimbing Dudi') . ' mengubah password pada login pertama kali',
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);

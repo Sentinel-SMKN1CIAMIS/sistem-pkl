@@ -95,4 +95,55 @@ class PengaturanController extends Controller
 
         return back()->with('success', 'Format Surat Pengantar PKL berhasil diperbarui.');
     }
+
+    public function kopLaporan()
+    {
+        $keys = [
+            'report_kop_baris_1' => 'PEMERINTAH DAERAH PROVINSI JAWA BARAT',
+            'report_kop_baris_2' => 'DINAS PENDIDIKAN',
+            'report_kop_baris_3' => 'CABANG DINAS PENDIDIKAN WILAYAH XIII',
+            'report_kop_baris_4' => 'SMK NEGERI 1 CIAMIS',
+            'report_kop_baris_5' => 'Jl. Jenderal Sudirman Nomor : 269 Telepon : (0265) 771204',
+            'report_kop_baris_6' => 'Faksimile : (0265) 771204/777719 Website : www.smkn1ciamis.sch.id E-mail : surat@smkn1cms.net',
+            'report_kop_baris_7' => 'Ciamis – 46215',
+        ];
+
+        $configs = KonfigurasiSistem::whereIn('key', array_keys($keys))->get()->pluck('value', 'key');
+
+        $data = [];
+        foreach ($keys as $key => $default) {
+            $data[$key] = $configs->get($key) ?? $default;
+        }
+
+        return view('pokja.pengaturan.kop-laporan', $data);
+    }
+
+    public function updateKopLaporan(Request $request)
+    {
+        $keys = [
+            'report_kop_baris_1',
+            'report_kop_baris_2',
+            'report_kop_baris_3',
+            'report_kop_baris_4',
+            'report_kop_baris_5',
+            'report_kop_baris_6',
+            'report_kop_baris_7',
+        ];
+
+        $rules = [];
+        foreach ($keys as $key) {
+            $rules[$key] = 'required|string';
+        }
+
+        $request->validate($rules);
+
+        foreach ($keys as $key) {
+            KonfigurasiSistem::updateOrCreate(
+                ['key' => $key],
+                ['value' => $request->input($key)]
+            );
+        }
+
+        return back()->with('success', 'Data Kop Laporan berhasil diperbarui.');
+    }
 }

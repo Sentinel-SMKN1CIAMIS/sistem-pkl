@@ -105,7 +105,7 @@ class PembimbingSekolahJournalMonitoringTest extends TestCase
             'kompetensi_id' => $kompetensi->id,
             'tanggal' => \Carbon\Carbon::today()->toDateString(),
             'deskripsi_pekerjaan' => 'Working on task',
-            'status' => 'hadir',
+            'status' => 'pending',
             'approval_status' => 'pending',
         ]);
     }
@@ -114,30 +114,39 @@ class PembimbingSekolahJournalMonitoringTest extends TestCase
     {
         $this->actingAs($this->pembimbingUser);
 
+        // 1. Check default tab (belum-isi)
         $response = $this->get(route('pembimbing_sekolah.siswa.index'));
         $response->assertStatus(200);
 
-        // Verify students categorizations sent to view
+        // Verify view variables
         $response->assertViewHas('students');
-        $response->assertViewHas('studentsNotFilledToday');
-        $response->assertViewHas('studentsHasFilledToday');
-        $response->assertViewHas('studentsPendingApproval');
+        $response->assertViewHas('totalStudentsCount', 2);
+        $response->assertViewHas('hasFilledTodayCount', 1);
+        $response->assertViewHas('notFilledTodayCount', 1);
+        $response->assertViewHas('studentsPendingApprovalCount', 1);
 
-        $notFilled = $response->viewData('studentsNotFilledToday');
-        $filled = $response->viewData('studentsHasFilledToday');
-        $pending = $response->viewData('studentsPendingApproval');
-
+        $students = $response->viewData('students');
         // Siswa 2 has not filled today
-        $this->assertCount(1, $notFilled);
-        $this->assertEquals($this->siswa2->id, $notFilled->first()->id);
+        $this->assertCount(1, $students);
+        $this->assertEquals($this->siswa2->id, $students->first()->id);
 
+        // 2. Check sudah-isi tab
+        $responseFilled = $this->get(route('pembimbing_sekolah.siswa.index', ['tab' => 'sudah-isi']));
+        $responseFilled->assertStatus(200);
+        
+        $studentsFilled = $responseFilled->viewData('students');
         // Siswa 1 has filled today
-        $this->assertCount(1, $filled);
-        $this->assertEquals($this->siswa1->id, $filled->first()->id);
+        $this->assertCount(1, $studentsFilled);
+        $this->assertEquals($this->siswa1->id, $studentsFilled->first()->id);
 
+        // 3. Check butuh-approval tab
+        $responsePending = $this->get(route('pembimbing_sekolah.siswa.index', ['tab' => 'butuh-approval']));
+        $responsePending->assertStatus(200);
+
+        $studentsPending = $responsePending->viewData('students');
         // Siswa 1 has a pending journal
-        $this->assertCount(1, $pending);
-        $this->assertEquals($this->siswa1->id, $pending->first()->id);
+        $this->assertCount(1, $studentsPending);
+        $this->assertEquals($this->siswa1->id, $studentsPending->first()->id);
     }
 
     public function test_school_advisor_can_send_jurnal_reminder_notification()
@@ -229,7 +238,7 @@ class PembimbingSekolahJournalMonitoringTest extends TestCase
             'kompetensi_id' => Jurnal::first()->kompetensi_id, // Reuse existing kompetensi
             'tanggal' => \Carbon\Carbon::today()->toDateString(),
             'deskripsi_pekerjaan' => 'Working on task 2',
-            'status' => 'hadir',
+            'status' => 'pending',
             'approval_status' => 'pending',
         ]);
 
@@ -238,5 +247,94 @@ class PembimbingSekolahJournalMonitoringTest extends TestCase
 
         $response->assertStatus(302);
         $response->assertSessionHas('error', 'Semua siswa bimbingan Anda sudah mengisi jurnal hari ini.');
+    }
+
+    public function test_school_advisor_can_filter_journals_by_siswa()
+    {
+        $this->actingAs($this->pembimbingUser);
+        $kompetensiId = Jurnal::first()->kompetensi_id;
+
+        // Create journals for both students
+        $j1 = Jurnal::create([
+            'siswa_id' => $this->siswa1->id,
+            'kompetensi_id' => $kompetensiId,
+            'tanggal' => '2026-06-01',
+            'deskripsi_pekerjaan' => 'Jurnal Siswa 1',
+            'status' => 'pending',
+            'approval_status' => 'pending',
+        ]);
+
+        $j2 = Jurnal::create([
+            'siswa_id' => $this->siswa2->id,
+            'kompetensi_id' => $kompetensiId,
+            'tanggal' => '2026-06-02',
+            'deskripsi_pekerjaan' => 'Jurnal Siswa 2',
+            'status' => 'pending',
+            'approval_status' => 'pending',
+        ]);
+
+        // Request with siswa_id filter for Siswa 1
+        $response = $this->get(route('pembimbing_sekolah.jurnal.index', [
+            'siswa_id' => $this->siswa1->id
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('jurnals');
+        
+        $jurnals = $response->viewData('jurnals');
+        // Note: Siswa 1 also has 1 journal created in setUp(), so total is 2
+        $this->assertEquals(2, $jurnals->total());
+        $this->assertTrue($jurnals->contains($j1));
+    }
+
+    public function test_school_advisor_can_filter_journals_by_month_and_week()
+    {
+        $this->actingAs($this->pembimbingUser);
+        $kompetensiId = Jurnal::first()->kompetensi_id;
+
+        // Create journals on different dates
+        // Bulan 6, Minggu 1 (Tgl 1-7)
+        $j1 = Jurnal::create([
+            'siswa_id' => $this->siswa1->id,
+            'kompetensi_id' => $kompetensiId,
+            'tanggal' => '2026-06-03',
+            'deskripsi_pekerjaan' => 'Minggu 1',
+            'status' => 'pending',
+            'approval_status' => 'pending',
+        ]);
+
+        // Bulan 6, Minggu 2 (Tgl 8-14)
+        $j2 = Jurnal::create([
+            'siswa_id' => $this->siswa1->id,
+            'kompetensi_id' => $kompetensiId,
+            'tanggal' => '2026-06-10',
+            'deskripsi_pekerjaan' => 'Minggu 2',
+            'status' => 'pending',
+            'approval_status' => 'pending',
+        ]);
+
+        // Request with bulan=6 and minggu=1
+        $response = $this->get(route('pembimbing_sekolah.jurnal.index', [
+            'bulan' => '6',
+            'minggu' => '1',
+            'tahun' => '2026'
+        ]));
+
+        $response->assertStatus(200);
+        $jurnals = $response->viewData('jurnals');
+        $this->assertEquals(1, $jurnals->total());
+        $this->assertEquals($j1->id, $jurnals->first()->id);
+
+        // Request with bulan=6 and minggu=2
+        $response2 = $this->get(route('pembimbing_sekolah.jurnal.index', [
+            'bulan' => '6',
+            'minggu' => '2',
+            'tahun' => '2026'
+        ]));
+
+        $response2->assertStatus(200);
+        $jurnals2 = $response2->viewData('jurnals');
+        $this->assertEquals(1, $jurnals2->total());
+        $this->assertEquals($j2->id, $jurnals2->first()->id);
     }
 }

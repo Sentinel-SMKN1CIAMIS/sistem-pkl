@@ -16,7 +16,7 @@ class SiswaController extends Controller
             return redirect()->back()->with('error', 'Profil pembimbing DUDI tidak ditemukan.');
         }
 
-        $students = Siswa::where('dudi_id', $mentor->dudi_id)
+        $students = Siswa::where('pembimbing_dudi_id', $mentor->id)
             ->with(['konsentrasiKeahlian', 'pembimbingSekolah', 'pembimbingSekolahUmum'])
             ->withCount(['jurnal', 'absensi'])
             ->get();
