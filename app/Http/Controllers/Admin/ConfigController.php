@@ -124,57 +124,68 @@ class ConfigController extends Controller
     {
         try {
             $driver = DB::getDriverName();
-            $sql = "-- Sistem Informasi PKL - Database Backup\n";
-            $sql .= "-- Date: " . now()->toDateTimeString() . "\n";
-            $sql .= "-- Driver: " . $driver . "\n\n";
+            
+            $filename = 'backup_pkl_' . date('Y_m_d_His') . '.sql';
+            $backupDir = 'backups';
+            if (!Storage::disk('local')->exists($backupDir)) {
+                Storage::disk('local')->makeDirectory($backupDir);
+            }
+            $filePath = Storage::disk('local')->path($backupDir . '/' . $filename);
+
+            $handle = fopen($filePath, 'w');
+            if (!$handle) {
+                throw new \Exception("Gagal membuka file cadangan untuk ditulis.");
+            }
+
+            // Write initial headers
+            fwrite($handle, "-- Sistem Informasi PKL - Database Backup\n");
+            fwrite($handle, "-- Date: " . now()->toDateTimeString() . "\n");
+            fwrite($handle, "-- Driver: " . $driver . "\n\n");
 
             if ($driver === 'mysql') {
                 $dbName = DB::getDatabaseName();
                 $tableKey = 'Tables_in_' . $dbName;
                 $tables = DB::select('SHOW TABLES');
                 
-                $sql .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+                fwrite($handle, "SET FOREIGN_KEY_CHECKS=0;\n\n");
 
                 foreach ($tables as $table) {
                     $tableName = $table->$tableKey;
 
                     // Drop table if exists
-                    $sql .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
+                    fwrite($handle, "DROP TABLE IF EXISTS `{$tableName}`;\n");
 
                     // Create Table statement
                     $createTable = DB::select("SHOW CREATE TABLE `{$tableName}`");
-                    $sql .= $createTable[0]->{'Create Table'} . ";\n\n";
+                    fwrite($handle, $createTable[0]->{'Create Table'} . ";\n\n");
 
-                    // Insert data statements
-                    $rows = DB::table($tableName)->get();
-                    if ($rows->isNotEmpty()) {
-                        foreach ($rows as $row) {
-                            $rowArray = (array)$row;
-                            $keys = array_map(fn($k) => "`{$k}`", array_keys($rowArray));
-                            $values = array_map(function($v) {
-                                if (is_null($v)) {
-                                    return 'NULL';
-                                }
-                                $escaped = str_replace(["\r", "\n"], ["\\r", "\\n"], addslashes($v));
-                                return "'{$escaped}'";
-                            }, array_values($rowArray));
+                    // Insert data statements using cursor to stream data
+                    foreach (DB::table($tableName)->cursor() as $row) {
+                        $rowArray = (array)$row;
+                        $keys = array_map(fn($k) => "`{$k}`", array_keys($rowArray));
+                        $values = array_map(function($v) {
+                            if (is_null($v)) {
+                                return 'NULL';
+                            }
+                            $escaped = str_replace(["\r", "\n"], ["\\r", "\\n"], addslashes($v));
+                            return "'{$escaped}'";
+                        }, array_values($rowArray));
 
-                            $sql .= "INSERT INTO `{$tableName}` (" . implode(', ', $keys) . ") VALUES (" . implode(', ', $values) . ");\n";
-                        }
-                        $sql .= "\n";
+                        fwrite($handle, "INSERT INTO `{$tableName}` (" . implode(', ', $keys) . ") VALUES (" . implode(', ', $values) . ");\n");
                     }
+                    fwrite($handle, "\n");
                 }
-                $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
+                fwrite($handle, "SET FOREIGN_KEY_CHECKS=1;\n");
             } elseif ($driver === 'pgsql') {
                 $tables = DB::select("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'");
                 
-                $sql .= "-- Disabling triggers/constraints to bypass foreign keys\n";
-                $sql .= "SET CONSTRAINTS ALL DEFERRED;\n\n";
+                fwrite($handle, "-- Disabling triggers/constraints to bypass foreign keys\n");
+                fwrite($handle, "SET CONSTRAINTS ALL DEFERRED;\n\n");
 
                 foreach ($tables as $table) {
                     $tableName = $table->table_name;
 
-                    $sql .= "DROP TABLE IF EXISTS \"{$tableName}\" CASCADE;\n";
+                    fwrite($handle, "DROP TABLE IF EXISTS \"{$tableName}\" CASCADE;\n");
 
                     // Fetch columns info to reconstruct CREATE TABLE
                     $columnsInfo = DB::select("
@@ -212,35 +223,34 @@ class ConfigController extends Controller
                         $colDefs[] = "PRIMARY KEY (" . implode(', ', $pkCols) . ")";
                     }
 
-                    $sql .= "CREATE TABLE \"{$tableName}\" (\n  " . implode(",\n  ", $colDefs) . "\n);\n\n";
+                    fwrite($handle, "CREATE TABLE \"{$tableName}\" (\n  " . implode(",\n  ", $colDefs) . "\n);\n\n");
 
-                    // Insert data statements
-                    $rows = DB::table($tableName)->get();
-                    if ($rows->isNotEmpty()) {
-                        foreach ($rows as $row) {
-                            $rowArray = (array)$row;
-                            $keys = array_map(fn($k) => "\"{$k}\"", array_keys($rowArray));
-                            $values = array_map(function($v) {
-                                if (is_null($v)) {
-                                    return 'NULL';
-                                }
-                                $escaped = str_replace("'", "''", $v);
-                                return "'{$escaped}'";
-                            }, array_values($rowArray));
+                    // Insert data statements using cursor to stream data
+                    foreach (DB::table($tableName)->cursor() as $row) {
+                        $rowArray = (array)$row;
+                        $keys = array_map(fn($k) => "\"{$k}\"", array_keys($rowArray));
+                        $values = array_map(function($v) {
+                            if (is_null($v)) {
+                                return 'NULL';
+                            }
+                            $escaped = str_replace("'", "''", $v);
+                            return "'{$escaped}'";
+                        }, array_values($rowArray));
 
-                            $sql .= "INSERT INTO \"{$tableName}\" (" . implode(', ', $keys) . ") VALUES (" . implode(', ', $values) . ");\n";
-                        }
-                        $sql .= "\n";
+                        fwrite($handle, "INSERT INTO \"{$tableName}\" (" . implode(', ', $keys) . ") VALUES (" . implode(', ', $values) . ");\n");
                     }
+                    fwrite($handle, "\n");
                 }
             } else {
+                fclose($handle);
+                // Clean up empty file
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
                 throw new \Exception("Database driver '{$driver}' tidak didukung untuk pencadangan otomatis.");
             }
 
-            $filename = 'backup_pkl_' . date('Y_m_d_His') . '.sql';
-
-            // Simpan file ke server lokal (storage/app/backups/)
-            Storage::disk('local')->put('backups/' . $filename, $sql);
+            fclose($handle);
 
             session([
                 'database_backed_up' => true,
@@ -249,6 +259,9 @@ class ConfigController extends Controller
 
             return back()->with('success', 'Cadangan database berhasil dibuat dan disimpan di server. Silakan unduh file cadangan tersebut.');
         } catch (\Exception $e) {
+            if (isset($handle) && is_resource($handle)) {
+                fclose($handle);
+            }
             \Illuminate\Support\Facades\Log::error('Backup Error', [
                 'driver' => $driver ?? 'not defined',
                 'message' => $e->getMessage(),

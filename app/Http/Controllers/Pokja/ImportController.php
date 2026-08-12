@@ -195,6 +195,8 @@ class ImportController extends Controller
      */
     public function importSiswa(Request $request)
     {
+        set_time_limit(0);
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
         ]);
@@ -305,6 +307,8 @@ class ImportController extends Controller
      */
     public function importDudi(Request $request)
     {
+        set_time_limit(0);
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
         ]);
@@ -410,6 +414,8 @@ class ImportController extends Controller
      */
     public function importPembimbingSekolah(Request $request)
     {
+        set_time_limit(0);
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
         ]);
@@ -525,6 +531,8 @@ class ImportController extends Controller
      */
     public function importPembimbingDudi(Request $request)
     {
+        set_time_limit(0);
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
         ]);
@@ -624,6 +632,8 @@ class ImportController extends Controller
      */
     public function importKaprog(Request $request)
     {
+        set_time_limit(0);
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
         ]);
