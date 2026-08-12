@@ -5,11 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'MAS-PKL') }}</title>
+    <title>@yield('title', 'MAS-PKL - Manajemen & Absensi Sistem PKL SMKN 1 Ciamis')</title>
+    <meta name="description" content="MAS-PKL (Manajemen & Absensi Sistem Praktik Kerja Lapangan) SMKN 1 Ciamis. Sistem informasi pengelolaan kegiatan PKL, presensi siswa, jurnal harian, dan monitoring pembimbing.">
+    <meta name="keywords" content="MAS-PKL, PKL SMKN 1 Ciamis, Sistem Informasi PKL, SMKN 1 Ciamis, Prakerin Ciamis, Jurnal PKL Online, Absensi PKL">
+    <meta name="author" content="SMKN 1 Ciamis">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title', 'MAS-PKL - Manajemen & Absensi Sistem PKL SMKN 1 Ciamis')">
+    <meta property="og:description" content="Sistem Informasi Praktik Kerja Lapangan (PKL) SMKN 1 Ciamis. Presensi siswa, jurnal harian, dan pengelolaan laporan PKL.">
+    <meta property="og:image" content="{{ asset('logo.png') }}">
+    <meta property="og:site_name" content="MAS-PKL SMKN 1 Ciamis">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ url()->current() }}">
+    <meta name="twitter:title" content="@yield('title', 'MAS-PKL - Manajemen & Absensi Sistem PKL SMKN 1 Ciamis')">
+    <meta name="twitter:description" content="Sistem Informasi Praktik Kerja Lapangan (PKL) SMKN 1 Ciamis. Presensi siswa, jurnal harian, dan pengelolaan laporan PKL.">
+    <meta name="twitter:image" content="{{ asset('logo.png') }}">
+
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.svg') }}">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563eb">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "EducationalOrganization",
+      "name": "SMKN 1 Ciamis",
+      "url": "https://pkl.smkn1ciamis.id",
+      "logo": "https://pkl.smkn1ciamis.id/logo.png",
+      "sameAs": [
+        "https://smkn1ciamis.sch.id"
+      ],
+      "description": "Sistem Manajemen dan Absensi Praktik Kerja Lapangan (MAS-PKL) SMKN 1 Ciamis."
+    }
+    </script>
 
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

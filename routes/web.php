@@ -8,6 +8,14 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/sitemap.xml', function () {
+    $path = public_path('sitemap.xml');
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path, ['Content-Type' => 'text/xml']);
+});
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);

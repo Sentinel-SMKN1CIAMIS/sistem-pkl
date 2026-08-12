@@ -1,2 +1,15 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /login
+Allow: /register-pembimbing-dudi
+Allow: /sitemap.xml
+Disallow: /admin/
+Disallow: /pokja/
+Disallow: /siswa/
+Disallow: /pembimbing_sekolah/
+Disallow: /pembimbing_dudi/
+Disallow: /dashboard
+Disallow: /storage/backups/
+Disallow: /auth/change-password
+
+Sitemap: https://pkl.smkn1ciamis.id/sitemap.xml

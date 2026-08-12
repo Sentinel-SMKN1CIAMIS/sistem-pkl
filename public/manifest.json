@@ -1,7 +1,7 @@
 {
-  "name": "Sistem Informasi PKL",
+  "name": "MAS-PKL SMKN 1 Ciamis",
   "short_name": "MAS-PKL",
-  "description": "Sistem Informasi Praktik Kerja Lapangan",
+  "description": "Sistem Informasi Manajemen & Absensi Praktik Kerja Lapangan SMKN 1 Ciamis",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
