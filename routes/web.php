@@ -41,6 +41,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     
     // Siswa Routes
     Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
+        Route::get('jurnal/export/preview', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'preview'])->name('jurnal.export-preview');
         Route::get('jurnal/export', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'export'])->name('jurnal.export');
         Route::get('jurnal/portofolio', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'portofolio'])->name('jurnal.portofolio');
         Route::get('jurnal/sertifikat', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'sertifikat'])->name('jurnal.sertifikat');

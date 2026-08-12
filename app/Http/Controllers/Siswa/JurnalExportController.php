@@ -30,6 +30,19 @@ class JurnalExportController extends Controller
         return null;
     }
 
+    public function preview()
+    {
+        if ($redirect = $this->requirePkl()) return $redirect;
+
+        $siswa = auth()->user()->siswa;
+        $jurnals = Jurnal::where('siswa_id', $siswa->id)
+            ->where('status', 'valid')
+            ->orderBy('tanggal', 'asc')
+            ->get();
+
+        return view('siswa.jurnal.preview', compact('siswa', 'jurnals'));
+    }
+
     public function export()
     {
         if ($redirect = $this->requirePkl()) return $redirect;
