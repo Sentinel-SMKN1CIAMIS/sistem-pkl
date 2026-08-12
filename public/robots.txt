@@ -3,6 +3,7 @@ Allow: /
 Allow: /login
 Allow: /register-pembimbing-dudi
 Allow: /sitemap.xml
+Allow: /google6a810bf91d75edb1.html
 Disallow: /admin/
 Disallow: /pokja/
 Disallow: /siswa/

@@ -10,6 +10,7 @@
     <meta name="keywords" content="MAS-PKL, PKL SMKN 1 Ciamis, Sistem Informasi PKL, SMKN 1 Ciamis, Prakerin Ciamis, Jurnal PKL Online, Absensi PKL">
     <meta name="author" content="SMKN 1 Ciamis">
     <meta name="robots" content="index, follow">
+    <meta name="google-site-verification" content="google6a810bf91d75edb1">
     <link rel="canonical" href="{{ url()->current() }}">
 
     <!-- Open Graph / Facebook -->
