@@ -51,14 +51,27 @@
         @else
             @php
                 $isActive = request()->routeIs($item['route']);
+                $unreadMessagesCount = 0;
+                if ($item['name'] === 'Pesan') {
+                    $unreadMessagesCount = \App\Models\Pesan::where('to_user_id', auth()->id())
+                        ->whereNull('dibaca_at')
+                        ->count();
+                }
             @endphp
             <a href="{{ route($item['route']) }}" 
                class="{{ $isActive 
                     ? 'bg-blue-600/10 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-semibold' 
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 border border-transparent' 
-               }} flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group">
-                <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 {{ $isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-blue-500 transition-colors' }}"></i>
-                <span>{{ $item['name'] }}</span>
+               }} flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 {{ $isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-blue-500 transition-colors' }}"></i>
+                    <span>{{ $item['name'] }}</span>
+                </div>
+                @if ($unreadMessagesCount > 0)
+                    <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-blue-600 text-white dark:bg-blue-500 animate-pulse">
+                        {{ $unreadMessagesCount }}
+                    </span>
+                @endif
             </a>
         @endif
     @endforeach
