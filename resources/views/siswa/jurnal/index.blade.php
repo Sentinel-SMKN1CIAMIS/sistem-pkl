@@ -91,16 +91,16 @@
 
         <div class="glass-card p-4 md:p-6 mb-6">
             <!-- Calendar Navigation -->
-            <div class="flex items-center justify-between mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                     <i data-lucide="calendar-days" class="w-6 h-6 text-blue-500"></i>
                     {{ $currentMonthName }} {{ $currentYear }}
                 </h2>
-                <div class="flex items-center gap-1 sm:gap-2">
+                <div class="flex items-center gap-1 sm:gap-2 shrink-0">
                     <a href="{{ route('siswa.jurnal.index', ['month' => $prevMonth->format('m'), 'year' => $prevMonth->format('Y')]) }}" class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
                         <i data-lucide="chevron-left" class="w-4 h-4"></i>
                     </a>
-                    <a href="{{ route('siswa.jurnal.index') }}" class="px-3 py-2 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+                    <a href="{{ route('siswa.jurnal.index') }}" class="px-3 py-2 text-sm font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors whitespace-nowrap">
                         Bulan Ini
                     </a>
                     <a href="{{ route('siswa.jurnal.index', ['month' => $nextMonth->format('m'), 'year' => $nextMonth->format('Y')]) }}" class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors">
