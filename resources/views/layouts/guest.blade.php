@@ -288,5 +288,7 @@
             });
         </script>
     @endif
+
+    @include('components.pwa-prompt')
 </body>
 </html>
