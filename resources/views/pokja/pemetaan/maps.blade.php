@@ -7,11 +7,55 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
     <style>
-        #peta-dudi { height: 70vh; min-height: 500px; border-radius: 1rem; z-index: 1; }
-        .marker-icon { display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 32px; height: 32px; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.3); font-size: 13px; font-weight: 700; color: #fff; }
-        .leaflet-popup-content-wrapper { border-radius: .75rem !important; }
-        .leaflet-popup-content { margin: 12px 16px !important; font-size: 13px; }
-        .leaflet-tooltip { border-radius: .5rem !important; font-size: 12px; padding: 6px 10px !important; }
+        #peta-dudi { height: 75vh; min-height: 550px; border-radius: 1.25rem; z-index: 1; }
+        .marker-icon { display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 36px; height: 36px; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,.15); font-size: 13px; font-weight: 700; color: #fff; transition: all 0.2s ease; }
+        .marker-icon:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+        .leaflet-popup-content-wrapper { 
+            background: rgba(255, 255, 255, 0.9) !important; 
+            backdrop-filter: blur(8px); 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 1rem !important; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        }
+        .dark .leaflet-popup-content-wrapper {
+            background: rgba(30, 41, 59, 0.95) !important;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            color: #f1f5f9;
+        }
+        .leaflet-popup-tip {
+            background: rgba(255, 255, 255, 0.9) !important;
+        }
+        .dark .leaflet-popup-tip {
+            background: rgba(30, 41, 59, 0.95) !important;
+        }
+        .leaflet-popup-content { margin: 16px 20px !important; font-size: 13px; line-height: 1.5; }
+        .leaflet-tooltip { 
+            background: rgba(255, 255, 255, 0.95) !important; 
+            border: 1px solid rgba(226, 232, 240, 0.8) !important; 
+            border-radius: .5rem !important; 
+            font-size: 12px; 
+            padding: 6px 10px !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+        }
+        .dark .leaflet-tooltip {
+            background: rgba(30, 41, 59, 0.95) !important;
+            border: 1px solid rgba(51, 65, 85, 0.8) !important;
+            color: #f1f5f9;
+        }
+        .zona-label {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #475569 !important;
+            font-weight: 700;
+            text-shadow: 0 0 4px #fff;
+            font-size: 11px;
+        }
+        .dark .zona-label {
+            color: #94a3b8 !important;
+            text-shadow: 0 0 4px #0f172a;
+        }
     </style>
 
     {{-- Stats Bar --}}
@@ -31,6 +75,7 @@
         <div class="glass-card p-4 border-l-4 border-amber-500">
             <p class="text-[10px] text-amber-400 font-black uppercase tracking-widest leading-none mb-1">Siswa di DUDI</p>
             <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $totalSiswa }}</p>
+        </div>
     </div>
 
     {{-- Filter Bar --}}
@@ -229,20 +274,20 @@
 
                             // Build popup content (full detail on click)
                             let popupHtml = `
-                                <div style="min-width:220px">
-                                    <h3 style="font-weight:700;font-size:14px;margin:0 0 4px 0">${escapeHTML(d.nama)}</h3>
-                                    <p style="color:#6b7280;font-size:12px;margin:0 0 8px 0">${escapeHTML(d.alamat) || '-'}${d.kota ? ', '+escapeHTML(d.kota) : ''}</p>
-                                    <div style="border-top:1px solid #e2e8f0;padding-top:8px;margin-top:8px">
-                                        <p style="font-size:11px;color:#6b7280;margin:0"><strong>Jenis:</strong> ${escapeHTML(labelMap[d.jenis_industri]) || '-'}</p>
-                                        ${d.nama_pimpinan ? `<p style="font-size:11px;color:#6b7280;margin:2px 0"><strong>Pimpinan:</strong> ${escapeHTML(d.nama_pimpinan)}</p>` : ''}
-                                        ${d.no_telepon ? `<p style="font-size:11px;color:#6b7280;margin:2px 0"><strong>Telepon:</strong> ${escapeHTML(d.no_telepon)}</p>` : ''}
-                                        ${d.zona ? `<p style="font-size:11px;color:#3b82f6;margin:2px 0"><strong>Zona:</strong> ${escapeHTML(d.zona)}</p>` : ''}
+                                <div class="min-w-[220px]">
+                                    <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 mb-1">${escapeHTML(d.nama)}</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">${escapeHTML(d.alamat) || '-'}${d.kota ? ', '+escapeHTML(d.kota) : ''}</p>
+                                    <div class="border-t border-slate-200 dark:border-slate-700/50 pt-2 mt-2 space-y-1">
+                                        <p class="text-[11px] text-slate-600 dark:text-slate-400"><strong>Jenis:</strong> ${escapeHTML(labelMap[d.jenis_industri]) || '-'}</p>
+                                        ${d.nama_pimpinan ? `<p class="text-[11px] text-slate-600 dark:text-slate-400"><strong>Pimpinan:</strong> ${escapeHTML(d.nama_pimpinan)}</p>` : ''}
+                                        ${d.no_telepon ? `<p class="text-[11px] text-slate-600 dark:text-slate-400"><strong>Telepon:</strong> ${escapeHTML(d.no_telepon)}</p>` : ''}
+                                        ${d.zona ? `<p class="text-[11px] text-blue-500 dark:text-blue-400"><strong>Zona:</strong> ${escapeHTML(d.zona)}</p>` : ''}
                                     </div>`;
 
                             if (d.siswa_list && d.siswa_list.length > 0) {
-                                popupHtml += `<div style="border-top:1px solid #e2e8f0;padding-top:8px;margin-top:8px"><p style="font-size:11px;font-weight:700;margin:0 0 4px 0">Siswa PKL (${d.total_siswa}):</p>`;
+                                popupHtml += `<div class="border-t border-slate-200 dark:border-slate-700/50 pt-2 mt-2"><p class="text-[11px] font-bold text-slate-800 dark:text-slate-200 mb-1">Siswa PKL (${d.total_siswa}):</p>`;
                                 d.siswa_list.forEach(s => {
-                                    popupHtml += `<p style="font-size:11px;margin:1px 0;color:#374151">• ${escapeHTML(s.nama)} <span style="color:#9ca3af">(${escapeHTML(s.jurusan)})</span></p>`;
+                                    popupHtml += `<p class="text-[11px] text-slate-600 dark:text-slate-350 my-0.5">• ${escapeHTML(s.nama)} <span class="text-slate-450 dark:text-slate-550">(${escapeHTML(s.jurusan)})</span></p>`;
                                 });
                                 popupHtml += '</div>';
                             }
