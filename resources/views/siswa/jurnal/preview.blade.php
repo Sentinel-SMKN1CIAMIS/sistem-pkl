@@ -50,6 +50,7 @@
         .btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 7px;
             padding: 8px 14px;
             border-radius: 10px;
@@ -84,6 +85,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
+            overflow-x: hidden;
         }
         .page-info {
             width: 210mm;
@@ -105,6 +108,43 @@
             color: #334155;
             white-space: nowrap;
         }
+        .btn-zoom-toggle {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            padding: 4px 12px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #4f46e5;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .btn-zoom-toggle:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #4338ca;
+        }
+        .fit-width .btn-zoom-toggle {
+            background: #eef2ff;
+            border-color: #c7d2fe;
+            color: #4f46e5;
+        }
+        .page-viewport {
+            width: 100%;
+            overflow-x: auto;
+            display: flex;
+            justify-content: flex-start;
+            padding: 4px 0 20px;
+        }
+        @media (min-width: 215mm) {
+            .page-viewport {
+                justify-content: center;
+            }
+        }
         .page {
             width: 210mm;
             min-height: 297mm;
@@ -112,6 +152,45 @@
             padding: 17mm 17mm 15mm;
             box-shadow: 0 15px 40px rgba(15, 23, 42, 0.18);
             border-radius: 2px;
+            transform-origin: top center;
+            flex-shrink: 0;
+            margin: 0 auto;
+            transition: transform 0.2s ease, margin-bottom 0.2s ease;
+        }
+
+        @media (max-width: 640px) {
+            .toolbar {
+                padding: 10px 12px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .toolbar-left {
+                justify-content: center;
+            }
+            .toolbar-title {
+                font-size: 12.5px;
+            }
+            .toolbar-sub {
+                font-size: 10px;
+                text-align: center;
+            }
+            .toolbar-actions {
+                justify-content: center;
+                width: 100%;
+            }
+            .btn {
+                flex: 1;
+                justify-content: center;
+                padding: 8px 10px;
+                font-size: 11.5px;
+            }
+            .page-info {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 8px;
+            }
         }
 
         @media print {
@@ -122,12 +201,15 @@
             body { background: #fff; }
             .toolbar, .page-info { display: none !important; }
             .page-wrap { padding: 0; }
+            .page-viewport { overflow: visible; height: auto !important; }
             .page {
                 width: 100%;
                 min-height: auto;
                 padding: 0;
                 box-shadow: none;
                 border-radius: 0;
+                transform: none !important;
+                zoom: 1 !important;
             }
         }
     </style>
@@ -170,15 +252,69 @@
 
     <div class="page-wrap">
         <div class="page-info">
-            <span>Dokumen akan dicetak pada kertas <strong>A4 (Portrait)</strong> berukuran standar.</span>
-            <span class="chip">{{ $jurnals->count() }} catatan kegiatan</span>
+            <div class="page-info-text">
+                <span>Dokumen akan dicetak pada kertas <strong>A4 (Portrait)</strong> berukuran standar.</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="btn-toggle-fit" class="btn-zoom-toggle">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/>
+                    </svg>
+                    <span id="zoom-text">Fit Lebar</span>
+                </button>
+                <span class="chip">{{ $jurnals->count() }} catatan kegiatan</span>
+            </div>
         </div>
-        <div class="page">
-            @include('siswa.jurnal.document', ['siswa' => $siswa, 'jurnals' => $jurnals])
+        <div class="page-viewport">
+            <div class="page">
+                @include('siswa.jurnal.document', ['siswa' => $siswa, 'jurnals' => $jurnals])
+            </div>
         </div>
     </div>
 
     <script>
+        function updateZoom() {
+            const page = document.querySelector('.page');
+            const viewport = document.querySelector('.page-viewport');
+            if (!page || !viewport) return;
+            
+            const screenWidth = viewport.clientWidth;
+            const targetWidth = 794; // 210mm in pixels at standard 96dpi
+            
+            if (window.matchMedia('print').matches) {
+                page.style.zoom = 'normal';
+                page.style.transform = 'none';
+                viewport.style.height = 'auto';
+                return;
+            }
+            
+            const isFitMode = document.body.classList.contains('fit-width');
+            
+            if (isFitMode && screenWidth < targetWidth) {
+                const scale = (screenWidth - 24) / targetWidth; // 12px padding each side
+                
+                // Try applying zoom first
+                page.style.zoom = scale;
+                
+                // Fallback for Firefox (check if zoom is supported/applied)
+                const computedZoom = window.getComputedStyle(page).zoom;
+                if (computedZoom === undefined || computedZoom === 'normal' || computedZoom == 1) {
+                    page.style.transform = `scale(${scale})`;
+                    page.style.transformOrigin = 'top center';
+                    const scaledHeight = page.offsetHeight * scale;
+                    viewport.style.height = `${scaledHeight + 40}px`;
+                    page.style.margin = '0 auto';
+                } else {
+                    page.style.transform = 'none';
+                    viewport.style.height = 'auto';
+                }
+            } else {
+                page.style.zoom = 'normal';
+                page.style.transform = 'none';
+                viewport.style.height = 'auto';
+            }
+        }
+
         function handleKembali(e) {
             e.preventDefault();
             // Close the tab if opened in a new tab/window
@@ -192,6 +328,34 @@
                 }
             }, 120);
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnFit = document.getElementById('btn-toggle-fit');
+            const zoomText = document.getElementById('zoom-text');
+            
+            // Default to fit-width on mobile screen sizes
+            if (window.innerWidth < 768) {
+                document.body.classList.add('fit-width');
+                if (zoomText) zoomText.textContent = 'Ukuran Asli';
+            } else {
+                if (zoomText) zoomText.textContent = 'Fit Lebar';
+            }
+            
+            updateZoom();
+            window.addEventListener('resize', updateZoom);
+            
+            if (btnFit) {
+                btnFit.addEventListener('click', function() {
+                    const isFit = document.body.classList.toggle('fit-width');
+                    if (isFit) {
+                        if (zoomText) zoomText.textContent = 'Ukuran Asli';
+                    } else {
+                        if (zoomText) zoomText.textContent = 'Fit Lebar';
+                    }
+                    updateZoom();
+                });
+            }
+        });
     </script>
 </body>
 </html>
