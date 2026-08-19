@@ -64,8 +64,22 @@ class LogUserActivity
                     '_method',
                     'file',
                     'image',
-                    'photo'
+                    'photo',
+                    'signature',
+                    'signature_in',
+                    'signature_out',
+                    'bukti_balasan',
                 ]);
+
+                // Filter out any long base64 image data strings or oversized text to keep log entries clean
+                foreach ($payload as $key => &$value) {
+                    if (is_string($value)) {
+                        if (str_starts_with($value, 'data:image/') || strlen($value) > 250) {
+                            $value = '[DATA_GAMBAR_BASE64]';
+                        }
+                    }
+                }
+                unset($value);
 
                 if (!empty($payload)) {
                     $description .= " Data: " . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
