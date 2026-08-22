@@ -434,7 +434,7 @@
                     <!-- Pradipta -->
                     <a href="https://github.com/PradiptaPPLG" target="_blank" class="flex flex-col items-center gap-3 p-4 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all hover:-translate-y-1 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-500/30 group">
                         <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-colors">
-                            <img src="https://github.com/PradiptaPPL.png" alt="Pradipta Endra Maulana" class="w-full h-full object-cover">
+                            <img src="https://github.com/PradiptaPPLG.png" alt="Pradipta Endra Maulana" class="w-full h-full object-cover">
                         </div>
                         <div class="text-center">
                             <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Pradipta Endra M.</p>
@@ -445,7 +445,7 @@
                     <!-- Rafli -->
                     <a href="https://github.com/rafliaditya0125" target="_blank" class="flex flex-col items-center gap-3 p-4 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all hover:-translate-y-1 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-500/30 group">
                         <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-colors">
-                            <img src="https://github.com/rafliadity0125.png" alt="Rafli Aditya" class="w-full h-full object-cover">
+                            <img src="https://github.com/rafliaditya0125.png" alt="Rafli Aditya" class="w-full h-full object-cover">
                         </div>
                         <div class="text-center">
                             <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Rafli Aditya</p>

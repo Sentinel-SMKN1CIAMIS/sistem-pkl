@@ -33,7 +33,20 @@ class PengajuanPklController extends Controller
                   });
             })->get();
 
-        return view('siswa.pengajuan-pkl.create', compact('dudis'));
+        $programKeahlianId = $siswa->konsentrasiKeahlian?->program_keahlian_id;
+        $kaprog = null;
+        if ($programKeahlianId) {
+            $kaprog = \App\Models\User::where('role', 'kaprog')
+                ->where('program_keahlian_id', $programKeahlianId)
+                ->first();
+        }
+        if (!$kaprog && $siswa->konsentrasi_keahlian_id) {
+            $kaprog = \App\Models\User::where('role', 'kaprog')
+                ->where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
+                ->first();
+        }
+
+        return view('siswa.pengajuan-pkl.create', compact('dudis', 'siswa', 'kaprog'));
     }
 
     public function store(Request $request)
@@ -136,7 +149,27 @@ class PengajuanPklController extends Controller
 
         $pengajuan = $siswa->pengajuanPkl;
 
-        return view('siswa.pengajuan-pkl.status', compact('pengajuan'));
+        // Cari data Kaprog berdasarkan Program Keahlian atau Konsentrasi Keahlian Siswa
+        $programKeahlianId = $siswa->konsentrasiKeahlian?->program_keahlian_id;
+        $kaprog = null;
+
+        if ($pengajuan && $pengajuan->accOleh && $pengajuan->accOleh->role === 'kaprog') {
+            $kaprog = $pengajuan->accOleh;
+        }
+
+        if (!$kaprog && $programKeahlianId) {
+            $kaprog = \App\Models\User::where('role', 'kaprog')
+                ->where('program_keahlian_id', $programKeahlianId)
+                ->first();
+        }
+
+        if (!$kaprog && $siswa->konsentrasi_keahlian_id) {
+            $kaprog = \App\Models\User::where('role', 'kaprog')
+                ->where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
+                ->first();
+        }
+
+        return view('siswa.pengajuan-pkl.status', compact('pengajuan', 'kaprog', 'siswa'));
     }
 
     public function print()

@@ -19,6 +19,17 @@ class ActivityLog extends Model
     ];
 
     /**
+     * Dynamically sanitize long base64 image data in description attribute
+     */
+    public function getDescriptionAttribute($value)
+    {
+        if ($value && (str_contains($value, 'data:image/') || str_contains($value, 'data:image\/'))) {
+            return preg_replace('/data:image\\\\?\/[^\s"}]+/', '[DATA_GAMBAR_BASE64]', $value);
+        }
+        return $value;
+    }
+
+    /**
      * Get the prunable model query.
      */
     public function prunable()

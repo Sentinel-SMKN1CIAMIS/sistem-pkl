@@ -3,13 +3,53 @@
 
     <div class="max-w-2xl mx-auto">
         <div class="glass-card p-8">
-            <div class="flex items-center gap-4 mb-8">
+            <div class="flex items-center gap-4 mb-6">
                 <div class="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
                     <i data-lucide="building-2" class="w-7 h-7 text-blue-500"></i>
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Daftarkan Tempat PKL Kamu</h2>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Isi data perusahaan tempat kamu akan melaksanakan PKL. Pengajuan akan ditinjau oleh Guru Pembimbing.</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Isi data perusahaan tempat kamu akan melaksanakan PKL. Pengajuan akan ditinjau dan disetujui oleh Ketua Program Keahlian (Kaprog).</p>
+                </div>
+            </div>
+
+            @php
+                $siswa = $siswa ?? auth()->user()->siswa;
+                if (!isset($kaprog) || !$kaprog) {
+                    $programKeahlianId = $siswa?->konsentrasiKeahlian?->program_keahlian_id;
+                    $kaprog = null;
+                    if ($programKeahlianId) {
+                        $kaprog = \App\Models\User::where('role', 'kaprog')
+                            ->where('program_keahlian_id', $programKeahlianId)
+                            ->first();
+                    }
+                    if (!$kaprog && $siswa?->konsentrasi_keahlian_id) {
+                        $kaprog = \App\Models\User::where('role', 'kaprog')
+                            ->where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
+                            ->first();
+                    }
+                }
+            @endphp
+
+            <div class="mb-6 p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs shadow-xs">
+                <div class="flex items-start gap-2.5">
+                    <i data-lucide="graduation-cap" class="w-4 h-4 text-blue-500 mt-0.5 shrink-0"></i>
+                    <div>
+                        <span class="text-slate-400 block text-[11px]">Jurusan / Konsentrasi:</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-200">{{ $siswa->konsentrasiKeahlian?->nama ?? '-' }}</span>
+                        @if($siswa->konsentrasiKeahlian?->programKeahlian)
+                            <span class="text-slate-400 block text-[10px]">{{ $siswa->konsentrasiKeahlian->programKeahlian->nama }}</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <i data-lucide="user-check" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                    <div>
+                        <span class="text-slate-400 block text-[11px]">Peninjau (Kaprog):</span>
+                        <span class="font-bold {{ $kaprog ? 'text-slate-800 dark:text-slate-200' : 'text-amber-600 dark:text-amber-400 italic' }}">
+                            {{ $kaprog?->name ?? 'Belum Ditentukan (Hubungi Pokja)' }}
+                        </span>
+                    </div>
                 </div>
             </div>
 

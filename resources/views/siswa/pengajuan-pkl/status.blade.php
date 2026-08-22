@@ -19,7 +19,24 @@
         @endif
 
         @php
-            $siswa = auth()->user()->siswa;
+            $siswa = $siswa ?? auth()->user()->siswa;
+            if (!isset($kaprog) || !$kaprog) {
+                $programKeahlianId = $siswa?->konsentrasiKeahlian?->program_keahlian_id;
+                $kaprog = null;
+                if (isset($pengajuan) && $pengajuan?->accOleh && $pengajuan->accOleh->role === 'kaprog') {
+                    $kaprog = $pengajuan->accOleh;
+                }
+                if (!$kaprog && $programKeahlianId) {
+                    $kaprog = \App\Models\User::where('role', 'kaprog')
+                        ->where('program_keahlian_id', $programKeahlianId)
+                        ->first();
+                }
+                if (!$kaprog && $siswa?->konsentrasi_keahlian_id) {
+                    $kaprog = \App\Models\User::where('role', 'kaprog')
+                        ->where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
+                        ->first();
+                }
+            }
         @endphp
 
         @if($siswa && $siswa->dudi_id && $siswa->dudi && (!$pengajuan || $pengajuan->status !== 'disetujui'))
@@ -39,6 +56,27 @@
                 </div>
 
                 <div class="space-y-3 text-sm">
+                    <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                        <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400 mt-0.5"></i>
+                        <div>
+                            <span class="text-slate-400 text-xs block">Jurusan / Konsentrasi Keahlian</span>
+                            <span class="text-slate-700 dark:text-slate-200 font-medium">{{ $siswa->konsentrasiKeahlian?->nama ?? '-' }}</span>
+                            @if($siswa->konsentrasiKeahlian?->programKeahlian)
+                                <span class="text-xs text-slate-400 dark:text-slate-500 block mt-0.5">Program Keahlian: {{ $siswa->konsentrasiKeahlian->programKeahlian->nama }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                        <i data-lucide="user-check" class="w-4 h-4 text-slate-400 mt-0.5"></i>
+                        <div>
+                            <span class="text-slate-400 text-xs block">Ketua Program Keahlian (Kaprog)</span>
+                            @if($kaprog)
+                                <span class="text-slate-700 dark:text-slate-200 font-medium">{{ $kaprog->name }}</span>
+                            @else
+                                <span class="text-amber-600 dark:text-amber-400 text-xs italic font-medium">Belum Ditentukan (Belum ada akun Kaprog untuk program keahlian ini)</span>
+                            @endif
+                        </div>
+                    </div>
                     @if($siswa->dudi->nama_pimpinan)
                     <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                         <i data-lucide="user" class="w-4 h-4 text-slate-400 mt-0.5"></i>
@@ -129,6 +167,27 @@
                 </div>
 
                 <div class="space-y-3 text-sm">
+                    <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                        <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400 mt-0.5"></i>
+                        <div>
+                            <span class="text-slate-400 text-xs block">Jurusan / Konsentrasi Keahlian</span>
+                            <span class="text-slate-700 dark:text-slate-200 font-medium">{{ $siswa->konsentrasiKeahlian?->nama ?? '-' }}</span>
+                            @if($siswa->konsentrasiKeahlian?->programKeahlian)
+                                <span class="text-xs text-slate-400 dark:text-slate-500 block mt-0.5">Program Keahlian: {{ $siswa->konsentrasiKeahlian->programKeahlian->nama }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                        <i data-lucide="user-check" class="w-4 h-4 text-slate-400 mt-0.5"></i>
+                        <div>
+                            <span class="text-slate-400 text-xs block">Ketua Program Keahlian (Kaprog)</span>
+                            @if($kaprog)
+                                <span class="text-slate-700 dark:text-slate-200 font-medium">{{ $kaprog->name }}</span>
+                            @else
+                                <span class="text-amber-600 dark:text-amber-400 text-xs italic font-medium">Belum Ditentukan (Belum ada akun Kaprog untuk program keahlian ini)</span>
+                            @endif
+                        </div>
+                    </div>
                     @if($pengajuan->pimpinan)
                     <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                         <i data-lucide="user" class="w-4 h-4 text-slate-400 mt-0.5"></i>
@@ -152,6 +211,32 @@
                         <div><span class="text-slate-400 text-xs block">Diajukan pada</span><span class="text-slate-700 dark:text-slate-200">{{ $pengajuan->created_at->format('d M Y, H:i') }}</span></div>
                     </div>
                 </div>
+
+                @if($pengajuan->status === 'menunggu')
+                    <div class="mt-6 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-2xl shadow-sm flex items-start gap-3">
+                        <i data-lucide="info" class="w-5 h-5 text-amber-500 mt-0.5 shrink-0"></i>
+                        <div>
+                            <h3 class="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">Menunggu Persetujuan Kaprog</h3>
+                            <p class="text-sm text-amber-700 dark:text-amber-400/90 leading-relaxed">
+                                @if($kaprog)
+                                    Pengajuan tempat PKL Anda sedang ditinjau oleh Ketua Program Keahlian (Kaprog) <strong>{{ $siswa->konsentrasiKeahlian?->nama ?? 'Jurusan Anda' }}</strong>, yaitu <strong>{{ $kaprog->name }}</strong>. Mohon menunggu konfirmasi sebelum pengajuan diteruskan ke Tim Pokja PKL.
+                                @else
+                                    Pengajuan tempat PKL Anda sedang menunggu peninjauan oleh Ketua Program Keahlian (Kaprog) untuk jurusan <strong>{{ $siswa->konsentrasiKeahlian?->nama ?? 'Jurusan Anda' }}</strong>. <span class="block mt-1 text-xs text-amber-600 dark:text-amber-400 italic font-medium">*Akun Kaprog untuk program keahlian ini belum didaftarkan di sistem oleh Tim Pokja.</span>
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                @elseif($pengajuan->status === 'disetujui_kaprog')
+                    <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-2xl shadow-sm flex items-start gap-3">
+                        <i data-lucide="shield-check" class="w-5 h-5 text-blue-500 mt-0.5 shrink-0"></i>
+                        <div>
+                            <h3 class="text-sm font-bold text-blue-800 dark:text-blue-300 mb-1">Telah Disetujui Kaprog</h3>
+                            <p class="text-sm text-blue-700 dark:text-blue-400/90 leading-relaxed">
+                                Pengajuan Anda telah disetujui oleh Kaprog ({{ $siswa->konsentrasiKeahlian?->nama }}), <strong>{{ $pengajuan->accOleh?->name ?? $kaprog?->name ?? 'Ketua Program Keahlian' }}</strong>. Saat ini berkas sedang menunggu validasi akhir dari Tim Pokja PKL.
+                            </p>
+                        </div>
+                    </div>
+                @endif
 
                 @if($pengajuan->status === 'disetujui')
                     @if(!$pengajuan->is_manual)
@@ -223,7 +308,7 @@
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <a href="{{ asset('storage/' . $pengajuan->bukti_balasan) }}" target="_blank"
-                                           class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer">
+                                            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer">
                                             <i data-lucide="eye" class="w-3.5 h-3.5"></i> Lihat File
                                         </a>
                                     </div>
@@ -238,7 +323,7 @@
                                     </label>
                                     <div class="flex gap-2">
                                         <input type="file" name="bukti_balasan" id="bukti_balasan" required accept=".pdf,image/png,image/jpeg,image/jpg"
-                                               class="flex-1 text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-500/10 file:text-blue-500 hover:file:bg-blue-500/20 file:transition-all file:cursor-pointer border border-slate-200 dark:border-slate-800 rounded-xl p-1 bg-white dark:bg-slate-900">
+                                                class="flex-1 text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-500/10 file:text-blue-500 hover:file:bg-blue-500/20 file:transition-all file:cursor-pointer border border-slate-200 dark:border-slate-800 rounded-xl p-1 bg-white dark:bg-slate-900">
                                         <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer">
                                             Unggah
                                         </button>
@@ -266,17 +351,28 @@
                 @endif
 
                 @if($pengajuan->status === 'ditolak')
-                    @if($pengajuan->catatan)
-                    <div class="mt-4 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl">
-                        <p class="text-xs text-red-500 font-medium mb-1">Alasan Penolakan:</p>
-                        <p class="text-sm text-red-700 dark:text-red-300">{{ $pengajuan->catatan }}</p>
-                    </div>
-                    @endif
-                    <div class="mt-6">
-                        <a href="{{ route('siswa.pengajuan_pkl.create') }}"
-                           class="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all">
-                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Ajukan Ulang
-                        </a>
+                    <div class="mt-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-2xl shadow-sm">
+                        <div class="flex items-start gap-3">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 mt-0.5 shrink-0"></i>
+                            <div class="flex-1">
+                                <h3 class="text-sm font-bold text-red-800 dark:text-red-300 mb-1">Pengajuan Ditolak</h3>
+                                <p class="text-sm text-red-700 dark:text-red-400/90 leading-relaxed">
+                                    Pengajuan ditolak oleh <strong>{{ $pengajuan->accOleh?->name ?? $kaprog?->name ?? 'Kaprog / Pokja' }}</strong> ({{ $siswa->konsentrasiKeahlian?->nama ?? 'Jurusan' }}).
+                                </p>
+                                @if($pengajuan->catatan)
+                                    <div class="mt-3 p-3 bg-red-100/70 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 rounded-xl">
+                                        <span class="text-xs font-bold text-red-800 dark:text-red-300 block mb-1">Alasan Penolakan:</span>
+                                        <p class="text-sm text-red-700 dark:text-red-300">{{ $pengajuan->catatan }}</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="mt-5 pt-4 border-t border-red-200/60 dark:border-red-800/40 flex justify-end">
+                            <a href="{{ route('siswa.pengajuan_pkl.create') }}"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition-all shadow-md">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Ajukan Ulang
+                            </a>
+                        </div>
                     </div>
                 @endif
             </div>
