@@ -20,7 +20,9 @@ class JurnalController extends Controller
                 $q->where('pembimbing_dudi_id', $mentor->id);
             })
             ->with(['siswa', 'kompetensi', 'tujuanPembelajaran'])
-            ->latest('tanggal')
+            ->orderByRaw("CASE WHEN (COALESCE(approval_status, 'pending') = 'pending' AND COALESCE(status, 'pending') = 'pending') THEN 0 ELSE 1 END")
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc')
             ->paginate(15);
 
         return view('pembimbing-dudi.jurnal.index', compact('jurnals'));

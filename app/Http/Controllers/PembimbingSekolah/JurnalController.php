@@ -17,6 +17,8 @@ class JurnalController extends Controller
         $tipe    = $teacher->tipe; // 'kejuruan' or 'umum' (previously 'produktif', 'normatif', or 'adaptif')
 
         $query = Jurnal::with(['siswa', 'kompetensi', 'tujuanPembelajaran'])
+            ->orderByRaw("CASE WHEN (COALESCE(approval_status, 'pending') = 'pending' AND COALESCE(status, 'pending') = 'pending') THEN 0 ELSE 1 END")
+            ->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc');
 
         // Semua tipe guru (kejuruan, umum, keduanya) disamakan fiturnya dengan guru kejuruan:
@@ -41,7 +43,24 @@ class JurnalController extends Controller
 
         // Filter berdasarkan status approval
         if ($request->filled('status')) {
-            $query->where('approval_status', $request->status);
+            $statusInput = $request->status;
+            if ($statusInput === 'pending') {
+                $query->where(function ($q) {
+                    $q->where('approval_status', 'pending')
+                      ->orWhereNull('approval_status')
+                      ->where('status', 'pending');
+                });
+            } elseif ($statusInput === 'approved') {
+                $query->where(function ($q) {
+                    $q->where('approval_status', 'approved')
+                      ->orWhere('status', 'valid');
+                });
+            } elseif ($statusInput === 'rejected') {
+                $query->where(function ($q) {
+                    $q->where('approval_status', 'rejected')
+                      ->orWhere('status', 'invalid');
+                });
+            }
         }
 
         // Filter berdasarkan siswa_id
