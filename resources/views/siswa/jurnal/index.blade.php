@@ -308,9 +308,15 @@
                                                 Isi Jurnal Sekarang
                                             </a>
                                         @else
-                                            <div class="inline-flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-200 dark:border-amber-800/50 text-sm font-medium">
-                                                <i data-lucide="info" class="w-4 h-4"></i>
-                                                <span>Silakan absensi hari ini terlebih dahulu untuk mengisi jurnal.</span>
+                                            <div class="flex flex-col items-center gap-4">
+                                                <div class="inline-flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-200 dark:border-amber-800/50 text-sm font-medium">
+                                                    <i data-lucide="info" class="w-4 h-4"></i>
+                                                    <span>Silakan absensi hari ini terlebih dahulu untuk mengisi jurnal.</span>
+                                                </div>
+                                                <a href="{{ route('siswa.absensi.index') }}" class="inline-flex px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl shadow-lg shadow-amber-500/25 transition-all items-center gap-2 hover:-translate-y-0.5">
+                                                    <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                                                    Absensi
+                                                </a>
                                             </div>
                                         @endif
                                     @elseif($isAllowedBackdate)
