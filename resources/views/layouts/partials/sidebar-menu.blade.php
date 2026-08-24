@@ -67,11 +67,9 @@
                     <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 {{ $isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-blue-500 transition-colors' }}"></i>
                     <span>{{ $item['name'] }}</span>
                 </div>
-                @if ($unreadMessagesCount > 0)
-                    <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-blue-600 text-white dark:bg-blue-500 animate-pulse">
-                        {{ $unreadMessagesCount }}
-                    </span>
-                @endif
+                <span id="sidebar-pesan-badge-{{ Str::slug($item['name']) }}" class="{{ $unreadMessagesCount > 0 ? '' : 'hidden' }} px-2 py-0.5 text-xs font-bold rounded-full bg-blue-600 text-white dark:bg-blue-500 animate-pulse">
+                    {{ $unreadMessagesCount }}
+                </span>
             </a>
         @endif
     @endforeach

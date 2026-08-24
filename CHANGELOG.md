@@ -10,6 +10,11 @@
 - Perluasan dan perincian **Pusat Bantuan & FAQ** (`siswa.bantuan.index`) menjadi 8 kategori alur kerja terperinci: Alur Pengajuan PKL & Surat Pengantar, Presensi Harian (Clock-in/out & Izin/Sakit), Jurnal Harian & Unggah Foto, Cetak Rekap Jurnal & Portofolio TP, Prosedur Laporan Akhir PKL, Penentuan Titik Lokasi Kantor (GPS), Manajemen & Pergantian Pembimbing Industri, serta Troubleshooting Kendala Teknis Umum.
 - Menambahkan rute `siswa.bantuan.*` ke dalam whitelist middleware `ForcePasswordChange` sehingga siswa yang baru pertama kali login (belum mengubah kata sandi) tetap dapat membuka Pusat Bantuan & mengunduh dokumen SOP.
 - Memperbaiki metode `getKontak` pada `PesanController` agar menyertakan seluruh riwayat pesan dari Pokja, Admin, maupun Kaprog ke dalam daftar percakapan siswa sehingga pesan broadcast/pengumuman dapat dibuka dan badge unread di sidebar hilang setelah dibaca.
+- Implementasi sistem **Notifikasi Perangkat Native (Web & Mobile Device Push / Notification Banner)**:
+  - Integrasi Web Notification API dan Service Worker (`public/sw.js`) dengan penanganan klik, getar smartphone (`vibration`), dan suara notifikasi (*Web Audio API synthesizer chime*).
+  - Polling background otomatis (`notifications.poll`) setiap 12 detik untuk mendeteksi notifikasi aktivitas sistem dan pesan obrolan baru secara real-time.
+  - Sinkronisasi instan angka badge pada ikon lonceng header dan menu Pesan sidebar secara langsung (*live update*) tanpa perlu memuat ulang halaman.
+  - Pembuatan dan integrasi aset **Badge Mask Transparan Monokrom** (`public/icons/badge-96x96.png`) yang diekstrak langsung dari `logo.png` sehingga ikon status bar dan badge notifikasi Android merender siluet logo MAS-PKL secara tajam, rapi, dan tidak lagi menjadi kotak putih kosong.
 
 ## [2026-06-16]
 ### Fixed

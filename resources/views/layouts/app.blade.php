@@ -278,16 +278,17 @@
 
                 <!-- Notifications -->
                 @php
-                    $unreadNotificationsCount = \App\Models\Notifikasi::where('to_user_id' . '', \Illuminate\Support\Facades\Auth::id())->where('is_read' . '', false)->count();
+                    $unreadNotificationsCount = \App\Models\Notifikasi::where('to_user_id' . '', \Illuminate\Support\Facades\Auth::id())
+                        ->where('is_read' . '', false)
+                        ->whereNotIn('tipe', ['pesan_baru', 'pesan_broadcast'])
+                        ->count();
                 @endphp
                 <div class="relative">
                     <a href="{{ route('notifications.index') }}" class="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative p-2 rounded-full hover:bg-white/50 dark:bg-slate-800/50 transition-colors block">
                         <i data-lucide="bell" class="w-5 h-5"></i>
-                        @if($unreadNotificationsCount > 0)
-                            <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-[9px] font-bold text-slate-900 dark:text-white flex items-center justify-center rounded-full border border-slate-900">
-                                {{ $unreadNotificationsCount > 9 ? '9+' : $unreadNotificationsCount }}
-                            </span>
-                        @endif
+                        <span id="topbar-notif-badge" class="{{ $unreadNotificationsCount > 0 ? '' : 'hidden' }} absolute top-1.5 right-1.5 min-w-4 h-4 px-1 bg-red-500 text-[9px] font-bold text-white flex items-center justify-center rounded-full border border-slate-900">
+                            {{ $unreadNotificationsCount > 9 ? '9+' : $unreadNotificationsCount }}
+                        </span>
                     </a>
                 </div>
 
@@ -870,13 +871,203 @@
         </script>
     @endif
 
-    @if($errors->any())
-        <script>
+    @auth
+    <!-- Device Native Notification & Real-time Live Poller -->
+    <script>
+        (function() {
+            // Audio Chime Generator using Web Audio API (gentle & crisp mobile notification tone)
+            function playNotificationSound() {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContext) return;
+                    const ctx = new AudioContext();
+                    
+                    const now = ctx.currentTime;
+                    // Tone 1
+                    const osc1 = ctx.createOscillator();
+                    const gain1 = ctx.createGain();
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(587.33, now); // D5
+                    gain1.gain.setValueAtTime(0.15, now);
+                    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                    osc1.connect(gain1);
+                    gain1.connect(ctx.destination);
+                    osc1.start(now);
+                    osc1.stop(now + 0.22);
+
+                    // Tone 2 (higher melodic note)
+                    const osc2 = ctx.createOscillator();
+                    const gain2 = ctx.createGain();
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(880.00, now + 0.10); // A5
+                    gain2.gain.setValueAtTime(0.2, now + 0.10);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.40);
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.start(now + 0.10);
+                    osc2.stop(now + 0.40);
+                } catch (e) {
+                    console.warn('Audio chime skipped:', e);
+                }
+            }
+
+            // Request Native Notification Permission
+            function requestNotificationPermission() {
+                if (!('Notification' in window)) return;
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission().then(function(perm) {
+                        if (perm === 'granted') {
+                            console.log('Izin notifikasi perangkat diaktifkan.');
+                        }
+                    });
+                }
+            }
+
+            // Trigger Native Mobile / Desktop Notification
+            function showNativeNotification(title, body, url, tag) {
+                playNotificationSound();
+
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    const options = {
+                        body: body,
+                        icon: '{{ asset("logo.png") }}',
+                        badge: '{{ asset("icons/badge-96x96.png") }}',
+                        vibrate: [200, 100, 200],
+                        data: { url: url },
+                        tag: tag || 'mas-pkl-notif-' + Date.now(),
+                        renotify: true
+                    };
+
+                    if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+                        navigator.serviceWorker.ready.then(function(reg) {
+                            reg.showNotification(title, options);
+                        }).catch(function() {
+                            try {
+                                const n = new Notification(title, options);
+                                n.onclick = function() {
+                                    window.focus();
+                                    if (url) window.location.href = url;
+                                };
+                            } catch(e) {}
+                        });
+                    } else {
+                        try {
+                            const n = new Notification(title, options);
+                            n.onclick = function() {
+                                window.focus();
+                                if (url) window.location.href = url;
+                            };
+                        } catch(e) {}
+                    }
+                }
+
+                // Also display in-app Toast if window is open
+                if (window.showToast) {
+                    window.showToast(`${title}: ${body}`, 'info');
+                }
+            }
+
+            // Live Update UI Badges
+            function updateBadges(unreadNotif, unreadPesan) {
+                // Topbar Bell Badge
+                const topbarBadge = document.getElementById('topbar-notif-badge');
+                if (topbarBadge) {
+                    if (unreadNotif > 0) {
+                        topbarBadge.textContent = unreadNotif > 9 ? '9+' : unreadNotif;
+                        topbarBadge.classList.remove('hidden');
+                    } else {
+                        topbarBadge.classList.add('hidden');
+                    }
+                }
+
+                // Sidebar Pesan Badge
+                const pesanBadge = document.getElementById('sidebar-pesan-badge-pesan');
+                if (pesanBadge) {
+                    if (unreadPesan > 0) {
+                        pesanBadge.textContent = unreadPesan;
+                        pesanBadge.classList.remove('hidden');
+                    } else {
+                        pesanBadge.classList.add('hidden');
+                    }
+                }
+            }
+
+            // Polling State Management
+            let lastNotifId = parseInt(sessionStorage.getItem('last_notif_id') || '0', 10);
+            let lastPesanId = parseInt(sessionStorage.getItem('last_pesan_id') || '0', 10);
+            let isFirstPoll = (lastNotifId === 0 && lastPesanId === 0);
+
+            async function pollDeviceNotifications() {
+                try {
+                    const params = new URLSearchParams({
+                        last_notif_id: lastNotifId,
+                        last_pesan_id: lastPesanId
+                    });
+
+                    const res = await fetch(`{{ route('notifications.poll') }}?${params.toString()}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!res.ok) return;
+                    const data = await res.json();
+
+                    // Update UI Badges live
+                    updateBadges(data.unread_notif_count, data.unread_pesan_count);
+
+                    if (isFirstPoll) {
+                        // Inisialisasi ID awal session tanpa memunculkan alert beruntun
+                        lastNotifId = data.max_notif_id;
+                        lastPesanId = data.max_pesan_id;
+                        sessionStorage.setItem('last_notif_id', lastNotifId);
+                        sessionStorage.setItem('last_pesan_id', lastPesanId);
+                        isFirstPoll = false;
+                        return;
+                    }
+
+                    // Tampilkan notifikasi sistem baru
+                    if (data.notifications && data.notifications.length > 0) {
+                        data.notifications.forEach(n => {
+                            showNativeNotification(n.title, n.body, n.url, 'notif-' + n.id);
+                        });
+                        lastNotifId = Math.max(lastNotifId, data.max_notif_id);
+                        sessionStorage.setItem('last_notif_id', lastNotifId);
+                    }
+
+                    // Tampilkan pesan chat baru
+                    if (data.messages && data.messages.length > 0) {
+                        const currentPath = window.location.pathname;
+                        data.messages.forEach(m => {
+                            if (!currentPath.includes('/pesan/' + m.id)) {
+                                showNativeNotification(m.title, m.body, m.url, 'pesan-' + m.id);
+                            }
+                        });
+                        lastPesanId = Math.max(lastPesanId, data.max_pesan_id);
+                        sessionStorage.setItem('last_pesan_id', lastPesanId);
+                    }
+                } catch (err) {
+                    // Fail silently on offline/network errors
+                }
+            }
+
+            // Auto-ask permission on first click/gesture
+            document.addEventListener('click', function onFirstGesture() {
+                requestNotificationPermission();
+                document.removeEventListener('click', onFirstGesture);
+            }, { once: true });
+
+            // Initial poll & start recurring interval
             document.addEventListener('DOMContentLoaded', () => {
-                window.showToast("{{ $errors->first() }}", 'error');
+                requestNotificationPermission();
+                pollDeviceNotifications();
+                setInterval(pollDeviceNotifications, 12000); // 12 detik polling hemat baterai
             });
-        </script>
-    @endif
+        })();
+    </script>
+    @endauth
+
     @include('components.pwa-prompt')
 </body>
 </html>

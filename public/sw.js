@@ -1,7 +1,9 @@
-const CACHE_NAME = 'mas-pkl-v2';
+const CACHE_NAME = 'mas-pkl-v3';
 const urlsToCache = [
   '/',
-  '/manifest.json'
+  '/manifest.json',
+  '/logo.png',
+  '/icons/badge-96x96.png'
 ];
 
 self.addEventListener('install', event => {
@@ -47,4 +49,54 @@ self.addEventListener('activate', event => {
       );
     })
   );
+});
+
+// Notification Click Event (User taps notification on device)
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+
+  const targetUrl = (event.notification.data && event.notification.data.url) 
+    ? event.notification.data.url 
+    : '/notifikasi';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+// Push Event
+self.addEventListener('push', event => {
+  if (!event.data) return;
+
+  try {
+    const data = event.data.json();
+    const title = data.title || 'MAS-PKL Notifikasi';
+    const options = {
+      body: data.body || 'Anda memiliki notifikasi baru.',
+      icon: data.icon || '/logo.png',
+      badge: '/icons/badge-96x96.png',
+      vibrate: [200, 100, 200],
+      data: {
+        url: data.url || '/notifikasi'
+      },
+      tag: data.tag || 'mas-pkl-notification',
+      renotify: true
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+    );
+  } catch (e) {
+    console.error('Error handling push event:', e);
+  }
 });

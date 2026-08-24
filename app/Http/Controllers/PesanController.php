@@ -185,6 +185,12 @@ class PesanController extends Controller
             ->whereNull('dibaca_at')
             ->update(['dibaca_at' => now()]);
 
+        Notifikasi::where('from_user_id', $user->id)
+            ->where('to_user_id', $authId)
+            ->whereIn('tipe', ['pesan_baru', 'pesan_broadcast'])
+            ->where('is_read', false)
+            ->update(['is_read' => true, 'read_at' => now()]);
+
         $messages = Pesan::where(function ($q) use ($authId, $user) {
                 $q->where('from_user_id' . '', $authId)->where('to_user_id' . '', $user->id);
             })->orWhere(function ($q) use ($authId, $user) {
@@ -322,6 +328,12 @@ class PesanController extends Controller
             ->where('to_user_id' . '', $authId)
             ->whereNull('dibaca_at')
             ->update(['dibaca_at' => now()]);
+
+        Notifikasi::where('from_user_id', $user->id)
+            ->where('to_user_id', $authId)
+            ->whereIn('tipe', ['pesan_baru', 'pesan_broadcast'])
+            ->where('is_read', false)
+            ->update(['is_read' => true, 'read_at' => now()]);
 
         return response()->json($messages);
     }

@@ -137,6 +137,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
     // General Auth Routes
     Route::get('notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifications.index');
+    Route::get('notifikasi/poll', [\App\Http\Controllers\NotifikasiController::class, 'poll'])->name('notifications.poll');
     Route::patch('notifikasi/{notifikasi}/read', [\App\Http\Controllers\NotifikasiController::class, 'markAsRead'])->name('notifications.read');
     Route::patch('notifikasi/read-all', [\App\Http\Controllers\NotifikasiController::class, 'readAll'])->name('notifications.read_all');
     Route::delete('notifikasi/clear-all', [\App\Http\Controllers\NotifikasiController::class, 'clearAll'])->name('notifications.clear_all');
