@@ -53,6 +53,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('absensi/request-early-leave', [\App\Http\Controllers\Siswa\AbsensiController::class, 'requestEarlyLeave'])->name('absensi.request-early-leave');
         Route::post('absensi/submit-absence-request', [\App\Http\Controllers\Siswa\AbsensiController::class, 'submitAbsenceRequest'])->name('absensi.submit-absence-request');
         Route::get('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('laporan/export', [\App\Http\Controllers\Siswa\LaporanController::class, 'export'])->name('laporan.export');
         Route::post('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'store'])->name('laporan.store');
         Route::get('panduan', [\App\Http\Controllers\Siswa\PanduanController::class, 'index'])->name('panduan.index');
         Route::get('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('profile.index');
@@ -88,6 +89,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::patch('absensi/{absensi}/reject', [\App\Http\Controllers\PembimbingSekolah\AbsensiApprovalController::class, 'reject'])->name('absensi.reject');
 
         Route::get('laporan', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('laporan/{laporan}/export', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'export'])->name('laporan.export');
         Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
         Route::get('profile', [\App\Http\Controllers\PembimbingSekolah\ProfileController::class, 'index'])->name('profile.index');
         Route::patch('profile', [\App\Http\Controllers\PembimbingSekolah\ProfileController::class, 'update'])->name('profile.update');

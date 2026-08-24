@@ -67,6 +67,10 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                    <a href="{{ route('pembimbing_sekolah.laporan.export', $laporan) }}" target="_blank" class="p-2 rounded-lg bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-colors" title="Cetak Lembar Laporan (PDF)">
+                                        <i data-lucide="printer" class="w-4 h-4"></i>
+                                    </a>
+
                                     @if($laporan->status !== 'approved')
                                         <form action="{{ route('pembimbing_sekolah.laporan.update', $laporan) }}" method="POST" class="inline-block">
                                             @csrf

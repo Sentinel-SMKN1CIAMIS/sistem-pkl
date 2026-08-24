@@ -85,10 +85,10 @@
                     <div class="p-6 pt-0 text-sm md:text-base text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 leading-relaxed">
                         <ol class="list-decimal list-inside space-y-3 mt-4">
                             <li>Masuk ke menu <strong>Laporan PKL</strong>.</li>
-                            <li>Laporan hanya dapat diunggah dalam format PDF.</li>
-                            <li>Isi judul dokumen dengan jelas, tambahkan deskripsi jika diperlukan.</li>
-                            <li>Pilih file PDF laporan Anda (maksimal sesuai ketentuan yang berlaku, biasanya 2MB atau 5MB).</li>
-                            <li>Klik <strong>Kirim Laporan</strong>. Laporan akan ditinjau oleh pihak sekolah.</li>
+                            <li>Isi form dengan judul laporan dan ringkasan singkat hasil pelaksanaan PKL Anda.</li>
+                            <li>Cantumkan link media sosial / dokumentasi video (YouTube, TikTok, Google Drive, dsb.) jika ada.</li>
+                            <li>Klik <strong>Kirim Laporan</strong> untuk mengajukan laporan kepada guru pembimbing.</li>
+                            <li>Setelah terkirim, Anda dapat mengunduh dokumen resmi bertanda tangan melalui tombol <strong>Cetak Lembar Laporan (PDF)</strong>.</li>
                         </ol>
                     </div>
                 </div>

@@ -2,8 +2,16 @@
     <x-slot name="header">Laporan Akhir PKL</x-slot>
 
     <div class="max-w-4xl text-slate-700 dark:text-slate-300">
-        <div class="mb-6">
-            <p class="text-slate-600 dark:text-slate-400">Unggah laporan akhir PKL Anda yang telah disetujui oleh pembimbing industri dan sekolah.</p>
+        <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <p class="text-slate-600 dark:text-slate-400">Unggah laporan akhir PKL Anda yang telah disetujui oleh pembimbing industri dan sekolah.</p>
+            </div>
+            @if($laporan)
+                <a href="{{ route('siswa.laporan.export') }}" target="_blank" class="w-full md:w-auto shrink-0 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    Cetak Lembar Laporan (PDF)
+                </a>
+            @endif
         </div>
 
         @if(session('success'))
@@ -40,12 +48,18 @@
                                     <p>Terakhir diupdate:</p>
                                     <p class="text-slate-700 dark:text-slate-300 font-medium">{{ \Carbon\Carbon::parse($laporan->updated_at)->isoFormat('LLL') }}</p>
                                 </div>
+
+                                <a href="{{ route('siswa.laporan.export') }}" target="_blank" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg text-sm shadow-md shadow-indigo-500/20 transition-all mt-2">
+                                    <i data-lucide="file-down" class="w-4 h-4"></i>
+                                    Unduh Dokumen PDF
+                                </a>
+
                                 @if(!empty($laporan->link_media_sosial) && is_array($laporan->link_media_sosial))
                                     @foreach($laporan->link_media_sosial as $idx => $link)
                                         @if($link)
                                             <a href="{{ $link }}" target="_blank" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-lg text-sm transition-all mt-2">
                                                 <i data-lucide="external-link" class="w-4 h-4"></i>
-                                                Lihat Media Sosial {{ count($laporan->link_media_sosial) > 1 ? ($idx + 1) : '' }}
+                                                Lihat Link {{ count($laporan->link_media_sosial) > 1 ? ($idx + 1) : '' }}
                                             </a>
                                         @endif
                                     @endforeach

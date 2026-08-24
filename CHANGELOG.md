@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [2026-08-24]
+### Added
+- Implementasi fitur **Export PDF Lembar Pengesahan & Laporan Akhir PKL** (`/siswa/laporan/export` dan `/pembimbing_sekolah/laporan/{laporan}/export`) menggunakan DomPDF.
+- Template cetak resmi A4 Portrait (`export_pdf.blade.php`) yang memuat KOP Surat dinamis (SMKN 1 Ciamis & Pemprov Jabar), Identitas Lengkap Peserta Didik & DUDI, Ringkasan Laporan Akhir, Daftar Tautan Media Sosial / Presentasi, serta Matriks Lembar Pengesahan Resmi (Tanda Tangan Siswa, Pembimbing DUDI, Guru Pembimbing Sekolah, dan Kepala Program Keahlian).
+- Penambahan tombol **Cetak Lembar Laporan (PDF)** dan **Unduh Dokumen PDF** pada halaman Laporan Akhir Siswa (`siswa.laporan.index`).
+- Penambahan tombol aksi cetak PDF pada tabel evaluasi laporan siswa untuk Pembimbing Sekolah (`pembimbing_sekolah.laporan.index`).
+- Pembaruan petunjuk pengumpulan laporan PKL pada menu bantuan siswa (`siswa.bantuan.index`).
+
 ## [2026-06-16]
 ### Fixed
 - Memperbaiki test case `ExampleTest` agar memvalidasi redirect ke `/login` (302) alih-alih status 200 sukses karena rute `/` di-redirect ke `/login`.
