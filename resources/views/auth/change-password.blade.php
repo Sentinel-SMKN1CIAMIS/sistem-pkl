@@ -50,25 +50,25 @@
                         <span class="transition-all duration-200" :class="/[A-Z]/.test(password) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </span>
-                        Mengandung huruf besar (A-Z)
+                        Terdapat huruf besar (A-Z)
                     </li>
                     <li class="flex items-center gap-2.5 transition-colors duration-200" :class="/[a-z]/.test(password) ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
                         <span class="transition-all duration-200" :class="/[a-z]/.test(password) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </span>
-                        Mengandung huruf kecil (a-z)
+                        Terdapat huruf kecil (a-z)
                     </li>
                     <li class="flex items-center gap-2.5 transition-colors duration-200" :class="/[0-9]/.test(password) ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
                         <span class="transition-all duration-200" :class="/[0-9]/.test(password) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </span>
-                        Mengandung angka (0-9)
+                        Terdapat angka (0-9)
                     </li>
                     <li class="flex items-center gap-2.5 transition-colors duration-200" :class="/[@$!%*?&#-_]/.test(password) ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
                         <span class="transition-all duration-200" :class="/[@$!%*?&#-_]/.test(password) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </span>
-                        Mengandung karakter spesial (contoh: @$!%*?&#-_)
+                        Terdapat karakter spesial (contoh: @$!%*?&#-_)
                     </li>
                 </ul>
             </div>

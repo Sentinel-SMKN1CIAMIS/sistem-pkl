@@ -95,7 +95,7 @@ class AbsensiController extends Controller
             $siswa->update(['status_pkl' => 'sedang_pkl']);
         }
 
-        return redirect()->route('siswa.absensi.index')->with('success', 'Berhasil melakukan Absen Datang.');
+        return redirect()->route('siswa.absensi.index')->with('success', 'Berhasil melakukan Absen Masuk.');
     }
 
     public function clockOut(Request $request)
@@ -110,7 +110,7 @@ class AbsensiController extends Controller
             ->first();
 
         if (!$absensi) {
-            return back()->with('error', 'Anda belum melakukan absen datang hari ini.');
+            return back()->with('error', 'Anda belum melakukan absen masuk hari ini.');
         }
 
         if ($absensi->waktu_pulang) {
@@ -123,7 +123,7 @@ class AbsensiController extends Controller
         $oneHourLater = $clockInTime->copy()->addHour();
 
         if ($now < $oneHourLater) {
-            return back()->with('error', 'Anda belum bisa melakukan absen pulang. Minimal 1 jam setelah absen datang.');
+            return back()->with('error', 'Anda belum bisa melakukan absen pulang. Minimal 1 jam setelah absen masuk.');
         }
 
         // Check if 7 hours have passed OR early leave approved
@@ -204,7 +204,7 @@ class AbsensiController extends Controller
             ->first();
 
         if (!$absensi) {
-            return back()->with('error', 'Anda belum melakukan absen datang hari ini.');
+            return back()->with('error', 'Anda belum melakukan absen masuk hari ini.');
         }
 
         if ($absensi->early_leave_request_status === 'pending') {

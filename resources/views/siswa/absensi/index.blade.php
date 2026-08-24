@@ -36,7 +36,7 @@
                         </div>
 
                         <x-button type="button" onclick="submitAbsensi()" variant="emerald" class="w-full py-4 font-black! rounded-2xl! shadow-emerald-500/20" icon="log-in" id="submit-btn">
-                            ABSEN DATANG SEKARANG
+                            ABSEN MASUK
                         </x-button>
                     </form>
                 @elseif($absensiToday->status === 'hadir' && !$absensiToday->waktu_pulang)

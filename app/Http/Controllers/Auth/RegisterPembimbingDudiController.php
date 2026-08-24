@@ -70,7 +70,7 @@ class RegisterPembimbingDudiController extends Controller
             'email.email' => 'Format email tidak valid.',
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password harus minimal 8 karakter.',
-            'password.regex' => 'Password harus mengandung huruf besar, huruf kecil, angka, dan karakter spesial (@$!%*?&#-_).',
+            'password.regex' => 'Password harus terdapat huruf besar, huruf kecil, angka, dan karakter spesial (@$!%*?&#-_).',
             'password.confirmed' => 'Konfirmasi password tidak sesuai.',
             'no_hp.required' => 'Nomor HP wajib diisi.',
             'no_hp.regex' => 'Format nomor HP tidak valid. Harus diawali dengan angka 0 atau +62 dan berisi 9-14 digit angka.',
