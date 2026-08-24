@@ -9,6 +9,7 @@
 - Pembaruan tombol **Unduh Buku Panduan** pada menu **Pusat Bantuan** (`siswa.bantuan.index`) dan **Buku Panduan PKL** (`siswa.panduan.index`) agar langsung mengunduh file `SOP & Panduan Aplikasi MAS-PKL.pdf`.
 - Perluasan dan perincian **Pusat Bantuan & FAQ** (`siswa.bantuan.index`) menjadi 8 kategori alur kerja terperinci: Alur Pengajuan PKL & Surat Pengantar, Presensi Harian (Clock-in/out & Izin/Sakit), Jurnal Harian & Unggah Foto, Cetak Rekap Jurnal & Portofolio TP, Prosedur Laporan Akhir PKL, Penentuan Titik Lokasi Kantor (GPS), Manajemen & Pergantian Pembimbing Industri, serta Troubleshooting Kendala Teknis Umum.
 - Menambahkan rute `siswa.bantuan.*` ke dalam whitelist middleware `ForcePasswordChange` sehingga siswa yang baru pertama kali login (belum mengubah kata sandi) tetap dapat membuka Pusat Bantuan & mengunduh dokumen SOP.
+- Memperbaiki metode `getKontak` pada `PesanController` agar menyertakan seluruh riwayat pesan dari Pokja, Admin, maupun Kaprog ke dalam daftar percakapan siswa sehingga pesan broadcast/pengumuman dapat dibuka dan badge unread di sidebar hilang setelah dibaca.
 
 ## [2026-06-16]
 ### Fixed

@@ -46,8 +46,6 @@ class PesanController extends Controller
                     }
                 }
             }
-
-            return $kontak;
         }
 
         // 2. If has pembimbingSekolah profile
