@@ -27,8 +27,8 @@ class ForcePasswordChange
         }
 
         if (Auth::check() && in_array(Auth::user()->role, ['siswa', 'pembimbing_dudi']) && Auth::user()->force_password_change) {
-            // Allow logout, change password, and notification routes
-            if (!$request->routeIs('auth.change-password.*', 'logout', 'notifications.*')) {
+            // Allow logout, change password, notifications, and student help center routes
+            if (!$request->routeIs('auth.change-password.*', 'logout', 'notifications.*', 'siswa.bantuan.*')) {
                 return redirect()->route('auth.change-password.show');
             }
         }

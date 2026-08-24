@@ -6,7 +6,9 @@
 - Template cetak resmi A4 Portrait (`export_pdf.blade.php`) yang memuat KOP Surat dinamis (SMKN 1 Ciamis & Pemprov Jabar), Identitas Lengkap Peserta Didik & DUDI, Ringkasan Laporan Akhir, Daftar Tautan Media Sosial / Presentasi, serta Matriks Lembar Pengesahan Resmi (Tanda Tangan Siswa, Pembimbing DUDI, Guru Pembimbing Sekolah, dan Kepala Program Keahlian).
 - Penambahan tombol **Cetak Lembar Laporan (PDF)** dan **Unduh Dokumen PDF** pada halaman Laporan Akhir Siswa (`siswa.laporan.index`).
 - Penambahan tombol aksi cetak PDF pada tabel evaluasi laporan siswa untuk Pembimbing Sekolah (`pembimbing_sekolah.laporan.index`).
-- Pembaruan petunjuk pengumpulan laporan PKL pada menu bantuan siswa (`siswa.bantuan.index`).
+- Pembaruan tombol **Unduh Buku Panduan** pada menu **Pusat Bantuan** (`siswa.bantuan.index`) dan **Buku Panduan PKL** (`siswa.panduan.index`) agar langsung mengunduh file `SOP & Panduan Aplikasi MAS-PKL.pdf`.
+- Perluasan dan perincian **Pusat Bantuan & FAQ** (`siswa.bantuan.index`) menjadi 8 kategori alur kerja terperinci: Alur Pengajuan PKL & Surat Pengantar, Presensi Harian (Clock-in/out & Izin/Sakit), Jurnal Harian & Unggah Foto, Cetak Rekap Jurnal & Portofolio TP, Prosedur Laporan Akhir PKL, Penentuan Titik Lokasi Kantor (GPS), Manajemen & Pergantian Pembimbing Industri, serta Troubleshooting Kendala Teknis Umum.
+- Menambahkan rute `siswa.bantuan.*` ke dalam whitelist middleware `ForcePasswordChange` sehingga siswa yang baru pertama kali login (belum mengubah kata sandi) tetap dapat membuka Pusat Bantuan & mengunduh dokumen SOP.
 
 ## [2026-06-16]
 ### Fixed

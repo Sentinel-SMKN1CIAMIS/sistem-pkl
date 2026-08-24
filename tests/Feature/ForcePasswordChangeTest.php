@@ -93,6 +93,19 @@ class ForcePasswordChangeTest extends TestCase
         $response->assertRedirect(route('auth.change-password.show'));
     }
 
+    public function test_siswa_with_force_password_change_can_access_bantuan_page()
+    {
+        $user = User::factory()->create([
+            'force_password_change' => true,
+            'role' => 'siswa',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('siswa.bantuan.index'));
+        
+        $response->assertStatus(200);
+        $response->assertViewIs('siswa.bantuan.index');
+    }
+
     public function test_user_can_access_dashboard_after_password_change()
     {
         $user = User::factory()->create([
@@ -135,9 +148,9 @@ class ForcePasswordChangeTest extends TestCase
         $this->assertNotNull($sessionAfter);
     }
 
-    public function test_only_siswa_role_is_forced_to_change_password()
+    public function test_staff_roles_are_not_forced_to_change_password()
     {
-        $roles = ['super_admin', 'pokja', 'kaprog', 'pembimbing_sekolah', 'pembimbing_dudi'];
+        $roles = ['super_admin', 'pokja', 'kaprog', 'pembimbing_sekolah'];
 
         $prog = \App\Models\ProgramKeahlian::firstOrCreate(['kode' => 'RPL'], ['nama' => 'Rekayasa Perangkat Lunak']);
         $konsentrasi = \App\Models\KonsentrasiKeahlian::firstOrCreate(
@@ -164,24 +177,10 @@ class ForcePasswordChangeTest extends TestCase
                     'tipe' => 'kejuruan',
                     'konsentrasi_keahlian_id' => $konsentrasi->id,
                 ]);
-            } elseif ($role === 'pembimbing_dudi') {
-                $dudi = \App\Models\Dudi::create([
-                    'nama' => 'DUDI Test',
-                    'alamat' => 'Alamat DUDI',
-                    'konsentrasi_keahlian_id' => $konsentrasi->id,
-                    'kota' => 'Ciamis',
-                    'bidang_usaha' => 'IT',
-                ]);
-                \App\Models\PembimbingDudi::create([
-                    'user_id' => $user->id,
-                    'dudi_id' => $dudi->id,
-                    'nama_lengkap' => $user->name ?? 'Mentor',
-                ]);
             }
 
-            // Non-siswa users should access dashboard normally
+            // Staff users should not be redirected to change password
             $response = $this->actingAs($user)->get('/dashboard');
-            // May be 200 or 403 depending on role setup, but should NOT redirect
             $this->assertTrue(in_array($response->getStatusCode(), [200, 403, 500]));
         }
     }
