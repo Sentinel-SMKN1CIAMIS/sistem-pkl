@@ -30,7 +30,16 @@ class NotifikasiController extends Controller
         ]);
 
         if ($request->has('redirect') && $notifikasi->link) {
-            return redirect($notifikasi->link);
+            // [SECURITY FIX HIGH-03] Validasi URL internal untuk mencegah Open Redirect
+            $link = $notifikasi->link;
+            $parsedLink = parse_url($link);
+            // Izinkan hanya URL relatif (tidak ada host) atau URL dengan host yang sama dengan aplikasi
+            $isInternal = empty($parsedLink['host']) || $parsedLink['host'] === $request->getHost();
+            if ($isInternal) {
+                return redirect($link);
+            }
+            // Jika URL eksternal, arahkan ke halaman notifikasi saja
+            return redirect()->route('notifications.index');
         }
 
         return back();

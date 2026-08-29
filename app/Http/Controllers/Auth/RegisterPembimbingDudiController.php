@@ -87,14 +87,15 @@ class RegisterPembimbingDudiController extends Controller
         DB::beginTransaction();
 
         try {
-            // 1. Create User
+            // [SECURITY FIX HIGH-05] Akun dibuat dengan is_active=false
+            // Pokja harus mengaktifkan akun secara manual setelah verifikasi identitas
             $user = User::create([
                 'name' => $request->nama_lengkap,
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => 'pembimbing_dudi',
-                'is_active' => true,
+                'is_active' => false,  // ← Non-aktif sampai diverifikasi Pokja
             ]);
 
             // 2. Create PembimbingDudi
@@ -117,10 +118,21 @@ class RegisterPembimbingDudiController extends Controller
 
             DB::commit();
 
-            // 4. Log in immediately
-            Auth::login($user);
+            // [SECURITY FIX HIGH-05] Kirim notifikasi ke semua Pokja untuk approval
+            $pokjas = User::where('role', 'pokja')->get();
+            foreach ($pokjas as $pokja) {
+                \App\Models\Notifikasi::create([
+                    'to_user_id' => $pokja->id,
+                    'judul' => 'Pendaftaran Pembimbing DUDI Baru',
+                    'pesan' => "Pembimbing DUDI baru ({$request->nama_lengkap}) dari {$dudi->nama} telah mendaftar dan menunggu verifikasi. Aktifkan akun melalui menu kelola pengguna.",
+                    'link' => route('admin.users.index'),
+                    'is_read' => false,
+                ]);
+            }
 
-            return redirect()->route('dashboard')->with('success', 'Pendaftaran berhasil! Anda telah masuk secara otomatis.');
+            // Tidak langsung login — arahkan ke halaman login dengan pesan menunggu verifikasi
+            return redirect()->route('login')
+                ->with('success', 'Pendaftaran berhasil! Akun Anda sedang dalam proses verifikasi oleh Tim Pokja PKL. Anda akan dapat login setelah akun diaktifkan. Hubungi Pokja PKL jika membutuhkan bantuan.');
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -21,17 +21,19 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            
             $user = Auth::user();
-            $user->update(['last_login_at' => now()]);
-            
+
+            // [SECURITY FIX MED-01] Cek is_active SEBELUM regenerate session dan update last_login_at
+            // Akun non-aktif tidak boleh punya sesi valid sama sekali
             if (!$user->is_active) {
                 Auth::logout();
                 return back()->withErrors([
-                    'username' => 'Akun Anda telah dinonaktifkan.',
+                    'username' => 'Akun Anda telah dinonaktifkan. Hubungi administrator.',
                 ]);
             }
+
+            $request->session()->regenerate();
+            $user->update(['last_login_at' => now()]);
 
             // Check if user needs to change password on first login
             if ($user->force_password_change) {

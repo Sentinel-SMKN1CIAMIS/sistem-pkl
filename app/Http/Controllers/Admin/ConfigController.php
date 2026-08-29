@@ -276,6 +276,12 @@ class ConfigController extends Controller
      */
     public function downloadBackup($filename)
     {
+        // [SECURITY FIX CRIT-03] Sanitasi filename untuk mencegah path traversal attack
+        // Hanya izinkan karakter aman: huruf, angka, underscore, dash — wajib berekstensi .sql
+        if (!preg_match('/^[a-zA-Z0-9_\-]+\.sql$/', $filename)) {
+            abort(403, 'Nama file cadangan tidak valid.');
+        }
+
         $path = 'backups/' . $filename;
         if (!Storage::disk('local')->exists($path)) {
             abort(404, 'File cadangan tidak ditemukan.');
@@ -290,6 +296,11 @@ class ConfigController extends Controller
      */
     public function deleteBackup($filename)
     {
+        // [SECURITY FIX CRIT-03] Sanitasi filename untuk mencegah path traversal attack
+        if (!preg_match('/^[a-zA-Z0-9_\-]+\.sql$/', $filename)) {
+            abort(403, 'Nama file cadangan tidak valid.');
+        }
+
         $path = 'backups/' . $filename;
         if (Storage::disk('local')->exists($path)) {
             Storage::disk('local')->delete($path);

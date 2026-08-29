@@ -441,12 +441,13 @@
 
     setInterval(pollMessages, 5000);
 
-    // Render session messages (success/error)
+    // [SECURITY FIX MED-02] Gunakan @json() Blade directive yang menggunakan JSON_HEX_TAG untuk escaping aman
+    // Hindari {!! json_encode() !!} yang tidak mengamankan karakter HTML
     @if(session('success'))
-        showToast({!! json_encode(session('success')) !!}, "success");
+        showToast(@json(session('success')), "success");
     @endif
     @if(session('error'))
-        showToast({!! json_encode(session('error')) !!}, "error");
+        showToast(@json(session('error')), "error");
     @endif
 </script>
 @endpush
