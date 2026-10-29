@@ -86,7 +86,14 @@ class PembimbingDudiController extends Controller
             'role' => 'pembimbing_dudi',
         ]);
 
-        $pembimbingDudi = \App\Models\PembimbingDudi::create(array_merge($request->all(), ['user_id' => $user->id]));
+        // [SECURITY FIX HIGH-02] Hanya izinkan field yang diperlukan saja
+        $pembimbingDudi = \App\Models\PembimbingDudi::create([
+            'user_id'      => $user->id,
+            'dudi_id'      => $request->dudi_id,
+            'nama_lengkap' => $request->nama_lengkap,
+            'jabatan'      => $request->jabatan,
+            'no_hp'        => $request->no_hp,
+        ]);
 
         if ($request->filled('siswa_id')) {
             $siswa = \App\Models\Siswa::find($request->siswa_id);
@@ -122,7 +129,14 @@ class PembimbingDudiController extends Controller
 
         $oldDudiId = $pembimbing_dudi->dudi_id;
 
-        $pembimbing_dudi->update($request->all());
+        // [SECURITY FIX HIGH-02] Hanya izinkan field dari form edit yang valid
+        // Field user_id, password, dan role tidak boleh bisa diubah via form ini
+        $pembimbing_dudi->update($request->only([
+            'nama_lengkap',
+            'jabatan',
+            'dudi_id',
+            'no_hp',
+        ]));
         $pembimbing_dudi->user->update(['name' => $request->nama_lengkap]);
 
         if ($oldDudiId != $pembimbing_dudi->dudi_id) {

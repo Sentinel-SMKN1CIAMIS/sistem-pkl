@@ -102,7 +102,8 @@ class KompetensiController extends Controller
             'deskripsi' => 'nullable|string'
         ]);
 
-        Kompetensi::create($request->all());
+        // [SECURITY FIX HIGH-02] validated() hanya berisi field yang sudah lolos validasi di atas
+        Kompetensi::create($request->validated());
 
         return redirect()->route('pokja.kompetensi.index')
             ->with('success', 'Tujuan Pembelajaran berhasil ditambahkan.');
@@ -128,7 +129,8 @@ class KompetensiController extends Controller
             'deskripsi' => 'nullable|string'
         ]);
 
-        $kompetensi->update($request->all());
+        // [SECURITY FIX HIGH-02] validated() hanya berisi field yang sudah lolos validasi di atas
+        $kompetensi->update($request->validated());
 
         return redirect()->route('pokja.kompetensi.index')
             ->with('success', 'Tujuan Pembelajaran berhasil diperbarui.');

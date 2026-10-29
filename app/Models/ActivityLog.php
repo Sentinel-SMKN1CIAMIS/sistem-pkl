@@ -50,8 +50,9 @@ class ActivityLog extends Model
 
         return cache()->remember("ip_loc_" . md5($ip), now()->addDays(7), function () use ($ip) {
             try {
+                // [SECURITY FIX LOW-02] Gunakan HTTPS agar IP pengguna tidak terekspos via HTTP sniffing
                 $response = \Illuminate\Support\Facades\Http::timeout(2)
-                    ->get("http://ip-api.com/json/{$ip}?fields=city,regionName,country");
+                    ->get("https://ip-api.com/json/{$ip}?fields=city,regionName,country");
                 
                 if ($response->successful()) {
                     $data = $response->json();

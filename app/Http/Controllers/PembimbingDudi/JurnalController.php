@@ -30,6 +30,12 @@ class JurnalController extends Controller
 
     public function update(Request $request, Jurnal $jurnal)
     {
+        // [SECURITY FIX CRIT-04] Verifikasi bahwa jurnal ini milik siswa di DUDI mentor ini
+        $mentor = auth()->user()->pembimbingDudi;
+        if (!$mentor || $jurnal->siswa->pembimbing_dudi_id !== $mentor->id) {
+            abort(403, 'Anda tidak memiliki wewenang untuk memodifikasi jurnal siswa ini.');
+        }
+
         if ($jurnal->status !== 'pending') {
             $request->validate([
                 'catatan_pembimbing' => 'nullable|string'

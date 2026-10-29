@@ -27,7 +27,8 @@ class ProgramKeahlianController extends Controller
             'nama' => 'required|string|max:255',
         ]);
 
-        \App\Models\ProgramKeahlian::create($request->all());
+        // [SECURITY FIX HIGH-02] validated() hanya berisi field yang sudah lolos validasi
+        \App\Models\ProgramKeahlian::create($request->validated());
 
         return redirect()->route('admin.program_keahlian.index')
             ->with('success', 'Program Keahlian berhasil ditambahkan.');
@@ -50,7 +51,8 @@ class ProgramKeahlianController extends Controller
             'nama' => 'required|string|max:255',
         ]);
 
-        $program_keahlian->update($request->all());
+        // [SECURITY FIX HIGH-02] validated() hanya berisi field yang sudah lolos validasi
+        $program_keahlian->update($request->validated());
 
         return redirect()->route('admin.program_keahlian.index')
             ->with('success', 'Program Keahlian berhasil diperbarui.');

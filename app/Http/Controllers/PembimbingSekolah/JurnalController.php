@@ -113,6 +113,18 @@ class JurnalController extends Controller
 
     public function update(Request $request, Jurnal $jurnal)
     {
+        // [SECURITY FIX CRIT-04] Verifikasi bahwa jurnal ini milik siswa yang dibimbing oleh guru ini
+        $teacher = auth()->user()->pembimbingSekolah;
+        $kelasIds = $teacher ? $teacher->kelasDiajar()->pluck('kelas')->toArray() : [];
+        $isAuthorized = $teacher && (
+            $jurnal->siswa->pembimbing_sekolah_id === $teacher->id ||
+            $jurnal->siswa->pembimbing_sekolah_umum_id === $teacher->id ||
+            in_array($jurnal->siswa->kelas, $kelasIds)
+        );
+        if (!$isAuthorized) {
+            abort(403, 'Anda tidak memiliki wewenang untuk memodifikasi jurnal siswa ini.');
+        }
+
         $request->validate([
             'catatan_guru' => 'nullable|string'
         ]);
@@ -137,6 +149,18 @@ class JurnalController extends Controller
 
     public function approve(Request $request, Jurnal $jurnal)
     {
+        // [SECURITY FIX CRIT-04] Verifikasi kepemilikan jurnal sebelum approve
+        $teacher = auth()->user()->pembimbingSekolah;
+        $kelasIds = $teacher ? $teacher->kelasDiajar()->pluck('kelas')->toArray() : [];
+        $isAuthorized = $teacher && (
+            $jurnal->siswa->pembimbing_sekolah_id === $teacher->id ||
+            $jurnal->siswa->pembimbing_sekolah_umum_id === $teacher->id ||
+            in_array($jurnal->siswa->kelas, $kelasIds)
+        );
+        if (!$isAuthorized) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menyetujui jurnal siswa ini.');
+        }
+
         $jurnal->update([
             'status' => 'valid',
             'approval_status' => 'approved',
@@ -160,6 +184,18 @@ class JurnalController extends Controller
 
     public function reject(Request $request, Jurnal $jurnal)
     {
+        // [SECURITY FIX CRIT-04] Verifikasi kepemilikan jurnal sebelum reject
+        $teacher = auth()->user()->pembimbingSekolah;
+        $kelasIds = $teacher ? $teacher->kelasDiajar()->pluck('kelas')->toArray() : [];
+        $isAuthorized = $teacher && (
+            $jurnal->siswa->pembimbing_sekolah_id === $teacher->id ||
+            $jurnal->siswa->pembimbing_sekolah_umum_id === $teacher->id ||
+            in_array($jurnal->siswa->kelas, $kelasIds)
+        );
+        if (!$isAuthorized) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menolak jurnal siswa ini.');
+        }
+
         $request->validate([
             'approval_notes' => 'required|string|min:3'
         ]);

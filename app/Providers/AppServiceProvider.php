@@ -75,5 +75,26 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Exception $e) {
             // Abaikan jika database belum dimigrasikan
         }
+
+        // [SECURITY FIX LOW-03] Tambahkan HTTP Security Headers pada setiap response
+        // Melindungi dari clickjacking, MIME sniffing, dan kebocoran Referer
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Foundation\Http\Events\RequestHandled::class,
+            function ($event) {
+                $response = $event->response;
+                if (method_exists($response, 'headers')) {
+                    // Cegah clickjacking: halaman tidak boleh di-embed di iframe dari domain lain
+                    $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+                    // Cegah MIME sniffing: browser harus ikuti Content-Type yang dideklarasikan
+                    $response->headers->set('X-Content-Type-Options', 'nosniff');
+                    // Batasi informasi referer yang dikirim ke server lain
+                    $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+                    // Batasi akses ke fitur browser yang sensitif (kamera, mikrofon, lokasi)
+                    $response->headers->set('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
+                    // XSS protection untuk browser lama
+                    $response->headers->set('X-XSS-Protection', '1; mode=block');
+                }
+            }
+        );
     }
 }

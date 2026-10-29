@@ -91,8 +91,18 @@ class SiswaController extends Controller
                 'role' => 'siswa',
             ]);
 
-            // Create Siswa profile
-            \App\Models\Siswa::create(array_merge($request->all(), ['user_id' => $user->id]));
+            // [SECURITY FIX HIGH-02] Hanya izinkan field yang sudah divalidasi
+            // Mencegah penyerang inject field seperti is_active, role, dll
+            \App\Models\Siswa::create(array_merge($request->only([
+                'nis',
+                'nama_lengkap',
+                'konsentrasi_keahlian_id',
+                'kelas',
+                'jenis_kelamin',
+                'no_hp',
+                'alamat',
+                'tahun_ajaran',
+            ]), ['user_id' => $user->id]));
 
             \Illuminate\Support\Facades\DB::commit();
 
@@ -136,7 +146,29 @@ class SiswaController extends Controller
         $oldPembimbingUmumId = $siswa->pembimbing_sekolah_umum_id;
         $oldStatusPkl = $siswa->status_pkl;
 
-        $data = $request->all();
+        // [SECURITY FIX HIGH-02] Whitelist field yang boleh diupdate oleh Pokja
+        // Field bisnis seperti dudi_id, pembimbing_sekolah_id, status_pkl MEMANG
+        // sengaja bisa diubah oleh Pokja (ini fitur yang valid, bukan celah)
+        // tapi field sistem seperti user_id tidak boleh diubah via form
+        $data = $request->only([
+            'nis',
+            'nama_lengkap',
+            'konsentrasi_keahlian_id',
+            'kelas',
+            'jenis_kelamin',
+            'no_hp',
+            'alamat',
+            'tahun_ajaran',
+            'dudi_id',
+            'pembimbing_sekolah_id',
+            'pembimbing_sekolah_umum_id',
+            'pembimbing_dudi_id',
+            'status_pkl',
+            'unit_pekerjaan',
+            'pembimbing_dudi_nama',
+            'pembimbing_dudi_jabatan',
+            'pembimbing_dudi_no_hp',
+        ]);
 
         // Jika status_pkl diubah menjadi 'dibatalkan'
         if (isset($data['status_pkl']) && $data['status_pkl'] === 'dibatalkan') {

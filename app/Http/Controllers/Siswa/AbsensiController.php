@@ -75,8 +75,19 @@ class AbsensiController extends Controller
         $signature = $request->signature;
         $signature = str_replace('data:image/png;base64,', '', $signature);
         $signature = str_replace(' ', '+', $signature);
+
+        // [SECURITY FIX MED-03] Validasi konten binary signature sebelum disimpan
+        $binaryData = base64_decode($signature, true);
+        if ($binaryData === false || strlen($binaryData) < 8) {
+            return back()->with('error', 'Data tanda tangan tidak valid.');
+        }
+        // Validasi magic bytes PNG (\x89PNG\r\n\x1a\n)
+        if (substr($binaryData, 0, 8) !== "\x89PNG\r\n\x1a\n") {
+            return back()->with('error', 'Format tanda tangan harus berupa gambar PNG.');
+        }
+
         $fileName = 'signatures/in_' . $siswa->id . '_' . time() . '.png';
-        Storage::disk('public')->put($fileName, base64_decode($signature));
+        Storage::disk('public')->put($fileName, $binaryData);
 
         // T5.1: Silently capture GPS location without showing to student
         Absensi::create([

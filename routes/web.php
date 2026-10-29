@@ -18,11 +18,13 @@ Route::get('/sitemap.xml', function () {
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
+    // [SECURITY FIX CRIT-02] Rate limit: max 5 percobaan login per menit per IP
+    Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1');
     
     // Register Pembimbing DUDI Routes
     Route::get('/register-pembimbing-dudi', [\App\Http\Controllers\Auth\RegisterPembimbingDudiController::class, 'showRegistrationForm'])->name('register.pembimbing_dudi.show');
-    Route::post('/register-pembimbing-dudi', [\App\Http\Controllers\Auth\RegisterPembimbingDudiController::class, 'register'])->name('register.pembimbing_dudi.store');
+    // [SECURITY] Rate limit registrasi publik: max 3 percobaan per menit
+    Route::post('/register-pembimbing-dudi', [\App\Http\Controllers\Auth\RegisterPembimbingDudiController::class, 'register'])->middleware('throttle:3,1')->name('register.pembimbing_dudi.store');
 });
 
 // Force Change Password Routes - Available during auth but guest on this specific route
