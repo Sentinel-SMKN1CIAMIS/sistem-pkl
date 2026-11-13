@@ -293,6 +293,53 @@ class SiswaController extends Controller
             $query->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
         }
 
+        // Handle chunked / batch AJAX request
+        if ($request->ajax() || $request->wantsJson() || $request->isJson() || $request->has('batch_size') || $request->has('offset')) {
+            $batchSize = max(1, min((int) $request->input('batch_size', 35), 100));
+            $offset = max(0, (int) $request->input('offset', 0));
+            $total = (clone $query)->count();
+
+            $siswas = (clone $query)->orderBy('id')->skip($offset)->take($batchSize)->get();
+            $batchProcessed = 0;
+
+            foreach ($siswas as $siswa) {
+                if ($siswa->user && !empty($siswa->nis)) {
+                    $siswa->user->update([
+                        'username' => $siswa->nis,
+                        'password' => Hash::make($siswa->nis),
+                        'force_password_change' => false,
+                    ]);
+                    $batchProcessed++;
+                }
+            }
+
+            $nextOffset = $offset + count($siswas);
+            $done = ($nextOffset >= $total) || count($siswas) === 0;
+
+            if ($done && class_exists(ActivityLog::class)) {
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'action' => 'Reset All Passwords Siswa',
+                    'description' => "Mereset password {$total} akun siswa menjadi default (NIS).",
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'batch_processed' => $batchProcessed,
+                'processed_total' => min($nextOffset, $total),
+                'total' => $total,
+                'offset' => $nextOffset,
+                'percent' => $total > 0 ? min(100, (int) round(($nextOffset / $total) * 100)) : 100,
+                'done' => $done,
+                'message' => $done
+                    ? "Berhasil mereset {$total} akun siswa ke password default (NIS)."
+                    : "Memproses {$nextOffset} dari {$total} akun siswa...",
+            ]);
+        }
+
         @set_time_limit(300);
 
         $count = 0;

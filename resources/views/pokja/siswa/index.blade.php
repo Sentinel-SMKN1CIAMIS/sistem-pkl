@@ -33,14 +33,14 @@
         }
     </style>
 
-    <div x-data="{ importPanelOpen: false, guideModalOpen: false, resetAllModalOpen: false, isSubmitting: false }">
+    <div x-data="siswaPageManager()">
         <div class="mb-6 pokja-header-container">
             <div class="flex-1">
                 <p class="text-slate-600 dark:text-slate-400 text-sm">Total data siswa yang terdaftar dalam sistem PKL.</p>
             </div>
             @if(auth()->user()->role !== 'kepala_sekolah')
             <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
-                <button type="button" @click="resetAllModalOpen = true; $nextTick(() => window.lucide?.createIcons())" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium rounded-xl border border-amber-500/30 transition-all gap-2 cursor-pointer shadow-sm">
+                <button type="button" @click="openBulkReset()" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium rounded-xl border border-amber-500/30 transition-all gap-2 cursor-pointer shadow-sm">
                     <i data-lucide="key-round" class="w-4 h-4"></i>
                     Reset Password ke NIS
                 </button>
@@ -366,13 +366,13 @@
             </div>
         </template>
 
-        <!-- Reset All Passwords Confirmation Modal -->
+        <!-- Reset All Passwords Confirmation & Progress Modal -->
         <template x-teleport="body">
             <div x-show="resetAllModalOpen" 
                  class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
                  x-transition.opacity.duration.300ms x-cloak>
                  
-                 <div @click.away="if (!isSubmitting) resetAllModalOpen = false" 
+                 <div @click.away="closeBulkReset()" 
                       class="glass-card w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-900 animate-fade-in-up text-left flex flex-col">
                       
                       <!-- Modal Header -->
@@ -381,15 +381,16 @@
                               <i data-lucide="key-round" class="text-amber-500 w-5 h-5"></i>
                               Reset Password Semua Akun Siswa
                           </h3>
-                          <button type="button" @click="if (!isSubmitting) resetAllModalOpen = false" :disabled="isSubmitting" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                          <button type="button" @click="closeBulkReset()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-lg">
                               <i data-lucide="x" class="w-4 h-4"></i>
                           </button>
                       </div>
 
-                      <!-- Modal Form & Body -->
-                      <form action="{{ route('pokja.siswa.reset-passwords') }}" method="POST" @submit="isSubmitting = true">
-                          @csrf
-                          <div class="p-6 space-y-4 text-sm text-slate-600 dark:text-slate-400">
+                      <!-- Modal Body -->
+                      <div class="p-6 space-y-4 text-sm text-slate-600 dark:text-slate-400">
+                          
+                          <!-- STATE 1: Idle (Before Starting) -->
+                          <div x-show="!resetIsRunning && !resetIsFinished && !resetIsCancelled && !resetError" class="space-y-4">
                               <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 space-y-2">
                                   <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider">
                                       <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
@@ -410,27 +411,121 @@
                               </div>
 
                               <p class="text-xs text-slate-500 italic">
-                                  * Proses ini akan diproses secara aman untuk semua akun siswa terdaftar dalam sistem.
+                                  * Proses ini dijalankan secara bertahap (batch) dengan indikator progres realtime dan dapat dihentikan kapan saja.
                               </p>
                           </div>
 
-                          <!-- Modal Footer -->
-                          <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end items-center gap-3 bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
-                              <button type="button" @click="resetAllModalOpen = false" :disabled="isSubmitting" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer">
-                                  Batal
-                              </button>
-                              <button type="submit" :disabled="isSubmitting" class="inline-flex items-center gap-2 px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-500/25 transition-all cursor-pointer disabled:opacity-50">
-                                  <span x-show="!isSubmitting" class="inline-flex items-center gap-1.5">
-                                      <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                                      Ya, Reset Semua Password
-                                  </span>
-                                  <span x-show="isSubmitting" class="inline-flex items-center gap-1.5" style="display: none;">
-                                      <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>
-                                      Memproses...
-                                  </span>
-                              </button>
+                          <!-- STATE 2: Running (Progress Bar Active) -->
+                          <div x-show="resetIsRunning" class="space-y-5 py-2" style="display: none;">
+                              <div class="text-center space-y-2">
+                                  <div class="inline-flex p-3 rounded-2xl bg-amber-500/10 text-amber-500 dark:text-amber-400 animate-pulse">
+                                      <i data-lucide="refresh-cw" class="w-7 h-7 animate-spin"></i>
+                                  </div>
+                                  <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Mereset Password Siswa...</h4>
+                                  <p class="text-xs text-slate-500">Sedang memproses akun siswa secara bertahap. Anda dapat membatalkan sewaktu-waktu.</p>
+                              </div>
+
+                              <!-- Progress Bar -->
+                              <div class="space-y-2 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50">
+                                  <div class="flex justify-between items-center text-xs font-semibold">
+                                      <span class="text-slate-700 dark:text-slate-300">
+                                          <span class="font-bold text-amber-600 dark:text-amber-400" x-text="resetProcessed">0</span> dari <span x-text="resetTotal">0</span> Akun Siswa
+                                      </span>
+                                      <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold" x-text="resetPercent + '%'">0%</span>
+                                  </div>
+                                  <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden shadow-inner">
+                                      <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-500 h-3 rounded-full transition-all duration-300 ease-out" 
+                                           :style="'width: ' + resetPercent + '%'"></div>
+                                  </div>
+                              </div>
                           </div>
-                      </form>
+
+                          <!-- STATE 3: Finished / Success -->
+                          <div x-show="resetIsFinished" class="space-y-4 py-3 text-center" style="display: none;">
+                              <div class="inline-flex p-3.5 rounded-2xl bg-emerald-500/10 text-emerald-500 dark:text-emerald-400">
+                                  <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+                              </div>
+                              <div>
+                                  <h4 class="text-base font-bold text-emerald-600 dark:text-emerald-400">Reset Password Selesai!</h4>
+                                  <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                                      Berhasil mengatur ulang password <strong x-text="resetProcessed"></strong> akun siswa menjadi default (NIS masing-masing).
+                                  </p>
+                              </div>
+                          </div>
+
+                          <!-- STATE 4: Cancelled by User -->
+                          <div x-show="resetIsCancelled && !resetIsFinished" class="space-y-4 py-3 text-center" style="display: none;">
+                              <div class="inline-flex p-3 rounded-2xl bg-slate-500/10 text-slate-500 dark:text-slate-400">
+                                  <i data-lucide="ban" class="w-8 h-8"></i>
+                              </div>
+                              <div>
+                                  <h4 class="text-base font-bold text-slate-800 dark:text-slate-200">Proses Dihentikan</h4>
+                                  <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                                      Proses reset dihentikan. Sebanyak <strong x-text="resetProcessed"></strong> dari <strong x-text="resetTotal"></strong> akun siswa telah berhasil direset sebelum dibatalkan.
+                                  </p>
+                              </div>
+                          </div>
+
+                          <!-- STATE 5: Error -->
+                          <div x-show="resetError" class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs space-y-1" style="display: none;">
+                              <div class="font-bold flex items-center gap-1.5">
+                                  <i data-lucide="alert-circle" class="w-4 h-4"></i> Terjadi Kendala
+                              </div>
+                              <p x-text="resetError"></p>
+                          </div>
+
+                      </div>
+
+                      <!-- Modal Footer -->
+                      <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end items-center gap-3 bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
+                          
+                          <!-- Buttons for Idle -->
+                          <template x-if="!resetIsRunning && !resetIsFinished && !resetIsCancelled && !resetError">
+                              <div class="flex items-center gap-2">
+                                  <button type="button" @click="closeBulkReset()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer">
+                                      Batal
+                                  </button>
+                                  <button type="button" @click="startBulkReset()" class="inline-flex items-center gap-2 px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-500/25 transition-all cursor-pointer">
+                                      <i data-lucide="key-round" class="w-3.5 h-3.5"></i>
+                                      Ya, Reset Semua Password
+                                  </button>
+                              </div>
+                          </template>
+
+                          <!-- Buttons for Running -->
+                          <template x-if="resetIsRunning">
+                              <div class="flex items-center gap-2">
+                                  <button type="button" @click="stopBulkReset()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-red-500/25 transition-colors cursor-pointer">
+                                      <i data-lucide="square" class="w-3.5 h-3.5"></i>
+                                      Hentikan / Batalkan
+                                  </button>
+                              </div>
+                          </template>
+
+                          <!-- Buttons for Finished -->
+                          <template x-if="resetIsFinished">
+                              <div class="flex items-center gap-2">
+                                  <button type="button" @click="finishBulkReset()" class="inline-flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-500/25 transition-colors cursor-pointer">
+                                      <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                      Tutup & Segarkan Halaman
+                                  </button>
+                              </div>
+                          </template>
+
+                          <!-- Buttons for Cancelled or Error -->
+                          <template x-if="(resetIsCancelled || resetError) && !resetIsRunning && !resetIsFinished">
+                              <div class="flex items-center gap-2">
+                                  <button type="button" @click="closeBulkReset()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer">
+                                      Tutup
+                                  </button>
+                                  <button type="button" @click="startBulkReset()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-500/25 transition-colors cursor-pointer">
+                                      <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                      Lanjutkan Reset
+                                  </button>
+                              </div>
+                          </template>
+
+                      </div>
                  </div>
             </div>
         </template>
@@ -685,4 +780,122 @@
             </div>
         @endif
     </div>
+
+    <script>
+        function siswaPageManager() {
+            return {
+                importPanelOpen: false,
+                guideModalOpen: false,
+                resetAllModalOpen: false,
+
+                // Reset Massal State
+                resetIsRunning: false,
+                resetIsCancelled: false,
+                resetIsFinished: false,
+                resetError: null,
+                resetProcessed: 0,
+                resetTotal: 0,
+                resetPercent: 0,
+                resetOffset: 0,
+                resetBatchSize: 35,
+
+                openBulkReset() {
+                    this.resetAllModalOpen = true;
+                    this.resetIsRunning = false;
+                    this.resetIsCancelled = false;
+                    this.resetIsFinished = false;
+                    this.resetError = null;
+                    this.resetProcessed = 0;
+                    this.resetTotal = 0;
+                    this.resetPercent = 0;
+                    this.resetOffset = 0;
+                    this.$nextTick(() => window.lucide?.createIcons());
+                },
+
+                closeBulkReset() {
+                    if (this.resetIsRunning) {
+                        if (!confirm('Proses reset password sedang berjalan. Yakin ingin membatalkan dan menutup jendela ini?')) {
+                            return;
+                        }
+                        this.stopBulkReset();
+                    }
+                    this.resetAllModalOpen = false;
+                },
+
+                stopBulkReset() {
+                    this.resetIsCancelled = true;
+                    this.resetIsRunning = false;
+                    this.$nextTick(() => window.lucide?.createIcons());
+                },
+
+                async startBulkReset() {
+                    this.resetIsRunning = true;
+                    this.resetIsCancelled = false;
+                    this.resetIsFinished = false;
+                    this.resetError = null;
+                    if (this.resetPercent === 100) {
+                        this.resetProcessed = 0;
+                        this.resetPercent = 0;
+                        this.resetOffset = 0;
+                    }
+                    this.$nextTick(() => window.lucide?.createIcons());
+
+                    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                    try {
+                        while (this.resetIsRunning && !this.resetIsCancelled) {
+                            const response = await fetch("{{ route('pokja.siswa.reset-passwords') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: JSON.stringify({
+                                    offset: this.resetOffset,
+                                    batch_size: this.resetBatchSize
+                                })
+                            });
+
+                            if (!response.ok) {
+                                const err = await response.json().catch(() => ({}));
+                                throw new Error(err.message || ('Server error HTTP ' + response.status));
+                            }
+
+                            const data = await response.json();
+                            if (data.status !== 'success') {
+                                throw new Error(data.message || 'Gagal memproses batch reset password.');
+                            }
+
+                            this.resetTotal = data.total;
+                            this.resetProcessed = data.processed_total;
+                            this.resetPercent = data.percent;
+                            this.resetOffset = data.offset;
+
+                            if (data.done || this.resetOffset >= data.total) {
+                                this.resetIsFinished = true;
+                                this.resetIsRunning = false;
+                                this.resetPercent = 100;
+                                this.$nextTick(() => window.lucide?.createIcons());
+                                break;
+                            }
+
+                            // Jeda singkat agar render UI halus dan responsif
+                            await new Promise(res => setTimeout(res, 60));
+                        }
+                    } catch (err) {
+                        this.resetError = err.message || 'Gagal memproses reset password siswa.';
+                        this.resetIsRunning = false;
+                    } finally {
+                        this.$nextTick(() => window.lucide?.createIcons());
+                    }
+                },
+
+                finishBulkReset() {
+                    window.location.reload();
+                }
+            };
+        }
+    </script>
 </x-app-layout>
