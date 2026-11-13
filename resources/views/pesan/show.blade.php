@@ -441,8 +441,7 @@
 
     setInterval(pollMessages, 5000);
 
-    // [SECURITY FIX MED-02] Gunakan @json() Blade directive yang menggunakan JSON_HEX_TAG untuk escaping aman
-    // Hindari {!! json_encode() !!} yang tidak mengamankan karakter HTML
+    {{-- Notifikasi Toast --}}
     @if(session('success'))
         showToast(@json(session('success')), "success");
     @endif
