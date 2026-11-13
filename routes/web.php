@@ -191,6 +191,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('kompetensi/import-pdf/store', [\App\Http\Controllers\Pokja\KompetensiController::class, 'storeImportPdf'])->name('kompetensi.import-pdf.store');
         Route::post('kompetensi/reorder', [\App\Http\Controllers\Pokja\KompetensiController::class, 'reorder'])->name('kompetensi.reorder');
         Route::resource('kompetensi', \App\Http\Controllers\Pokja\KompetensiController::class);
+        Route::post('siswa/reset-passwords', [\App\Http\Controllers\SiswaController::class, 'resetAllPasswords'])->name('siswa.reset-passwords');
+        Route::post('siswa/{siswa}/reset-password', [\App\Http\Controllers\SiswaController::class, 'resetPassword'])->name('siswa.reset-password');
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
         
         // Pengajuan PKL validation by Pokja

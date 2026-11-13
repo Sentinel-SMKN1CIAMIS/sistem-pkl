@@ -20,50 +20,75 @@ class DepartmentSeeder extends Seeder
 
         // 7 Program Keahlian
         $programs = [
-            ['kode' => 'AKL',   'nama' => 'Akuntansi'],
-            ['kode' => 'MPLB',  'nama' => 'Managemen Bisnis'],
-            ['kode' => 'PBR',   'nama' => 'Pemasaran Ritel'],
-            ['kode' => 'HOTEL', 'nama' => 'Perhotelan'],
-            ['kode' => 'DKV',   'nama' => 'Desain Komunikasi Visual'],
-            ['kode' => 'PPLG',  'nama' => 'Pengembangan Perangkat Lunak dan Gim'],
-            ['kode' => 'KLN',   'nama' => 'Kuliner'],
+            [
+                'kode' => 'AKL',
+                'nama' => 'Akuntansi dan Keuangan Lembaga',
+                'concentrations' => [
+                    ['kode' => 'AKL', 'nama' => 'Akuntansi', 'durasi' => 4],
+                    ['kode' => 'PBS', 'nama' => 'Perbankan Syariah', 'durasi' => 4],
+                ],
+            ],
+            [
+                'kode' => 'MPLB',
+                'nama' => 'Manajemen Perkantoran dan Layanan Bisnis',
+                'concentrations' => [
+                    ['kode' => 'MPLB', 'nama' => 'Manajemen Perkantoran', 'durasi' => 4],
+                ],
+            ],
+            [
+                'kode' => 'PM',
+                'nama' => 'Pemasaran',
+                'concentrations' => [
+                    ['kode' => 'PBR', 'nama' => 'Bisnis Ritel', 'durasi' => 4],
+                    ['kode' => 'PBD', 'nama' => 'Bisnis Digital', 'durasi' => 4],
+                ],
+            ],
+            [
+                'kode' => 'HTL',
+                'nama' => 'Perhotelan',
+                'concentrations' => [
+                    ['kode' => 'HTL', 'nama' => 'Perhotelan', 'durasi' => 5],
+                ],
+            ],
+            [
+                'kode' => 'DKV',
+                'nama' => 'Desain Komunikasi Visual',
+                'concentrations' => [
+                    ['kode' => 'DKV', 'nama' => 'Desain Komunikasi Visual', 'durasi' => 4],
+                ],
+            ],
+            [
+                'kode' => 'PPLG',
+                'nama' => 'Pengembangan Perangkat Lunak dan Gim',
+                'concentrations' => [
+                    ['kode' => 'PPLG', 'nama' => 'Pengembangan Perangkat Lunak dan Gim', 'durasi' => 4],
+                ],
+            ],
+            [
+                'kode' => 'KLN',
+                'nama' => 'Kuliner',
+                'concentrations' => [
+                    ['kode' => 'KLN', 'nama' => 'Kuliner', 'durasi' => 5],
+                ],
+            ],
         ];
 
         foreach ($programs as $prog) {
-            $p = ProgramKeahlian::firstOrCreate(
+            $p = ProgramKeahlian::updateOrCreate(
                 ['kode' => $prog['kode']],
                 ['nama' => $prog['nama']]
             );
 
-            // Mapping Concentrations
-            $concentrations = [];
-            if ($prog['kode'] == 'AKL') {
-                $concentrations = [
-                    ['kode' => 'AKL', 'nama' => 'Akuntansi'],
-                    ['kode' => 'PBS', 'nama' => 'Perbankan Syariah'],
-                ];
-            } elseif ($prog['kode'] == 'PBR') {
-                $concentrations = [
-                    ['kode' => 'PBR', 'nama' => 'Pemasaran Ritel'],
-                    ['kode' => 'PDG', 'nama' => 'Pemasaran Digital'],
-                ];
-            } else {
-                $concentrations = [
-                    ['kode' => $prog['kode'], 'nama' => $prog['nama']],
-                ];
-            }
-
-            foreach ($concentrations as $con) {
-                $k = KonsentrasiKeahlian::firstOrCreate(
+            foreach ($prog['concentrations'] as $con) {
+                $k = KonsentrasiKeahlian::updateOrCreate(
                     ['kode' => $con['kode']],
                     [
                         'program_keahlian_id' => $p->id,
                         'nama'                => $con['nama'],
-                        'durasi_pkl_bulan'    => in_array($prog['kode'], ['HOTEL', 'KLN']) ? 5 : 4,
+                        'durasi_pkl_bulan'    => $con['durasi'],
                     ]
                 );
 
-                // Dummy Competencies
                 Kompetensi::firstOrCreate(
                     ['konsentrasi_keahlian_id' => $k->id, 'nama' => 'Kompetensi Dasar ' . $con['nama']],
                     ['kategori' => 'Umum']

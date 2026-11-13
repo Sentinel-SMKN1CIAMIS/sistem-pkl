@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\Models\ActivityLog;
 
 class SiswaController extends Controller
 {
@@ -271,5 +274,90 @@ class SiswaController extends Controller
 
         return redirect()->route('pokja.siswa.index')
             ->with('success', 'Data siswa dan akun berhasil dihapus.');
+    }
+
+    /**
+     * Reset semua password akun siswa menjadi NIS (default).
+     */
+    public function resetAllPasswords(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $query = \App\Models\Siswa::query()->with('user');
+
+        if ($user->konsentrasi_keahlian_id) {
+            $query->where('konsentrasi_keahlian_id', $user->konsentrasi_keahlian_id);
+        } elseif ($user->program_keahlian_id) {
+            $konsentrasiIds = \App\Models\KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id');
+            $query->whereIn('konsentrasi_keahlian_id', $konsentrasiIds);
+        }
+
+        @set_time_limit(300);
+
+        $count = 0;
+        DB::transaction(function () use ($query, &$count, $user) {
+            $siswas = $query->get();
+
+            foreach ($siswas as $siswa) {
+                if ($siswa->user && !empty($siswa->nis)) {
+                    $siswa->user->update([
+                        'username' => $siswa->nis,
+                        'password' => Hash::make($siswa->nis),
+                        'force_password_change' => false,
+                    ]);
+                    $count++;
+                }
+            }
+
+            if (class_exists(ActivityLog::class)) {
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'action' => 'Reset All Passwords Siswa',
+                    'description' => "Mereset password {$count} akun siswa menjadi default (NIS).",
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+            }
+        });
+
+        return redirect()->route('pokja.siswa.index')
+            ->with('success', "Berhasil mereset password {$count} akun siswa menjadi default (NIS masing-masing).");
+    }
+
+    /**
+     * Reset password satu siswa ke NIS (default).
+     */
+    public function resetPassword(\App\Models\Siswa $siswa)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->konsentrasi_keahlian_id && $siswa->konsentrasi_keahlian_id != $user->konsentrasi_keahlian_id) {
+            abort(403, 'Anda tidak berhak mengelola siswa dari konsentrasi keahlian ini.');
+        }
+
+        if (!$siswa->user || empty($siswa->nis)) {
+            return back()->with('error', 'Gagal mereset: akun user atau data NIS siswa tidak ditemukan.');
+        }
+
+        $siswa->user->update([
+            'username' => $siswa->nis,
+            'password' => Hash::make($siswa->nis),
+            'force_password_change' => false,
+        ]);
+
+        if (class_exists(ActivityLog::class)) {
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'action' => 'Reset Password Siswa',
+                'description' => "Mereset password akun siswa {$siswa->nama_lengkap} (NIS: {$siswa->nis}) menjadi default (NIS).",
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+        }
+
+        return redirect()->route('pokja.siswa.index')
+            ->with('success', "Password akun siswa {$siswa->nama_lengkap} berhasil direset ke default (NIS: {$siswa->nis}).");
     }
 }

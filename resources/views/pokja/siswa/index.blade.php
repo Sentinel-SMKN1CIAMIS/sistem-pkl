@@ -33,13 +33,17 @@
         }
     </style>
 
-    <div x-data="{ importPanelOpen: false, guideModalOpen: false }">
+    <div x-data="{ importPanelOpen: false, guideModalOpen: false, resetAllModalOpen: false, isSubmitting: false }">
         <div class="mb-6 pokja-header-container">
             <div class="flex-1">
                 <p class="text-slate-600 dark:text-slate-400 text-sm">Total data siswa yang terdaftar dalam sistem PKL.</p>
             </div>
             @if(auth()->user()->role !== 'kepala_sekolah')
             <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+                <button type="button" @click="resetAllModalOpen = true; $nextTick(() => window.lucide?.createIcons())" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium rounded-xl border border-amber-500/30 transition-all gap-2 cursor-pointer shadow-sm">
+                    <i data-lucide="key-round" class="w-4 h-4"></i>
+                    Reset Password ke NIS
+                </button>
                 <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
                     <i data-lucide="upload-cloud" class="w-4 h-4"></i>
                     Impor Siswa
@@ -113,18 +117,18 @@
                     
                     <!-- File Upload Input with reactive state -->
                     <div class="space-y-2" x-data="{ localFileName: '' }">
-                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Pilih File Excel</label>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Pilih Berkas Excel / CSV</label>
                         <div class="border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all relative group duration-300"
                              :class="localFileName ? 'border-emerald-500/50 bg-emerald-500/5 dark:bg-emerald-500/10' : 'border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500'">
-                            <input type="file" name="file" accept=".xlsx, .xls" required 
+                            <input type="file" name="file" accept=".xlsx, .xls, .csv, .txt" required 
                                    @change="localFileName = $event.target.files[0] ? $event.target.files[0].name : ''"
                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                             
                             <!-- State: Empty -->
                             <div class="flex flex-col items-center gap-2 py-4" x-show="!localFileName">
                                 <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
-                                <span class="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Klik atau Seret file Excel ke sini</span>
-                                <span class="text-[10px] text-slate-500 dark:text-slate-500">Format file yang didukung: .xlsx, .xls saja</span>
+                                <span class="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Klik atau Seret file Excel/CSV ke sini</span>
+                                <span class="text-[10px] text-slate-500 dark:text-slate-500">Format yang didukung: .xlsx, .xls, .csv, .txt</span>
                             </div>
 
                             <!-- State: File Chosen -->
@@ -133,6 +137,86 @@
                                 <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 block truncate max-w-xs" x-text="localFileName"></span>
                                 <span class="text-[10px] text-slate-500 dark:text-slate-500">Klik atau seret file lain untuk mengganti berkas</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Jurusan Row -->
+                    <div class="space-y-2 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200/50 dark:border-slate-700/50"
+                         x-data="{
+                             selected: [1, 2, 3, 4, 5, 6, 8, 9], // Semua kecuali DKV (7) secara default
+                             selectAll() { this.selected = [1, 2, 3, 4, 5, 6, 7, 8, 9]; },
+                             selectNonDkv() { this.selected = [1, 2, 3, 4, 5, 6, 8, 9]; },
+                             clearAll() { this.selected = []; }
+                         }">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-slate-200/40 dark:border-slate-700/40">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+                                    <i data-lucide="filter" class="w-4 h-4 text-blue-500"></i>
+                                    Filter Jurusan yang Diimpor
+                                </h4>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                                    Pilih jurusan yang ingin dimasukkan ke sistem. Siswa dari jurusan yang tidak dicentang otomatis dilewati.
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-2 text-[11px]">
+                                <button type="button" @click="selectNonDkv()" class="text-blue-500 hover:underline font-semibold cursor-pointer">
+                                    Kecualikan DKV (Default)
+                                </button>
+                                <span class="text-slate-300 dark:text-slate-600">|</span>
+                                <button type="button" @click="selectAll()" class="text-slate-600 dark:text-slate-400 hover:text-blue-500 cursor-pointer">
+                                    Pilih Semua
+                                </button>
+                                <span class="text-slate-300 dark:text-slate-600">|</span>
+                                <button type="button" @click="clearAll()" class="text-red-500 hover:underline cursor-pointer">
+                                    Kosongkan
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-2">
+                            @php
+                                $allKonsentrasis = \App\Models\KonsentrasiKeahlian::with('programKeahlian')->orderBy('id')->get();
+                            @endphp
+                            @foreach($allKonsentrasis as $kItem)
+                                <label class="flex items-start gap-2.5 p-2 rounded-lg border transition-all cursor-pointer text-xs"
+                                       :class="selected.includes({{ $kItem->id }}) 
+                                               ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/50 text-slate-900 dark:text-slate-100 font-medium' 
+                                               : 'bg-white dark:bg-slate-900/50 border-slate-200/60 dark:border-slate-800 text-slate-500 dark:text-slate-400 opacity-60'">
+                                    <input type="checkbox" name="selected_jurusan[]" value="{{ $kItem->id }}"
+                                           x-model.number="selected"
+                                           class="rounded text-blue-600 focus:ring-blue-500 mt-0.5">
+                                    <div class="flex-1 min-w-0">
+                                        <span class="block truncate font-semibold">
+                                            {{ $kItem->kode }} - {{ $kItem->nama }}
+                                        </span>
+                                        <span class="text-[10px] block text-slate-400 truncate">
+                                            {{ $kItem->programKeahlian->nama ?? '' }}
+                                        </span>
+                                        @if($kItem->kode === 'DKV')
+                                            <span class="text-[10px] font-bold text-amber-500 block">
+                                                (PKL Beres - Dilewati)
+                                            </span>
+                                        @endif
+                                    </div>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Options: Tahun Ajaran & Verifikasi NIS -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+                                Tahun Ajaran Default
+                            </label>
+                            <input type="text" name="tahun_ajaran" value="2025/2026" required
+                                   class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700/60 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex items-center pt-2 sm:pt-4">
+                            <label class="inline-flex items-center gap-2 cursor-pointer text-xs text-slate-700 dark:text-slate-300">
+                                <input type="checkbox" name="sync_mode" value="1" checked class="rounded text-blue-600 focus:ring-blue-500">
+                                <span><strong>Sinkronisasi & Koreksi NIS Otomatis</strong> (Periksa dan sesuaikan data jika NIS/nama siswa sudah ada di sistem agar tidak ganda)</span>
+                            </label>
                         </div>
                     </div>
                     
@@ -281,6 +365,75 @@
                  </div>
             </div>
         </template>
+
+        <!-- Reset All Passwords Confirmation Modal -->
+        <template x-teleport="body">
+            <div x-show="resetAllModalOpen" 
+                 class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
+                 x-transition.opacity.duration.300ms x-cloak>
+                 
+                 <div @click.away="if (!isSubmitting) resetAllModalOpen = false" 
+                      class="glass-card w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-900 animate-fade-in-up text-left flex flex-col">
+                      
+                      <!-- Modal Header -->
+                      <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center bg-amber-500/5 dark:bg-amber-500/10 shrink-0">
+                          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                              <i data-lucide="key-round" class="text-amber-500 w-5 h-5"></i>
+                              Reset Password Semua Akun Siswa
+                          </h3>
+                          <button type="button" @click="if (!isSubmitting) resetAllModalOpen = false" :disabled="isSubmitting" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                              <i data-lucide="x" class="w-4 h-4"></i>
+                          </button>
+                      </div>
+
+                      <!-- Modal Form & Body -->
+                      <form action="{{ route('pokja.siswa.reset-passwords') }}" method="POST" @submit="isSubmitting = true">
+                          @csrf
+                          <div class="p-6 space-y-4 text-sm text-slate-600 dark:text-slate-400">
+                              <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 space-y-2">
+                                  <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider">
+                                      <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+                                      Konfirmasi Reset Massal
+                                  </div>
+                                  <p class="text-xs leading-relaxed">
+                                      Apakah Anda yakin ingin mengatur ulang password <strong>seluruh akun siswa</strong> menjadi default kembali sesuai <strong>NIS masing-masing</strong>?
+                                  </p>
+                              </div>
+
+                              <div class="space-y-2 text-xs">
+                                  <h4 class="font-bold text-slate-900 dark:text-slate-100">Dampak dari tindakan ini:</h4>
+                                  <ul class="list-disc pl-5 space-y-1.5 leading-relaxed">
+                                      <li>Siswa dapat login kembali dengan <strong>Username = NIS</strong> dan <strong>Password = NIS</strong>.</li>
+                                      <li>Password yang pernah diubah sendiri oleh siswa akan ditimpa kembali dengan NIS mereka.</li>
+                                      <li>Status force change password dinonaktifkan sehingga siswa bisa langsung masuk sistem.</li>
+                                  </ul>
+                              </div>
+
+                              <p class="text-xs text-slate-500 italic">
+                                  * Proses ini akan diproses secara aman untuk semua akun siswa terdaftar dalam sistem.
+                              </p>
+                          </div>
+
+                          <!-- Modal Footer -->
+                          <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end items-center gap-3 bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
+                              <button type="button" @click="resetAllModalOpen = false" :disabled="isSubmitting" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer">
+                                  Batal
+                              </button>
+                              <button type="submit" :disabled="isSubmitting" class="inline-flex items-center gap-2 px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-500/25 transition-all cursor-pointer disabled:opacity-50">
+                                  <span x-show="!isSubmitting" class="inline-flex items-center gap-1.5">
+                                      <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                      Ya, Reset Semua Password
+                                  </span>
+                                  <span x-show="isSubmitting" class="inline-flex items-center gap-1.5" style="display: none;">
+                                      <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>
+                                      Memproses...
+                                  </span>
+                              </button>
+                          </div>
+                      </form>
+                 </div>
+            </div>
+        </template>
     </div>
 
     @if(session('import_errors'))
@@ -301,6 +454,27 @@
         <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3">
             <i data-lucide="check-circle" class="w-4 h-4"></i>
             {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('nis_corrections'))
+        <div class="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-sm">
+            <h4 class="font-bold mb-2 flex items-center gap-2 text-xs uppercase tracking-wider">
+                <i data-lucide="check-check" class="w-4 h-4 text-amber-500"></i>
+                Data NIS Siswa Berhasil Diverifikasi & Dikoreksi:
+            </h4>
+            <ul class="list-disc pl-5 space-y-1 text-xs">
+                @foreach(session('nis_corrections') as $cor)
+                    <li>{{ $cor }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+            {{ session('error') }}
         </div>
     @endif
 
@@ -469,16 +643,23 @@
                                          x-transition:leave="transition ease-in duration-75"
                                          x-transition:leave-start="transform opacity-100 scale-100"
                                          x-transition:leave-end="transform opacity-0 scale-95"
-                                         class="absolute right-0 mt-8 w-32 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 shadow-lg py-1 z-50 text-left" 
+                                         class="absolute right-0 mt-8 w-44 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 shadow-lg py-1 z-50 text-left" 
                                          style="display: none;">
                                         <a href="{{ route('pokja.siswa.edit', $item) }}" class="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Edit
                                         </a>
+                                        <form action="{{ route('pokja.siswa.reset-password', $item) }}" method="POST" onsubmit="return confirm('Reset password akun siswa {{ addslashes($item->nama_lengkap) }} menjadi default (NIS: {{ $item->nis }})?')">
+                                            @csrf
+                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-amber-600 dark:text-amber-400 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-colors text-left cursor-pointer">
+                                                <i data-lucide="key-round" class="w-3.5 h-3.5"></i>
+                                                Reset Password (NIS)
+                                            </button>
+                                        </form>
                                         <form action="{{ route('pokja.siswa.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun siswa {{ addslashes($item->nama_lengkap) }} ini? Seluruh data terkait (jurnal, absensi, dll) juga akan terhapus.')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left">
+                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer">
                                                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                                 Hapus
                                             </button>

@@ -155,150 +155,314 @@ class ImportController extends Controller
     }
 
     /**
-     * Parse Excel (.xlsx, .xls) files natively.
+     * Parse Excel (.xlsx, .xls) and CSV (.csv, .txt) files flexibly.
      */
     private function parseExcel($file)
     {
         try {
-            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
-            $sheet = $spreadsheet->getActiveSheet();
-            $rows = $sheet->toArray();
-            
+            $ext = strtolower($file->getClientOriginalExtension());
+            $rows = [];
+
+            if (in_array($ext, ['csv', 'txt'])) {
+                $content = file_get_contents($file->getRealPath());
+                $lines = preg_split('/\r\n|\r|\n/', trim($content));
+                foreach ($lines as $line) {
+                    if (trim($line) === '') continue;
+                    $delimiter = str_contains($line, ';') ? ';' : ',';
+                    $rows[] = str_getcsv($line, $delimiter);
+                }
+            } else {
+                $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+                $sheet = $spreadsheet->getActiveSheet();
+                $rows = $sheet->toArray();
+            }
+
             if (empty($rows)) return [];
-            
-            // First row contains the headers
-            $headerRow = array_shift($rows);
-            $headers = array_map(fn($h) => strtolower(trim($h ?? '')), $headerRow);
-            
+
+            // Find header row (first non-empty row)
+            $headerRow = null;
+            while (!empty($rows)) {
+                $candidate = array_shift($rows);
+                if (!empty(array_filter($candidate, fn($v) => !is_null($v) && trim((string) $v) !== ''))) {
+                    $headerRow = $candidate;
+                    break;
+                }
+            }
+
+            if (!$headerRow) return [];
+
+            // Normalize header names
+            $headers = [];
+            foreach ($headerRow as $idx => $h) {
+                $clean = strtolower(trim((string) $h));
+                $clean = str_replace([' ', '-', '.'], '_', $clean);
+                if (in_array($clean, ['nama', 'nama_siswa', 'student_name'])) $clean = 'nama_lengkap';
+                if (in_array($clean, ['nisn', 'nomor_induk', 'username'])) $clean = 'nis';
+                if (in_array($clean, ['rombel', 'class'])) $clean = 'kelas';
+                if (in_array($clean, ['jk', 'gender', 'sex', 'l/p'])) $clean = 'jenis_kelamin';
+                if (in_array($clean, ['jurusan', 'kompetensi_keahlian', 'keahlian'])) $clean = 'konsentrasi_keahlian';
+                if (in_array($clean, ['hp', 'telp', 'telepon', 'whatsapp', 'wa', 'no_telepon'])) $clean = 'no_hp';
+                $headers[$idx] = $clean;
+            }
+
             $data = [];
             foreach ($rows as $row) {
-                if (empty(array_filter($row, fn($val) => !is_null($val) && trim($val) !== ''))) {
+                if (empty(array_filter($row, fn($val) => !is_null($val) && trim((string) $val) !== ''))) {
                     continue;
                 }
-                
+
                 $rowData = [];
                 foreach ($headers as $index => $header) {
                     if (empty($header)) continue;
-                    $rowData[$header] = trim($row[$index] ?? '');
+                    $rowData[$header] = trim((string) ($row[$index] ?? ''));
                 }
                 $data[] = $rowData;
             }
-            
+
             return $data;
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Import parse error: ' . $e->getMessage());
             return [];
         }
     }
 
     /**
-     * Import Siswa (Student) Data.
+     * Intelligently detect concentration from class name or text.
+     */
+    protected function detectKonsentrasiFromKelas($kelas, $concentrations)
+    {
+        $clean = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) $kelas));
+
+        if (str_contains($clean, 'PPLG') || str_contains($clean, 'RPL') || str_contains($clean, 'GIM')) {
+            return $concentrations['pplg'] ?? 8;
+        }
+        if (str_contains($clean, 'DKV') || str_contains($clean, 'MM') || str_contains($clean, 'MULTIMEDIA')) {
+            return $concentrations['dkv'] ?? 7;
+        }
+        if (str_contains($clean, 'PBS') || str_contains($clean, 'SYARIAH')) {
+            return $concentrations['pbs'] ?? 2;
+        }
+        if (str_contains($clean, 'AK') || str_contains($clean, 'AKL') || str_contains($clean, 'AKUNTANSI')) {
+            return $concentrations['akl'] ?? $concentrations['akuntansi'] ?? 1;
+        }
+        if (str_contains($clean, 'MP') || str_contains($clean, 'MPLB') || str_contains($clean, 'OTKP') || str_contains($clean, 'PERKANTORAN')) {
+            return $concentrations['mplb'] ?? $concentrations['manajemen perkantoran'] ?? 3;
+        }
+        if (str_contains($clean, 'PBD') || str_contains($clean, 'BD') || str_contains($clean, 'PDG') || str_contains($clean, 'DIGITAL')) {
+            return $concentrations['pbd'] ?? $concentrations['bisnis digital'] ?? 5;
+        }
+        if (str_contains($clean, 'PBR') || str_contains($clean, 'RITEL') || str_contains($clean, 'PM') || str_contains($clean, 'BSR')) {
+            return $concentrations['pbr'] ?? $concentrations['bisnis ritel'] ?? 4;
+        }
+        if (str_contains($clean, 'HTL') || str_contains($clean, 'HOTEL') || str_contains($clean, 'AP') || str_contains($clean, 'PERHOTELAN')) {
+            return $concentrations['htl'] ?? $concentrations['perhotelan'] ?? 6;
+        }
+        if (str_contains($clean, 'KLN') || str_contains($clean, 'KULINER') || str_contains($clean, 'TBG') || str_contains($clean, 'BOGA')) {
+            return $concentrations['kln'] ?? $concentrations['kuliner'] ?? 9;
+        }
+
+        return null;
+    }
+
+    /**
+     * Import Siswa (Student) Data with flexible columns, smart deduplication, NIS verification, and Jurusan filtering.
      */
     public function importSiswa(Request $request)
     {
         set_time_limit(0);
 
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls',
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt',
         ]);
 
         $rows = $this->parseExcel($request->file('file'));
         if (empty($rows)) {
-            return back()->with('error', 'File Excel kosong atau tidak valid.');
+            return back()->with('error', 'File Excel atau CSV kosong atau tidak valid.');
         }
 
-        $errors = [];
-        $importCount = 0;
+        $selectedJurusan = $request->input('selected_jurusan');
+        if (!is_array($selectedJurusan) || empty($selectedJurusan)) {
+            // Default: all concentrations EXCEPT DKV (ID: 7) as requested
+            $selectedJurusan = KonsentrasiKeahlian::where('kode', '!=', 'DKV')->pluck('id')->toArray();
+        } else {
+            $selectedJurusan = array_map('intval', $selectedJurusan);
+        }
+
+        $defaultTahunAjaran = $request->input('tahun_ajaran') ?: '2025/2026';
+        $syncMode = $request->boolean('sync_mode', true);
 
         // Fetch Concentrations mapping for fast lookup
-        $concentrations = KonsentrasiKeahlian::pluck('id', 'nama')
-            ->mapWithKeys(fn($id, $nama) => [strtolower(trim($nama)) => $id]);
+        $concentrations = [];
+        foreach (KonsentrasiKeahlian::all() as $kon) {
+            $concentrations[strtolower(trim($kon->nama))] = $kon->id;
+            $concentrations[strtolower(trim($kon->kode))] = $kon->id;
+        }
+
+        $createdCount = 0;
+        $updatedCount = 0;
+        $correctedNisCount = 0;
+        $skippedCount = 0;
+        $correctedNisList = [];
+        $processedNis = [];
 
         DB::beginTransaction();
 
         try {
             foreach ($rows as $index => $row) {
-                $lineNumber = $index + 2; // Accounting for header line (1-indexed)
-
-                // Skip completely empty rows
+                // Skip empty row
                 if (empty(array_filter($row))) continue;
 
-                // Validate Row Data
-                $validator = Validator::make($row, [
-                    'nis' => 'required|numeric',
-                    'nama_lengkap' => 'required|string|max:255',
-                    'email' => 'nullable|email',
-                    'password' => 'required|min:6',
-                    'kelas' => 'required|string',
-                    'jenis_kelamin' => 'required|in:L,P,l,p',
-                    'tahun_ajaran' => 'required|string',
-                    'no_hp' => 'nullable',
-                    'alamat' => 'nullable',
-                    'konsentrasi_keahlian' => 'required',
-                ]);
+                $nama = trim($row['nama_lengkap'] ?? '');
+                $nis = trim($row['nis'] ?? '');
+                $kelas = trim($row['kelas'] ?? '');
 
-                if ($validator->fails()) {
-                    $errors[] = "Baris {$lineNumber}: " . implode(', ', $validator->errors()->all());
+                // Skip repeated headers or summary lines
+                if (strtolower($nama) === 'nama lengkap' || strtolower($nis) === 'nis' || strtolower($nama) === 'no') {
+                    continue;
+                }
+                if (str_contains(strtoupper($nama), 'KESELURUHAN') || str_contains(strtoupper($nama), 'TOTAL') || str_contains(strtoupper($row['no'] ?? ''), 'TOTAL')) {
                     continue;
                 }
 
-                // Check duplicates in database
-                if (!empty($row['email']) && User::where('email', $row['email'])->exists()) {
-                    $errors[] = "Baris {$lineNumber}: Email '{$row['email']}' sudah terdaftar di sistem.";
-                    continue;
-                }
-                if (User::where('username', $row['nis'])->exists() || Siswa::where('nis', $row['nis'])->exists()) {
-                    $errors[] = "Baris {$lineNumber}: NIS '{$row['nis']}' sudah terdaftar di sistem.";
+                // Check NIS validity (numeric and >= 4 characters)
+                if (!is_numeric($nis) || strlen($nis) < 4) {
                     continue;
                 }
 
-                // Match Concentration Keahlian
-                $konName = strtolower(trim($row['konsentrasi_keahlian']));
-                if (!isset($concentrations[$konName])) {
-                    $errors[] = "Baris {$lineNumber}: Konsentrasi keahlian '{$row['konsentrasi_keahlian']}' tidak ditemukan di database.";
+                // Skip duplicate NIS within the same file upload
+                if (isset($processedNis[$nis])) {
+                    continue;
+                }
+                $processedNis[$nis] = true;
+
+                // Determine Concentration ID
+                $konId = null;
+                if (!empty($row['konsentrasi_keahlian'])) {
+                    $searchKon = strtolower(trim($row['konsentrasi_keahlian']));
+                    $konId = $concentrations[$searchKon] ?? null;
+                }
+                if (!$konId && !empty($kelas)) {
+                    $konId = $this->detectKonsentrasiFromKelas($kelas, $concentrations);
+                }
+
+                if (!$konId) {
+                    $konId = 1;
+                }
+
+                // Check Jurusan Filter: If this concentration is NOT selected, skip!
+                if (!in_array($konId, $selectedJurusan)) {
+                    $skippedCount++;
                     continue;
                 }
 
-                // If no errors so far, proceed to create
-                if (empty($errors)) {
-                    // Create User Account
-                    $user = User::create([
-                        'name' => $row['nama_lengkap'],
-                        'username' => $row['nis'],
-                        'email' => empty($row['email']) ? null : $row['email'],
-                        'password' => Hash::make($row['password']),
-                        'role' => 'siswa',
-                        'is_active' => true,
+                $email = !empty($row['email']) ? trim($row['email']) : null;
+                $password = !empty($row['password']) ? trim($row['password']) : $nis;
+                $jk = !empty($row['jenis_kelamin']) ? strtoupper(substr(trim($row['jenis_kelamin']), 0, 1)) : 'L';
+                if (!in_array($jk, ['L', 'P'])) $jk = 'L';
+                $tahunAjaran = !empty($row['tahun_ajaran']) ? trim($row['tahun_ajaran']) : $defaultTahunAjaran;
+                $noHp = !empty($row['no_hp']) ? trim($row['no_hp']) : null;
+                $alamat = !empty($row['alamat']) ? trim($row['alamat']) : null;
+
+                // Match existing student
+                $existingByNis = Siswa::where('nis', $nis)->first();
+
+                // If not found by NIS, check by exact name (case-insensitive) to verify if NIS was mistyped in system
+                $existingByName = null;
+                if (!$existingByNis && !empty($nama)) {
+                    $existingByName = Siswa::whereRaw('LOWER(nama_lengkap) = ?', [strtolower($nama)])
+                        ->where('konsentrasi_keahlian_id', $konId)
+                        ->first();
+                }
+
+                if ($existingByName && $syncMode) {
+                    // DISCREPANCY FOUND & CORRECTED: Student exists in system with different/typo NIS!
+                    $oldNis = $existingByName->nis;
+                    $existingByName->update([
+                        'nis' => $nis,
+                        'kelas' => $kelas ?: $existingByName->kelas,
+                        'konsentrasi_keahlian_id' => $konId,
+                        'tahun_ajaran' => $tahunAjaran,
                     ]);
+                    if ($existingByName->user) {
+                        $existingByName->user->update([
+                            'username' => $nis,
+                            'name' => $nama,
+                        ]);
+                    }
+                    $correctedNisList[] = "Siswa '{$nama}': NIS di sistem dikoreksi dari {$oldNis} menjadi {$nis}";
+                    $correctedNisCount++;
+                } elseif ($existingByNis && $syncMode) {
+                    // Student already exists by NIS: update details to match official file
+                    $existingByNis->update([
+                        'nama_lengkap' => $nama,
+                        'kelas' => $kelas ?: $existingByNis->kelas,
+                        'konsentrasi_keahlian_id' => $konId,
+                        'tahun_ajaran' => $tahunAjaran,
+                    ]);
+                    if ($existingByNis->user) {
+                        $existingByNis->user->update([
+                            'name' => $nama,
+                            'username' => $nis,
+                        ]);
+                    }
+                    $updatedCount++;
+                } elseif (!$existingByNis && !$existingByName) {
+                    // New Student: Create User and Siswa
+                    if ($email && User::where('email', $email)->exists()) {
+                        $email = null;
+                    }
 
-                    // Create Siswa Profile
+                    $user = User::where('username', $nis)->first();
+                    if (!$user) {
+                        $user = User::create([
+                            'name' => $nama,
+                            'username' => $nis,
+                            'email' => $email,
+                            'password' => Hash::make($password),
+                            'role' => 'siswa',
+                            'is_active' => true,
+                            'force_password_change' => false,
+                        ]);
+                    }
+
                     Siswa::create([
                         'user_id' => $user->id,
-                        'konsentrasi_keahlian_id' => $concentrations[$konName],
-                        'nis' => $row['nis'],
-                        'nama_lengkap' => $row['nama_lengkap'],
-                        'kelas' => $row['kelas'],
-                        'jenis_kelamin' => strtoupper($row['jenis_kelamin']),
-                        'tahun_ajaran' => $row['tahun_ajaran'],
-                        'no_hp' => $row['no_hp'] ?: null,
-                        'alamat' => $row['alamat'] ?: null,
+                        'konsentrasi_keahlian_id' => $konId,
+                        'nis' => $nis,
+                        'nama_lengkap' => $nama,
+                        'kelas' => $kelas,
+                        'jenis_kelamin' => $jk,
+                        'tahun_ajaran' => $tahunAjaran,
+                        'no_hp' => $noHp,
+                        'alamat' => $alamat,
                         'status_pkl' => 'belum_mulai',
                     ]);
 
-                    $importCount++;
+                    $createdCount++;
                 }
             }
 
-            if (!empty($errors)) {
-                DB::rollBack();
-                return back()->with('import_errors', $errors);
+            DB::commit();
+
+            $msg = "Impor data siswa selesai: {$createdCount} siswa baru ditambahkan, {$updatedCount} siswa diperbarui";
+            if ($correctedNisCount > 0) {
+                $msg .= ", {$correctedNisCount} data NIS siswa dikoreksi";
+            }
+            if ($skippedCount > 0) {
+                $msg .= ", {$skippedCount} siswa dilewati (karena jurusan tidak dipilih/DKV)";
+            }
+            $msg .= ".";
+
+            $redirect = back()->with('success', $msg);
+            if (!empty($correctedNisList)) {
+                $redirect->with('nis_corrections', $correctedNisList);
             }
 
-            DB::commit();
-            return back()->with('success', "Berhasil mengimpor {$importCount} data siswa.");
+            return $redirect;
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan sistem saat mengimpor data: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengimpor data siswa: ' . $e->getMessage());
         }
     }
 
