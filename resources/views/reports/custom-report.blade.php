@@ -215,27 +215,89 @@
             </div>
 
             <!-- LANGKAH 2: TENTUKAN FILTER DATA & RENTANG -->
-            <div class="glass-card p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shadow-sm space-y-4">
+            <div class="glass-card p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shadow-sm space-y-6">
                 <div class="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800/80 pb-4">
                     <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">2</span>
                     <div>
                         <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Tentukan Filter Data & Rentang Periode</h3>
-                        <p class="text-[11px] text-slate-500">Saring data sesuai jurusan, kelas, dan status akun yang diinginkan.</p>
+                        <p class="text-[11px] text-slate-500">Saring data sesuai jurusan yang ingin dibawa/dikecualikan, kelas, dan status akun.</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                    <!-- Filter Jurusan (Untuk modul siswa/penempatan) -->
-                    <div x-show="selectedModule !== 'kredensial_guru'" class="space-y-1.5">
-                        <label class="font-bold text-slate-700 dark:text-slate-300">Filter Jurusan / Konsentrasi</label>
-                        <select name="filter_jurusan[]" multiple class="w-full h-24 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-blue-500">
-                            @foreach($konsentrasis as $kon)
-                                <option value="{{ $kon->kode }}" selected>{{ $kon->kode }} - {{ $kon->nama }}</option>
-                            @endforeach
-                        </select>
-                        <p class="text-[10px] text-slate-400">Tahan tombol Ctrl / Cmd untuk memilih beberapa jurusan.</p>
+                <!-- Filter Jurusan / Konsentrasi (Checkbox Smart Filter Grid) -->
+                <div x-show="selectedModule !== 'kredensial_guru'" class="p-4 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                <i data-lucide="layers" class="w-4 h-4 text-blue-500"></i>
+                                Filter Jurusan / Konsentrasi yang Disertakan ke File Ekspor
+                            </label>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                <strong class="text-emerald-600 dark:text-emerald-400">☑ Dicentang</strong> = Data jurusan <u>dibawa</u> ke ekspor. <strong class="text-slate-500">☐ Dikosongkan</strong> = Data jurusan <u>dikecualikan</u> (tidak diekspor).
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                <span x-text="selectedJurusan.length"></span> / <span x-text="allJurusanCodes.length"></span> Jurusan Dipilih
+                            </span>
+                            <button type="button" @click="selectAllJurusan()" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 shadow-sm cursor-pointer">
+                                Pilih Semua
+                            </button>
+                            <button type="button" @click="excludeDkvOnly()" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-sm cursor-pointer" title="DKV sudah beres PKL">
+                                Kecualikan DKV
+                            </button>
+                            <button type="button" @click="clearAllJurusan()" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 shadow-sm cursor-pointer">
+                                Kosongkan
+                            </button>
+                        </div>
                     </div>
 
+                    <!-- Checkbox Cards Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 pt-1">
+                        @foreach($konsentrasis as $kon)
+                            <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer text-xs"
+                                   :class="selectedJurusan.includes('{{ $kon->kode }}') 
+                                       ? 'bg-blue-50/80 dark:bg-blue-900/20 border-blue-500/50 shadow-sm' 
+                                       : 'bg-white dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-700/60 opacity-60 hover:opacity-100'">
+                                <input type="checkbox" 
+                                       name="filter_jurusan[]" 
+                                       value="{{ $kon->kode }}" 
+                                       x-model="selectedJurusan" 
+                                       class="mt-0.5 rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between gap-1">
+                                        <span class="font-bold text-slate-800 dark:text-slate-200">{{ $kon->kode }}</span>
+                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                                              :class="selectedJurusan.includes('{{ $kon->kode }}') ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-slate-500/10 text-slate-500'">
+                                            <span x-text="selectedJurusan.includes('{{ $kon->kode }}') ? 'Disertakan' : 'Dikecualikan'"></span>
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{{ $kon->nama }}</p>
+                                    @if($kon->kode === 'DKV')
+                                        <span class="inline-block mt-1 text-[9px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                                            Beres PKL
+                                        </span>
+                                    @endif
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    <!-- Legend Info -->
+                    <div class="flex flex-wrap items-center gap-4 pt-2 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-200/50 dark:border-slate-800/50">
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                            <span><strong>Dicentang:</strong> Data siswa dari jurusan ini <u>akan dibawa</u> ke file ekspor.</span>
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-400 inline-block"></span>
+                            <span><strong>Tidak Dicentang:</strong> Data siswa jurusan ini <u>dikecualikan</u> (disaring keluar).</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Filter Tambahan: Kelas, Status Password, Status PKL, Tahun Ajaran -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                     <!-- Filter Kelas -->
                     <div x-show="selectedModule !== 'kredensial_guru'" class="space-y-1.5">
                         <label class="font-bold text-slate-700 dark:text-slate-300">Filter Kelas Spesifik</label>
@@ -383,6 +445,20 @@
                 categoryFilter: 'all',
                 availableColumns: [],
                 selectedColumns: [],
+                allJurusanCodes: @json($konsentrasis->pluck('kode')->values()),
+                selectedJurusan: @json($konsentrasis->pluck('kode')->filter(fn($k) => $k !== 'DKV')->values()),
+
+                selectAllJurusan() {
+                    this.selectedJurusan = [...this.allJurusanCodes];
+                },
+
+                excludeDkvOnly() {
+                    this.selectedJurusan = this.allJurusanCodes.filter(k => k !== 'DKV');
+                },
+
+                clearAllJurusan() {
+                    this.selectedJurusan = [];
+                },
 
                 columnConfigs: {
                     kredensial_siswa: [

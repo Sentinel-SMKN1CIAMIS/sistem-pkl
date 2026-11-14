@@ -511,7 +511,10 @@ class CustomReportController extends Controller
 
         if (!empty($filters['filter_jurusan'])) {
             $query->whereHas('konsentrasiKeahlian', function ($q) use ($filters) {
-                $q->whereIn('kode', (array) $filters['filter_jurusan']);
+                $q->whereIn('kode', (array) $filters['filter_jurusan'])
+                  ->orWhereHas('programKeahlian', function ($pq) use ($filters) {
+                      $pq->whereIn('kode', (array) $filters['filter_jurusan']);
+                  });
             });
         }
         if (!empty($filters['filter_kelas']) && $filters['filter_kelas'] !== 'all') {
@@ -603,7 +606,10 @@ class CustomReportController extends Controller
 
         if (!empty($filters['filter_jurusan'])) {
             $query->whereHas('konsentrasiKeahlian', function ($q) use ($filters) {
-                $q->whereIn('kode', (array) $filters['filter_jurusan']);
+                $q->whereIn('kode', (array) $filters['filter_jurusan'])
+                  ->orWhereHas('programKeahlian', function ($pq) use ($filters) {
+                      $pq->whereIn('kode', (array) $filters['filter_jurusan']);
+                  });
             });
         }
         if (!empty($filters['filter_kelas']) && $filters['filter_kelas'] !== 'all') {
