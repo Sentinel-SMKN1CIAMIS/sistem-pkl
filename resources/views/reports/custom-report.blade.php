@@ -78,7 +78,7 @@
         @php
             $exportRoute = auth()->user()->role === 'super_admin' ? route('admin.custom_report.export') : route('pokja.custom_report.export');
         @endphp
-        <form method="POST" action="{{ $exportRoute }}" class="space-y-6">
+        <form method="POST" action="{{ $exportRoute }}" @submit="isDownloading = true; setTimeout(() => { isDownloading = false; }, 3500)" class="space-y-6">
             @csrf
 
             <!-- LANGKAH 1: PILIH MODUL LAPORAN UTAMA -->
@@ -427,10 +427,16 @@
                         </div>
 
                         <button type="submit" 
-                                :disabled="selectedColumns.length === 0"
+                                :disabled="selectedColumns.length === 0 || isDownloading"
                                 class="inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition-all cursor-pointer">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                            Generate & Unduh Laporan Ekspor
+                            <span x-show="!isDownloading" class="inline-flex items-center gap-2">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                Generate & Unduh Laporan Ekspor
+                            </span>
+                            <span x-show="isDownloading" class="inline-flex items-center gap-2" style="display: none;">
+                                <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+                                Menyiapkan & Mengunduh Berkas...
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -441,6 +447,7 @@
     <script>
         function customReportBuilder() {
             return {
+                isDownloading: false,
                 selectedModule: 'kredensial_siswa',
                 categoryFilter: 'all',
                 availableColumns: [],

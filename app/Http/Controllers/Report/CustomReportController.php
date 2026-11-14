@@ -678,6 +678,7 @@ class CustomReportController extends Controller
 
     /**
      * Memeriksa apakah password siswa masih berupa password default (NIS / NISN).
+     * Menggunakan flag O(1) force_password_change untuk kecepatan maksimal.
      */
     protected function isSiswaPasswordDefault(Siswa $siswa): bool
     {
@@ -685,23 +686,12 @@ class CustomReportController extends Controller
             return true;
         }
 
-        if ($siswa->user->force_password_change) {
-            return true;
-        }
-
-        if (!empty($siswa->nis) && Hash::check($siswa->nis, $siswa->user->password)) {
-            return true;
-        }
-
-        if (!empty($siswa->nisn) && Hash::check($siswa->nisn, $siswa->user->password)) {
-            return true;
-        }
-
-        return false;
+        return (bool) $siswa->user->force_password_change;
     }
 
     /**
      * Memeriksa apakah password guru masih berupa password default ('smkn1ciamis').
+     * Menggunakan flag O(1) force_password_change untuk kecepatan maksimal.
      */
     protected function isGuruPasswordDefault(PembimbingSekolah $guru): bool
     {
@@ -709,15 +699,7 @@ class CustomReportController extends Controller
             return true;
         }
 
-        if ($guru->user->force_password_change) {
-            return true;
-        }
-
-        if (Hash::check('smkn1ciamis', $guru->user->password)) {
-            return true;
-        }
-
-        return false;
+        return (bool) $guru->user->force_password_change;
     }
 
     /**
@@ -745,15 +727,19 @@ class CustomReportController extends Controller
     }
 
     /**
-     * Helper untuk auto-size kolom dan border tabel.
+     * Helper untuk auto-size kolom dan border tabel secara cepat (Fast Styling).
      */
     protected function styleDataSheet($sheet, int $totalCols, int $totalRows)
     {
         $lastCol = Coordinate::stringFromColumnIndex($totalCols);
 
-        // Auto width
+        // Fast explicit column widths (menghindari bottleneck kalkulasi font metrics)
         for ($c = 1; $c <= $totalCols; $c++) {
-            $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($c))->setAutoSize(true);
+            $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($c))->setWidth(20);
+        }
+        $sheet->getColumnDimension('A')->setWidth(6); // Kolom No
+        if ($totalCols >= 2) {
+            $sheet->getColumnDimension('B')->setWidth(28); // Kolom Nama Siswa/Guru
         }
 
         if ($totalRows >= 2) {
@@ -761,7 +747,7 @@ class CustomReportController extends Controller
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
-                        'color' => ['rgb' => 'E2E8F0'],
+                        'color' => ['rgb' => 'CBD5E1'],
                     ],
                 ],
                 'alignment' => [
