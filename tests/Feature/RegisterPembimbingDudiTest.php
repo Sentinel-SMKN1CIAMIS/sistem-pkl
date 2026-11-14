@@ -63,7 +63,7 @@ class RegisterPembimbingDudiTest extends TestCase
             'longitude' => '108.3521',
         ]);
 
-        $response->assertRedirect(route('dashboard'));
+        $response->assertRedirect(route('login'));
         $response->assertSessionHas('success');
 
         // Assert user was created
@@ -86,8 +86,8 @@ class RegisterPembimbingDudiTest extends TestCase
         $this->assertEquals(-7.3305, $this->dudi->latitude);
         $this->assertEquals(108.3521, $this->dudi->longitude);
 
-        // Assert user is logged in
-        $this->assertAuthenticated();
+        // Assert user is not logged in yet (pending Pokja verification)
+        $this->assertGuest();
     }
 
     public function test_validation_errors_for_required_fields()

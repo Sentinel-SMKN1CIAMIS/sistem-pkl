@@ -160,7 +160,7 @@
                             Data Akun Pembimbing Sekolah (Guru)
                         </h4>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                            Ekspor Username, Password Default (smkn1ciamis), NIP, email, total siswa bimbingan, dan daftar tempat DUDI yang dibimbing.
+                            Ekspor Username (NIP), Password Default (NIP), NIP, email, total siswa bimbingan, dan daftar tempat DUDI yang dibimbing.
                         </p>
                     </label>
 
@@ -485,8 +485,8 @@
                     kredensial_guru: [
                         { key: 'nama_guru', label: 'Nama Guru Pembimbing' },
                         { key: 'nip', label: 'NIP Guru' },
-                        { key: 'username', label: 'Username Login Akun' },
-                        { key: 'password_default', label: 'Password Awal Default (smkn1ciamis)' },
+                        { key: 'username', label: 'Username Login Akun (NIP)' },
+                        { key: 'password_default', label: 'Password Awal Default (NIP Guru)' },
                         { key: 'status_password', label: 'Status Keamanan Password' },
                         { key: 'email', label: 'Alamat Email' },
                         { key: 'tipe_guru', label: 'Tipe Pembimbing' },

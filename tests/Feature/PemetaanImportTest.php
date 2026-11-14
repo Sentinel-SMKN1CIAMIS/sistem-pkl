@@ -322,4 +322,93 @@ CSV;
         $this->assertEquals('success', $data2['status']);
         $this->assertEquals(40, $data2['offset']);
     }
+
+    public function test_import_smart_overwrite_existing_teacher_credentials_without_affecting_dudi_mappings(): void
+    {
+        $service = new PemetaanImportService();
+
+        // 1. Setup existing teacher with legacy credentials
+        $legacyUser = User::create([
+            'name' => 'Acep Muhammad Soleh',
+            'username' => 'acep.legacy',
+            'email' => 'acep.legacy@smkn1ciamis.sch.id',
+            'password' => 'smkn1ciamis',
+            'role' => 'pembimbing_sekolah',
+            'is_active' => true,
+            'force_password_change' => true,
+        ]);
+
+        $pembimbing = PembimbingSekolah::create([
+            'user_id' => $legacyUser->id,
+            'nama_lengkap' => 'Acep Muhammad Soleh',
+            'nip' => null, // Initially null
+            'tipe' => 'kejuruan',
+            'konsentrasi_keahlian_id' => $this->konPplg->id,
+        ]);
+
+        // 2. Setup existing DUDI and assigned student
+        $dudi = Dudi::create([
+            'nama' => 'PT Teknologi Unggul Ciamis',
+            'konsentrasi_keahlian_id' => $this->konPplg->id,
+            'kota' => 'Ciamis',
+            'alamat' => 'Jl. Jendral Sudirman',
+            'is_active' => true,
+        ]);
+
+        $userSiswa = User::create([
+            'name' => 'Budi Siswa',
+            'username' => '242510999',
+            'email' => 'budi@test.com',
+            'password' => '242510999',
+            'role' => 'siswa',
+        ]);
+
+        $siswa = Siswa::create([
+            'user_id' => $userSiswa->id,
+            'konsentrasi_keahlian_id' => $this->konPplg->id,
+            'nis' => '242510999',
+            'nama_lengkap' => 'Budi Siswa',
+            'kelas' => 'XII PPLG 1',
+            'jenis_kelamin' => 'L',
+            'tahun_ajaran' => '2026/2027',
+            'status_pkl' => 'sedang_pkl',
+            'dudi_id' => $dudi->id,
+            'pembimbing_sekolah_id' => $pembimbing->id,
+        ]);
+
+        // 3. Import new batch involving Acep Muhammad Soleh
+        $items = [
+            [
+                'wilayah' => 'Ciamis',
+                'pembimbing_raw' => 'Acep Muhammad Soleh, S.Pd.',
+                'pembimbing_canonical' => 'Acep Muhammad Soleh',
+                'dudi_raw' => 'PT Teknologi Unggul Ciamis',
+                'dudi_name' => 'PT Teknologi Unggul Ciamis',
+                'siswa_nama' => 'Budi Siswa',
+                'kelas' => 'XII PPLG 1',
+                'program' => 'PPLG',
+            ],
+        ];
+
+        $stats = $service->executeImport($items);
+
+        $this->assertEquals(1, $stats['pembimbing_matched']);
+        $this->assertEquals(0, $stats['pembimbing_created']);
+
+        // 4. Verify teacher's credentials are smartly overwritten to official NIP
+        $pembimbing->refresh();
+        $legacyUser->refresh();
+
+        $expectedNip = '199409152022211004';
+        $this->assertEquals($expectedNip, $pembimbing->nip);
+        $this->assertEquals($expectedNip, $legacyUser->username);
+        $this->assertEquals("{$expectedNip}@smkn1ciamis.sch.id", $legacyUser->email);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check($expectedNip, $legacyUser->password));
+        $this->assertTrue($legacyUser->force_password_change);
+
+        // 5. Verify student mapping and DUDI relationship remain completely intact
+        $siswa->refresh();
+        $this->assertEquals($pembimbing->id, $siswa->pembimbing_sekolah_id);
+        $this->assertEquals($dudi->id, $siswa->dudi_id);
+    }
 }

@@ -91,6 +91,189 @@ class PemetaanImportService
     ];
 
     /**
+     * Daftar 97 Guru Resmi SMKN 1 Ciamis beserta NIP resmi masing-masing.
+     */
+    protected array $officialTeachers = [
+        ['name' => 'ACEP MUHAMMAD SOLEH, S.Pd.', 'nip' => '199409152022211004'],
+        ['name' => 'AGUNG SOFIYANI, S.E.', 'nip' => '199206122024212036'],
+        ['name' => 'AI SITI MUNAWAROH, S.Pd.', 'nip' => '199502082024212017'],
+        ['name' => 'ALISAH, S.Pd. HJ.', 'nip' => '197204111996012001'],
+        ['name' => 'AMIRUDIN, S.Pd.', 'nip' => '198605012023211012'],
+        ['name' => 'ANE MARYANI, S.Pd.', 'nip' => '198703162022212007'],
+        ['name' => 'ANGGA FEBRIAN PRATAMA, S.Pd.', 'nip' => '199902022025211076'],
+        ['name' => 'ANI HERLIANI, S.Kom.', 'nip' => '198009162014082003'],
+        ['name' => 'ANING NURGANAH, S.Pd.', 'nip' => '199711272022212002'],
+        ['name' => 'ANIS KURLY, S.Pd.', 'nip' => '199705152024212025'],
+        ['name' => 'ARIE IMAM MAULANI, S.Pd.', 'nip' => '198910182024211007'],
+        ['name' => 'ARIF ZAPAR SIDIK, ST.', 'nip' => '198909182025211135'],
+        ['name' => 'ARINARYANI SURYANI, S.Pd.', 'nip' => '199504052024212034'],
+        ['name' => 'ASEP CAHRINA Drs.', 'nip' => '196801231994121006'],
+        ['name' => 'ATI SUKMAWATI, S.Pd.', 'nip' => '198806272022212014'],
+        ['name' => 'ATIN HERAWATI,  M.Pd. Hj.', 'nip' => '198001192008012006'],
+        ['name' => 'ATIN KUDRIATIN, S.Pd.', 'nip' => '197602292006042009'],
+        ['name' => 'AZIZ MUSLIM, S.Pd.', 'nip' => '197906232025211006'],
+        ['name' => 'BEFI APRIANSYAH, S.Pd.', 'nip' => '199204222025211151'],
+        ['name' => 'CAHYAMAN N., S.Pd.', 'nip' => '197301312021211002'],
+        ['name' => 'CARKIM, S.Pd.', 'nip' => '197512252014081001'],
+        ['name' => 'CUCU CAHYANI, S.Pd.', 'nip' => '198001102008012006'],
+        ['name' => 'CUCU HERMAWAN, M.Pd. H.', 'nip' => '197401011997021001'],
+        ['name' => 'DADAN SUGIARNA, S.Pd.', 'nip' => '196608091997021001'],
+        ['name' => 'DADANG NURDIN Drs.', 'nip' => '196609071994121001'],
+        ['name' => 'DADI RUSYADI, S.Pd.', 'nip' => '198104182024211005'],
+        ['name' => 'DEASY PUTRI LESTARI, S.Pd.', 'nip' => '198612132022212017'],
+        ['name' => 'DEDEH K. S.Pd.,M.Pd.', 'nip' => '197010091996012001'],
+        ['name' => 'DELA HIKMATUL AMBIA, S.Pd. Hj.', 'nip' => '199005042025212167'],
+        ['name' => 'DESLITA SENIATSANI, S.Pd.', 'nip' => '199112052022212008'],
+        ['name' => 'DESTY SOBARYANTINI, S.Pd.', 'nip' => '199112142024212028'],
+        ['name' => 'DEVI RODIANA, S.T.', 'nip' => '198712232022211009'],
+        ['name' => 'DEWI ROSITA, S.Pd.', 'nip' => '198507132022212025'],
+        ['name' => 'DHINDA AGHITA M., S.Pd.', 'nip' => '199508162025212120'],
+        ['name' => 'DINI APRIANI NURRAMDAN, S.Pd.', 'nip' => '199004092025212141'],
+        ['name' => 'DINI YUDI K, S.Tr.Par.', 'nip' => '199303112020122022'],
+        ['name' => 'EGI SAMSUL MU\'ARIF, S.Pd.', 'nip' => '199603122020121014'],
+        ['name' => 'ELIN KARLINAH Dra.', 'nip' => '196806051994122006'],
+        ['name' => 'ELWIN ADLIAN R., S.Pd.', 'nip' => '199205062023211017'],
+        ['name' => 'ENDAH RAHAYU D., S.Pd., M.Pd.', 'nip' => '197207122006042006'],
+        ['name' => 'ERVIN MAULANA, A.Md.Par.', 'nip' => '199606272025211116'],
+        ['name' => 'FAHMI AGNIYATU RAHMAN, S.Pd.', 'nip' => '199708242022211001'],
+        ['name' => 'FARIK SAMSUL PATONI', 'nip' => '198712222023211009'],
+        ['name' => 'FITRIA AGUSTINA, S.Pd.', 'nip' => '197908232024212005'],
+        ['name' => 'HARIMAN HENDRIANA, S.Pd. H.', 'nip' => '197708292008011002'],
+        ['name' => 'HARINI, S.Pd.', 'nip' => '197806052023212018'],
+        ['name' => 'HERNA NOVITASARI, S.Pd.', 'nip' => '199506302024212029'],
+        ['name' => 'IIP MASRIPAH, S.Ag.', 'nip' => '197408012021212002'],
+        ['name' => 'IKA HASANAH, S.Pd', 'nip' => '198601122022212047'],
+        ['name' => 'IKHSAN, N.R., S.Pd.,M.Pd.', 'nip' => '197510112008011004'],
+        ['name' => 'IMAS DEWI ARIYANTI, S.Kom.', 'nip' => '199707182022212004'],
+        ['name' => 'IMAS MAESAROH, S.Pd.', 'nip' => '199609292022212018'],
+        ['name' => 'IMAS MASRIAH, S.Pd.', 'nip' => '197903102006042025'],
+        ['name' => 'IQBAL FAUZI LISYANTO, S.Par.', 'nip' => '199610022025211081'],
+        ['name' => 'IRFAN NUR MUTTAQIN, S.Pd.I.', 'nip' => '199305202023211006'],
+        ['name' => 'IRMA SUKMARINI S.Pd.', 'nip' => '198212102009012007'],
+        ['name' => 'JAJANG IKBAL H., S.Pd.', 'nip' => '199602022025211150'],
+        ['name' => 'JULIA MELIANI ROSADI, S.Pd.', 'nip' => '199505262023212023'],
+        ['name' => 'KIKI SUPENDI, MT.', 'nip' => '197701202009011007'],
+        ['name' => 'MAHANI GUNAWAN, S.Pd.', 'nip' => '199511012022212012'],
+        ['name' => 'MAMAN NUROHMAN, S.Pd.', 'nip' => '198508132024211006'],
+        ['name' => 'MAULINA FAJRIN, S.Par.', 'nip' => '199806252025212074'],
+        ['name' => 'META NUR MAWATY, S.Pd.', 'nip' => '198503072024212009'],
+        ['name' => 'MIMING MIPTAHUDIN, S.Pd.', 'nip' => '198010262025211052'],
+        ['name' => 'MUHAMAD AFRIZAL, S.Pd.', 'nip' => '199704272024211007'],
+        ['name' => 'NANANG AZIS S. S.Pd.,M.Pd. H.', 'nip' => '196704281990031002'],
+        ['name' => 'NASTITI, S.Pd.', 'nip' => '198909242014012001'],
+        ['name' => 'NENI RAHMAWATI, S.Pd.', 'nip' => '199303072022212009'],
+        ['name' => 'NERI SONDARI, S.Pd.', 'nip' => '199501262022212017'],
+        ['name' => 'NINA, S.Pd.', 'nip' => '198609232025212079'],
+        ['name' => 'ONENG DALILAH, M.Pd.', 'nip' => '196706221991032006'],
+        ['name' => 'PEBI DINASTRIANI, S.Pd.', 'nip' => '198802052011012004'],
+        ['name' => 'PIA AMANDA NURHUSNI, S.Pd.', 'nip' => '198812292022212007'],
+        ['name' => 'RANTI PURNAMA DEWI, S.Pd.', 'nip' => '198909132019032014'],
+        ['name' => 'RATNA NUR INDAH SARI, S.Pd.', 'nip' => '198709112023212031'],
+        ['name' => 'RIRIS SRI BUDIYANTI, S.Pd.', 'nip' => '197405042024212003'],
+        ['name' => 'SAHRI AGUSTIAN, S.Pd.I', 'nip' => '198303072023211002'],
+        ['name' => 'SINTIYA NURI ROSMALIA, S.Pd', 'nip' => '199610102022212009'],
+        ['name' => 'SITI NURASYIAH, S.Pd.', 'nip' => '199506162025212010'],
+        ['name' => 'SITI QOMARIYAH, S.Pd.', 'nip' => '198405252022212026'],
+        ['name' => 'SRI YULIANI, S.Pd.', 'nip' => '199007142022212013'],
+        ['name' => 'SUCI AZMIYATI, S.Pd.I.', 'nip' => '198303072023212019'],
+        ['name' => 'TENIA OCTAVIANA, S.Pd.', 'nip' => '199210102022212015'],
+        ['name' => 'TETI SRI M.H., S.Pd.', 'nip' => '198211152022212018'],
+        ['name' => 'TIKA MUSTIKAWATI, M.Pd.', 'nip' => '198202102005012008'],
+        ['name' => 'TITA PUSPITA, S.Pd.,M.Pd.', 'nip' => '198102252008012006'],
+        ['name' => 'TRESNA YUNIAWATI, S.Pd.', 'nip' => '199008152025212159'],
+        ['name' => 'WIANA YULIAN, S.Pd.', 'nip' => '199207152023212039'],
+        ['name' => 'WILIANDINI, S.Pd.', 'nip' => '198202022024212016'],
+        ['name' => 'YANA HENDRAYANA, S.Pd., M.Pd.', 'nip' => '197105281998021004'],
+        ['name' => 'YANA SOVIYANA, SE.', 'nip' => '198104282022211006'],
+        ['name' => 'YATI SETIAWATI, S.Ag.', 'nip' => '197608272021212001'],
+        ['name' => 'YENI MARYANI. S.Pd.', 'nip' => '197811172024212006'],
+        ['name' => 'YENI MULYANINGSIH, S.Si.', 'nip' => '198209122023212017'],
+        ['name' => 'YEYET ROHAETI, S.Pd.', 'nip' => '197501032021212005'],
+        ['name' => 'YUSEF ABDUL AZIZ, S.Pd.', 'nip' => '198911282022211010'],
+        ['name' => 'ZAKIYATUNNISA ISWAHYUDI, S.Pd.', 'nip' => '199202142025212011'],
+    ];
+
+    /**
+     * Kamus alias manual untuk variasi ejaan, gelar berbeda, atau inisial.
+     */
+    protected array $manualTeacherAliases = [
+        'budi santoso' => '198701012010011001',
+        'yana hendayana' => '197105281998021004',
+        'ikhsan nur rokhmat' => '197510112008011004',
+        'bepi apriansyah' => '199204222025211151',
+        'nanang aziz supriadi' => '196704281990031002',
+        'dini yudi kasimamora' => '199303112020122022',
+        'dhinda aghita mahardika' => '199508162025212120',
+        'ervin maulana herdiansyah' => '199606272025211116',
+        'dedeh kurniasih' => '197010091996012001',
+        'teti sri mulyati hidayat' => '198211152022212018',
+        'deslita' => '199112052022212008',
+    ];
+
+    /**
+     * Mencari NIP guru secara cerdas berdasarkan nama lengkap atau variasinya.
+     */
+    public function findTeacherNip(string $rawName): ?string
+    {
+        $clean = strtolower(trim(preg_replace('/,.*$/', '', $rawName)));
+        $clean = preg_replace('/\b(drs\.|dra\.|hj\.|h\.|s\.pd|s\.kom|mt|se|s\.ag|s\.si)\b/i', '', $clean);
+        $clean = trim(preg_replace('/\s+/', ' ', $clean));
+
+        if (empty($clean)) {
+            return null;
+        }
+
+        if (isset($this->manualTeacherAliases[$clean])) {
+            return $this->manualTeacherAliases[$clean];
+        }
+
+        $cleanOfficialList = [];
+        foreach ($this->officialTeachers as $off) {
+            $nameWithoutTitle = preg_replace('/,.*$/', '', $off['name']);
+            $nameWithoutTitle = preg_replace('/\b(Drs\.|Dra\.|Hj\.|H\.|S\.Pd|S\.Kom|MT|SE|S\.Ag|S\.Si).*$/i', '', $nameWithoutTitle);
+            $cName = strtolower(trim($nameWithoutTitle, " \t\n\r\0\x0B,.\""));
+            $cleanOfficialList[] = [
+                'clean_name' => $cName,
+                'nip' => $off['nip'],
+            ];
+            if ($cName === $clean) {
+                return $off['nip'];
+            }
+        }
+
+        $words = explode(' ', $clean);
+        $w1 = $words[0] ?? '';
+        $w2 = $words[1] ?? '';
+
+        $matches = [];
+        foreach ($cleanOfficialList as $off) {
+            $offWords = explode(' ', $off['clean_name']);
+            $ow1 = $offWords[0] ?? '';
+            $ow2 = $offWords[1] ?? '';
+
+            if ($ow1 === $w1) {
+                if (empty($w2) || empty($ow2) || $ow2 === $w2 || str_starts_with($ow2, $w2) || str_starts_with($w2, $ow2)) {
+                    $matches[] = $off;
+                }
+            }
+        }
+
+        if (count($matches) === 1) {
+            return $matches[0]['nip'];
+        }
+
+        $noSpaceClean = str_replace([' ', '.', '-'], '', $clean);
+        foreach ($cleanOfficialList as $off) {
+            $noSpaceOff = str_replace([' ', '.', '-'], '', $off['clean_name']);
+            if (str_contains($noSpaceOff, $noSpaceClean) || str_contains($noSpaceClean, $noSpaceOff)) {
+                return $off['nip'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Membersihkan nama guru dari angka urut dan gelar.
      */
     public function cleanTeacherName(string $raw): string
@@ -485,9 +668,10 @@ class PemetaanImportService
 
                 // 1. RESOLUSI / PEMBUATAN AKUN PEMBIMBING SEKOLAH
                 $pembimbingSekolah = $existingTeachers->get($teacherKey);
+                $nip = $this->findTeacherNip($teacherName) ?: $this->findTeacherNip($cleanTeacher);
 
                 if (!$pembimbingSekolah) {
-                    $username = Str::slug($cleanTeacher, '.');
+                    $username = $nip ?: Str::slug($cleanTeacher, '.');
                     // Pastikan username unik
                     $baseUsername = $username;
                     $counter = 1;
@@ -496,11 +680,13 @@ class PemetaanImportService
                         $counter++;
                     }
 
+                    $teacherPassword = $nip ?: $defaultPassword;
+
                     $user = User::create([
                         'name' => $cleanTeacher,
                         'username' => $username,
                         'email' => $username . '@smkn1ciamis.sch.id',
-                        'password' => $defaultPassword, // di-hash otomatis via cast 'password' => 'hashed'
+                        'password' => $teacherPassword, // di-hash otomatis via cast 'password' => 'hashed'
                         'role' => 'pembimbing_sekolah',
                         'is_active' => true,
                         'force_password_change' => true,
@@ -509,6 +695,7 @@ class PemetaanImportService
                     $pembimbingSekolah = PembimbingSekolah::create([
                         'user_id' => $user->id,
                         'nama_lengkap' => $cleanTeacher,
+                        'nip' => $nip,
                         'tipe' => 'kejuruan',
                     ]);
 
@@ -516,6 +703,32 @@ class PemetaanImportService
                     $existingUsers->put($teacherKey, $user);
                     $stats['pembimbing_created']++;
                 } else {
+                    // FITUR PINTAR: Nimpa data kredensial guru tanpa merubah penempatan DUDI atau siswa bimbingan
+                    if ($nip) {
+                        if ($pembimbingSekolah->nip !== $nip) {
+                            $pembimbingSekolah->nip = $nip;
+                            $pembimbingSekolah->saveQuietly();
+                        }
+
+                        $user = $pembimbingSekolah->user;
+                        if ($user) {
+                            $isUserDirty = false;
+                            if ($user->username !== $nip) {
+                                $user->username = $nip;
+                                $user->email = $nip . '@smkn1ciamis.sch.id';
+                                $isUserDirty = true;
+                            }
+                            // Jika password masih berstatus default / belum diubah, perbarui ke NIP
+                            if ($user->force_password_change || Hash::check('smkn1ciamis', $user->password)) {
+                                $user->password = $nip;
+                                $user->force_password_change = true;
+                                $isUserDirty = true;
+                            }
+                            if ($isUserDirty) {
+                                $user->saveQuietly();
+                            }
+                        }
+                    }
                     $stats['pembimbing_matched']++;
                 }
 

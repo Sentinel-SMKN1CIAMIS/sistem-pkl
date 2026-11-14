@@ -391,7 +391,7 @@ class SiswaController extends Controller
         $siswa->user->update([
             'username' => $siswa->nis,
             'password' => Hash::make($siswa->nis),
-            'force_password_change' => false,
+            'force_password_change' => true,
         ]);
 
         if (class_exists(ActivityLog::class)) {

@@ -411,10 +411,11 @@ class CustomReportController extends Controller
                         $sheet->setCellValueExplicit($colLetter . $rowIdx, $guru->user?->username ?: '-', DataType::TYPE_STRING);
                         break;
                     case 'password_default':
-                        $sheet->setCellValueExplicit($colLetter . $rowIdx, 'smkn1ciamis', DataType::TYPE_STRING);
+                        $defaultPass = $guru->nip ?: ($guru->user?->username ?: 'smkn1ciamis');
+                        $sheet->setCellValueExplicit($colLetter . $rowIdx, $defaultPass, DataType::TYPE_STRING);
                         break;
                     case 'status_password':
-                        $sheet->setCellValue($colLetter . $rowIdx, $isDefault ? 'Default (smkn1ciamis)' : 'Sudah Diubah Guru');
+                        $sheet->setCellValue($colLetter . $rowIdx, $isDefault ? 'Default (NIP Guru)' : 'Sudah Diubah Guru');
                         break;
                     case 'email':
                         $sheet->setCellValue($colLetter . $rowIdx, $guru->user?->email ?: '-');

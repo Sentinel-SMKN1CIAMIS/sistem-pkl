@@ -150,17 +150,19 @@ class CustomReportTest extends TestCase
 
     public function test_export_kredensial_guru_excel_stream(): void
     {
+        $nip = '197701202009011007'; // NIP resmi Kiki Supendi
         $userGuru = User::create([
             'name' => 'Kiki Supendi',
-            'username' => 'kiki.supendi',
-            'email' => 'kiki@smkn1ciamis.sch.id',
-            'password' => bcrypt('smkn1ciamis'),
+            'username' => $nip,
+            'email' => "{$nip}@smkn1ciamis.sch.id",
+            'password' => bcrypt($nip),
             'role' => 'pembimbing_sekolah',
             'force_password_change' => true,
         ]);
         PembimbingSekolah::create([
             'user_id' => $userGuru->id,
             'nama_lengkap' => 'Kiki Supendi',
+            'nip' => $nip,
             'tipe' => 'kejuruan',
             'konsentrasi_keahlian_id' => $this->konsentrasi->id,
         ]);
@@ -174,6 +176,29 @@ class CustomReportTest extends TestCase
 
         $response->assertOk();
         $this->assertStringContainsString('data-akun-pembimbing-sekolah', $response->headers->get('Content-Disposition'));
+
+        // Inspect content to confirm NIP is used in credentials
+        ob_start();
+        $response->sendContent();
+        $content = ob_get_clean();
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'test_excel_');
+        file_put_contents($tmpFile, $content);
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($tmpFile);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Row 2 is Kiki Supendi
+        $exportedNip = $sheet->getCell('C2')->getValue();
+        $exportedUsername = $sheet->getCell('D2')->getValue();
+        $exportedPasswordDefault = $sheet->getCell('E2')->getValue();
+        $exportedStatus = $sheet->getCell('F2')->getValue();
+
+        $this->assertEquals($nip, $exportedNip);
+        $this->assertEquals($nip, $exportedUsername);
+        $this->assertEquals($nip, $exportedPasswordDefault);
+        $this->assertEquals('Default (NIP Guru)', $exportedStatus);
+
+        @unlink($tmpFile);
     }
 
     public function test_export_csv_format(): void

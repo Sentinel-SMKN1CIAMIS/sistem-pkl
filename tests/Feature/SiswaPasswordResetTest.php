@@ -125,9 +125,9 @@ class SiswaPasswordResetTest extends TestCase
         $this->assertTrue(Hash::check('12345678', $this->siswa1->user->password));
         $this->assertTrue(Hash::check('87654321', $this->siswa2->user->password));
 
-        // force_password_change must be false
-        $this->assertFalse((bool) $this->siswa1->user->force_password_change);
-        $this->assertFalse((bool) $this->siswa2->user->force_password_change);
+        // force_password_change must be true because password was reset to default (NIS)
+        $this->assertTrue((bool) $this->siswa1->user->force_password_change);
+        $this->assertTrue((bool) $this->siswa2->user->force_password_change);
     }
 
     public function test_pokja_can_reset_single_student_password_to_nis(): void
@@ -141,9 +141,9 @@ class SiswaPasswordResetTest extends TestCase
         $this->siswa1->refresh();
         $this->siswa2->refresh();
 
-        // Siswa 1 password is now NIS
+        // Siswa 1 password is now NIS and must change password
         $this->assertTrue(Hash::check('12345678', $this->siswa1->user->password));
-        $this->assertFalse((bool) $this->siswa1->user->force_password_change);
+        $this->assertTrue((bool) $this->siswa1->user->force_password_change);
 
         // Siswa 2 password remains untouched
         $this->assertTrue(Hash::check('AnotherCustom456!', $this->siswa2->user->password));

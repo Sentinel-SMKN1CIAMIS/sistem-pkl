@@ -42,7 +42,8 @@ class ForcePasswordChange
                             $user->saveQuietly();
                         }
                     } elseif ($user->role === 'pembimbing_sekolah') {
-                        if (\Illuminate\Support\Facades\Hash::check('smkn1ciamis', $user->password)) {
+                        $nip = $user->pembimbingSekolah?->nip;
+                        if (($nip && \Illuminate\Support\Facades\Hash::check($nip, $user->password)) || \Illuminate\Support\Facades\Hash::check('smkn1ciamis', $user->password)) {
                             $needsChange = true;
                             $user->force_password_change = true;
                             $user->saveQuietly();

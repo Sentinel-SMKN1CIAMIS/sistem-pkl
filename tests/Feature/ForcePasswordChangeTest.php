@@ -188,6 +188,31 @@ class ForcePasswordChangeTest extends TestCase
         $formResponse->assertStatus(200);
     }
 
+    public function test_pembimbing_sekolah_auto_detected_when_password_matches_nip(): void
+    {
+        $nip = '199409152022211004';
+        $user = User::factory()->create([
+            'username' => $nip,
+            'password' => bcrypt($nip),
+            'force_password_change' => false, // Initially false
+            'role' => 'pembimbing_sekolah',
+        ]);
+
+        \App\Models\PembimbingSekolah::create([
+            'user_id' => $user->id,
+            'nama_lengkap' => 'Acep Muhammad Soleh',
+            'nip' => $nip,
+            'tipe' => 'kejuruan',
+        ]);
+
+        // When accessing any page, middleware should auto-detect default password = NIP
+        $response = $this->actingAs($user)->get('/dashboard');
+        $response->assertRedirect(route('auth.change-password.show'));
+
+        $user->refresh();
+        $this->assertTrue($user->force_password_change);
+    }
+
     public function test_non_siswa_role_cannot_access_change_password_form()
     {
         $user = User::factory()->create([
