@@ -18,7 +18,7 @@ class PemetaanImportService
      * Daftar 70 guru resmi SMKN 1 Ciamis sebagai kamus acuan kanonikal.
      */
     protected array $canonicalTeachers = [
-        'Acep Muhammad Soleh, S.Pd.',
+        'Acep Muhammad Soleh',
         'Agung Sofiyani',
         'Ai Siti Munawaroh',
         'Alisah',
@@ -445,7 +445,7 @@ class PemetaanImportService
         });
 
         $existingTeachers = PembimbingSekolah::all()->keyBy(function($p) {
-            return strtolower(trim($p->nama_lengkap));
+            return strtolower(trim($this->cleanTeacherName($p->nama_lengkap)));
         });
 
         $existingDudis = Dudi::all()->keyBy(function($d) {
@@ -478,7 +478,8 @@ class PemetaanImportService
                     continue;
                 }
 
-                $teacherKey = strtolower(trim($teacherName));
+                $cleanTeacher = $this->cleanTeacherName($teacherName);
+                $teacherKey = strtolower(trim($cleanTeacher));
                 $dudiKey = strtolower(trim($dudiName));
                 $studentKey = strtolower(trim($studentName));
 
@@ -486,7 +487,6 @@ class PemetaanImportService
                 $pembimbingSekolah = $existingTeachers->get($teacherKey);
 
                 if (!$pembimbingSekolah) {
-                    $cleanTeacher = $this->cleanTeacherName($teacherName);
                     $username = Str::slug($cleanTeacher, '.');
                     // Pastikan username unik
                     $baseUsername = $username;
