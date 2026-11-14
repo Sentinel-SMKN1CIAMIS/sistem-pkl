@@ -95,6 +95,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::patch('laporan/{laporan}', [\App\Http\Controllers\PembimbingSekolah\LaporanController::class, 'update'])->name('laporan.update');
         Route::get('profile', [\App\Http\Controllers\PembimbingSekolah\ProfileController::class, 'index'])->name('profile.index');
         Route::patch('profile', [\App\Http\Controllers\PembimbingSekolah\ProfileController::class, 'update'])->name('profile.update');
+        Route::get('dudi-mentor', [\App\Http\Controllers\PembimbingSekolah\DudiMentorController::class, 'index'])->name('dudi_mentor.index');
+        Route::post('dudi-mentor', [\App\Http\Controllers\PembimbingSekolah\DudiMentorController::class, 'store'])->name('dudi_mentor.store');
     });
 
     Route::middleware('role:pembimbing_dudi')->prefix('pembimbing_dudi')->name('pembimbing_dudi.')->group(function () {
@@ -178,6 +180,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('config/download-backup/{filename}', [\App\Http\Controllers\Admin\ConfigController::class, 'downloadBackup'])->name('config.download-backup');
         Route::delete('config/delete-backup/{filename}', [\App\Http\Controllers\Admin\ConfigController::class, 'deleteBackup'])->name('config.delete-backup');
         Route::post('config/wipe', [\App\Http\Controllers\Admin\ConfigController::class, 'wipe'])->name('config.wipe');
+        Route::post('config/import-pemetaan', [\App\Http\Controllers\Admin\ConfigController::class, 'importPemetaan'])->name('config.import-pemetaan');
     });
 
     // Pokja Routes - with group membership check

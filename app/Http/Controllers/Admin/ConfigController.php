@@ -389,4 +389,68 @@ class ConfigController extends Controller
             return back()->with('error', 'Gagal membersihkan data transaksi: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Impor pemetaan pembimbing, DUDI, dan siswa (mendukung chunked AJAX).
+     */
+    public function importPemetaan(Request $request, \App\Services\PemetaanImportService $service)
+    {
+        $allowedJurusan = $request->input('jurusan_filter', ['AKL', 'PBS', 'MPLB', 'PM', 'PBD', 'KLN', 'HTL', 'PPLG']);
+        if (!is_array($allowedJurusan)) {
+            $allowedJurusan = explode(',', $allowedJurusan);
+        }
+
+        $defaultPassword = $request->input('default_password', 'smkn1ciamis');
+
+        // Check if file is uploaded or using stored master
+        $filePath = null;
+        if ($request->hasFile('file')) {
+            $request->validate([
+                'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
+            ]);
+            $filePath = $request->file('file')->getRealPath();
+        } else {
+            $filePath = storage_path('app/pemetaan_2026_2027.csv');
+            if (!file_exists($filePath)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Berkas pemetaan tidak ditemukan di server.',
+                ], 404);
+            }
+        }
+
+        // Parse file
+        $parsed = $service->parseCsv($filePath, $allowedJurusan);
+        $totalItems = count($parsed['items']);
+
+        if ($request->ajax() || $request->wantsJson() || $request->isJson() || $request->has('batch_size')) {
+            $batchSize = max(1, min((int) $request->input('batch_size', 50), 100));
+            $offset = max(0, (int) $request->input('offset', 0));
+
+            $slice = array_slice($parsed['items'], $offset, $batchSize);
+            $stats = $service->executeImport($slice, ['default_password' => $defaultPassword]);
+
+            $nextOffset = $offset + count($slice);
+            $isDone = ($nextOffset >= $totalItems) || count($slice) === 0;
+
+            return response()->json([
+                'status' => 'success',
+                'batch_processed' => count($slice),
+                'processed_total' => min($nextOffset, $totalItems),
+                'total' => $totalItems,
+                'offset' => $nextOffset,
+                'percent' => $totalItems > 0 ? min(100, (int) round(($nextOffset / $totalItems) * 100)) : 100,
+                'done' => $isDone,
+                'stats' => $stats,
+                'message' => $isDone
+                    ? "Selesai mengimpor {$totalItems} data pemetaan."
+                    : "Memproses {$nextOffset} dari {$totalItems} pemetaan...",
+            ]);
+        }
+
+        // Fallback synchronous POST
+        $stats = $service->executeImport($parsed['items'], ['default_password' => $defaultPassword]);
+
+        return back()->with('success', "Berhasil mengimpor pemetaan: {$stats['pembimbing_created']} akun pembimbing baru, {$stats['dudi_created']} DUDI baru, dan {$stats['siswa_mapped']} siswa berhasil dipetakan.");
+    }
 }

@@ -90,6 +90,7 @@
                 ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
                 ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
                 ['name' => 'Peta DUDI', 'route' => 'shared.pemetaan.maps', 'icon' => 'map'],
+                ['name' => 'Akun Mentor DUDI', 'route' => 'pembimbing_sekolah.dudi_mentor.index', 'icon' => 'building-2'],
                 ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
             ];
         } elseif ($role === 'pembimbing_dudi') {
