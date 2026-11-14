@@ -154,7 +154,7 @@ class CustomReportTest extends TestCase
         $userGuru = User::create([
             'name' => 'Kiki Supendi',
             'username' => $nip,
-            'email' => "{$nip}@smkn1ciamis.sch.id",
+            'email' => null,
             'password' => bcrypt($nip),
             'role' => 'pembimbing_sekolah',
             'force_password_change' => true,

@@ -685,7 +685,7 @@ class PemetaanImportService
                     $user = User::create([
                         'name' => $cleanTeacher,
                         'username' => $username,
-                        'email' => $username . '@smkn1ciamis.sch.id',
+                        'email' => null,
                         'password' => $teacherPassword, // di-hash otomatis via cast 'password' => 'hashed'
                         'role' => 'pembimbing_sekolah',
                         'is_active' => true,
@@ -715,7 +715,7 @@ class PemetaanImportService
                             $isUserDirty = false;
                             if ($user->username !== $nip) {
                                 $user->username = $nip;
-                                $user->email = $nip . '@smkn1ciamis.sch.id';
+                                $user->email = null;
                                 $isUserDirty = true;
                             }
                             // Jika password masih berstatus default / belum diubah, perbarui ke NIP

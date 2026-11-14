@@ -402,7 +402,7 @@ CSV;
         $expectedNip = '199409152022211004';
         $this->assertEquals($expectedNip, $pembimbing->nip);
         $this->assertEquals($expectedNip, $legacyUser->username);
-        $this->assertEquals("{$expectedNip}@smkn1ciamis.sch.id", $legacyUser->email);
+        $this->assertNull($legacyUser->email);
         $this->assertTrue(\Illuminate\Support\Facades\Hash::check($expectedNip, $legacyUser->password));
         $this->assertTrue($legacyUser->force_password_change);
 
