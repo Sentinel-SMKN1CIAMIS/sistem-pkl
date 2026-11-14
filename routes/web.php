@@ -181,6 +181,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::delete('config/delete-backup/{filename}', [\App\Http\Controllers\Admin\ConfigController::class, 'deleteBackup'])->name('config.delete-backup');
         Route::post('config/wipe', [\App\Http\Controllers\Admin\ConfigController::class, 'wipe'])->name('config.wipe');
         Route::post('config/import-pemetaan', [\App\Http\Controllers\Admin\ConfigController::class, 'importPemetaan'])->name('config.import-pemetaan');
+        Route::get('custom-report', [\App\Http\Controllers\Report\CustomReportController::class, 'index'])->name('custom_report.index');
+        Route::post('custom-report/export', [\App\Http\Controllers\Report\CustomReportController::class, 'export'])->name('custom_report.export');
     });
 
     // Pokja Routes - with group membership check
@@ -235,6 +237,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('pengaturan/surat-pengantar', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSuratPengantar'])->name('pengaturan.surat_pengantar.update');
         Route::get('pengaturan/kop-laporan', [\App\Http\Controllers\Pokja\PengaturanController::class, 'kopLaporan'])->name('pengaturan.kop_laporan');
         Route::post('pengaturan/kop-laporan', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateKopLaporan'])->name('pengaturan.kop_laporan.update');
+        Route::get('custom-report', [\App\Http\Controllers\Report\CustomReportController::class, 'index'])->name('custom_report.index');
+        Route::post('custom-report/export', [\App\Http\Controllers\Report\CustomReportController::class, 'export'])->name('custom_report.export');
 
         // Import & Template Routes
         Route::get('import/panduan', [\App\Http\Controllers\Pokja\ImportController::class, 'showPanduan'])->name('import.panduan');

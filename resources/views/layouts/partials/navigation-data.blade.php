@@ -81,6 +81,7 @@
                 'name' => 'Pengaturan',
                 'icon' => 'settings',
                 'children' => [
+                    ['name' => 'Custom Report & Ekspor', 'route' => 'pokja.custom_report.index', 'icon' => 'file-spreadsheet'],
                     ['name' => 'Template Sertifikat', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'award'],
                     ['name' => 'Template Surat PKL', 'route' => 'pokja.pengaturan.surat_pengantar', 'icon' => 'file-text'],
                     ['name' => 'Kop Laporan PDF', 'route' => 'pokja.pengaturan.kop_laporan', 'icon' => 'building'],
@@ -122,7 +123,14 @@
                     ['name' => 'Kompetensi', 'route' => 'admin.kompetensi.index', 'icon' => 'target'],
                 ]
             ],
-            ['name' => 'Konfigurasi Sistem', 'route' => 'admin.config.index', 'icon' => 'settings'],
+            [
+                'name' => 'Pengaturan & Ekspor',
+                'icon' => 'settings',
+                'children' => [
+                    ['name' => 'Custom Report & Ekspor', 'route' => 'admin.custom_report.index', 'icon' => 'file-spreadsheet'],
+                    ['name' => 'Konfigurasi & Impor', 'route' => 'admin.config.index', 'icon' => 'sliders'],
+                ]
+            ],
             ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
             ['name' => 'Log Sistem', 'route' => 'admin.logs.index', 'icon' => 'scroll-text'],
         ];

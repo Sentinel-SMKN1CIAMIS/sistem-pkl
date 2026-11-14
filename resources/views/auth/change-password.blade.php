@@ -64,11 +64,11 @@
                         </span>
                         Terdapat angka (0-9)
                     </li>
-                    <li class="flex items-center gap-2.5 transition-colors duration-200" :class="/[@$!%*?&#-_]/.test(password) ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
-                        <span class="transition-all duration-200" :class="/[@$!%*?&#-_]/.test(password) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
+                    <li class="flex items-center gap-2.5 transition-colors duration-200" :class="(/[^\w\s]|_/.test(password)) ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
+                        <span class="transition-all duration-200" :class="(/[^\w\s]|_/.test(password)) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </span>
-                        Terdapat karakter spesial (contoh: @$!%*?&#-_)
+                        Terdapat karakter spesial (contoh: @ $ ! % * ? & # - _ . /)
                     </li>
                 </ul>
             </div>
@@ -131,12 +131,16 @@
                 @error('password_confirmation')
                     <p class="text-xs text-red-400 mt-1">{{ $message }}</p>
                 @enderror
+                <p x-show="password && password_confirmation && password !== password_confirmation" class="text-xs text-red-400 mt-1" style="display: none;">
+                    Konfirmasi password tidak cocok dengan password baru.
+                </p>
             </div>
 
             <!-- Submit -->
             <button 
                 type="submit"
-                class="w-full px-4 py-2.5 bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                :disabled="!(password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password) && (/[^\w\s]|_/.test(password)) && password === password_confirmation)"
+                class="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-500/25"
             >
                 <i data-lucide="check-circle" class="h-5 w-5"></i>
                 Ubah Password

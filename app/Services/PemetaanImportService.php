@@ -503,7 +503,7 @@ class PemetaanImportService
                         'password' => $defaultPassword, // di-hash otomatis via cast 'password' => 'hashed'
                         'role' => 'pembimbing_sekolah',
                         'is_active' => true,
-                        'force_password_change' => false,
+                        'force_password_change' => true,
                     ]);
 
                     $pembimbingSekolah = PembimbingSekolah::create([

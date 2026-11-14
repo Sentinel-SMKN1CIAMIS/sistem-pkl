@@ -50,19 +50,19 @@
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="submitForm" class="px-6 py-6 space-y-4">
+            <form id="forceChangePasswordForm" @submit.prevent="submitForm" class="px-6 py-6 space-y-4">
                 @csrf
                 @method('PATCH')
 
                 <!-- Password Baru -->
                 <div>
-                    <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Password Baru</label>
+                    <label for="modal_password" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Password Baru</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i data-lucide="lock" class="w-5 h-5 text-slate-400"></i>
                         </div>
                         <input 
-                            id="password" 
+                            id="modal_password" 
                             name="password" 
                             :type="showPassword ? 'text' : 'password'" 
                             x-model="password"
@@ -79,20 +79,17 @@
                             <i data-lucide="eye-off" x-show="showPassword" class="w-5 h-5" x-cloak></i>
                         </button>
                     </div>
-                    @error('password')
-                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <!-- Konfirmasi Password -->
                 <div>
-                    <label for="password_confirmation" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Konfirmasi Password</label>
+                    <label for="modal_password_confirmation" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Konfirmasi Password</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i data-lucide="lock" class="w-5 h-5 text-slate-400"></i>
                         </div>
                         <input 
-                            id="password_confirmation" 
+                            id="modal_password_confirmation" 
                             name="password_confirmation" 
                             type="password" 
                             x-model="password_confirmation"
@@ -101,15 +98,13 @@
                             placeholder="••••••••"
                         >
                     </div>
-                    @error('password_confirmation')
-                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <!-- Submit Button -->
                 <button 
                     type="submit"
-                    class="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 mt-6"
+                    :disabled="!(password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password) && (/[^\w\s]|_/.test(password)) && password === password_confirmation)"
+                    class="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 mt-6 cursor-pointer"
                 >
                     <i data-lucide="check-circle" class="w-5 h-5"></i>
                     Ubah Password
@@ -125,42 +120,37 @@
 </div>
 
 <script>
-function submitForm() {
-    const form = document.querySelector('form');
+async function submitForm() {
+    const form = document.getElementById('forceChangePasswordForm');
+    if (!form) return;
     const formData = new FormData(form);
     
-    fetch("{{ route('auth.change-password.update') }}", {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: formData
-    })
-    .then(response => {
+    try {
+        const response = await fetch("{{ route('auth.change-password.update') }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || document.querySelector('input[name="_token"]')?.value,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: formData
+        });
+
         if (response.redirected) {
             window.location.href = response.url;
-        } else if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error('Validasi gagal');
-            });
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan: ' + error.message);
-    });
-}
 
-// Prevent form submission default and use fetch
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            submitForm();
-        });
+        const data = await response.json();
+        if (response.ok && (data.success || data.status === 'success')) {
+            window.location.reload();
+        } else {
+            const errorMsg = data.errors ? Object.values(data.errors).flat().join("\n") : (data.message || 'Validasi password gagal');
+            alert(errorMsg);
+        }
+    } catch (err) {
+        window.location.href = "{{ route('auth.change-password.show') }}";
     }
-});
+}
 </script>
 @endif

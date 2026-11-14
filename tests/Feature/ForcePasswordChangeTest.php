@@ -150,7 +150,7 @@ class ForcePasswordChangeTest extends TestCase
 
     public function test_staff_roles_are_not_forced_to_change_password()
     {
-        $roles = ['super_admin', 'pokja', 'kaprog', 'pembimbing_sekolah'];
+        $roles = ['super_admin', 'pokja', 'kaprog'];
 
         $prog = \App\Models\ProgramKeahlian::firstOrCreate(['kode' => 'RPL'], ['nama' => 'Rekayasa Perangkat Lunak']);
         $konsentrasi = \App\Models\KonsentrasiKeahlian::firstOrCreate(
@@ -168,21 +168,24 @@ class ForcePasswordChangeTest extends TestCase
                 'role' => $role,
             ]);
 
-            // Create profile based on role to avoid 500 errors in DashboardController
-            if ($role === 'pembimbing_sekolah') {
-                \App\Models\PembimbingSekolah::create([
-                    'user_id' => $user->id,
-                    'nip' => '12345678',
-                    'nama_lengkap' => $user->name ?? 'Pembimbing',
-                    'tipe' => 'kejuruan',
-                    'konsentrasi_keahlian_id' => $konsentrasi->id,
-                ]);
-            }
-
-            // Staff users should not be redirected to change password
+            // Staff users (admin, pokja, kaprog) should not be redirected to change password
             $response = $this->actingAs($user)->get('/dashboard');
             $this->assertTrue(in_array($response->getStatusCode(), [200, 403, 500]));
         }
+    }
+
+    public function test_pembimbing_sekolah_with_default_password_is_forced_to_change_password()
+    {
+        $user = User::factory()->create([
+            'force_password_change' => true,
+            'role' => 'pembimbing_sekolah',
+        ]);
+
+        $response = $this->actingAs($user)->get('/dashboard');
+        $response->assertRedirect(route('auth.change-password.show'));
+
+        $formResponse = $this->actingAs($user)->get('/auth/change-password');
+        $formResponse->assertStatus(200);
     }
 
     public function test_non_siswa_role_cannot_access_change_password_form()

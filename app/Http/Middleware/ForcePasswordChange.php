@@ -26,10 +26,36 @@ class ForcePasswordChange
             return $next($request);
         }
 
-        if (Auth::check() && in_array(Auth::user()->role, ['siswa', 'pembimbing_dudi']) && Auth::user()->force_password_change) {
-            // Allow logout, change password, notifications, and student help center routes
-            if (!$request->routeIs('auth.change-password.*', 'logout', 'notifications.*', 'siswa.bantuan.*')) {
-                return redirect()->route('auth.change-password.show');
+        if (Auth::check()) {
+            $user = Auth::user();
+            $allowedRoles = ['siswa', 'pembimbing_sekolah', 'pembimbing_dudi'];
+
+            if (in_array($user->role, $allowedRoles)) {
+                $needsChange = (bool) $user->force_password_change;
+
+                // Auto-detect if user is still using default password
+                if (!$needsChange) {
+                    if ($user->role === 'siswa' && $user->siswa && !empty($user->siswa->nis)) {
+                        if (\Illuminate\Support\Facades\Hash::check($user->siswa->nis, $user->password) || (!empty($user->siswa->nisn) && \Illuminate\Support\Facades\Hash::check($user->siswa->nisn, $user->password))) {
+                            $needsChange = true;
+                            $user->force_password_change = true;
+                            $user->saveQuietly();
+                        }
+                    } elseif ($user->role === 'pembimbing_sekolah') {
+                        if (\Illuminate\Support\Facades\Hash::check('smkn1ciamis', $user->password)) {
+                            $needsChange = true;
+                            $user->force_password_change = true;
+                            $user->saveQuietly();
+                        }
+                    }
+                }
+
+                if ($needsChange) {
+                    // Allow logout, change password, notifications, and student help center routes
+                    if (!$request->routeIs('auth.change-password.*', 'logout', 'notifications.*', 'siswa.bantuan.*')) {
+                        return redirect()->route('auth.change-password.show');
+                    }
+                }
             }
         }
 

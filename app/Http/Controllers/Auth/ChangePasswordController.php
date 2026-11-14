@@ -14,8 +14,8 @@ class ChangePasswordController extends Controller
     {
         $user = Auth::user();
         
-        // Only siswa and pembimbing_dudi roles can access change password
-        if (!in_array($user->role, ['siswa', 'pembimbing_dudi'])) {
+        // Allowed roles that can access change password
+        if (!in_array($user->role, ['siswa', 'pembimbing_sekolah', 'pembimbing_dudi'])) {
             return redirect()->route('dashboard');
         }
         
@@ -31,8 +31,8 @@ class ChangePasswordController extends Controller
     {
         $user = Auth::user();
 
-        // Only siswa and pembimbing_dudi roles can change password through this route
-        if (!in_array($user->role, ['siswa', 'pembimbing_dudi'])) {
+        // Allowed roles that can change password through this route
+        if (!in_array($user->role, ['siswa', 'pembimbing_sekolah', 'pembimbing_dudi'])) {
             if ($request->expectsJson()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
@@ -45,13 +45,16 @@ class ChangePasswordController extends Controller
                     'required',
                     'string',
                     'min:8',
-                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#\-_])[a-zA-Z\d@$!%*?&#\-_]+$/',
+                    'regex:/[a-z]/',
+                    'regex:/[A-Z]/',
+                    'regex:/[0-9]/',
+                    'regex:/[\W_]/',
                     'confirmed'
                 ],
             ], [
                 'password.required' => 'Password wajib diisi.',
                 'password.min' => 'Password harus minimal 8 karakter.',
-                'password.regex' => 'Password harus terdapat huruf besar, huruf kecil, angka, dan karakter spesial (@$!%*?&#-_).',
+                'password.regex' => 'Password harus mengandung huruf besar, huruf kecil, angka, dan karakter spesial.',
                 'password.confirmed' => 'Konfirmasi password tidak sesuai.',
             ]);
 
@@ -61,14 +64,23 @@ class ChangePasswordController extends Controller
                 'force_password_change' => false,
             ]);
 
+            $roleLabel = match($user->role) {
+                'siswa' => 'Siswa',
+                'pembimbing_sekolah' => 'Pembimbing Sekolah',
+                'pembimbing_dudi' => 'Pembimbing DUDI',
+                default => 'Pengguna',
+            };
+
             // Log the password change activity
-            ActivityLog::create([
-                'user_id' => $user->id,
-                'action' => 'Password Changed',
-                'description' => ($user->role === 'siswa' ? 'Siswa' : 'Pembimbing Dudi') . ' mengubah password pada login pertama kali',
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
+            if (class_exists(ActivityLog::class)) {
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'action' => 'Password Changed',
+                    'description' => "{$roleLabel} mengubah password pada login pertama kali",
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+            }
 
             // Regenerate session after password change for security
             $request->session()->regenerate();
@@ -77,7 +89,7 @@ class ChangePasswordController extends Controller
                 return response()->json(['success' => 'Password berhasil diubah']);
             }
 
-            return redirect()->route('dashboard')->with('success', 'Password berhasil diubah. Selamat datang di dashboard!');
+            return redirect()->route('dashboard')->with('success', 'Password berhasil diubah. Selamat datang di sistem!');
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Log failed password change due to validation
             ActivityLog::create([
