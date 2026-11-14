@@ -32,6 +32,10 @@
             </div>
             @if(auth()->user()->role !== 'kepala_sekolah')
             <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+                <a href="{{ auth()->user()->role === 'super_admin' ? route('admin.custom_report.index') : route('pokja.custom_report.index') }}" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    Ekspor Kredensial / Data
+                </a>
                 <button @click="showFilters = !showFilters" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-all gap-2 cursor-pointer shadow-sm">
                     <i data-lucide="filter" class="w-4 h-4"></i>
                     Filter & Cari

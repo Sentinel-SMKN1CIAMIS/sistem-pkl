@@ -40,6 +40,10 @@
             </div>
             @if(auth()->user()->role !== 'kepala_sekolah')
             <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+                <a href="{{ auth()->user()->role === 'super_admin' ? route('admin.custom_report.index') : route('pokja.custom_report.index') }}" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    Ekspor Kredensial / Data
+                </a>
                 <button type="button" @click="openBulkReset()" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium rounded-xl border border-amber-500/30 transition-all gap-2 cursor-pointer shadow-sm">
                     <i data-lucide="key-round" class="w-4 h-4"></i>
                     Reset Password ke NIS

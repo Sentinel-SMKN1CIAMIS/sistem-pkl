@@ -2,8 +2,36 @@
     <x-slot name="header">Konfigurasi Sistem</x-slot>
 
     <div class="max-w-4xl text-slate-700 dark:text-slate-300">
-        <div class="mb-6">
-            <p class="text-slate-600 dark:text-slate-400">Kelola pengaturan dasar aplikasi seperti Nama Sekolah, Tahun Ajaran, dan logo.</p>
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <p class="text-slate-600 dark:text-slate-400">Kelola pengaturan dasar aplikasi seperti Nama Sekolah, Tahun Ajaran, logo, dan ekspor data.</p>
+            </div>
+            <a href="{{ route('admin.custom_report.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-lg shadow-blue-500/20 transition-all shrink-0">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                Buka Custom Report & Ekspor Data
+            </a>
+        </div>
+
+        <!-- Banner Shortcut ke Custom Dynamic Report & Ekspor -->
+        <div class="glass-card p-5 rounded-2xl border border-blue-500/30 bg-gradient-to-r from-blue-500/10 via-indigo-500/5 to-purple-500/10 mb-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-start gap-3.5">
+                <div class="p-3 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/25 shrink-0">
+                    <i data-lucide="file-spreadsheet" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        Custom Dynamic Report & Automated Excel/Pivot Builder
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-600 dark:text-blue-400">Fitur Baru</span>
+                    </h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        Ekspor username & password akun siswa (grup angkatan), akun pembimbing sekolah, dan penempatan PKL ke format Excel (.xlsx) dengan Sheet Pivot otomatis.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('admin.custom_report.index') }}" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 transition-all shrink-0">
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                Buka Menu Ekspor
+            </a>
         </div>
 
         @if(session('success'))
