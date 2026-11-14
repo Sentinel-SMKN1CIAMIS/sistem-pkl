@@ -187,7 +187,11 @@
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                     <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg bg-white dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-500 transition-all">
                         <input type="checkbox" value="AKL" x-model="selectedJurusan" class="rounded text-blue-600 focus:ring-blue-500">
-                        <span class="font-medium text-slate-700 dark:text-slate-300">AKL & PBS</span>
+                        <span class="font-medium text-slate-700 dark:text-slate-300">AKL (Akuntansi)</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg bg-white dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-500 transition-all">
+                        <input type="checkbox" value="PBS" x-model="selectedJurusan" class="rounded text-blue-600 focus:ring-blue-500">
+                        <span class="font-medium text-slate-700 dark:text-slate-300">PBS (Perbankan Syariah)</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg bg-white dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-500 transition-all">
                         <input type="checkbox" value="MPLB" x-model="selectedJurusan" class="rounded text-blue-600 focus:ring-blue-500">
@@ -213,9 +217,9 @@
                         <input type="checkbox" value="PPLG" x-model="selectedJurusan" class="rounded text-blue-600 focus:ring-blue-500">
                         <span class="font-medium text-slate-700 dark:text-slate-300">PPLG (RPL)</span>
                     </label>
-                    <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 hover:border-amber-500 transition-all">
+                    <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 hover:border-amber-500 transition-all col-span-2 sm:col-span-4">
                         <input type="checkbox" value="DKV" x-model="selectedJurusan" class="rounded text-amber-600 focus:ring-amber-500">
-                        <span class="font-medium">DKV (Beres PKL)</span>
+                        <span class="font-medium">DKV (Beres PKL - dinonaktifkan secara default)</span>
                     </label>
                 </div>
             </div>
@@ -403,11 +407,14 @@
                         this.$nextTick(() => window.lucide?.createIcons());
 
                         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                        let cacheId = null;
 
                         try {
                             while (this.isRunning && !this.isCancelled) {
                                 const formData = new FormData();
-                                if (this.fileToUpload) {
+                                if (cacheId) {
+                                    formData.append('cache_id', cacheId);
+                                } else if (this.fileToUpload) {
                                     formData.append('file', this.fileToUpload);
                                 }
                                 formData.append('offset', this.offset);
@@ -433,6 +440,10 @@
                                 const data = await res.json();
                                 if (data.status !== 'success') {
                                     throw new Error(data.message || 'Gagal memproses batch impor pemetaan.');
+                                }
+
+                                if (data.cache_id) {
+                                    cacheId = data.cache_id;
                                 }
 
                                 this.total = data.total;

@@ -268,4 +268,58 @@ CSV;
                 'status' => 'success',
             ]);
     }
+
+    public function test_import_with_uploaded_xlsx_and_cache_chunking(): void
+    {
+        $xlsxPath = 'C:/Users/Thinkpad/.gemini/antigravity/brain/bc78d3c0-e257-4b23-8737-ab9002b08a4a/.user_uploaded/media_1794656150685_89ee6ae8.xlsx';
+        if (!file_exists($xlsxPath)) {
+            $this->markTestSkipped('Fixture xlsx file not found.');
+        }
+
+        $uploadedFile = new \Illuminate\Http\UploadedFile(
+            $xlsxPath,
+            'Pemetaan.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            null,
+            true
+        );
+
+        // Batch 1 (Offset 0)
+        $response1 = $this->actingAs($this->superAdmin)
+            ->post(route('admin.config.import-pemetaan'), [
+                'file' => $uploadedFile,
+                'jurusan_filter' => ['PPLG', 'AKL', 'KLN'],
+                'batch_size' => 20,
+                'offset' => 0,
+            ], ['Accept' => 'application/json', 'X-Requested-With' => 'XMLHttpRequest']);
+
+        $response1->assertOk()
+            ->assertJsonStructure([
+                'status',
+                'cache_id',
+                'total',
+                'offset',
+                'stats',
+            ]);
+
+        $data1 = $response1->json();
+        $this->assertEquals('success', $data1['status']);
+        $this->assertNotEmpty($data1['cache_id']);
+        $this->assertGreaterThan(0, $data1['total']);
+        $this->assertEquals(20, $data1['offset']);
+
+        // Batch 2 (Using cache_id without re-uploading file)
+        $response2 = $this->actingAs($this->superAdmin)
+            ->post(route('admin.config.import-pemetaan'), [
+                'cache_id' => $data1['cache_id'],
+                'jurusan_filter' => ['PPLG', 'AKL', 'KLN'],
+                'batch_size' => 20,
+                'offset' => 20,
+            ], ['Accept' => 'application/json', 'X-Requested-With' => 'XMLHttpRequest']);
+
+        $response2->assertOk();
+        $data2 = $response2->json();
+        $this->assertEquals('success', $data2['status']);
+        $this->assertEquals(40, $data2['offset']);
+    }
 }

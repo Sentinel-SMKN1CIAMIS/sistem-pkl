@@ -232,16 +232,63 @@ class PemetaanImportService
     }
 
     /**
+     * Membaca dan mem-parsing berkas (Excel .xlsx / .xls maupun .csv) menjadi array item terstruktur.
+     */
+    public function parseFile(string $filePath, array $allowedJurusan = ['AKL', 'PBS', 'MPLB', 'PM', 'PBD', 'KLN', 'HTL', 'PPLG'], ?string $extension = null): array
+    {
+        if (!file_exists($filePath)) {
+            throw new \InvalidArgumentException("Berkas tidak ditemukan: {$filePath}");
+        }
+
+        $ext = strtolower($extension ?: pathinfo($filePath, PATHINFO_EXTENSION));
+
+        if (in_array($ext, ['xlsx', 'xls', 'ods'])) {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+            return $this->parseRows($rows, $allowedJurusan);
+        }
+
+        return $this->parseCsv($filePath, $allowedJurusan);
+    }
+
+    /**
      * Membaca dan mem-parsing baris CSV menjadi array item terstruktur.
      */
     public function parseCsv(string $csvContentOrPath, array $allowedJurusan = ['AKL', 'PBS', 'MPLB', 'PM', 'PBD', 'KLN', 'HTL', 'PPLG']): array
     {
         if (file_exists($csvContentOrPath)) {
-            $lines = file($csvContentOrPath, FILE_IGNORE_NEW_LINES);
-        } else {
-            $lines = preg_split('/\r\n|\r|\n/', $csvContentOrPath);
+            $ext = strtolower(pathinfo($csvContentOrPath, PATHINFO_EXTENSION));
+            if (in_array($ext, ['xlsx', 'xls', 'ods'])) {
+                return $this->parseFile($csvContentOrPath, $allowedJurusan, $ext);
+            }
+
+            $rows = [];
+            $handle = fopen($csvContentOrPath, 'r');
+            if ($handle !== false) {
+                while (($cols = fgetcsv($handle)) !== false) {
+                    $rows[] = $cols;
+                }
+                fclose($handle);
+            }
+            return $this->parseRows($rows, $allowedJurusan);
         }
 
+        $lines = preg_split('/\r\n|\r|\n/', $csvContentOrPath);
+        $rows = [];
+        foreach ($lines as $line) {
+            if (trim($line) !== '') {
+                $rows[] = str_getcsv($line);
+            }
+        }
+        return $this->parseRows($rows, $allowedJurusan);
+    }
+
+    /**
+     * Parsing baris-baris array terstruktur (dari spreadsheet atau fgetcsv).
+     */
+    public function parseRows(array $rows, array $allowedJurusan = ['AKL', 'PBS', 'MPLB', 'PM', 'PBD', 'KLN', 'HTL', 'PPLG']): array
+    {
         $currentWilayah = '';
         $currentPembimbing = '';
         $currentDudi = '';
@@ -249,40 +296,44 @@ class PemetaanImportService
         $skippedCount = 0;
         $headerFound = false;
 
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if (empty($line)) {
+        foreach ($rows as $cols) {
+            if (!is_array($cols) || empty($cols)) {
+                continue;
+            }
+
+            $cols = array_map(fn($v) => is_null($v) ? '' : trim((string)$v), $cols);
+            $lineText = implode(' ', array_filter($cols, fn($v) => $v !== ''));
+            if (empty($lineText)) {
                 continue;
             }
 
             // Berhenti jika sudah mencapai tabel rekapitulasi di bawah
-            if (stripos($line, 'PEMETAAN BIMBINGAN SISWA PKL') !== false) {
+            if (stripos($lineText, 'PEMETAAN BIMBINGAN SISWA PKL') !== false) {
                 break;
-            }
-
-            $cols = str_getcsv($line);
-            if (count($cols) < 5) {
-                continue;
             }
 
             // Deteksi baris header secara dinamis
             if (!$headerFound) {
-                if (stripos($line, 'Nama Pembimbing') !== false || stripos($line, 'NAMA SISWA') !== false || (isset($cols[0]) && strtolower(trim($cols[0])) === 'no')) {
+                if (
+                    stripos($lineText, 'Nama Pembimbing') !== false ||
+                    stripos($lineText, 'NAMA SISWA') !== false ||
+                    (isset($cols[0]) && strtolower($cols[0]) === 'no')
+                ) {
                     $headerFound = true;
                 }
                 continue;
             }
 
-            // Lewati subheader jurusan jika ada (contoh: ,,,,,,AK,PBS,PM,PBD,MPLB,HTL,KLN...)
-            if (empty(trim($cols[0] ?? '')) && empty(trim($cols[1] ?? '')) && empty(trim($cols[2] ?? '')) && empty(trim($cols[4] ?? ''))) {
+            // Lewati baris subheader jurusan jika tidak ada nama siswa (contoh: ,,,,,,AK,PBS,PM...)
+            if (empty($cols[0]) && empty($cols[1]) && empty($cols[2]) && empty($cols[4])) {
                 continue;
             }
 
-            $w = trim($cols[1] ?? '');
-            $p = trim($cols[2] ?? '');
-            $d = trim($cols[3] ?? '');
-            $s = trim($cols[4] ?? '');
-            $k = trim($cols[5] ?? '');
+            $w = $cols[1] ?? '';
+            $p = $cols[2] ?? '';
+            $d = $cols[3] ?? '';
+            $s = $cols[4] ?? '';
+            $k = $cols[5] ?? '';
 
             // Logika fill-down
             if (!empty($w)) $currentWilayah = $w;

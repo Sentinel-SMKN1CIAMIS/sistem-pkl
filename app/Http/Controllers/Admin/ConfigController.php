@@ -402,25 +402,38 @@ class ConfigController extends Controller
 
         $defaultPassword = $request->input('default_password', 'smkn1ciamis');
 
-        // Check if file is uploaded or using stored master
-        $filePath = null;
-        if ($request->hasFile('file')) {
-            $request->validate([
-                'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
-            ]);
-            $filePath = $request->file('file')->getRealPath();
+        $cacheId = $request->input('cache_id');
+        $parsed = null;
+
+        if ($cacheId && \Illuminate\Support\Facades\Cache::has("pemetaan_cache_{$cacheId}")) {
+            $parsed = \Illuminate\Support\Facades\Cache::get("pemetaan_cache_{$cacheId}");
         } else {
-            $filePath = storage_path('app/pemetaan_2026_2027.csv');
-            if (!file_exists($filePath)) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Berkas pemetaan tidak ditemukan di server.',
-                ], 404);
+            // Check if file is uploaded or using stored master
+            $filePath = null;
+            $extension = null;
+            if ($request->hasFile('file')) {
+                $request->validate([
+                    'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
+                ]);
+                $filePath = $request->file('file')->getRealPath();
+                $extension = strtolower($request->file('file')->getClientOriginalExtension());
+            } else {
+                $filePath = storage_path('app/pemetaan_2026_2027.csv');
+                $extension = 'csv';
+                if (!file_exists($filePath)) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Berkas pemetaan tidak ditemukan di server.',
+                    ], 404);
+                }
             }
+
+            // Parse file based on extension/type
+            $parsed = $service->parseFile($filePath, $allowedJurusan, $extension);
+            $cacheId = (string) \Illuminate\Support\Str::uuid();
+            \Illuminate\Support\Facades\Cache::put("pemetaan_cache_{$cacheId}", $parsed, 1800);
         }
 
-        // Parse file
-        $parsed = $service->parseCsv($filePath, $allowedJurusan);
         $totalItems = count($parsed['items']);
 
         if ($request->ajax() || $request->wantsJson() || $request->isJson() || $request->has('batch_size')) {
@@ -433,8 +446,13 @@ class ConfigController extends Controller
             $nextOffset = $offset + count($slice);
             $isDone = ($nextOffset >= $totalItems) || count($slice) === 0;
 
+            if ($isDone && $cacheId) {
+                \Illuminate\Support\Facades\Cache::forget("pemetaan_cache_{$cacheId}");
+            }
+
             return response()->json([
                 'status' => 'success',
+                'cache_id' => $cacheId,
                 'batch_processed' => count($slice),
                 'processed_total' => min($nextOffset, $totalItems),
                 'total' => $totalItems,
