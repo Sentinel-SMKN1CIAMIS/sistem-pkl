@@ -71,12 +71,18 @@ class CustomReportTest extends TestCase
         $response->assertSeeText('Custom Dynamic Report & Automated Excel/Pivot Builder');
     }
 
-    public function test_pokja_can_access_custom_report_index(): void
+    public function test_super_admin_can_access_config_page_with_export_action(): void
     {
-        $response = $this->actingAs($this->pokja)->get(route('pokja.custom_report.index'));
+        $response = $this->actingAs($this->superAdmin)->get(route('admin.config.index'));
         $response->assertOk();
-        $response->assertViewIs('reports.custom-report');
-        $response->assertSeeText('Custom Dynamic Report & Automated Excel/Pivot Builder');
+        $response->assertSeeText('Custom Dynamic Report');
+    }
+
+    public function test_pokja_can_access_siswa_page_with_export_action(): void
+    {
+        $response = $this->actingAs($this->pokja)->get(route('pokja.siswa.index'));
+        $response->assertOk();
+        $response->assertSeeText('Ekspor Kredensial / Data');
     }
 
     public function test_export_kredensial_siswa_excel_with_pivot_stream(): void

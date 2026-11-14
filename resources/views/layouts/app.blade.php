@@ -67,9 +67,6 @@
     <div class="flex h-full w-full overflow-hidden">
 
     <!-- Sidebar (Desktop Only) -->
-    @php
-        $navItems = require resource_path('views/layouts/partials/navigation-data.php');
-    @endphp
 
     <aside class="hidden lg:flex w-72 shrink-0 glass static inset-0 border-r border-slate-200/50 dark:border-slate-700/50 flex-col z-50">
         

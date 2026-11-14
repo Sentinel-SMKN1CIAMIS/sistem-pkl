@@ -1,5 +1,5 @@
 @php
-    $navItems = $navItems ?? require resource_path('views/layouts/partials/navigation-data.php');
+    $navItems = $navItems ?? [];
 @endphp
 
 <nav class="space-y-2">
