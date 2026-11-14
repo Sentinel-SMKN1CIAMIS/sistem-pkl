@@ -118,7 +118,6 @@ class AppServiceProvider extends ServiceProvider
                 ];
 
                 if ($role !== 'kepala_sekolah') {
-                    $navItems[] = ['name' => 'Custom Report & Pivot', 'route' => 'pokja.custom_report.index', 'icon' => 'file-spreadsheet'];
                     $navItems[] = [
                         'name' => 'Pengaturan',
                         'icon' => 'settings',
@@ -166,7 +165,6 @@ class AppServiceProvider extends ServiceProvider
                             ['name' => 'Kompetensi', 'route' => 'admin.kompetensi.index', 'icon' => 'target'],
                         ]
                     ],
-                    ['name' => 'Custom Report & Pivot', 'route' => 'admin.custom_report.index', 'icon' => 'file-spreadsheet'],
                     [
                         'name' => 'Pengaturan',
                         'icon' => 'settings',
@@ -175,7 +173,6 @@ class AppServiceProvider extends ServiceProvider
                             ['name' => 'Konfigurasi Sistem', 'route' => 'admin.config.index', 'icon' => 'sliders'],
                         ]
                     ],
-                    ['name' => 'Konfigurasi Sistem', 'route' => 'admin.config.index', 'icon' => 'sliders'],
                     ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
                     ['name' => 'Log Sistem', 'route' => 'admin.logs.index', 'icon' => 'scroll-text'],
                 ];

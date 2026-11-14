@@ -2,14 +2,8 @@
     <x-slot name="header">Konfigurasi Sistem</x-slot>
 
     <div class="max-w-4xl text-slate-700 dark:text-slate-300">
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <p class="text-slate-600 dark:text-slate-400">Kelola pengaturan dasar aplikasi seperti Nama Sekolah, Tahun Ajaran, logo, dan ekspor data.</p>
-            </div>
-            <a href="{{ route('admin.custom_report.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-lg shadow-blue-500/20 transition-all shrink-0">
-                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                Buka Custom Report & Ekspor Data
-            </a>
+        <div class="mb-6">
+            <p class="text-slate-600 dark:text-slate-400">Kelola pengaturan dasar aplikasi seperti Nama Sekolah, Tahun Ajaran, dan logo.</p>
         </div>
 
         <!-- Banner Shortcut ke Custom Dynamic Report & Ekspor -->
