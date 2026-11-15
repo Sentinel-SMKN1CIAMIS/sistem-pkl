@@ -25,7 +25,63 @@
         }
     </style>
 
-    <div x-data="{ importPanelOpen: false, guideModalOpen: false, showFilters: {{ request()->hasAny(['search', 'tipe', 'konsentrasi_keahlian_id', 'sort_by', 'sort_dir']) && (request('search') != '' || request('tipe') != 'semua' || request('konsentrasi_keahlian_id') != 'semua' || request('sort_by') != '' || request('sort_dir') != '') ? 'true' : 'false' }} }">
+    <div x-data="{ 
+        importPanelOpen: false, 
+        guideModalOpen: false, 
+        massResetModalOpen: false,
+        isResetting: false,
+        resetPercent: 0,
+        resetProcessed: 0,
+        resetMessage: '',
+        confirmText: '',
+        showFilters: {{ request()->hasAny(['search', 'tipe', 'konsentrasi_keahlian_id', 'sort_by', 'sort_dir']) && (request('search') != '' || request('tipe') != 'semua' || request('konsentrasi_keahlian_id') != 'semua' || request('sort_by') != '' || request('sort_dir') != '') ? 'true' : 'false' }},
+
+        async startMassReset() {
+            if (this.confirmText !== 'RESET') return;
+            this.isResetting = true;
+            this.resetPercent = 0;
+            this.resetProcessed = 0;
+            let offset = 0;
+            const batchSize = 35;
+            const token = document.querySelector('meta[name=\'csrf-token\']')?.getAttribute('content');
+
+            try {
+                while (this.isResetting) {
+                    const formData = new FormData();
+                    formData.append('offset', offset);
+                    formData.append('batch_size', batchSize);
+
+                    const res = await fetch('{{ route('pokja.pembimbing_sekolah.reset_password_massal') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    });
+
+                    if (!res.ok) throw new Error('Gagal me-reset password.');
+
+                    const data = await res.json();
+                    this.resetPercent = data.percent;
+                    this.resetProcessed = data.processed_total;
+                    this.resetMessage = data.message;
+                    offset = data.offset;
+
+                    if (data.done) {
+                        this.resetPercent = 100;
+                        await new Promise(r => setTimeout(r, 600));
+                        window.location.reload();
+                        break;
+                    }
+                }
+            } catch (e) {
+                alert(e.message || 'Terjadi kesalahan saat me-reset password.');
+                this.isResetting = false;
+            }
+        }
+    }">
         <div class="mb-6 pokja-header-container">
             <div class="flex-1">
                 <p class="text-slate-600 dark:text-slate-400 text-sm">Daftar guru pembimbing sekolah per konsentrasi keahlian.</p>
@@ -36,6 +92,10 @@
                     <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
                     Ekspor Kredensial / Data
                 </a>
+                <button type="button" @click="massResetModalOpen = true" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-xl shadow-lg shadow-amber-500/25 transition-all gap-2 cursor-pointer">
+                    <i data-lucide="key-round" class="w-4 h-4"></i>
+                    Reset Sandi Masal
+                </button>
                 <button @click="showFilters = !showFilters" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-all gap-2 cursor-pointer shadow-sm">
                     <i data-lucide="filter" class="w-4 h-4"></i>
                     Filter & Cari
@@ -354,6 +414,105 @@
                  </div>
             </div>
         </template>
+
+        <!-- Mass Reset Modal -->
+        <template x-teleport="body">
+            <div x-show="massResetModalOpen" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
+                 style="display: none;"
+                 @keydown.escape.window="if (!isResetting) massResetModalOpen = false">
+                 
+                 <div class="relative w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col"
+                      @click.away="if (!isResetting) massResetModalOpen = false">
+                      
+                      <!-- Modal Header -->
+                      <div class="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between bg-amber-500/10">
+                          <div class="flex items-center gap-3">
+                              <div class="p-2 rounded-xl bg-amber-500/20 text-amber-500">
+                                  <i data-lucide="key-round" class="w-5 h-5"></i>
+                              </div>
+                              <div>
+                                  <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Reset Sandi Masal Guru Pembimbing</h3>
+                                  <p class="text-xs text-slate-500 dark:text-slate-400">Sinkronkan username & kata sandi ke NIP resmi masing-masing</p>
+                              </div>
+                          </div>
+                          <button x-show="!isResetting" @click="massResetModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                              <i data-lucide="x" class="w-5 h-5"></i>
+                          </button>
+                      </div>
+
+                      <!-- Modal Body -->
+                      <div class="p-6 space-y-4">
+                          <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-800/40 text-xs text-amber-800 dark:text-amber-300 leading-relaxed space-y-2">
+                              <p class="font-semibold flex items-center gap-1.5">
+                                  <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
+                                  Ketentuan Reset Masal:
+                              </p>
+                              <ul class="list-disc pl-5 space-y-1">
+                                  <li>Setiap akun pembimbing sekolah akan diaktifkan (<code>is_active = true</code>).</li>
+                                  <li>Username akun login akan disinkronkan menjadi <strong>NIP</strong> masing-masing guru (atau username saat ini jika tanpa NIP).</li>
+                                  <li>Kata sandi akan di-reset menjadi <strong>NIP</strong> masing-masing guru (default) atau <code>smkn1ciamis</code> jika NIP belum tercatat.</li>
+                                  <li>Guru akan diminta memperbarui sandi saat login pertama kali demi keamanan.</li>
+                                  <li><strong>Tidak mengubah</strong> relasi DUDI tempat bimbingan maupun pemetaan siswa yang sudah ada.</li>
+                              </ul>
+                          </div>
+
+                          <!-- In-progress Progress Bar -->
+                          <div x-show="isResetting" class="space-y-3 pt-2">
+                              <div class="flex items-center justify-between text-xs">
+                                  <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                      <svg class="animate-spin h-3.5 w-3.5 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                      </svg>
+                                      Memproses Reset Sandi...
+                                  </span>
+                                  <span class="font-bold text-amber-600 dark:text-amber-400" x-text="resetPercent + '%'"></span>
+                              </div>
+                              <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                                  <div class="bg-amber-500 h-full transition-all duration-300" :style="'width: ' + resetPercent + '%'"></div>
+                              </div>
+                              <p class="text-xs text-slate-500 dark:text-slate-400 text-center" x-text="resetMessage"></p>
+                          </div>
+
+                          <!-- Confirmation Prompt -->
+                          <div x-show="!isResetting" class="space-y-3">
+                              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                  Ketik <span class="font-mono text-red-500 bg-red-50 dark:bg-red-950/40 px-1.5 py-0.5 rounded border border-red-200 dark:border-red-900">RESET</span> untuk konfirmasi:
+                              </label>
+                              <input type="text" 
+                                     x-model="confirmText" 
+                                     placeholder="Ketik RESET di sini..." 
+                                     class="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                          </div>
+                      </div>
+
+                      <!-- Modal Footer -->
+                      <div class="px-6 py-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-end gap-3 bg-slate-50/50 dark:bg-slate-800/30">
+                          <button type="button" 
+                                  x-show="!isResetting" 
+                                  @click="massResetModalOpen = false" 
+                                  class="px-4 py-2 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer">
+                              Batal
+                          </button>
+                          <button type="button" 
+                                  x-show="!isResetting"
+                                  :disabled="confirmText !== 'RESET'" 
+                                  @click="startMassReset()" 
+                                  :class="confirmText === 'RESET' ? 'bg-amber-600 hover:bg-amber-500 text-white cursor-pointer shadow-lg shadow-amber-500/25' : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'"
+                                  class="px-5 py-2 text-xs font-bold rounded-xl transition-all">
+                              Mulai Reset Masal
+                          </button>
+                      </div>
+                 </div>
+            </div>
+        </template>
     </div>
 
     @if(session('import_errors'))
@@ -453,6 +612,13 @@
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Edit
                                         </a>
+                                        <form action="{{ route('pokja.pembimbing_sekolah.reset_password', $item) }}" method="POST" onsubmit="return confirm('Reset kata sandi pembimbing {{ addslashes($item->nama_lengkap) }} menjadi NIP default?')">
+                                            @csrf
+                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-amber-600 dark:text-amber-400 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-colors text-left">
+                                                <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                                                Reset Sandi (NIP)
+                                            </button>
+                                        </form>
                                         <form action="{{ route('pokja.pembimbing_sekolah.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun pembimbing {{ addslashes($item->nama_lengkap) }} ini?')">
                                             @csrf
                                             @method('DELETE')

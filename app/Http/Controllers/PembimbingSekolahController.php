@@ -226,4 +226,159 @@ class PembimbingSekolahController extends Controller
         return redirect()->route('pokja.pembimbing_sekolah.index')
             ->with('success', 'Data pembimbing sekolah berhasil dihapus.');
     }
+
+    /**
+     * Reset password individual pembimbing sekolah ke NIP masing-masing.
+     */
+    public function resetPassword(\App\Models\PembimbingSekolah $pembimbing_sekolah)
+    {
+        $user = $pembimbing_sekolah->user;
+        if (!$user) {
+            return back()->with('error', 'Akun pengguna pembimbing sekolah tidak ditemukan.');
+        }
+
+        $nip = trim($pembimbing_sekolah->nip ?? '');
+        $cleanNip = preg_replace('/\D/', '', $nip);
+        $newPassword = !empty($cleanNip) && strlen($cleanNip) >= 8 ? $cleanNip : 'smkn1ciamis';
+
+        if (!empty($cleanNip) && strlen($cleanNip) >= 8 && $user->username !== $cleanNip) {
+            $conflict = \App\Models\User::where('username', $cleanNip)->where('id', '!=', $user->id)->first();
+            if ($conflict) {
+                $conflict->username = $conflict->username . '_old_' . $conflict->id;
+                $conflict->saveQuietly();
+            }
+            $user->username = $cleanNip;
+            $user->email = null;
+        }
+
+        $user->password = $newPassword;
+        $user->is_active = true;
+        $user->force_password_change = true;
+        $user->save();
+
+        if (class_exists(\App\Models\ActivityLog::class)) {
+            \App\Models\ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'Reset Password Pembimbing Sekolah',
+                'description' => "Password guru {$pembimbing_sekolah->nama_lengkap} di-reset menjadi default NIP.",
+            ]);
+        }
+
+        return back()->with('success', "Password pembimbing {$pembimbing_sekolah->nama_lengkap} berhasil di-reset menjadi NIP ({$newPassword}). Akun aktif dan wajib ganti password pada login berikutnya.");
+    }
+
+    /**
+     * Reset password masal seluruh atau sebagian pembimbing sekolah ke NIP resmi masing-masing.
+     */
+    public function resetPasswordMassal(Request $request)
+    {
+        $customPassword = $request->input('custom_password');
+        $teacherIds = $request->input('teacher_ids');
+
+        $query = \App\Models\PembimbingSekolah::query()->with('user');
+        if (!empty($teacherIds) && is_array($teacherIds)) {
+            $query->whereIn('id', $teacherIds);
+        }
+
+        // Handle chunked / batch AJAX request (progress bar support)
+        if ($request->ajax() || $request->wantsJson() || $request->isJson() || $request->has('batch_size') || $request->has('offset')) {
+            $batchSize = max(1, min((int) $request->input('batch_size', 50), 100));
+            $offset = max(0, (int) $request->input('offset', 0));
+            $total = (clone $query)->count();
+
+            $teachers = (clone $query)->orderBy('id')->skip($offset)->take($batchSize)->get();
+            $batchProcessed = 0;
+
+            foreach ($teachers as $teacher) {
+                $user = $teacher->user;
+                if (!$user) continue;
+
+                $nip = trim($teacher->nip ?? '');
+                $cleanNip = preg_replace('/\D/', '', $nip);
+                $newPassword = !empty($cleanNip) && strlen($cleanNip) >= 8 ? $cleanNip : (!empty($customPassword) ? $customPassword : 'smkn1ciamis');
+
+                if (!empty($cleanNip) && strlen($cleanNip) >= 8 && $user->username !== $cleanNip) {
+                    $conflict = \App\Models\User::where('username', $cleanNip)->where('id', '!=', $user->id)->first();
+                    if ($conflict) {
+                        $conflict->username = $conflict->username . '_old_' . $conflict->id;
+                        $conflict->saveQuietly();
+                    }
+                    $user->username = $cleanNip;
+                    $user->email = null;
+                }
+
+                $user->password = $newPassword;
+                $user->is_active = true;
+                $user->force_password_change = true;
+                $user->save();
+                $batchProcessed++;
+            }
+
+            $nextOffset = $offset + count($teachers);
+            $done = ($nextOffset >= $total) || count($teachers) === 0;
+
+            if ($done && class_exists(\App\Models\ActivityLog::class)) {
+                \App\Models\ActivityLog::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'Reset Password Masal Pembimbing Sekolah',
+                    'description' => "Berhasil me-reset password {$total} pembimbing sekolah ke NIP masing-masing.",
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'batch_processed' => $batchProcessed,
+                'processed_total' => min($nextOffset, $total),
+                'total' => $total,
+                'offset' => $nextOffset,
+                'percent' => $total > 0 ? min(100, (int) round(($nextOffset / $total) * 100)) : 100,
+                'done' => $done,
+                'message' => $done
+                    ? "Selesai me-reset password {$total} pembimbing sekolah."
+                    : "Memproses {$nextOffset} dari {$total} pembimbing...",
+            ]);
+        }
+
+        // Standard Synchronous POST
+        $teachers = $query->get();
+        $resetCount = 0;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($teachers, $customPassword, &$resetCount) {
+            foreach ($teachers as $teacher) {
+                $user = $teacher->user;
+                if (!$user) continue;
+
+                $nip = trim($teacher->nip ?? '');
+                $cleanNip = preg_replace('/\D/', '', $nip);
+                $newPassword = !empty($cleanNip) && strlen($cleanNip) >= 8 ? $cleanNip : (!empty($customPassword) ? $customPassword : 'smkn1ciamis');
+
+                if (!empty($cleanNip) && strlen($cleanNip) >= 8 && $user->username !== $cleanNip) {
+                    $conflict = \App\Models\User::where('username', $cleanNip)->where('id', '!=', $user->id)->first();
+                    if ($conflict) {
+                        $conflict->username = $conflict->username . '_old_' . $conflict->id;
+                        $conflict->saveQuietly();
+                    }
+                    $user->username = $cleanNip;
+                    $user->email = null;
+                }
+
+                $user->password = $newPassword;
+                $user->is_active = true;
+                $user->force_password_change = true;
+                $user->save();
+                $resetCount++;
+            }
+        });
+
+        if (class_exists(\App\Models\ActivityLog::class)) {
+            \App\Models\ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'Reset Password Masal Pembimbing Sekolah',
+                'description' => "Berhasil me-reset password {$resetCount} guru pembimbing sekolah.",
+            ]);
+        }
+
+        return redirect()->route('pokja.pembimbing_sekolah.index')
+            ->with('success', "Berhasil me-reset password {$resetCount} guru pembimbing sekolah. Username dan password default telah disetel sesuai NIP masing-masing (akun aktif & wajib ganti sandi pada login awal).");
+    }
 }

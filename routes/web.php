@@ -207,6 +207,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::delete('pengajuan-pkl/bulk-destroy', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'bulkDestroy'])->name('pengajuan_pkl.bulk_destroy');
         Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
+        Route::post('pembimbing_sekolah/reset-password-massal', [\App\Http\Controllers\PembimbingSekolahController::class, 'resetPasswordMassal'])->name('pembimbing_sekolah.reset_password_massal');
+        Route::post('pembimbing_sekolah/{pembimbing_sekolah}/reset-password', [\App\Http\Controllers\PembimbingSekolahController::class, 'resetPassword'])->name('pembimbing_sekolah.reset_password');
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);
         Route::get('pembimbing_dudi/export-pdf', [\App\Http\Controllers\PembimbingDudiController::class, 'exportPdf'])->name('pembimbing_dudi.export-pdf');
         Route::get('pembimbing_dudi/export-excel', [\App\Http\Controllers\PembimbingDudiController::class, 'exportExcel'])->name('pembimbing_dudi.export-excel');

@@ -15,32 +15,97 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $user = Auth::user();
+        $loginInput = trim($request->input('username'));
+        $password = (string) $request->input('password');
 
-            // [SECURITY FIX MED-01] Cek is_active SEBELUM regenerate session dan update last_login_at
-            // Akun non-aktif tidak boleh punya sesi valid sama sekali
-            if (!$user->is_active) {
-                Auth::logout();
-                return back()->withErrors([
-                    'username' => 'Akun Anda telah dinonaktifkan. Hubungi administrator.',
-                ]);
+        // 1. Cari user secara fleksibel: Username, Email, NIP Pembimbing, atau NIS/NISN Siswa
+        $user = \App\Models\User::where('username', $loginInput)
+            ->orWhere('email', $loginInput)
+            ->first();
+
+        // Fallback pencarian berbasis NIP Guru Pembimbing Sekolah
+        if (!$user) {
+            $cleanNip = preg_replace('/\D/', '', $loginInput);
+            $pembimbing = \App\Models\PembimbingSekolah::where('nip', $loginInput)
+                ->when(!empty($cleanNip), fn($q) => $q->orWhere('nip', $cleanNip))
+                ->first();
+
+            if (!$pembimbing && strlen($cleanNip) >= 8) {
+                // Cari jika di DB NIP tersimpan dengan spasi atau tanda baca
+                $pembimbing = \App\Models\PembimbingSekolah::whereNotNull('nip')
+                    ->where('nip', '!=', '-')
+                    ->get()
+                    ->first(function ($p) use ($cleanNip) {
+                        return preg_replace('/\D/', '', (string) $p->nip) === $cleanNip;
+                    });
             }
 
-            $request->session()->regenerate();
-            $user->update(['last_login_at' => now()]);
+            if ($pembimbing && $pembimbing->user) {
+                $user = $pembimbing->user;
+            }
+        }
 
-            // Check if user needs to change password on first login
-            if ($user->force_password_change) {
-                return redirect()->route('auth.change-password.show');
+        // Fallback pencarian berbasis NIS / NISN Siswa
+        if (!$user) {
+            $siswa = \App\Models\Siswa::where('nis', $loginInput)
+                ->orWhere('nisn', $loginInput)
+                ->first();
+            if ($siswa && $siswa->user) {
+                $user = $siswa->user;
+            }
+        }
+
+        if ($user) {
+            $isPasswordValid = \Illuminate\Support\Facades\Hash::check($password, $user->password);
+
+            // Toleransi ramah pengguna jika akun guru masih menggunakan sandi bawaan (force_password_change = true)
+            // Mengizinkan guru masuk dengan NIP-nya ATAU 'smkn1ciamis'
+            if (!$isPasswordValid && $user->force_password_change && $user->role === 'pembimbing_sekolah') {
+                $teacherNip = $user->pembimbingSekolah?->nip;
+                $cleanTeacherNip = $teacherNip ? preg_replace('/\D/', '', $teacherNip) : '';
+                $cleanPassword = preg_replace('/\D/', '', $password);
+
+                $nipMatches = ($teacherNip && $password === $teacherNip) ||
+                              (!empty($cleanTeacherNip) && $cleanPassword === $cleanTeacherNip);
+
+                if (($nipMatches || $password === 'smkn1ciamis') && ($teacherNip || !empty($cleanTeacherNip))) {
+                    $targetNip = !empty($cleanTeacherNip) ? $cleanTeacherNip : $teacherNip;
+                    if (\Illuminate\Support\Facades\Hash::check('smkn1ciamis', $user->password) ||
+                        \Illuminate\Support\Facades\Hash::check($targetNip, $user->password) ||
+                        ($teacherNip && \Illuminate\Support\Facades\Hash::check($teacherNip, $user->password))) {
+                        $isPasswordValid = true;
+                        $user->password = $targetNip;
+                        $user->saveQuietly();
+                    }
+                }
             }
 
-            return redirect()->intended('dashboard');
+            if ($isPasswordValid) {
+                // [SECURITY FIX MED-01] Cek is_active SEBELUM regenerate session dan update last_login_at
+                // Akun non-aktif tidak boleh punya sesi valid sama sekali
+                if (!$user->is_active) {
+                    return back()->withErrors([
+                        'username' => 'Akun Anda telah dinonaktifkan. Hubungi administrator.',
+                    ]);
+                }
+
+                Auth::login($user, $request->boolean('remember'));
+
+                $request->session()->regenerate();
+                $user->update(['last_login_at' => now()]);
+
+                // Check if user needs to change password on first login
+                if ($user->force_password_change) {
+                    return redirect()->route('auth.change-password.show');
+                }
+
+                return redirect()->intended('dashboard');
+            }
         }
 
         return back()->withErrors([
