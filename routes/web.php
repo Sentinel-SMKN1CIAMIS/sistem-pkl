@@ -16,6 +16,8 @@ Route::get('/sitemap.xml', function () {
     return response()->file($path, ['Content-Type' => 'text/xml']);
 });
 
+Route::get('/maintenance', [\App\Http\Controllers\Admin\MaintenanceController::class, 'showMaintenancePage'])->name('maintenance');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     // [SECURITY FIX CRIT-02] Rate limit: max 5 percobaan login per menit per IP
@@ -178,6 +180,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::resource('pokja-groups', \App\Http\Controllers\Admin\PokjaGroupController::class);
         Route::post('pokja-groups/{pokjaGroup}/add-member', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'addMember'])->name('pokja-groups.add-member');
         Route::post('pokja-groups/{pokjaGroup}/remove-member', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'removeMember'])->name('pokja-groups.remove-member');
+        Route::get('maintenance', [\App\Http\Controllers\Admin\MaintenanceController::class, 'index'])->name('maintenance.index');
+        Route::post('maintenance', [\App\Http\Controllers\Admin\MaintenanceController::class, 'update'])->name('maintenance.update');
         Route::get('logs', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('logs.index');
         Route::get('config', [\App\Http\Controllers\Admin\ConfigController::class, 'index'])->name('config.index');
         Route::post('config', [\App\Http\Controllers\Admin\ConfigController::class, 'update'])->name('config.update');

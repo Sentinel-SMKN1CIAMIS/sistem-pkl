@@ -94,6 +94,14 @@ class LoginController extends Controller
                     ]);
                 }
 
+                // Cek apakah sistem sedang dalam mode maintenance dan peran pengguna diizinkan
+                if (\App\Services\MaintenanceService::isMaintenanceActive() && !\App\Services\MaintenanceService::isRoleAllowed($user->role)) {
+                    $roleLabel = \App\Services\MaintenanceService::ALL_ROLES[$user->role]['label'] ?? ucfirst($user->role);
+                    return back()->withErrors([
+                        'username' => "Sistem sedang dalam mode pemeliharaan (maintenance). Peran {$roleLabel} saat ini belum diberikan izin akses.",
+                    ])->onlyInput('username');
+                }
+
                 Auth::login($user, $request->boolean('remember'));
 
                 $request->session()->regenerate();

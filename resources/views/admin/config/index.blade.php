@@ -98,6 +98,42 @@
             </form>
         </div>
         
+        <!-- Mode Maintenance Card -->
+        @php
+            $isMaintActive = \App\Services\MaintenanceService::isMaintenanceActive();
+            $maintRoles = \App\Services\MaintenanceService::getAllowedRoles();
+        @endphp
+        <div class="mt-8 p-6 rounded-2xl border transition-all shadow-xl relative overflow-hidden group {{ $isMaintActive ? 'bg-gradient-to-r from-amber-500/10 via-red-500/5 to-amber-500/10 border-amber-500/30' : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800' }}">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex items-start gap-4">
+                    <div class="p-3 rounded-2xl {{ $isMaintActive ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' }} shrink-0">
+                        <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <h4 class="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Mode Pemeliharaan (Maintenance)</h4>
+                            @if($isMaintActive)
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-white animate-pulse">Aktif</span>
+                            @else
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-500 border border-emerald-500/25">Normal (Nonaktif)</span>
+                            @endif
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                            @if($isMaintActive)
+                                Mode pemeliharaan sedang <strong>aktif</strong>. Hanya Super Admin dan peran terpilih (<code class="text-amber-500 font-bold">{{ implode(', ', $maintRoles) }}</code>) yang dapat mengakses sistem.
+                            @else
+                                Aktifkan mode pemeliharaan sewaktu-waktu saat ingin melakukan upgrade atau perbaikan data tanpa perlu menjalankan perintah terminal di server. Anda dapat memilih peran tertentu (seperti Pokja) untuk tetap diberi akses.
+                            @endif
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ route('admin.maintenance.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md shrink-0 {{ $isMaintActive ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-amber-500/25' : 'bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white' }}">
+                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                    Kelola Mode Maintenance
+                </a>
+            </div>
+        </div>
+
         <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Backup Card -->
             <div class="p-6 rounded-2xl bg-linear-to-br from-blue-500/5 to-indigo-500/5 border border-blue-500/10 dark:border-blue-500/5 shadow-xl relative overflow-hidden group">

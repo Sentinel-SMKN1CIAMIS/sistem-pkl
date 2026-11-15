@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         
         $middleware->web(append: [
+            \App\Http\Middleware\CheckMaintenanceMode::class,
             \App\Http\Middleware\LogUserActivity::class,
         ]);
         

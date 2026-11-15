@@ -16,7 +16,7 @@ class DashboardController extends Controller
         switch ($role) {
             case 'siswa':
                 $siswa = $user->siswa;
-                if (!$siswa->dudi_id) {
+                if (!$siswa || !$siswa->dudi_id) {
                     return redirect()->route('siswa.pengajuan_pkl.create');
                 }
                 $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_siswa_{$siswa->id}", 300, function() use ($siswa) {

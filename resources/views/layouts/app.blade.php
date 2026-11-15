@@ -159,6 +159,20 @@
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        @if(\App\Services\MaintenanceService::isMaintenanceActive())
+            <div class="bg-amber-500 text-slate-950 px-4 py-2 text-xs font-bold flex items-center justify-between z-40 shadow-xs border-b border-amber-600">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="wrench" class="w-4 h-4 shrink-0"></i>
+                    <span><strong>Mode Pemeliharaan (Maintenance) Aktif:</strong> Akses publik dibatasi. Anda dapat mengakses sistem karena memiliki hak akses khusus ({{ ucfirst(str_replace('_', ' ', auth()->user()?->role)) }}).</span>
+                </div>
+                @if(auth()->user()?->role === 'super_admin')
+                    <a href="{{ route('admin.maintenance.index') }}" class="underline hover:text-black font-extrabold whitespace-nowrap ml-4">
+                        Kelola Maintenance &rarr;
+                    </a>
+                @endif
+            </div>
+        @endif
+
         <!-- Top Navbar -->
         <header class="glass sticky top-0 z-30 h-16 border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between px-4 sm:px-6 lg:px-8">
             <!-- Mobile Logo (Hidden on Desktop) -->

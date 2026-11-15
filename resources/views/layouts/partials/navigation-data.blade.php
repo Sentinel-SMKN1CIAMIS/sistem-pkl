@@ -130,6 +130,7 @@
                 'children' => [
                     ['name' => 'Custom Report & Ekspor', 'route' => 'admin.custom_report.index', 'icon' => 'file-spreadsheet'],
                     ['name' => 'Konfigurasi Sistem', 'route' => 'admin.config.index', 'icon' => 'sliders'],
+                    ['name' => 'Mode Maintenance', 'route' => 'admin.maintenance.index', 'icon' => 'shield-alert'],
                 ]
             ],
             ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
