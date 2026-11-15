@@ -227,6 +227,77 @@ class BulkDeleteTest extends TestCase
         $this->assertDatabaseMissing('kompetensis', ['id' => $c2->id]);
     }
 
+    public function test_pokja_can_bulk_delete_siswa_from_pemetaan(): void
+    {
+        $u1 = User::factory()->create(['role' => 'siswa']);
+        $s1 = Siswa::create([
+            'user_id' => $u1->id,
+            'konsentrasi_keahlian_id' => $this->konsentrasi->id,
+            'nis' => '99990001',
+            'nama_lengkap' => 'Siswa Pemetaan 1',
+            'jenis_kelamin' => 'L',
+            'kelas' => 'XII RPL 1',
+            'tahun_ajaran' => '2026/2027',
+        ]);
+
+        $u2 = User::factory()->create(['role' => 'siswa']);
+        $s2 = Siswa::create([
+            'user_id' => $u2->id,
+            'konsentrasi_keahlian_id' => $this->konsentrasi->id,
+            'nis' => '99990002',
+            'nama_lengkap' => 'Siswa Pemetaan 2',
+            'jenis_kelamin' => 'P',
+            'kelas' => 'XII RPL 2',
+            'tahun_ajaran' => '2026/2027',
+        ]);
+
+        $response = $this->actingAs($this->pokjaUser)
+            ->post(route('pokja.pemetaan.bulk_destroy'), [
+                'ids' => [$s1->id, $s2->id],
+                'action' => 'delete',
+            ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseMissing('siswas', ['id' => $s1->id]);
+        $this->assertDatabaseMissing('siswas', ['id' => $s2->id]);
+        $this->assertDatabaseMissing('users', ['id' => $u1->id]);
+        $this->assertDatabaseMissing('users', ['id' => $u2->id]);
+    }
+
+    public function test_pokja_can_bulk_reset_penempatan_from_pemetaan(): void
+    {
+        $dudi = Dudi::create([
+            'konsentrasi_keahlian_id' => $this->konsentrasi->id,
+            'nama' => 'Dudi Reset Test',
+            'alamat' => 'Jl. Test',
+            'kota' => 'Ciamis',
+            'kuota' => 10,
+        ]);
+
+        $u1 = User::factory()->create(['role' => 'siswa']);
+        $s1 = Siswa::create([
+            'user_id' => $u1->id,
+            'konsentrasi_keahlian_id' => $this->konsentrasi->id,
+            'nis' => '88880001',
+            'nama_lengkap' => 'Siswa Reset 1',
+            'jenis_kelamin' => 'L',
+            'kelas' => 'XII RPL 1',
+            'tahun_ajaran' => '2026/2027',
+            'dudi_id' => $dudi->id,
+        ]);
+
+        $response = $this->actingAs($this->pokjaUser)
+            ->post(route('pokja.pemetaan.bulk_destroy'), [
+                'ids' => [$s1->id],
+                'action' => 'reset_pemetaan',
+            ]);
+
+        $response->assertRedirect();
+        $s1->refresh();
+        $this->assertNull($s1->dudi_id);
+        $this->assertDatabaseHas('siswas', ['id' => $s1->id]);
+    }
+
     public function test_unauthorized_user_cannot_bulk_delete(): void
     {
         $d1 = Dudi::create([

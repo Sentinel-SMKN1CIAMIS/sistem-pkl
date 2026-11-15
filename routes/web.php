@@ -230,6 +230,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('kaprog/bulk-destroy', [\App\Http\Controllers\Pokja\KaprogController::class, 'bulkDestroy'])->name('kaprog.bulk_destroy');
         Route::resource('kaprog', \App\Http\Controllers\Pokja\KaprogController::class);
         Route::get('pemetaan', [\App\Http\Controllers\Pokja\PemetaanController::class, 'index'])->name('pemetaan.index');
+        Route::post('pemetaan/bulk-destroy', [\App\Http\Controllers\Pokja\PemetaanController::class, 'bulkDestroy'])->name('pemetaan.bulk_destroy');
         Route::get('pemetaan/maps', [\App\Http\Controllers\Pokja\PemetaanController::class, 'maps'])->name('pemetaan.maps');
         Route::get('pemetaan/maps/data', [\App\Http\Controllers\Pokja\PemetaanController::class, 'mapsData'])->name('pemetaan.maps.data');
 

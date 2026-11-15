@@ -8,7 +8,9 @@ use App\Models\Dudi;
 use App\Models\Zona;
 use App\Models\PembimbingSekolah;
 use App\Models\PembimbingDudi;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PemetaanController extends Controller
 {
@@ -282,5 +284,43 @@ class PemetaanController extends Controller
             'markers' => $markers,
             'zonas' => $zonas,
         ]);
+    }
+
+    /**
+     * Hapus masal data siswa atau reset penempatan terpilih dari halaman pemetaan.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:siswas,id',
+            'action' => 'nullable|string|in:delete,reset_pemetaan',
+        ]);
+
+        $ids = $request->input('ids');
+        $action = $request->input('action', 'delete');
+
+        if ($action === 'reset_pemetaan') {
+            Siswa::whereIn('id', $ids)->update([
+                'dudi_id' => null,
+                'pembimbing_sekolah_id' => null,
+                'pembimbing_sekolah_umum_id' => null,
+                'pembimbing_dudi_id' => null,
+            ]);
+
+            return back()->with('success', count($ids) . ' penempatan siswa berhasil di-reset menjadi belum ditentukan.');
+        }
+
+        $siswas = Siswa::with('user')->whereIn('id', $ids)->get();
+        $userIds = $siswas->pluck('user_id')->filter()->all();
+
+        DB::transaction(function () use ($ids, $userIds) {
+            Siswa::whereIn('id', $ids)->delete();
+            if (!empty($userIds)) {
+                User::whereIn('id', $userIds)->where('role', 'siswa')->delete();
+            }
+        });
+
+        return back()->with('success', count($ids) . ' data siswa dan akun login berhasil dihapus secara permanen.');
     }
 }
