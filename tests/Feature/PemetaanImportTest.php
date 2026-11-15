@@ -18,6 +18,7 @@ class PemetaanImportTest extends TestCase
     use RefreshDatabase;
 
     private User $superAdmin;
+    private User $pokja;
     private ProgramKeahlian $progPplg;
     private ProgramKeahlian $progAkl;
     private KonsentrasiKeahlian $konPplg;
@@ -52,6 +53,22 @@ class PemetaanImportTest extends TestCase
             'is_active' => true,
             'force_password_change' => false,
         ]);
+
+        $this->pokja = User::create([
+            'name' => 'Petugas Pokja',
+            'username' => 'pokja',
+            'email' => 'pokja@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'pokja',
+            'is_active' => true,
+            'force_password_change' => false,
+        ]);
+
+        $group = \App\Models\PokjaGroup::create([
+            'name' => 'Grup Pokja',
+            'is_active' => true,
+        ]);
+        $group->users()->attach($this->pokja->id);
     }
 
     public function test_teacher_disambiguation_logic_word1_and_word2(): void
@@ -410,5 +427,39 @@ CSV;
         $siswa->refresh();
         $this->assertEquals($pembimbing->id, $siswa->pembimbing_sekolah_id);
         $this->assertEquals($dudi->id, $siswa->dudi_id);
+    }
+
+    public function test_pokja_can_access_import_pemetaan_page_under_settings(): void
+    {
+        $response = $this->actingAs($this->pokja)->get(route('pokja.pengaturan.import_pemetaan'));
+
+        $response->assertOk();
+        $response->assertViewIs('pokja.pengaturan.import-pemetaan');
+        $response->assertSeeText('Impor Pemetaan Pembimbing & DUDI PKL');
+        $response->assertDontSeeText('Password Awal Akun Guru Baru');
+    }
+
+    public function test_super_admin_config_page_does_not_have_password_field(): void
+    {
+        $response = $this->actingAs($this->superAdmin)->get(route('admin.config.index'));
+
+        $response->assertOk();
+        $response->assertSeeText('Impor Pemetaan Pembimbing & DUDI PKL');
+        $response->assertDontSeeText('Password Awal Akun Guru Baru');
+    }
+
+    public function test_pokja_can_process_import_pemetaan_via_ajax(): void
+    {
+        $response = $this->actingAs($this->pokja)
+            ->postJson(route('pokja.pengaturan.import_pemetaan.process'), [
+                'jurusan_filter' => ['PPLG', 'AKL'],
+                'batch_size' => 10,
+                'offset' => 0,
+            ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'status' => 'success',
+            ]);
     }
 }

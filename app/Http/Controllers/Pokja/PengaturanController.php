@@ -146,4 +146,9 @@ class PengaturanController extends Controller
 
         return back()->with('success', 'Data Kop Laporan berhasil diperbarui.');
     }
+
+    public function importPemetaan()
+    {
+        return view('pokja.pengaturan.import-pemetaan');
+    }
 }

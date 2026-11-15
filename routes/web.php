@@ -231,6 +231,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('feedback/{feedback}/print', [\App\Http\Controllers\Pokja\FeedbackController::class, 'print'])->name('feedback.print');
 
         // Pengaturan Pokja
+        Route::get('pengaturan/import-pemetaan', [\App\Http\Controllers\Pokja\PengaturanController::class, 'importPemetaan'])->name('pengaturan.import_pemetaan');
+        Route::post('pengaturan/import-pemetaan', [\App\Http\Controllers\Admin\ConfigController::class, 'importPemetaan'])->name('pengaturan.import_pemetaan.process');
         Route::get('pengaturan/sertifikat', [\App\Http\Controllers\Pokja\PengaturanController::class, 'sertifikat'])->name('pengaturan.sertifikat');
         Route::post('pengaturan/sertifikat', [\App\Http\Controllers\Pokja\PengaturanController::class, 'updateSertifikat'])->name('pengaturan.sertifikat.update');
         Route::get('pengaturan/surat-pengantar', [\App\Http\Controllers\Pokja\PengaturanController::class, 'suratPengantar'])->name('pengaturan.surat_pengantar');
