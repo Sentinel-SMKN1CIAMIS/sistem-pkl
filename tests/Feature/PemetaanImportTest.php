@@ -462,4 +462,120 @@ CSV;
                 'status' => 'success',
             ]);
     }
+
+    public function test_import_guru_nip_file_syncs_existing_teachers_and_creates_new_accounts(): void
+    {
+        // 1. Setup existing teacher with old username & password
+        $oldUser = User::create([
+            'name' => 'Acep Muhammad Soleh',
+            'username' => 'acep.muhammad.soleh',
+            'email' => 'acep@smkn1ciamis.sch.id',
+            'password' => bcrypt('smkn1ciamis'),
+            'role' => 'pembimbing_sekolah',
+            'is_active' => true,
+            'force_password_change' => true,
+        ]);
+
+        $existingTeacher = PembimbingSekolah::create([
+            'user_id' => $oldUser->id,
+            'nama_lengkap' => 'Acep Muhammad Soleh',
+            'nip' => null,
+            'tipe' => 'kejuruan',
+        ]);
+
+        // Existing DUDI and student to ensure mappings are not touched
+        $dudi = Dudi::create([
+            'nama' => 'PT Gameloft Indonesia',
+            'konsentrasi_keahlian_id' => $this->konPplg->id,
+            'kota' => 'Yogyakarta',
+            'alamat' => 'Yogyakarta',
+            'is_active' => true,
+        ]);
+
+        $siswa = Siswa::create([
+            'user_id' => User::factory()->create(['role' => 'siswa'])->id,
+            'konsentrasi_keahlian_id' => $this->konPplg->id,
+            'dudi_id' => $dudi->id,
+            'pembimbing_sekolah_id' => $existingTeacher->id,
+            'nama_lengkap' => 'Budi Sanjaya',
+            'nis' => '12345',
+            'nisn' => '0012345678',
+            'kelas' => 'XII PPLG 1',
+            'jenis_kelamin' => 'L',
+            'tempat_lahir' => 'Ciamis',
+            'tanggal_lahir' => '2006-01-01',
+            'alamat' => 'Ciamis',
+            'no_hp' => '08123456789',
+            'tahun_ajaran' => '2026/2027',
+            'status_pkl' => 'sedang_pkl',
+        ]);
+
+        $service = app(PemetaanImportService::class);
+
+        // CSV content containing existing teacher (Acep) and new teacher (Amirudin)
+        $csvContent = "Nama Lengkap Guru,NIP Guru\n" .
+            "\"ACEP MUHAMMAD SOLEH, S.Pd.\",199409152022211004\n" .
+            "\"AMIRUDIN, S.Pd.\",198605012023211012\n" .
+            "Dimensi Distribusi Guru,Kategori / Penugasan\n" .
+            "Guru Produktif / Kejuruan,35 Orang\n";
+
+        $parsed = $service->parseCsv($csvContent);
+
+        $this->assertEquals('guru_nip', $parsed['format'] ?? null);
+        $this->assertCount(2, $parsed['items']);
+
+        $stats = $service->executeImport($parsed['items']);
+
+        $this->assertEquals(1, $stats['pembimbing_matched']);
+        $this->assertEquals(1, $stats['pembimbing_created']);
+
+        // Check synced existing teacher:
+        $existingTeacher->refresh();
+        $oldUser->refresh();
+        $this->assertEquals('199409152022211004', $existingTeacher->nip);
+        $this->assertEquals('199409152022211004', $oldUser->username);
+        $this->assertNull($oldUser->email);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('199409152022211004', $oldUser->password));
+
+        // Check new teacher created:
+        $newTeacher = PembimbingSekolah::where('nip', '198605012023211012')->first();
+        $this->assertNotNull($newTeacher);
+        $this->assertEquals('198605012023211012', $newTeacher->user->username);
+        $this->assertNull($newTeacher->user->email);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('198605012023211012', $newTeacher->user->password));
+
+        // Check DUDI and student relationship remain untouched:
+        $siswa->refresh();
+        $this->assertEquals($existingTeacher->id, $siswa->pembimbing_sekolah_id);
+        $this->assertEquals($dudi->id, $siswa->dudi_id);
+    }
+
+    public function test_pokja_can_upload_guru_nip_csv_file_via_ajax(): void
+    {
+        $csvContent = "Nama Lengkap Guru,NIP Guru\n" .
+            "\"ACEP MUHAMMAD SOLEH, S.Pd.\",199409152022211004\n" .
+            "\"AGUNG SOFIYANI, S.E.\",199206122024212036\n";
+
+        $file = \Illuminate\Http\UploadedFile::fake()->createWithContent('master_guru_nip.csv', $csvContent);
+
+        $response = $this->actingAs($this->pokja)
+            ->post(route('pokja.pengaturan.import_pemetaan.process'), [
+                'file' => $file,
+                'batch_size' => 50,
+                'offset' => 0,
+            ], [
+                'Accept' => 'application/json',
+                'X-Requested-With' => 'XMLHttpRequest',
+            ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'status' => 'success',
+                'total' => 2,
+                'format' => 'guru_nip',
+                'stats' => [
+                    'pembimbing_created' => 2,
+                ],
+            ]);
+    }
 }

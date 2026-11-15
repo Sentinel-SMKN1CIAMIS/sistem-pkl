@@ -472,6 +472,79 @@ class PemetaanImportService
      */
     public function parseRows(array $rows, array $allowedJurusan = ['AKL', 'PBS', 'MPLB', 'PM', 'PBD', 'KLN', 'HTL', 'PPLG']): array
     {
+        // 1. Cek apakah ini berkas Master Guru & NIP (contoh: "Nama Lengkap Guru,NIP Guru" atau "Nama,NIP")
+        $isGuruNipFormat = false;
+        $nameIdx = -1;
+        $nipIdx = -1;
+
+        foreach ($rows as $cols) {
+            if (!is_array($cols) || empty($cols)) continue;
+            $lineText = implode(' ', array_filter($cols, fn($v) => $v !== ''));
+            // Jika ada kolom nama siswa atau kelas, ini jelas format pemetaan siswa
+            if (stripos($lineText, 'NAMA SISWA') !== false || stripos($lineText, 'TEMPAT PKL') !== false || stripos($lineText, 'KELAS') !== false) {
+                break;
+            }
+            if (stripos($lineText, 'nip') !== false) {
+                $isGuruNipFormat = true;
+                foreach ($cols as $cIdx => $cVal) {
+                    $val = strtolower(trim((string)$cVal));
+                    if (str_contains($val, 'nip')) {
+                        $nipIdx = $cIdx;
+                    } elseif (str_contains($val, 'nama') || str_contains($val, 'guru') || str_contains($val, 'pembimbing')) {
+                        $nameIdx = $cIdx;
+                    }
+                }
+                break;
+            }
+        }
+
+        if ($isGuruNipFormat) {
+            if ($nameIdx === -1) $nameIdx = 0;
+            if ($nipIdx === -1) $nipIdx = 1;
+
+            $parsedGuruItems = [];
+            foreach ($rows as $cols) {
+                if (!is_array($cols) || empty($cols)) continue;
+                $cols = array_map(fn($v) => is_null($v) ? '' : trim((string)$v), $cols);
+                $lineText = implode(' ', array_filter($cols, fn($v) => $v !== ''));
+                if (empty($lineText)) continue;
+
+                // Berhenti jika sudah mencapai tabel rekapitulasi/distribusi di bawah
+                if (
+                    stripos($lineText, 'Dimensi Distribusi') !== false ||
+                    stripos($lineText, 'DISTRIBUSI GURU') !== false ||
+                    stripos($lineText, '--- REKAP') !== false ||
+                    stripos($lineText, 'TOTAL KESELURUHAN') !== false
+                ) {
+                    break;
+                }
+
+                $rawName = trim($cols[$nameIdx] ?? '');
+                $rawNip = trim($cols[$nipIdx] ?? '');
+
+                // Lewati baris header
+                if (stripos($rawName, 'Nama') !== false && stripos($rawNip, 'NIP') !== false) {
+                    continue;
+                }
+
+                $cleanNip = preg_replace('/\D/', '', $rawNip);
+                if (!empty($rawName) && strlen($cleanNip) >= 8) {
+                    $parsedGuruItems[] = [
+                        'type' => 'guru_nip',
+                        'teacher_name' => $rawName,
+                        'nip' => $cleanNip,
+                    ];
+                }
+            }
+
+            return [
+                'items' => $parsedGuruItems,
+                'skipped_count' => 0,
+                'total_parsed' => count($parsedGuruItems),
+                'format' => 'guru_nip',
+            ];
+        }
+
         $currentWilayah = '';
         $currentPembimbing = '';
         $currentDudi = '';
@@ -652,10 +725,104 @@ class PemetaanImportService
 
         DB::transaction(function () use ($items, $defaultPassword, &$stats, &$existingUsers, &$existingTeachers, &$existingDudis, &$allStudents, $allKonsentrasi) {
             foreach ($items as $item) {
-                $teacherName = $item['pembimbing_canonical'];
-                $dudiName = $item['dudi_name'];
-                $studentName = $item['siswa_nama'];
-                $wilayah = $item['wilayah'];
+                // Penanganan berkas format Master Guru & NIP
+                if (($item['type'] ?? '') === 'guru_nip') {
+                    $rawTeacher = $item['teacher_name'];
+                    $nip = $item['nip'];
+                    $canonicalTeacher = $this->resolveCanonicalTeacher($rawTeacher);
+                    $cleanTeacher = $this->cleanTeacherName($canonicalTeacher ?: $rawTeacher);
+                    $teacherKey = strtolower(trim($cleanTeacher));
+
+                    // 1. Cari guru berdasarkan memory key
+                    $pembimbingSekolah = $existingTeachers->get($teacherKey);
+
+                    // 2. Jika belum ketemu, cari berdasarkan NIP di memory
+                    if (!$pembimbingSekolah && !empty($nip)) {
+                        $pembimbingSekolah = $existingTeachers->first(fn($t) => !empty($t->nip) && $t->nip === $nip);
+                    }
+
+                    // 3. Jika belum ketemu, cari dengan toleransi kemiripan nama
+                    if (!$pembimbingSekolah) {
+                        foreach ($existingTeachers as $t) {
+                            $cName = strtolower($this->cleanTeacherName($t->nama_lengkap));
+                            similar_text($cName, $teacherKey, $percent);
+                            if ($percent >= 85) {
+                                $pembimbingSekolah = $t;
+                                break;
+                            }
+                        }
+                    }
+
+                    if ($pembimbingSekolah) {
+                        // Sinkronkan NIP guru
+                        if ($pembimbingSekolah->nip !== $nip) {
+                            $pembimbingSekolah->nip = $nip;
+                            $pembimbingSekolah->saveQuietly();
+                        }
+
+                        // Sinkronkan User Akun: Username = NIP, Password Default = NIP, Email = null
+                        $user = $pembimbingSekolah->user;
+                        if ($user) {
+                            $isDirty = false;
+                            if ($user->username !== $nip) {
+                                $conflictUser = User::where('username', $nip)->where('id', '!=', $user->id)->first();
+                                if ($conflictUser) {
+                                    $conflictUser->username = $conflictUser->username . '_old_' . $conflictUser->id;
+                                    $conflictUser->saveQuietly();
+                                }
+                                $user->username = $nip;
+                                $user->email = null;
+                                $isDirty = true;
+                            }
+                            if ($user->force_password_change || Hash::check('smkn1ciamis', $user->password) || Hash::check($pembimbingSekolah->nama_lengkap, $user->password)) {
+                                $user->password = $nip;
+                                $user->force_password_change = true;
+                                $isDirty = true;
+                            }
+                            if ($isDirty) {
+                                $user->saveQuietly();
+                            }
+                        }
+                        $stats['pembimbing_matched']++;
+                    } else {
+                        // Buat Akun Guru Baru dengan Username & Password = NIP
+                        $username = $nip;
+                        $baseUsername = $username;
+                        $counter = 1;
+                        while (User::where('username', $username)->exists()) {
+                            $username = $baseUsername . '_' . $counter;
+                            $counter++;
+                        }
+
+                        $user = User::create([
+                            'name' => $cleanTeacher,
+                            'username' => $username,
+                            'email' => null,
+                            'password' => $nip,
+                            'role' => 'pembimbing_sekolah',
+                            'is_active' => true,
+                            'force_password_change' => true,
+                        ]);
+
+                        $pembimbingSekolah = PembimbingSekolah::create([
+                            'user_id' => $user->id,
+                            'nama_lengkap' => $cleanTeacher,
+                            'nip' => $nip,
+                            'tipe' => 'kejuruan',
+                        ]);
+
+                        $existingTeachers->put($teacherKey, $pembimbingSekolah);
+                        $existingUsers->put($teacherKey, $user);
+                        $stats['pembimbing_created']++;
+                    }
+
+                    continue;
+                }
+
+                $teacherName = $item['pembimbing_canonical'] ?? '';
+                $dudiName = $item['dudi_name'] ?? '';
+                $studentName = $item['siswa_nama'] ?? '';
+                $wilayah = $item['wilayah'] ?? '';
 
                 if (empty($teacherName) || empty($dudiName)) {
                     continue;

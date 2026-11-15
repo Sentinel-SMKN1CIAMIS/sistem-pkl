@@ -450,6 +450,8 @@ class ConfigController extends Controller
                 \Illuminate\Support\Facades\Cache::forget("pemetaan_cache_{$cacheId}");
             }
 
+            $isGuruNip = ($parsed['format'] ?? '') === 'guru_nip';
+
             return response()->json([
                 'status' => 'success',
                 'cache_id' => $cacheId,
@@ -460,14 +462,23 @@ class ConfigController extends Controller
                 'percent' => $totalItems > 0 ? min(100, (int) round(($nextOffset / $totalItems) * 100)) : 100,
                 'done' => $isDone,
                 'stats' => $stats,
+                'format' => $parsed['format'] ?? 'default',
                 'message' => $isDone
-                    ? "Selesai mengimpor {$totalItems} data pemetaan."
-                    : "Memproses {$nextOffset} dari {$totalItems} pemetaan...",
+                    ? ($isGuruNip
+                        ? "Selesai menyinkronkan {$totalItems} data guru & NIP."
+                        : "Selesai mengimpor {$totalItems} data pemetaan.")
+                    : ($isGuruNip
+                        ? "Menyinkronkan {$nextOffset} dari {$totalItems} guru..."
+                        : "Memproses {$nextOffset} dari {$totalItems} pemetaan..."),
             ]);
         }
 
         // Fallback synchronous POST
         $stats = $service->executeImport($parsed['items'], ['default_password' => $defaultPassword]);
+
+        if (($parsed['format'] ?? '') === 'guru_nip') {
+            return back()->with('success', "Berhasil menyinkronkan data guru & NIP: {$stats['pembimbing_created']} akun guru baru dibuat, {$stats['pembimbing_matched']} data guru berhasil disinkronkan.");
+        }
 
         return back()->with('success', "Berhasil mengimpor pemetaan: {$stats['pembimbing_created']} akun pembimbing baru, {$stats['dudi_created']} DUDI baru, dan {$stats['siswa_mapped']} siswa berhasil dipetakan.");
     }

@@ -146,23 +146,44 @@
                               <div class="inline-flex p-3 rounded-2xl bg-emerald-500/10 text-emerald-500">
                                   <i data-lucide="check-circle-2" class="w-8 h-8"></i>
                               </div>
-                              <h4 class="text-base font-bold text-emerald-600 dark:text-emerald-400">Impor Pemetaan Berhasil Selesai!</h4>
+                              <h4 class="text-base font-bold text-emerald-600 dark:text-emerald-400" x-text="formatType === 'guru_nip' ? 'Sinkronisasi Data Guru & NIP Berhasil!' : 'Impor Pemetaan Berhasil Selesai!'"></h4>
                           </div>
 
-                          <div class="grid grid-cols-2 gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 text-[11px]">
-                              <div class="p-2.5 rounded-lg bg-blue-500/10">
-                                  <span class="text-blue-500 font-bold block">Pembimbing Sekolah:</span>
-                                  <span class="font-bold text-sm text-slate-800 dark:text-slate-200" x-text="summary.pembimbing_created + ' Baru / ' + summary.pembimbing_matched + ' Cocok'"></span>
+                          <template x-if="formatType === 'guru_nip'">
+                              <div class="space-y-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 text-xs">
+                                  <div class="grid grid-cols-2 gap-3">
+                                      <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                                          <span class="text-emerald-600 dark:text-emerald-400 font-bold block">Akun Baru Dibuat:</span>
+                                          <span class="font-extrabold text-base text-slate-800 dark:text-slate-100" x-text="summary.pembimbing_created + ' Guru'"></span>
+                                      </div>
+                                      <div class="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                                          <span class="text-blue-600 dark:text-blue-400 font-bold block">Kredensial Disinkronkan:</span>
+                                          <span class="font-extrabold text-base text-slate-800 dark:text-slate-100" x-text="summary.pembimbing_matched + ' Guru'"></span>
+                                      </div>
+                                  </div>
+                                  <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-slate-700 dark:text-slate-300 space-y-1">
+                                      <p class="font-semibold text-amber-700 dark:text-amber-400">Informasi Kredensial Guru:</p>
+                                      <p class="text-[11px] leading-relaxed">Username login dan password awal (default) guru otomatis disetel menggunakan <b>NIP</b> masing-masing guru. Data bimbingan DUDI dan siswa tidak terganggu.</p>
+                                  </div>
                               </div>
-                              <div class="p-2.5 rounded-lg bg-indigo-500/10">
-                                  <span class="text-indigo-500 font-bold block">Tempat DUDI:</span>
-                                  <span class="font-bold text-sm text-slate-800 dark:text-slate-200" x-text="summary.dudi_created + ' Baru / ' + summary.dudi_matched + ' Cocok'"></span>
+                          </template>
+
+                          <template x-if="formatType !== 'guru_nip'">
+                              <div class="grid grid-cols-2 gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 text-[11px]">
+                                  <div class="p-2.5 rounded-lg bg-blue-500/10">
+                                      <span class="text-blue-500 font-bold block">Pembimbing Sekolah:</span>
+                                      <span class="font-bold text-sm text-slate-800 dark:text-slate-200" x-text="summary.pembimbing_created + ' Baru / ' + summary.pembimbing_matched + ' Cocok'"></span>
+                                  </div>
+                                  <div class="p-2.5 rounded-lg bg-indigo-500/10">
+                                      <span class="text-indigo-500 font-bold block">Tempat DUDI:</span>
+                                      <span class="font-bold text-sm text-slate-800 dark:text-slate-200" x-text="summary.dudi_created + ' Baru / ' + summary.dudi_matched + ' Cocok'"></span>
+                                  </div>
+                                  <div class="p-2.5 rounded-lg bg-emerald-500/10 col-span-2">
+                                      <span class="text-emerald-500 font-bold block">Siswa Berhasil Dipetakan (PKL):</span>
+                                      <span class="font-bold text-sm text-slate-800 dark:text-slate-200" x-text="summary.siswa_mapped + ' Siswa'"></span>
+                                  </div>
                               </div>
-                              <div class="p-2.5 rounded-lg bg-emerald-500/10 col-span-2">
-                                  <span class="text-emerald-500 font-bold block">Siswa Berhasil Dipetakan (PKL):</span>
-                                  <span class="font-bold text-sm text-slate-800 dark:text-slate-200" x-text="summary.siswa_mapped + ' Siswa'"></span>
-                              </div>
-                          </div>
+                          </template>
                       </div>
 
                       <!-- Error State -->
@@ -212,6 +233,7 @@
             percent: 0,
             offset: 0,
             batchSize: 50,
+            formatType: 'default',
             summary: {
                 pembimbing_created: 0,
                 pembimbing_matched: 0,
@@ -244,6 +266,7 @@
                 this.total = 0;
                 this.percent = 0;
                 this.offset = 0;
+                this.formatType = 'default';
                 this.summary = {
                     pembimbing_created: 0,
                     pembimbing_matched: 0,
@@ -296,6 +319,9 @@
                         this.processed = data.processed_total;
                         this.percent = data.percent;
                         this.offset = data.offset;
+                        if (data.format) {
+                            this.formatType = data.format;
+                        }
 
                         if (data.stats) {
                             this.summary.pembimbing_created += (data.stats.pembimbing_created || 0);
