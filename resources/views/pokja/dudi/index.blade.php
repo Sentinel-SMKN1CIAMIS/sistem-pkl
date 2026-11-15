@@ -383,7 +383,7 @@
                                         @endforeach
                                     @else
                                         <span class="px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-xs text-blue-400">
-                                            {{ $item->konsentrasiKeahlian->nama }}
+                                            {{ $item->konsentrasiKeahlian?->nama ?? '-' }}
                                         </span>
                                     @endif
                                 </div>

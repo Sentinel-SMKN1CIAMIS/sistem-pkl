@@ -14,7 +14,9 @@
                 @else
                     {{ $pembimbing_sekolah->tipe }}
                 @endif
-                — {{ $pembimbing_sekolah->konsentrasiKeahlian->nama }}
+                @if($pembimbing_sekolah->konsentrasiKeahlian)
+                    — {{ $pembimbing_sekolah->konsentrasiKeahlian->nama }}
+                @endif
             </p>
         </div>
     </div>

@@ -578,4 +578,34 @@ CSV;
                 ],
             ]);
     }
+
+    public function test_pokja_can_view_pembimbing_sekolah_list_even_when_konsentrasi_or_email_is_null(): void
+    {
+        $user = User::create([
+            'name' => 'Guru Tanpa Jurusan',
+            'username' => '199901012025011001',
+            'email' => null,
+            'password' => bcrypt('199901012025011001'),
+            'role' => 'pembimbing_sekolah',
+            'is_active' => true,
+        ]);
+
+        $teacher = PembimbingSekolah::create([
+            'user_id' => $user->id,
+            'nama_lengkap' => 'Guru Tanpa Jurusan, S.Pd.',
+            'nip' => '199901012025011001',
+            'tipe' => 'kejuruan',
+            'konsentrasi_keahlian_id' => null,
+        ]);
+
+        $response = $this->actingAs($this->pokja)->get(route('pokja.pembimbing_sekolah.index'));
+
+        $response->assertOk();
+        $response->assertSeeText('Guru Tanpa Jurusan, S.Pd.');
+        $response->assertSeeText('199901012025011001');
+
+        $showResponse = $this->actingAs($this->pokja)->get(route('pokja.pembimbing_sekolah.show', $teacher));
+        $showResponse->assertOk();
+        $showResponse->assertSeeText('Guru Tanpa Jurusan, S.Pd.');
+    }
 }

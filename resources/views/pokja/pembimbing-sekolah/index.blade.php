@@ -399,7 +399,7 @@
                                     </div>
                                     <div class="min-w-0">
                                         <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 block truncate">{{ $item->nama_lengkap }}</span>
-                                        <span class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $item->user->email }}</span>
+                                        <span class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $item->user?->email ?: ($item->user?->username ?? '-') }}</span>
                                     </div>
                                 </div>
                             </td>
@@ -407,7 +407,7 @@
                                 <span class="text-sm text-slate-700 dark:text-slate-300 block font-mono">{{ $item->nip ?? '-' }}</span>
                                 <span class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                                     <i data-lucide="user" class="w-3 h-3"></i>
-                                    {{ $item->user->username }}
+                                    {{ $item->user?->username ?? '-' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -427,7 +427,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-xs text-slate-600 dark:text-slate-400">
-                                    {{ $item->konsentrasiKeahlian->nama }}
+                                    {{ $item->konsentrasiKeahlian?->nama ?? '-' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right whitespace-nowrap">
