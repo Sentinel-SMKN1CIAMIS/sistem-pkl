@@ -62,4 +62,17 @@ class KompetensiController extends Controller
         return redirect()->route('admin.kompetensi.index')
             ->with('success', 'Data kompetensi berhasil dihapus.');
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:kompetensis,id',
+        ]);
+
+        $ids = $request->input('ids');
+        \App\Models\Kompetensi::whereIn('id', $ids)->delete();
+
+        return back()->with('success', count($ids) . ' data kompetensi berhasil dihapus.');
+    }
 }

@@ -227,6 +227,27 @@ class PembimbingSekolahController extends Controller
             ->with('success', 'Data pembimbing sekolah berhasil dihapus.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:pembimbing_sekolahs,id',
+        ]);
+
+        $ids = $request->input('ids');
+        $pembimbings = \App\Models\PembimbingSekolah::with('user')->whereIn('id', $ids)->get();
+        $userIds = $pembimbings->pluck('user_id')->filter()->all();
+
+        \Illuminate\Support\Facades\DB::transaction(function() use ($ids, $userIds) {
+            \App\Models\PembimbingSekolah::whereIn('id', $ids)->delete();
+            if (!empty($userIds)) {
+                \App\Models\User::whereIn('id', $userIds)->where('role', 'pembimbing_sekolah')->delete();
+            }
+        });
+
+        return back()->with('success', count($ids) . ' data pembimbing sekolah berhasil dihapus.');
+    }
+
     /**
      * Reset password individual pembimbing sekolah ke NIP masing-masing.
      */

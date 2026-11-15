@@ -66,7 +66,47 @@
             <p class="text-sm font-medium">Belum ada data elemen kompetensi / TP.</p>
         </div>
     @else
-        <div class="space-y-4">
+        <div class="space-y-4" x-data="{
+            selectedIds: [],
+            selectAll: false,
+            toggleAll() {
+                if (this.selectAll) {
+                    this.selectedIds = Array.from(document.querySelectorAll('.tp-checkbox:not(:disabled)')).map(el => el.value);
+                } else {
+                    this.selectedIds = [];
+                }
+            },
+            updateSelectAll() {
+                const checkable = document.querySelectorAll('.tp-checkbox:not(:disabled)');
+                this.selectAll = checkable.length > 0 && this.selectedIds.length === checkable.length;
+            },
+            confirmBulkDelete(e) {
+                if (e) e.preventDefault();
+                if (this.selectedIds.length === 0) return;
+                const selectedBoxes = Array.from(document.querySelectorAll('.tp-checkbox:checked'));
+                const names = selectedBoxes.map(el => el.getAttribute('data-name') || ('TP #' + el.value));
+                window.confirmDoubleDeletion({
+                    items: names,
+                    entityName: 'tujuan pembelajaran',
+                    onConfirm: () => {
+                        this.$refs.bulkDeleteForm.submit();
+                    }
+                });
+            }
+        }">
+            <!-- Bulk Action Bar -->
+            <div x-show="selectedIds.length > 0" x-transition.opacity.duration.200ms class="flex items-center gap-3 mb-4" x-cloak>
+                <form action="{{ route('pokja.kompetensi.bulk_destroy') }}" method="POST" x-ref="bulkDeleteForm" @submit="confirmBulkDelete">
+                    @csrf
+                    <template x-for="id in selectedIds" :key="id">
+                        <input type="hidden" name="ids[]" :value="id">
+                    </template>
+                    <button type="submit" class="px-4 py-2 text-sm whitespace-nowrap bg-red-600 hover:bg-red-500 text-white font-medium rounded-xl shadow-lg shadow-red-500/25 transition-all gap-2 flex items-center transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        Hapus Terpilih (<span x-text="selectedIds.length"></span>)
+                    </button>
+                </form>
+            </div>
             @foreach($groupedCompetencies as $konsentrasiId => $konsentrasiGroup)
                 @php $konsentrasi = $konsentrasiGroup['konsentrasi']; @endphp
                 <div class="glass-card overflow-hidden border border-blue-500/20" x-data="{ openKonsentrasi: true }">
@@ -131,6 +171,12 @@
                                                                 <div class="flex-1">
                                                                     <div class="flex items-start gap-2">
                                                                         @if(auth()->user()->role !== 'kepala_sekolah')
+                                                                        <input type="checkbox" 
+                                                                               value="{{ $item->id }}" 
+                                                                               data-name="{{ Str::limit($item->tp ?? 'TP', 40) }}" 
+                                                                               x-model="selectedIds" 
+                                                                               @change="updateSelectAll" 
+                                                                               class="tp-checkbox rounded-sm border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-900 w-4 h-4 cursor-pointer mt-0.5 shrink-0">
                                                                         <i data-lucide="grip-vertical" class="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-move mt-0.5 shrink-0 drag-handle"></i>
                                                                         @endif
                                                                         <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0"></i>
@@ -142,10 +188,10 @@
                                                                     <a href="{{ route('pokja.kompetensi.edit', $item) }}" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Edit">
                                                                         <i data-lucide="edit-3" class="w-4 h-4"></i>
                                                                     </a>
-                                                                    <form action="{{ route('pokja.kompetensi.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus TP ini?')" class="inline">
+                                                                    <form action="{{ route('pokja.kompetensi.destroy', $item) }}" method="POST" data-confirm-delete="{{ Str::limit($item->tp ?? 'TP', 50) }}" data-entity="tujuan pembelajaran" class="inline">
                                                                         @csrf
                                                                         @method('DELETE')
-                                                                        <button type="submit" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Hapus">
+                                                                        <button type="submit" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors cursor-pointer" title="Hapus">
                                                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                                                                         </button>
                                                                     </form>

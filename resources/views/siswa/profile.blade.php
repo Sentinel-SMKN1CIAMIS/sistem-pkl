@@ -31,7 +31,7 @@
                     </div>
                     <div class="flex items-center justify-between text-xs">
                         <span class="text-slate-500">Program</span>
-                        <span class="font-bold text-slate-700 dark:text-slate-300 text-right">{{ $siswa->konsentrasiKeahlian->nama }}</span>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 text-right">{{ $siswa->konsentrasiKeahlian?->nama ?? '-' }}</span>
                     </div>
                 </div>
             </div>

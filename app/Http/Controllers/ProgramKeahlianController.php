@@ -66,6 +66,19 @@ class ProgramKeahlianController extends Controller
             ->with('success', 'Program Keahlian berhasil dihapus.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:program_keahlians,id',
+        ]);
+
+        $ids = $request->input('ids');
+        \App\Models\ProgramKeahlian::whereIn('id', $ids)->delete();
+
+        return back()->with('success', count($ids) . ' data program keahlian berhasil dihapus.');
+    }
+
     public function reorder(Request $request)
     {
         $request->validate([

@@ -164,6 +164,27 @@ class PembimbingDudiController extends Controller
             ->with('success', 'Data pembimbing DUDI berhasil dihapus.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:pembimbing_dudis,id',
+        ]);
+
+        $ids = $request->input('ids');
+        $pembimbings = \App\Models\PembimbingDudi::with('user')->whereIn('id', $ids)->get();
+        $userIds = $pembimbings->pluck('user_id')->filter()->all();
+
+        \Illuminate\Support\Facades\DB::transaction(function() use ($ids, $userIds) {
+            \App\Models\PembimbingDudi::whereIn('id', $ids)->delete();
+            if (!empty($userIds)) {
+                \App\Models\User::whereIn('id', $userIds)->delete();
+            }
+        });
+
+        return back()->with('success', count($ids) . ' data pembimbing DUDI berhasil dihapus.');
+    }
+
     public function exportPdf(Request $request)
     {
         $query = \App\Models\PembimbingDudi::with(['user', 'dudi']);

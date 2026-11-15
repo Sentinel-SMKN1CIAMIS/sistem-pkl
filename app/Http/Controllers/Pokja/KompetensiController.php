@@ -144,6 +144,19 @@ class KompetensiController extends Controller
             ->with('success', 'Tujuan Pembelajaran berhasil dihapus.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:kompetensis,id',
+        ]);
+
+        $ids = $request->input('ids');
+        Kompetensi::whereIn('id', $ids)->delete();
+
+        return back()->with('success', count($ids) . ' data tujuan pembelajaran berhasil dihapus.');
+    }
+
     public function reorder(Request $request)
     {
         $orderedIds = $request->input('ordered_ids');

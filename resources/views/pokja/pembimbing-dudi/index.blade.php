@@ -49,6 +49,22 @@
                 this.selectedMentors = this.selectedMentors.filter(id => !pageIds.includes(id));
             }
         },
+        confirmBulkDelete() {
+            if (this.selectedMentors.length === 0) return;
+            const selectedBoxes = Array.from(document.querySelectorAll('.pembimbing-dudi-checkbox:checked'));
+            let names = selectedBoxes.map(el => el.getAttribute('data-name')).filter(Boolean);
+            if (names.length === 0) {
+                names = this.selectedMentors.map(id => 'Mentor #' + id);
+            }
+            window.confirmDoubleDeletion({
+                items: names,
+                entityName: 'pembimbing DUDI',
+                onConfirm: () => {
+                    localStorage.removeItem('selectedPembimbingDudi');
+                    this.$refs.bulkDeleteForm.submit();
+                }
+            });
+        },
         getPdfExportUrl(orientation) {
             let baseUrl = '{{ route('pokja.pembimbing_dudi.export-pdf') }}';
             let params = new URLSearchParams(window.location.search);
@@ -103,10 +119,20 @@
                             <span class="font-bold text-blue-600 dark:text-blue-400" x-text="selectedMentors.length"></span> data terpilih
                             <span class="text-slate-400">(dari semua halaman)</span>
                         </span>
-                        <button @click="selectedMentors = []; localStorage.removeItem('selectedPembimbingDudi')" class="px-2.5 py-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-semibold">
+                        <button @click="selectedMentors = []; localStorage.removeItem('selectedPembimbingDudi')" class="px-2.5 py-1 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors font-semibold">
                             <i data-lucide="x-circle" class="w-3.5 h-3.5 inline"></i>
-                            Hapus Pilihan
+                            Batal Pilihan
                         </button>
+                        <button type="button" @click="confirmBulkDelete()" class="px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors font-semibold flex items-center gap-1.5 shadow-sm cursor-pointer">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            Hapus Terpilih (<span x-text="selectedMentors.length"></span>)
+                        </button>
+                        <form action="{{ route('pokja.pembimbing_dudi.bulk_destroy') }}" method="POST" x-ref="bulkDeleteForm" style="display: none;">
+                            @csrf
+                            <template x-for="id in selectedMentors" :key="id">
+                                <input type="hidden" name="ids[]" :value="id">
+                            </template>
+                        </form>
                     </div>
                 </template>
             </div>
@@ -447,7 +473,7 @@
                         <tr class="hover:bg-white dark:bg-slate-800/20 transition-colors group" :class="selectedMentors.includes('{{ $item->id }}') ? 'bg-blue-500/5 dark:bg-blue-500/10' : ''">
                             @if(auth()->user()->role !== 'kepala_sekolah')
                             <td class="px-6 py-4 whitespace-nowrap w-12">
-                                <input type="checkbox" value="{{ $item->id }}" x-model="selectedMentors" class="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 bg-transparent">
+                                <input type="checkbox" value="{{ $item->id }}" data-name="{{ $item->nama_lengkap }}" x-model="selectedMentors" class="pembimbing-dudi-checkbox rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 bg-transparent">
                             </td>
                             @endif
                             <td class="px-6 py-4 text-slate-900 dark:text-slate-100 whitespace-nowrap">
@@ -491,10 +517,10 @@
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Edit
                                         </a>
-                                        <form action="{{ route('pokja.pembimbing_dudi.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun mentor {{ addslashes($item->nama_lengkap) }} ini?')">
+                                        <form action="{{ route('pokja.pembimbing_dudi.destroy', $item) }}" method="POST" data-confirm-delete="{{ $item->nama_lengkap }}" data-entity="pembimbing DUDI">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left">
+                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer">
                                                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                                 Hapus
                                             </button>

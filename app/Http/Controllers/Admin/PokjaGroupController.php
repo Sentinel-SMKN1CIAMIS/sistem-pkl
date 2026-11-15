@@ -162,6 +162,19 @@ class PokjaGroupController extends Controller
             ->with('success', "Grup Pokja '{$groupName}' berhasil dihapus.");
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:pokja_groups,id',
+        ]);
+
+        $ids = $request->input('ids');
+        PokjaGroup::whereIn('id', $ids)->delete();
+
+        return back()->with('success', count($ids) . ' grup Pokja berhasil dihapus.');
+    }
+
     /**
      * Add a member to an existing group
      */

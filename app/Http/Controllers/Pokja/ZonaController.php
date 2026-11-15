@@ -73,6 +73,24 @@ class ZonaController extends Controller
         return response()->json(['message' => 'Zona berhasil dihapus.']);
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:zonas,id',
+        ]);
+
+        $ids = $request->input('ids');
+        Dudi::whereIn('zona_id', $ids)->update(['zona_id' => null]);
+        Zona::whereIn('id', $ids)->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => count($ids) . ' zona berhasil dihapus.']);
+        }
+
+        return back()->with('success', count($ids) . ' data zona berhasil dihapus.');
+    }
+
     /**
      * Return all zonas as GeoJSON for map rendering
      */

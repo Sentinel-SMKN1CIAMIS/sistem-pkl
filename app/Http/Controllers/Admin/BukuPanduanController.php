@@ -52,4 +52,23 @@ class BukuPanduanController extends Controller
         $panduan->delete();
         return back()->with('success', 'Buku panduan berhasil dihapus.');
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:buku_panduans,id',
+        ]);
+
+        $ids = $request->input('ids');
+        $panduans = BukuPanduan::whereIn('id', $ids)->get();
+        foreach ($panduans as $panduan) {
+            if ($panduan->file_path) {
+                Storage::disk('public')->delete($panduan->file_path);
+            }
+        }
+        BukuPanduan::whereIn('id', $ids)->delete();
+
+        return back()->with('success', count($ids) . ' buku panduan berhasil dihapus.');
+    }
 }

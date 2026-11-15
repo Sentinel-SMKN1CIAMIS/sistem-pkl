@@ -39,7 +39,7 @@
                     </div>
                     <div class="flex items-center justify-between text-xs">
                         <span class="text-slate-500">Konsentrasi Keahlian</span>
-                        <span class="font-bold text-slate-700 dark:text-slate-300 text-right">{{ $pembimbing->konsentrasiKeahlian->nama ?? '-' }}</span>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 text-right">{{ $pembimbing->konsentrasiKeahlian?->nama ?? '-' }}</span>
                     </div>
                     <div class="flex items-center justify-between text-xs">
                         <span class="text-slate-500">Kapasitas Bimbingan</span>

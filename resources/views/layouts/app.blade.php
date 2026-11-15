@@ -25,6 +25,81 @@
     <link href="https://unpkg.com/lucide@latest/lucide.css" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.confirmDoubleDeletion = function(options) {
+            const { items, entityName = 'data', onConfirm } = options;
+            if (!items || items.length === 0) return;
+
+            const count = items.length;
+            let label = '';
+            if (count === 1) {
+                label = `"${items[0]}"`;
+            } else if (count <= 3) {
+                label = items.map(n => `"${n}"`).join(', ');
+            } else {
+                label = `kumpulan ${count} data ${entityName} ini`;
+            }
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const swalConfig = {
+                background: isDark ? '#0f172a' : '#ffffff',
+                color: isDark ? '#f1f5f9' : '#1e293b',
+                customClass: {
+                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500/25 text-sm focus:outline-none cursor-pointer mr-3',
+                    cancelButton: 'px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-sm focus:outline-none cursor-pointer',
+                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
+                    htmlContainer: 'text-sm font-medium leading-relaxed'
+                },
+                buttonsStyling: false,
+            };
+
+            // Peringatan 1: Validasi Pertama
+            Swal.fire({
+                ...swalConfig,
+                title: 'Konfirmasi Hapus Data',
+                html: `Apakah Anda yakin ingin menghapus <b>${label}</b>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Lanjutkan',
+                cancelButtonText: 'Batal',
+            }).then((res1) => {
+                if (!res1.isConfirmed) return;
+
+                // Peringatan 2: Validasi Kedua / Peringatan Terakhir
+                Swal.fire({
+                    ...swalConfig,
+                    title: 'Peringatan Terakhir!',
+                    html: `Tindakan ini <b>permanen</b> dan <b>tidak dapat dibatalkan</b>!<br>Seluruh data terkait dari <b>${label}</b> akan dihapus secara permanen dari sistem.<br><br>Apakah Anda benar-benar yakin?`,
+                    icon: 'error',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Hapus Permanen Sekarang!',
+                    cancelButtonText: 'Batalkan',
+                }).then((res2) => {
+                    if (res2.isConfirmed && typeof onConfirm === 'function') {
+                        onConfirm();
+                    }
+                });
+            });
+        };
+
+        // Otomatis tangani form single-delete yang memiliki atribut data-confirm-delete
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (form && form.hasAttribute('data-confirm-delete')) {
+                e.preventDefault();
+                const name = form.getAttribute('data-confirm-delete') || 'data ini';
+                const entity = form.getAttribute('data-entity') || 'data';
+                window.confirmDoubleDeletion({
+                    items: [name],
+                    entityName: entity,
+                    onConfirm: () => {
+                        form.removeAttribute('data-confirm-delete');
+                        form.submit();
+                    }
+                });
+            }
+        });
+    </script>
     
     <style>
         body { 

@@ -158,18 +158,23 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
     // Shared Admin Routes (Super Admin, Pokja, Kepala Sekolah)
     Route::middleware(['role:super_admin,pokja,kepala_sekolah', 'view-only'])->prefix('admin')->name('admin.')->group(function () {
+        Route::post('program_keahlian/bulk-destroy', [\App\Http\Controllers\ProgramKeahlianController::class, 'bulkDestroy'])->name('program_keahlian.bulk-destroy');
         Route::post('program_keahlian/reorder', [\App\Http\Controllers\ProgramKeahlianController::class, 'reorder'])->name('program_keahlian.reorder');
         Route::resource('program_keahlian', \App\Http\Controllers\ProgramKeahlianController::class);
+        Route::post('konsentrasi_keahlian/bulk-destroy', [\App\Http\Controllers\KonsentrasiKeahlianController::class, 'bulkDestroy'])->name('konsentrasi_keahlian.bulk-destroy');
         Route::post('konsentrasi_keahlian/reorder', [\App\Http\Controllers\KonsentrasiKeahlianController::class, 'reorder'])->name('konsentrasi_keahlian.reorder');
         Route::resource('konsentrasi_keahlian', \App\Http\Controllers\KonsentrasiKeahlianController::class);
     });
 
     // Super Admin Routes
     Route::middleware('role:super_admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::post('kompetensi/bulk-destroy', [\App\Http\Controllers\KompetensiController::class, 'bulkDestroy'])->name('kompetensi.bulk-destroy');
         Route::resource('kompetensi', \App\Http\Controllers\KompetensiController::class);
+        Route::post('panduan/bulk-destroy', [\App\Http\Controllers\Admin\BukuPanduanController::class, 'bulkDestroy'])->name('panduan.bulk-destroy');
         Route::resource('panduan', \App\Http\Controllers\Admin\BukuPanduanController::class);
         Route::post('users/bulk-destroy', [\App\Http\Controllers\Admin\UserController::class, 'bulkDestroy'])->name('users.bulk-destroy');
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+        Route::post('pokja-groups/bulk-destroy', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'bulkDestroy'])->name('pokja-groups.bulk-destroy');
         Route::resource('pokja-groups', \App\Http\Controllers\Admin\PokjaGroupController::class);
         Route::post('pokja-groups/{pokjaGroup}/add-member', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'addMember'])->name('pokja-groups.add-member');
         Route::post('pokja-groups/{pokjaGroup}/remove-member', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'removeMember'])->name('pokja-groups.remove-member');
@@ -195,7 +200,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('kompetensi/import-pdf/preview', [\App\Http\Controllers\Pokja\KompetensiController::class, 'showImportPdfPreview'])->name('kompetensi.import-pdf.preview');
         Route::post('kompetensi/import-pdf/store', [\App\Http\Controllers\Pokja\KompetensiController::class, 'storeImportPdf'])->name('kompetensi.import-pdf.store');
         Route::post('kompetensi/reorder', [\App\Http\Controllers\Pokja\KompetensiController::class, 'reorder'])->name('kompetensi.reorder');
+        Route::post('kompetensi/bulk-destroy', [\App\Http\Controllers\Pokja\KompetensiController::class, 'bulkDestroy'])->name('kompetensi.bulk_destroy');
         Route::resource('kompetensi', \App\Http\Controllers\Pokja\KompetensiController::class);
+        Route::post('siswa/bulk-destroy', [\App\Http\Controllers\SiswaController::class, 'bulkDestroy'])->name('siswa.bulk_destroy');
         Route::post('siswa/reset-passwords', [\App\Http\Controllers\SiswaController::class, 'resetAllPasswords'])->name('siswa.reset-passwords');
         Route::post('siswa/{siswa}/reset-password', [\App\Http\Controllers\SiswaController::class, 'resetPassword'])->name('siswa.reset-password');
         Route::resource('siswa', \App\Http\Controllers\SiswaController::class);
@@ -206,13 +213,17 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::delete('pengajuan-pkl/clear-all', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'clearAll'])->name('pengajuan_pkl.clear_all');
         Route::delete('pengajuan-pkl/bulk-destroy', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'bulkDestroy'])->name('pengajuan_pkl.bulk_destroy');
         Route::delete('pengajuan-pkl/{pengajuanPkl}', [\App\Http\Controllers\Pokja\PengajuanPklController::class, 'destroy'])->name('pengajuan_pkl.destroy');
+        Route::post('dudi/bulk-destroy', [\App\Http\Controllers\DudiController::class, 'bulkDestroy'])->name('dudi.bulk_destroy');
         Route::resource('dudi', \App\Http\Controllers\DudiController::class);
+        Route::post('pembimbing_sekolah/bulk-destroy', [\App\Http\Controllers\PembimbingSekolahController::class, 'bulkDestroy'])->name('pembimbing_sekolah.bulk_destroy');
         Route::post('pembimbing_sekolah/reset-password-massal', [\App\Http\Controllers\PembimbingSekolahController::class, 'resetPasswordMassal'])->name('pembimbing_sekolah.reset_password_massal');
         Route::post('pembimbing_sekolah/{pembimbing_sekolah}/reset-password', [\App\Http\Controllers\PembimbingSekolahController::class, 'resetPassword'])->name('pembimbing_sekolah.reset_password');
         Route::resource('pembimbing_sekolah', \App\Http\Controllers\PembimbingSekolahController::class);
         Route::get('pembimbing_dudi/export-pdf', [\App\Http\Controllers\PembimbingDudiController::class, 'exportPdf'])->name('pembimbing_dudi.export-pdf');
         Route::get('pembimbing_dudi/export-excel', [\App\Http\Controllers\PembimbingDudiController::class, 'exportExcel'])->name('pembimbing_dudi.export-excel');
+        Route::post('pembimbing_dudi/bulk-destroy', [\App\Http\Controllers\PembimbingDudiController::class, 'bulkDestroy'])->name('pembimbing_dudi.bulk_destroy');
         Route::resource('pembimbing_dudi', \App\Http\Controllers\PembimbingDudiController::class);
+        Route::post('kaprog/bulk-destroy', [\App\Http\Controllers\Pokja\KaprogController::class, 'bulkDestroy'])->name('kaprog.bulk_destroy');
         Route::resource('kaprog', \App\Http\Controllers\Pokja\KaprogController::class);
         Route::get('pemetaan', [\App\Http\Controllers\Pokja\PemetaanController::class, 'index'])->name('pemetaan.index');
         Route::get('pemetaan/maps', [\App\Http\Controllers\Pokja\PemetaanController::class, 'maps'])->name('pemetaan.maps');
@@ -220,6 +231,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
         // Zona CRUD
         Route::get('zona', [\App\Http\Controllers\Pokja\ZonaController::class, 'index'])->name('zona.index');
+        Route::post('zona/bulk-destroy', [\App\Http\Controllers\Pokja\ZonaController::class, 'bulkDestroy'])->name('zona.bulk_destroy');
         Route::post('zona', [\App\Http\Controllers\Pokja\ZonaController::class, 'store'])->name('zona.store');
         Route::put('zona/{zona}', [\App\Http\Controllers\Pokja\ZonaController::class, 'update'])->name('zona.update');
         Route::delete('zona/{zona}', [\App\Http\Controllers\Pokja\ZonaController::class, 'destroy'])->name('zona.destroy');

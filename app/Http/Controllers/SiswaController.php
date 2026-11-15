@@ -276,6 +276,27 @@ class SiswaController extends Controller
             ->with('success', 'Data siswa dan akun berhasil dihapus.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:siswas,id',
+        ]);
+
+        $ids = $request->input('ids');
+        $siswas = \App\Models\Siswa::with('user')->whereIn('id', $ids)->get();
+        $userIds = $siswas->pluck('user_id')->filter()->all();
+
+        \Illuminate\Support\Facades\DB::transaction(function() use ($ids, $userIds) {
+            \App\Models\Siswa::whereIn('id', $ids)->delete();
+            if (!empty($userIds)) {
+                \App\Models\User::whereIn('id', $userIds)->delete();
+            }
+        });
+
+        return back()->with('success', count($ids) . ' data siswa dan akun berhasil dihapus.');
+    }
+
     /**
      * Reset semua password akun siswa menjadi NIS (default).
      */

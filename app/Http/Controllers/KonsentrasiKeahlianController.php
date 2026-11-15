@@ -74,6 +74,19 @@ class KonsentrasiKeahlianController extends Controller
             ->with('success', 'Konsentrasi Keahlian berhasil dihapus.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:konsentrasi_keahlians,id',
+        ]);
+
+        $ids = $request->input('ids');
+        \App\Models\KonsentrasiKeahlian::whereIn('id', $ids)->delete();
+
+        return back()->with('success', count($ids) . ' data konsentrasi keahlian berhasil dihapus.');
+    }
+
     public function reorder(Request $request)
     {
         $request->validate([

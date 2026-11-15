@@ -352,12 +352,59 @@
         </form>
     </div>
 
-    <div class="glass-card overflow-hidden text-slate-700 dark:text-slate-300">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-800/30">
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Industri</th>
+    <div x-data="{
+        selectedIds: [],
+        selectAll: false,
+        toggleAll() {
+            if (this.selectAll) {
+                this.selectedIds = Array.from(document.querySelectorAll('.dudi-checkbox:not(:disabled)')).map(el => el.value);
+            } else {
+                this.selectedIds = [];
+            }
+        },
+        updateSelectAll() {
+            const checkable = document.querySelectorAll('.dudi-checkbox:not(:disabled)');
+            this.selectAll = checkable.length > 0 && this.selectedIds.length === checkable.length;
+        },
+        confirmBulkDelete(e) {
+            if (e) e.preventDefault();
+            if (this.selectedIds.length === 0) return;
+            const selectedBoxes = Array.from(document.querySelectorAll('.dudi-checkbox:checked'));
+            const names = selectedBoxes.map(el => el.getAttribute('data-name') || ('DUDI #' + el.value));
+            window.confirmDoubleDeletion({
+                items: names,
+                entityName: 'DUDI',
+                onConfirm: () => {
+                    this.$refs.bulkDeleteForm.submit();
+                }
+            });
+        }
+    }">
+        <!-- Bulk Action Bar -->
+        <div x-show="selectedIds.length > 0" x-transition.opacity.duration.200ms class="flex items-center gap-3 mb-4" x-cloak>
+            <form action="{{ route('pokja.dudi.bulk_destroy') }}" method="POST" x-ref="bulkDeleteForm" @submit="confirmBulkDelete">
+                @csrf
+                <template x-for="id in selectedIds" :key="id">
+                    <input type="hidden" name="ids[]" :value="id">
+                </template>
+                <button type="submit" class="px-4 py-2 text-sm whitespace-nowrap bg-red-600 hover:bg-red-500 text-white font-medium rounded-xl shadow-lg shadow-red-500/25 transition-all gap-2 flex items-center transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    Hapus Terpilih (<span x-text="selectedIds.length"></span>)
+                </button>
+            </form>
+        </div>
+
+        <div class="glass-card overflow-hidden text-slate-700 dark:text-slate-300">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-800/30">
+                            @if(auth()->user()->role !== 'kaprog' && auth()->user()->role !== 'kepala_sekolah')
+                            <th class="w-12 px-6 py-4">
+                                <input type="checkbox" x-model="selectAll" @change="toggleAll" class="rounded-sm border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-900 w-4 h-4 cursor-pointer">
+                            </th>
+                            @endif
+                            <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Industri</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Konsentrasi Keahlian</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Lokasi</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Pimpinan</th>
@@ -369,6 +416,16 @@
                 <tbody class="divide-y divide-slate-700/50">
                     @forelse($dudis as $item)
                         <tr class="hover:bg-white dark:bg-slate-800/20 transition-colors group text-slate-700 dark:text-slate-300">
+                            @if(auth()->user()->role !== 'kaprog' && auth()->user()->role !== 'kepala_sekolah')
+                            <td class="px-6 py-4 whitespace-nowrap w-12">
+                                <input type="checkbox" 
+                                       value="{{ $item->id }}" 
+                                       data-name="{{ $item->nama }}"
+                                       x-model="selectedIds" 
+                                       @change="updateSelectAll" 
+                                       class="dudi-checkbox rounded-sm border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-900 w-4 h-4 cursor-pointer">
+                            </td>
+                            @endif
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 block">{{ $item->nama }}</span>
                                 <span class="text-xs text-slate-500 dark:text-slate-400 italic">{{ $item->bidang_usaha ?? 'Bidang usaha -' }}</span>
@@ -413,10 +470,10 @@
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Edit
                                         </a>
-                                        <form action="{{ route('pokja.dudi.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data DUDI {{ addslashes($item->nama_instansi) }}?')">
+                                        <form action="{{ route('pokja.dudi.destroy', $item) }}" method="POST" data-confirm-delete="{{ $item->nama }}" data-entity="DUDI">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left">
+                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer">
                                                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                                 Hapus
                                             </button>
@@ -428,7 +485,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ (auth()->user()->role === 'kaprog' || auth()->user()->role === 'kepala_sekolah') ? 4 : 5 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
+                            <td colspan="{{ (auth()->user()->role === 'kaprog' || auth()->user()->role === 'kepala_sekolah') ? 4 : 6 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
                                 Belum ada data DUDI.
                             </td>
                         </tr>
@@ -441,5 +498,6 @@
                 {{ $dudis->links() }}
             </div>
         @endif
+    </div>
     </div>
 </x-app-layout>

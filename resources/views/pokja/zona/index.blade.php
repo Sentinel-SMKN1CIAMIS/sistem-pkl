@@ -10,12 +10,58 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Sidebar: Zona List --}}
-        <div class="lg:col-span-1 space-y-4">
+        <div class="lg:col-span-1 space-y-4" x-data="{
+            selectedIds: [],
+            selectAll: false,
+            toggleAll() {
+                if (this.selectAll) {
+                    this.selectedIds = Array.from(document.querySelectorAll('.zona-checkbox:not(:disabled)')).map(el => el.value);
+                } else {
+                    this.selectedIds = [];
+                }
+            },
+            updateSelectAll() {
+                const checkable = document.querySelectorAll('.zona-checkbox:not(:disabled)');
+                this.selectAll = checkable.length > 0 && this.selectedIds.length === checkable.length;
+            },
+            confirmBulkDelete(e) {
+                if (e) e.preventDefault();
+                if (this.selectedIds.length === 0) return;
+                const selectedBoxes = Array.from(document.querySelectorAll('.zona-checkbox:checked'));
+                const names = selectedBoxes.map(el => el.getAttribute('data-name') || ('Zona #' + el.value));
+                window.confirmDoubleDeletion({
+                    items: names,
+                    entityName: 'zona wilayah',
+                    onConfirm: () => {
+                        this.$refs.bulkDeleteForm.submit();
+                    }
+                });
+            }
+        }">
             <div class="glass-card p-6">
+                <!-- Bulk Action Bar -->
+                <div x-show="selectedIds.length > 0" x-transition.opacity.duration.200ms class="mb-3" x-cloak>
+                    <form action="{{ route('pokja.zona.bulk_destroy') }}" method="POST" x-ref="bulkDeleteForm" @submit="confirmBulkDelete">
+                        @csrf
+                        <template x-for="id in selectedIds" :key="id">
+                            <input type="hidden" name="ids[]" :value="id">
+                        </template>
+                        <button type="submit" class="w-full px-3 py-1.5 text-xs whitespace-nowrap bg-red-600 hover:bg-red-500 text-white font-medium rounded-xl shadow-md transition-all gap-1.5 flex items-center justify-center cursor-pointer">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            Hapus Terpilih (<span x-text="selectedIds.length"></span>)
+                        </button>
+                    </form>
+                </div>
+
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                        <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> Daftar Zona
-                    </h3>
+                    <div class="flex items-center gap-2">
+                        @if(auth()->user()->role !== 'kepala_sekolah')
+                        <input type="checkbox" x-model="selectAll" @change="toggleAll" class="rounded-sm border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-900 w-4 h-4 cursor-pointer" title="Pilih Semua">
+                        @endif
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> Daftar Zona
+                        </h3>
+                    </div>
                     <form method="GET" action="{{ route('pokja.zona.index') }}" class="flex items-center gap-2">
                         <label for="per_page" class="text-xs font-bold text-slate-500 uppercase">Baris:</label>
                         <select name="per_page" id="per_page" onchange="this.form.submit()" class="px-2 py-1 text-xs border border-slate-200/50 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500">
@@ -31,6 +77,14 @@
                     @forelse($zonas as $zona)
                         <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 zona-item" data-id="{{ $zona->id }}">
                             <div class="flex items-center gap-3">
+                                @if(auth()->user()->role !== 'kepala_sekolah')
+                                <input type="checkbox" 
+                                       value="{{ $zona->id }}" 
+                                       data-name="{{ $zona->nama }}" 
+                                       x-model="selectedIds" 
+                                       @change="updateSelectAll" 
+                                       class="zona-checkbox rounded-sm border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-900 w-4 h-4 cursor-pointer shrink-0">
+                                @endif
                                 <span class="w-4 h-4 rounded-full flex-shrink-0" style="background:{{ $zona->warna }};border:2px solid {{ $zona->warna_border }}"></span>
                                 <div>
                                     <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ $zona->nama }}</p>
@@ -38,7 +92,7 @@
                                 </div>
                             </div>
                             @if(auth()->user()->role !== 'kepala_sekolah')
-                            <button type="button" onclick="deleteZona({{ $zona->id }})" class="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                            <button type="button" onclick="deleteZona({{ $zona->id }}, '{{ addslashes($zona->nama) }}')" class="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer" title="Hapus Zona">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                             @endif
@@ -209,22 +263,25 @@
         });
 
         // Delete zona
-        window.deleteZona = function(id) {
-            if (!confirm('Hapus zona ini? DUDI dalam zona ini akan menjadi tanpa zona.')) return;
-
-            fetch(`{{ url('pokja/zona') }}/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
+        window.deleteZona = function(id, nama) {
+            window.confirmDoubleDeletion({
+                items: [nama || ('Zona #' + id)],
+                entityName: 'zona wilayah',
+                onConfirm: () => {
+                    fetch(`{{ url('pokja/zona') }}/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        window.location.reload();
+                    })
+                    .catch(err => alert('Gagal menghapus: ' + err.message));
                 }
-            })
-            .then(r => r.json())
-            .then(data => {
-                alert(data.message);
-                window.location.reload();
-            })
-            .catch(err => alert('Gagal menghapus: ' + err.message));
+            });
         };
     });
     </script>

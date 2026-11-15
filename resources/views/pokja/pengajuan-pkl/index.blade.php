@@ -49,7 +49,7 @@
                         @if(auth()->user()->role !== 'kepala_sekolah')
                         <!-- Individual Checkbox -->
                         <td class="py-3 px-4">
-                            <input type="checkbox" name="ids[]" value="{{ $pengajuan->id }}" form="bulk-delete-form" class="submission-checkbox rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                            <input type="checkbox" name="ids[]" value="{{ $pengajuan->id }}" data-name="{{ $pengajuan->siswa->nama_lengkap ?? 'Pengajuan' }}" form="bulk-delete-form" class="submission-checkbox rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer">
                         </td>
                         @endif
                         <td class="py-3 px-4 text-slate-800 dark:text-slate-200 font-medium">
@@ -107,7 +107,7 @@
                                             </button>
                                         @endif
 
-                                        <form action="{{ route('pokja.pengajuan_pkl.destroy', $pengajuan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pengajuan PKL ini?')">
+                                        <form action="{{ route('pokja.pengajuan_pkl.destroy', $pengajuan->id) }}" method="POST" data-confirm-delete="{{ $pengajuan->siswa->nama_lengkap ?? 'pengajuan ini' }}" data-entity="pengajuan PKL">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer">
@@ -182,7 +182,7 @@
     </div>
 
     <!-- Hidden Bulk Delete Form -->
-    <form id="bulk-delete-form" action="{{ route('pokja.pengajuan_pkl.bulk_destroy') }}" method="POST" class="hidden" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pengajuan terpilih? Semua berkas lampiran terkait juga akan dihapus secara permanen.')">
+    <form id="bulk-delete-form" action="{{ route('pokja.pengajuan_pkl.bulk_destroy') }}" method="POST" class="hidden">
         @csrf
         @method('DELETE')
     </form>
@@ -194,6 +194,22 @@
             const checkboxes = document.querySelectorAll('.submission-checkbox');
             const bulkDeleteContainer = document.getElementById('bulk-delete-container');
             const selectedCountSpan = document.getElementById('selected-count');
+            const bulkForm = document.getElementById('bulk-delete-form');
+
+            if (bulkForm) {
+                bulkForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const selectedBoxes = Array.from(document.querySelectorAll('.submission-checkbox:checked'));
+                    const names = selectedBoxes.map(el => el.getAttribute('data-name') || ('Pengajuan #' + el.value));
+                    window.confirmDoubleDeletion({
+                        items: names,
+                        entityName: 'pengajuan PKL',
+                        onConfirm: () => {
+                            bulkForm.submit();
+                        }
+                    });
+                });
+            }
 
             function updateBulkDeleteButton() {
                 const checkedCount = document.querySelectorAll('.submission-checkbox:checked').length;

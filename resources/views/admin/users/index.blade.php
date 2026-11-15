@@ -18,26 +18,12 @@
         confirmBulkDelete(e) {
             e.preventDefault();
             if (this.selectedIds.length === 0) return;
-            
-            const isDark = document.documentElement.classList.contains('dark');
-            Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: 'Anda akan menghapus ' + this.selectedIds.length + ' akun terpilih secara permanen!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Hapus Semua!',
-                cancelButtonText: 'Batal',
-                buttonsStyling: false,
-                background: isDark ? '#0f172a' : '#ffffff',
-                color: isDark ? '#f1f5f9' : '#1e293b',
-                customClass: {
-                    confirmButton: 'px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500/25 text-sm focus:outline-none cursor-pointer mr-3',
-                    cancelButton: 'px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] text-sm focus:outline-none cursor-pointer',
-                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800/80 font-sans shadow-2xl',
-                    htmlContainer: 'text-sm font-medium leading-relaxed'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
+            const selectedBoxes = Array.from(document.querySelectorAll('.user-checkbox:checked'));
+            const names = selectedBoxes.map(el => el.getAttribute('data-name') || ('Akun #' + el.value));
+            window.confirmDoubleDeletion({
+                items: names,
+                entityName: 'akun pengguna',
+                onConfirm: () => {
                     this.$refs.bulkDeleteForm.submit();
                 }
             });
@@ -209,6 +195,7 @@
                             <td class="px-6 py-4 whitespace-nowrap w-12">
                                 <input type="checkbox" 
                                        value="{{ $user->id }}" 
+                                       data-name="{{ $user->name ?: $user->username }}"
                                        x-model="selectedIds" 
                                        @change="updateSelectAll" 
                                        class="user-checkbox rounded-sm border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-900 w-4 h-4 cursor-pointer"
@@ -257,10 +244,10 @@
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Edit
                                         </a>
-                                        <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun {{ addslashes($user->name ?? $user->username) }} ini?')">
+                                        <form action="{{ route('admin.users.destroy', $user) }}" method="POST" data-confirm-delete="{{ $user->name ?: $user->username }}" data-entity="akun pengguna">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left">
+                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer">
                                                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                                 Hapus
                                             </button>

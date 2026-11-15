@@ -132,4 +132,17 @@ class KaprogController extends Controller
         return redirect()->route('pokja.kaprog.index')
             ->with('success', 'Akun Kaprog berhasil dihapus.');
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:users,id',
+        ]);
+
+        $ids = $request->input('ids');
+        User::whereIn('id', $ids)->where('role', 'kaprog')->delete();
+
+        return back()->with('success', count($ids) . ' akun Kaprog berhasil dihapus.');
+    }
 }

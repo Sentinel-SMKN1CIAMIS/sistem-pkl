@@ -315,12 +315,59 @@
     </div>
 
     <!-- Data Table -->
-    <div class="glass-card overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-800/30">
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Lengkap</th>
+    <div x-data="{
+        selectedIds: [],
+        selectAll: false,
+        toggleAll() {
+            if (this.selectAll) {
+                this.selectedIds = Array.from(document.querySelectorAll('.kaprog-checkbox:not(:disabled)')).map(el => el.value);
+            } else {
+                this.selectedIds = [];
+            }
+        },
+        updateSelectAll() {
+            const checkable = document.querySelectorAll('.kaprog-checkbox:not(:disabled)');
+            this.selectAll = checkable.length > 0 && this.selectedIds.length === checkable.length;
+        },
+        confirmBulkDelete(e) {
+            if (e) e.preventDefault();
+            if (this.selectedIds.length === 0) return;
+            const selectedBoxes = Array.from(document.querySelectorAll('.kaprog-checkbox:checked'));
+            const names = selectedBoxes.map(el => el.getAttribute('data-name') || ('Kaprog #' + el.value));
+            window.confirmDoubleDeletion({
+                items: names,
+                entityName: 'akun Kaprog',
+                onConfirm: () => {
+                    this.$refs.bulkDeleteForm.submit();
+                }
+            });
+        }
+    }">
+        <!-- Bulk Action Bar -->
+        <div x-show="selectedIds.length > 0" x-transition.opacity.duration.200ms class="flex items-center gap-3 mb-4" x-cloak>
+            <form action="{{ route('pokja.kaprog.bulk_destroy') }}" method="POST" x-ref="bulkDeleteForm" @submit="confirmBulkDelete">
+                @csrf
+                <template x-for="id in selectedIds" :key="id">
+                    <input type="hidden" name="ids[]" :value="id">
+                </template>
+                <button type="submit" class="px-4 py-2 text-sm whitespace-nowrap bg-red-600 hover:bg-red-500 text-white font-medium rounded-xl shadow-lg shadow-red-500/25 transition-all gap-2 flex items-center transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    Hapus Terpilih (<span x-text="selectedIds.length"></span>)
+                </button>
+            </form>
+        </div>
+
+        <div class="glass-card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200/50 dark:border-slate-700/50 bg-white dark:bg-slate-800/30">
+                            @if(auth()->user()->role !== 'kepala_sekolah')
+                            <th class="w-12 px-6 py-4">
+                                <input type="checkbox" x-model="selectAll" @change="toggleAll" class="rounded-sm border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-900 w-4 h-4 cursor-pointer">
+                            </th>
+                            @endif
+                            <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Lengkap</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Username</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Program Keahlian</th>
                         @if(auth()->user()->role !== 'kepala_sekolah')
@@ -331,6 +378,16 @@
                 <tbody class="divide-y divide-slate-700/50">
                     @forelse($kaprogs as $item)
                         <tr class="hover:bg-white dark:bg-slate-800/20 transition-colors group">
+                            @if(auth()->user()->role !== 'kepala_sekolah')
+                            <td class="px-6 py-4 whitespace-nowrap w-12">
+                                <input type="checkbox" 
+                                       value="{{ $item->id }}" 
+                                       data-name="{{ $item->name }}"
+                                       x-model="selectedIds" 
+                                       @change="updateSelectAll" 
+                                       class="kaprog-checkbox rounded-sm border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-900 w-4 h-4 cursor-pointer">
+                            </td>
+                            @endif
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-blue-500 font-bold">
@@ -341,12 +398,6 @@
                                         <span class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $item->email }}</span>
                                     </div>
                                 </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 font-mono">
-                                    <i data-lucide="user" class="w-3.5 h-3.5"></i>
-                                    {{ $item->username }}
-                                </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-xs text-slate-600 dark:text-slate-400">
@@ -372,10 +423,10 @@
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Edit
                                         </a>
-                                        <form action="{{ route('pokja.kaprog.destroy', $item) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun Kaprog {{ addslashes($item->name) }} ini?')">
+                                        <form action="{{ route('pokja.kaprog.destroy', $item) }}" method="POST" data-confirm-delete="{{ $item->name }}" data-entity="akun Kaprog">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left">
+                                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer">
                                                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                                 Hapus
                                             </button>
@@ -387,7 +438,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 3 : 4 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
+                            <td colspan="{{ auth()->user()->role === 'kepala_sekolah' ? 3 : 5 }}" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
                                 Belum ada data akun Kaprog.
                             </td>
                         </tr>
@@ -400,6 +451,7 @@
                 {{ $kaprogs->links() }}
             </div>
         @endif
+    </div>
     </div>
 
     <!-- Trigger icons rendering -->
