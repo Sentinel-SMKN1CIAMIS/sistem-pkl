@@ -574,9 +574,37 @@ class ImportController extends Controller
     }
 
     /**
-     * Import Pembimbing Sekolah Data.
+     * Import Pembimbing Sekolah Data (Smart Sync & Support Master Guru/NIP/Jurusan).
      */
     public function importPembimbingSekolah(Request $request)
+    {
+        set_time_limit(0);
+
+        $request->validate([
+            'file' => 'required|file',
+        ]);
+
+        $file = $request->file('file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (!in_array($ext, ['xlsx', 'xls', 'csv', 'txt'])) {
+            return back()->with('error', 'Format berkas tidak didukung. Harap unggah berkas .xlsx, .xls, atau .csv.');
+        }
+
+        $service = app(\App\Services\PemetaanImportService::class);
+        $parsed = $service->parseFile($file->getRealPath(), ['AKL', 'PBS', 'MPLB', 'PM', 'PBD', 'KLN', 'HTL', 'PPLG'], $ext);
+
+        if (!empty($parsed['items'])) {
+            $stats = $service->executeImport($parsed['items']);
+            return back()->with('success', "Berhasil menyinkronkan data pembimbing sekolah: {$stats['pembimbing_created']} akun baru dibuat, {$stats['pembimbing_matched']} data guru berhasil disinkronkan tanpa duplikasi data.");
+        }
+
+        return $this->importPembimbingSekolahLegacy($request);
+    }
+
+    /**
+     * Fallback legacy import format.
+     */
+    private function importPembimbingSekolahLegacy(Request $request)
     {
         set_time_limit(0);
 

@@ -608,4 +608,85 @@ CSV;
         $showResponse->assertOk();
         $showResponse->assertSeeText('Guru Tanpa Jurusan, S.Pd.');
     }
+
+    public function test_import_guru_nip_with_jurusan_column_updates_teacher_concentration_without_duplicates(): void
+    {
+        // 1. Setup teacher ALISAH without NIP and without konsentrasi
+        $userAlisah = User::create([
+            'name' => 'Alisah',
+            'username' => 'alisah',
+            'email' => null,
+            'password' => bcrypt('smkn1ciamis'),
+            'role' => 'pembimbing_sekolah',
+            'is_active' => true,
+        ]);
+
+        $teacherAlisah = PembimbingSekolah::create([
+            'user_id' => $userAlisah->id,
+            'nama_lengkap' => 'Alisah',
+            'nip' => null,
+            'tipe' => 'kejuruan',
+            'konsentrasi_keahlian_id' => null,
+        ]);
+
+        // Setup Konsentrasi Keahlian HTL
+        $progHtl = \App\Models\ProgramKeahlian::create(['kode' => 'HTL', 'nama' => 'Perhotelan']);
+        $konHtl = KonsentrasiKeahlian::create([
+            'program_keahlian_id' => $progHtl->id,
+            'kode' => 'HTL',
+            'nama' => 'Perhotelan',
+            'durasi_pkl_bulan' => 6,
+        ]);
+
+        $service = app(PemetaanImportService::class);
+
+        $csvContent = "Nama Lengkap Guru,NIP Guru,Kaprog / Jurusan\n" .
+            "\"ALISAH, S.Pd. HJ.\",197204111996012001,HTL\n" .
+            "\"NASTITI, S.Pd.\",198909242014012001,PPLG\n";
+
+        $parsed = $service->parseCsv($csvContent);
+        $this->assertEquals('guru_nip', $parsed['format'] ?? null);
+        $this->assertCount(2, $parsed['items']);
+        $this->assertEquals('HTL', $parsed['items'][0]['jurusan']);
+        $this->assertEquals('PPLG', $parsed['items'][1]['jurusan']);
+
+        $stats = $service->executeImport($parsed['items']);
+
+        $this->assertEquals(1, $stats['pembimbing_matched']);
+        $this->assertEquals(1, $stats['pembimbing_created']);
+
+        // Assert teacher Alisah is updated with NIP and HTL concentration
+        $teacherAlisah->refresh();
+        $userAlisah->refresh();
+        $this->assertEquals('197204111996012001', $teacherAlisah->nip);
+        $this->assertEquals($konHtl->id, $teacherAlisah->konsentrasi_keahlian_id);
+        $this->assertEquals('197204111996012001', $userAlisah->username);
+        $this->assertEquals($konHtl->id, $userAlisah->konsentrasi_keahlian_id);
+
+        // Assert teacher Nastiti is created with PPLG
+        $teacherNastiti = PembimbingSekolah::where('nip', '198909242014012001')->first();
+        $this->assertNotNull($teacherNastiti);
+        $this->assertEquals($this->konPplg->id, $teacherNastiti->konsentrasi_keahlian_id);
+        $this->assertEquals('198909242014012001', $teacherNastiti->user->username);
+    }
+
+    public function test_pokja_pembimbing_sekolah_import_endpoint_smart_syncs_csv_file(): void
+    {
+        $csvContent = "Nama Lengkap Guru,NIP Guru,Kaprog / Jurusan\n" .
+            "\"CARKIM, S.Pd.\",197512252014081001,AKL\n";
+
+        $file = \Illuminate\Http\UploadedFile::fake()->createWithContent('master_guru_jurusan.csv', $csvContent);
+
+        $response = $this->actingAs($this->pokja)
+            ->post(route('pokja.pembimbing_sekolah.import'), [
+                'file' => $file,
+            ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $carkim = PembimbingSekolah::where('nip', '197512252014081001')->first();
+        $this->assertNotNull($carkim);
+        $this->assertEquals($this->konAkl->id, $carkim->konsentrasi_keahlian_id);
+    }
 }

@@ -415,6 +415,57 @@ class PemetaanImportService
     }
 
     /**
+     * Resolusi nama jurusan / kode konsentrasi keahlian menjadi model KonsentrasiKeahlian.
+     */
+    public function resolveKonsentrasiKeahlian(?string $rawJurusan): ?\App\Models\KonsentrasiKeahlian
+    {
+        if (empty($rawJurusan) || trim($rawJurusan) === '-' || trim($rawJurusan) === '0') {
+            return null;
+        }
+
+        $j = strtoupper(trim($rawJurusan));
+        $all = \App\Models\KonsentrasiKeahlian::with('programKeahlian')->get();
+
+        // 1. Exact match kode atau nama
+        foreach ($all as $k) {
+            if (strcasecmp($k->kode, $j) === 0 || strcasecmp($k->nama, $j) === 0) {
+                return $k;
+            }
+        }
+
+        // 2. Keyword & Alias matching
+        if (str_contains($j, 'PPLG') || str_contains($j, 'RPL') || str_contains($j, 'PERANGKAT LUNAK') || str_contains($j, 'GIM')) {
+            return $all->firstWhere('kode', 'PPLG');
+        }
+        if (str_contains($j, 'DKV') || str_contains($j, 'DESAIN') || str_contains($j, 'MULTIMEDIA') || str_contains($j, 'MM')) {
+            return $all->firstWhere('kode', 'DKV');
+        }
+        if (str_contains($j, 'HTL') || str_contains($j, 'HOTEL') || str_contains($j, 'PERHOTELAN') || str_contains($j, 'APH')) {
+            return $all->firstWhere('kode', 'HTL');
+        }
+        if (str_contains($j, 'KLN') || str_contains($j, 'KULINER') || str_contains($j, 'BOGA') || str_contains($j, 'TBG')) {
+            return $all->firstWhere('kode', 'KLN');
+        }
+        if (str_contains($j, 'AKL') || str_contains($j, 'AKUNTANSI') || str_contains($j, 'AK')) {
+            return $all->firstWhere('kode', 'AKL');
+        }
+        if (str_contains($j, 'MPLB') || str_contains($j, 'PERKANTORAN') || str_contains($j, 'OTKP') || str_contains($j, 'MP')) {
+            return $all->firstWhere('kode', 'MPLB');
+        }
+        if (str_contains($j, 'PBS') || str_contains($j, 'PERBANKAN') || str_contains($j, 'SYARIAH')) {
+            return $all->firstWhere('kode', 'PBS');
+        }
+        if (str_contains($j, 'PBD') || str_contains($j, 'BISNIS DIGITAL')) {
+            return $all->firstWhere('kode', 'PBD');
+        }
+        if (str_contains($j, 'PEMASARAN') || str_contains($j, 'RITEL') || str_contains($j, 'PBR') || str_contains($j, 'PM')) {
+            return $all->firstWhere('kode', 'PBR') ?: $all->firstWhere('kode', 'PM');
+        }
+
+        return null;
+    }
+
+    /**
      * Membaca dan mem-parsing berkas (Excel .xlsx / .xls maupun .csv) menjadi array item terstruktur.
      */
     public function parseFile(string $filePath, array $allowedJurusan = ['AKL', 'PBS', 'MPLB', 'PM', 'PBD', 'KLN', 'HTL', 'PPLG'], ?string $extension = null): array
@@ -476,6 +527,7 @@ class PemetaanImportService
         $isGuruNipFormat = false;
         $nameIdx = -1;
         $nipIdx = -1;
+        $jurusanIdx = -1;
 
         foreach ($rows as $cols) {
             if (!is_array($cols) || empty($cols)) continue;
@@ -492,6 +544,8 @@ class PemetaanImportService
                         $nipIdx = $cIdx;
                     } elseif (str_contains($val, 'nama') || str_contains($val, 'guru') || str_contains($val, 'pembimbing')) {
                         $nameIdx = $cIdx;
+                    } elseif (str_contains($val, 'jurusan') || str_contains($val, 'kaprog') || str_contains($val, 'konsentrasi') || str_contains($val, 'program')) {
+                        $jurusanIdx = $cIdx;
                     }
                 }
                 break;
@@ -521,6 +575,7 @@ class PemetaanImportService
 
                 $rawName = trim($cols[$nameIdx] ?? '');
                 $rawNip = trim($cols[$nipIdx] ?? '');
+                $rawJurusan = $jurusanIdx !== -1 ? trim($cols[$jurusanIdx] ?? '') : '';
 
                 // Lewati baris header
                 if (stripos($rawName, 'Nama') !== false && stripos($rawNip, 'NIP') !== false) {
@@ -528,11 +583,12 @@ class PemetaanImportService
                 }
 
                 $cleanNip = preg_replace('/\D/', '', $rawNip);
-                if (!empty($rawName) && strlen($cleanNip) >= 8) {
+                if (!empty($rawName) && (strlen($cleanNip) >= 8 || !empty($rawJurusan))) {
                     $parsedGuruItems[] = [
                         'type' => 'guru_nip',
                         'teacher_name' => $rawName,
                         'nip' => $cleanNip,
+                        'jurusan' => $rawJurusan,
                     ];
                 }
             }
@@ -725,10 +781,13 @@ class PemetaanImportService
 
         DB::transaction(function () use ($items, $defaultPassword, &$stats, &$existingUsers, &$existingTeachers, &$existingDudis, &$allStudents, $allKonsentrasi) {
             foreach ($items as $item) {
-                // Penanganan berkas format Master Guru & NIP
+                // Penanganan berkas format Master Guru & NIP (beserta Kolom Jurusan/Kaprog)
                 if (($item['type'] ?? '') === 'guru_nip') {
                     $rawTeacher = $item['teacher_name'];
                     $nip = $item['nip'];
+                    $rawJurusan = $item['jurusan'] ?? null;
+                    $konsentrasi = $this->resolveKonsentrasiKeahlian($rawJurusan);
+
                     $canonicalTeacher = $this->resolveCanonicalTeacher($rawTeacher);
                     $cleanTeacher = $this->cleanTeacherName($canonicalTeacher ?: $rawTeacher);
                     $teacherKey = strtolower(trim($cleanTeacher));
@@ -754,9 +813,23 @@ class PemetaanImportService
                     }
 
                     if ($pembimbingSekolah) {
-                        // Sinkronkan NIP guru
-                        if ($pembimbingSekolah->nip !== $nip) {
+                        $isTeacherDirty = false;
+
+                        // Sinkronkan NIP guru jika ada dan berbeda
+                        if (!empty($nip) && $pembimbingSekolah->nip !== $nip) {
                             $pembimbingSekolah->nip = $nip;
+                            $isTeacherDirty = true;
+                        }
+
+                        // Sinkronkan Jurusan / Konsentrasi Keahlian jika ada pada berkas
+                        if ($konsentrasi) {
+                            if ($pembimbingSekolah->konsentrasi_keahlian_id !== $konsentrasi->id) {
+                                $pembimbingSekolah->konsentrasi_keahlian_id = $konsentrasi->id;
+                                $isTeacherDirty = true;
+                            }
+                        }
+
+                        if ($isTeacherDirty) {
                             $pembimbingSekolah->saveQuietly();
                         }
 
@@ -764,7 +837,7 @@ class PemetaanImportService
                         $user = $pembimbingSekolah->user;
                         if ($user) {
                             $isDirty = false;
-                            if ($user->username !== $nip) {
+                            if (!empty($nip) && $user->username !== $nip) {
                                 $conflictUser = User::where('username', $nip)->where('id', '!=', $user->id)->first();
                                 if ($conflictUser) {
                                     $conflictUser->username = $conflictUser->username . '_old_' . $conflictUser->id;
@@ -774,7 +847,12 @@ class PemetaanImportService
                                 $user->email = null;
                                 $isDirty = true;
                             }
-                            if ($user->force_password_change || Hash::check('smkn1ciamis', $user->password) || Hash::check($pembimbingSekolah->nama_lengkap, $user->password)) {
+                            if ($konsentrasi && $user->konsentrasi_keahlian_id !== $konsentrasi->id) {
+                                $user->konsentrasi_keahlian_id = $konsentrasi->id;
+                                $user->program_keahlian_id = $konsentrasi->program_keahlian_id;
+                                $isDirty = true;
+                            }
+                            if (!empty($nip) && ($user->force_password_change || Hash::check('smkn1ciamis', $user->password) || Hash::check($pembimbingSekolah->nama_lengkap, $user->password))) {
                                 $user->password = $nip;
                                 $user->force_password_change = true;
                                 $isDirty = true;
@@ -785,8 +863,8 @@ class PemetaanImportService
                         }
                         $stats['pembimbing_matched']++;
                     } else {
-                        // Buat Akun Guru Baru dengan Username & Password = NIP
-                        $username = $nip;
+                        // Buat Akun Guru Baru dengan Username & Password = NIP (atau slug jika NIP kosong)
+                        $username = $nip ?: Str::slug($cleanTeacher, '.');
                         $baseUsername = $username;
                         $counter = 1;
                         while (User::where('username', $username)->exists()) {
@@ -798,16 +876,19 @@ class PemetaanImportService
                             'name' => $cleanTeacher,
                             'username' => $username,
                             'email' => null,
-                            'password' => $nip,
+                            'password' => $nip ?: $defaultPassword,
                             'role' => 'pembimbing_sekolah',
                             'is_active' => true,
                             'force_password_change' => true,
+                            'konsentrasi_keahlian_id' => $konsentrasi ? $konsentrasi->id : null,
+                            'program_keahlian_id' => $konsentrasi ? $konsentrasi->program_keahlian_id : null,
                         ]);
 
                         $pembimbingSekolah = PembimbingSekolah::create([
                             'user_id' => $user->id,
                             'nama_lengkap' => $cleanTeacher,
-                            'nip' => $nip,
+                            'nip' => $nip ?: null,
+                            'konsentrasi_keahlian_id' => $konsentrasi ? $konsentrasi->id : null,
                             'tipe' => 'kejuruan',
                         ]);
 

@@ -189,15 +189,15 @@
                         <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Pilih File Excel</label>
                         <div class="border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all relative group duration-300"
                              :class="localFileName ? 'border-emerald-500/50 bg-emerald-500/5 dark:bg-emerald-500/10' : 'border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500'">
-                            <input type="file" name="file" accept=".xlsx, .xls" required 
+                            <input type="file" name="file" accept=".xlsx, .xls, .csv" required 
                                    @change="localFileName = $event.target.files[0] ? $event.target.files[0].name : ''"
                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                             
                             <!-- State: Empty -->
                             <div class="flex flex-col items-center gap-2 py-4" x-show="!localFileName">
                                 <i data-lucide="file-spreadsheet" class="w-8 h-8 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
-                                <span class="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Klik atau Seret file Excel ke sini</span>
-                                <span class="text-[10px] text-slate-500 dark:text-slate-500">Format file yang didukung: .xlsx, .xls saja</span>
+                                <span class="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Klik atau Seret file Excel/CSV ke sini</span>
+                                <span class="text-[10px] text-slate-500 dark:text-slate-500">Format file yang didukung: .xlsx, .xls, .csv</span>
                             </div>
 
                             <!-- State: File Chosen -->
