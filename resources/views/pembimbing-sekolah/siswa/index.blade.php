@@ -308,7 +308,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-slate-800 dark:text-slate-200 block">{{ $item->konsentrasiKeahlian->nama }}</span>
+                                    <span class="text-slate-800 dark:text-slate-200 block">{{ $item->konsentrasiKeahlian?->nama ?? '-' }}</span>
                                     <span class="text-xs text-slate-500">Kelas {{ $item->kelas }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono">
@@ -366,7 +366,7 @@
                             </div>
                         </div>
                         <div class="flex flex-col gap-1.5 text-xs text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-850">
-                            <div>Jurusan: <span class="font-medium text-slate-800 dark:text-slate-200">{{ $item->konsentrasiKeahlian->nama }}</span></div>
+                            <div>Jurusan: <span class="font-medium text-slate-800 dark:text-slate-200">{{ $item->konsentrasiKeahlian?->nama ?? '-' }}</span></div>
                             <div>No. HP: <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ $item->no_hp ?? '-' }}</span></div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 pt-1">
@@ -566,7 +566,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-slate-800 dark:text-slate-200 block font-medium">{{ $item->konsentrasiKeahlian->nama }}</span>
+                                    <span class="text-slate-800 dark:text-slate-200 block font-medium">{{ $item->konsentrasiKeahlian?->nama ?? '-' }}</span>
                                     <span class="text-xs text-slate-500">Kelas {{ $item->kelas }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -611,7 +611,7 @@
                             </span>
                         </div>
                         <div class="flex flex-col gap-1.5 text-xs text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-850">
-                            <div>Konsentrasi: <span class="font-medium text-slate-800 dark:text-slate-200">{{ $item->konsentrasiKeahlian->nama }}</span></div>
+                            <div>Konsentrasi: <span class="font-medium text-slate-800 dark:text-slate-200">{{ $item->konsentrasiKeahlian?->nama ?? '-' }}</span></div>
                         </div>
                         <div class="flex justify-end pt-1">
                             <a href="{{ route('pembimbing_sekolah.jurnal.index', ['search' => $item->nama_lengkap]) }}"

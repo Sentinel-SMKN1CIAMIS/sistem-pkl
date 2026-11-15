@@ -207,7 +207,7 @@
                                             </td>
                                             <td class="p-3">
                                                 <div class="text-slate-700 dark:text-slate-300 font-medium">{{ $siswa->kelas }}</div>
-                                                <div class="text-xs text-slate-500 dark:text-slate-400">{{ $siswa->konsentrasiKeahlian->nama }}</div>
+                                                <div class="text-xs text-slate-500 dark:text-slate-400">{{ $siswa->konsentrasiKeahlian?->nama ?? '-' }}</div>
                                             </td>
                                             <td class="p-3 flex flex-col gap-1 items-start">
                                                 @if($isCurrentAdvisor)

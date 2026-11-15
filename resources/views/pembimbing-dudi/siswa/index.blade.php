@@ -39,7 +39,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm text-slate-800 dark:text-slate-200 block">{{ $item->konsentrasiKeahlian->nama }}</span>
+                                <span class="text-sm text-slate-800 dark:text-slate-200 block">{{ $item->konsentrasiKeahlian?->nama ?? '-' }}</span>
                                 <span class="text-xs text-slate-500 dark:text-slate-400">Kelas {{ $item->kelas }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">

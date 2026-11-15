@@ -57,7 +57,7 @@
                         </td>
                         <td class="py-3 px-4 text-slate-600 dark:text-slate-400">
                             <span class="block">{{ $pengajuan->siswa->kelas }}</span>
-                            <span class="text-xs text-slate-500">{{ $pengajuan->siswa->konsentrasiKeahlian->nama }}</span>
+                            <span class="text-xs text-slate-500">{{ $pengajuan->siswa?->konsentrasiKeahlian?->nama ?? '-' }}</span>
                         </td>
                         <td class="py-3 px-4">
                             <p class="font-medium text-slate-800 dark:text-slate-200">{{ $pengajuan->nama_perusahaan }}</p>

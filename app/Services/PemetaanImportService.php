@@ -468,7 +468,7 @@ class PemetaanImportService
     /**
      * Membaca dan mem-parsing berkas (Excel .xlsx / .xls maupun .csv) menjadi array item terstruktur.
      */
-    public function parseFile(string $filePath, array $allowedJurusan = ['AKL', 'PBS', 'MPLB', 'PM', 'PBD', 'KLN', 'HTL', 'PPLG'], ?string $extension = null): array
+    public function parseFile(string $filePath, array $allowedJurusan = ['AKL', 'PBS', 'DKV', 'PPLG', 'KLN', 'MPLB', 'PM', 'PBR', 'PBD', 'HTL'], ?string $extension = null): array
     {
         if (!file_exists($filePath)) {
             throw new \InvalidArgumentException("Berkas tidak ditemukan: {$filePath}");
@@ -478,8 +478,18 @@ class PemetaanImportService
 
         if (in_array($ext, ['xlsx', 'xls', 'ods'])) {
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
-            $sheet = $spreadsheet->getActiveSheet();
-            $rows = $sheet->toArray();
+
+            // Cari sheet terbaik yang berisi data pemetaan siswa
+            $sheetToUse = $spreadsheet->getActiveSheet();
+            foreach ($spreadsheet->getAllSheets() as $sheet) {
+                $title = strtolower($sheet->getTitle());
+                if (str_contains($title, 'data') || str_contains($title, 'siswa') || str_contains($title, 'pemetaan') || str_contains($title, 'lengkap')) {
+                    $sheetToUse = $sheet;
+                    break;
+                }
+            }
+
+            $rows = $sheetToUse->toArray();
             return $this->parseRows($rows, $allowedJurusan);
         }
 
@@ -489,7 +499,7 @@ class PemetaanImportService
     /**
      * Membaca dan mem-parsing baris CSV menjadi array item terstruktur.
      */
-    public function parseCsv(string $csvContentOrPath, array $allowedJurusan = ['AKL', 'PBS', 'MPLB', 'PM', 'PBD', 'KLN', 'HTL', 'PPLG']): array
+    public function parseCsv(string $csvContentOrPath, array $allowedJurusan = ['AKL', 'PBS', 'DKV', 'PPLG', 'KLN', 'MPLB', 'PM', 'PBR', 'PBD', 'HTL']): array
     {
         if (file_exists($csvContentOrPath)) {
             $ext = strtolower(pathinfo($csvContentOrPath, PATHINFO_EXTENSION));
@@ -521,7 +531,7 @@ class PemetaanImportService
     /**
      * Parsing baris-baris array terstruktur (dari spreadsheet atau fgetcsv).
      */
-    public function parseRows(array $rows, array $allowedJurusan = ['AKL', 'PBS', 'MPLB', 'PM', 'PBD', 'KLN', 'HTL', 'PPLG']): array
+    public function parseRows(array $rows, array $allowedJurusan = ['AKL', 'PBS', 'DKV', 'PPLG', 'KLN', 'MPLB', 'PM', 'PBR', 'PBD', 'HTL']): array
     {
         // 1. Cek apakah ini berkas Master Guru & NIP (contoh: "Nama Lengkap Guru,NIP Guru" atau "Nama,NIP")
         $isGuruNipFormat = false;
@@ -603,10 +613,21 @@ class PemetaanImportService
 
         $currentWilayah = '';
         $currentPembimbing = '';
+        $currentPembimbingUmum = '';
         $currentDudi = '';
         $parsedItems = [];
         $skippedCount = 0;
         $headerFound = false;
+
+        $siswaIdx = -1;
+        $kelasIdx = -1;
+        $dudiIdx = -1;
+        $pembimbingIdx = -1;
+        $penyerahanIdx = -1;
+        $pembimbingUmumIdx = -1;
+        $penarikanIdx = -1;
+        $wilayahIdx = -1;
+        $durasiIdx = -1;
 
         foreach ($rows as $cols) {
             if (!is_array($cols) || empty($cols)) {
@@ -619,58 +640,106 @@ class PemetaanImportService
                 continue;
             }
 
-            // Berhenti jika sudah mencapai tabel rekapitulasi di bawah
-            if (stripos($lineText, 'PEMETAAN BIMBINGAN SISWA PKL') !== false) {
+            // Berhenti jika sudah mencapai tabel rekapitulasi/distribusi di bawah
+            if (
+                stripos($lineText, 'PEMETAAN BIMBINGAN SISWA PKL') !== false ||
+                stripos($lineText, 'Dimensi Distribusi') !== false ||
+                stripos($lineText, 'DISTRIBUSI GURU') !== false ||
+                stripos($lineText, '--- REKAP') !== false ||
+                stripos($lineText, 'TOTAL KESELURUHAN') !== false
+            ) {
                 break;
             }
 
             // Deteksi baris header secara dinamis
             if (!$headerFound) {
+                $lowerCols = array_map(fn($c) => strtolower(trim((string)$c)), $cols);
+                $hasSiswa = false;
+                $hasDudi = false;
+                $hasKelas = false;
+                $hasGuru = false;
+
+                foreach ($lowerCols as $col) {
+                    if (str_contains($col, 'siswa') || str_contains($col, 'murid')) $hasSiswa = true;
+                    if (str_contains($col, 'dudi') || str_contains($col, 'du/di') || str_contains($col, 'tempat pkl') || str_contains($col, 'perusahaan') || str_contains($col, 'industri') || str_contains($col, 'instansi')) $hasDudi = true;
+                    if (str_contains($col, 'pembimbing') || str_contains($col, 'penyerahan') || str_contains($col, 'monitoring') || str_contains($col, 'penarikan')) $hasGuru = true;
+                    if (str_contains($col, 'kelas') || str_contains($col, 'rombel')) $hasKelas = true;
+                }
+
                 if (
-                    stripos($lineText, 'Nama Pembimbing') !== false ||
-                    stripos($lineText, 'NAMA SISWA') !== false ||
-                    (isset($cols[0]) && strtolower($cols[0]) === 'no')
+                    ($hasSiswa && ($hasDudi || $hasKelas || $hasGuru)) ||
+                    (isset($cols[0]) && strtolower(trim((string)$cols[0])) === 'no' && ($hasDudi || $hasSiswa)) ||
+                    stripos($lineText, 'nama pembimbing') !== false ||
+                    stripos($lineText, 'nama siswa') !== false
                 ) {
                     $headerFound = true;
+                    foreach ($lowerCols as $cIdx => $h) {
+                        if ($siswaIdx === -1 && (str_contains($h, 'siswa') || str_contains($h, 'murid') || ($h === 'nama' && !str_contains($h, 'guru') && !str_contains($h, 'dudi') && !str_contains($h, 'pembimbing')))) {
+                            $siswaIdx = $cIdx;
+                        } elseif ($kelasIdx === -1 && (str_contains($h, 'kelas') || str_contains($h, 'rombel'))) {
+                            $kelasIdx = $cIdx;
+                        } elseif ($dudiIdx === -1 && (str_contains($h, 'dudi') || str_contains($h, 'du/di') || str_contains($h, 'tempat pkl') || str_contains($h, 'perusahaan') || str_contains($h, 'industri') || str_contains($h, 'instansi') || str_contains($h, 'mitra'))) {
+                            $dudiIdx = $cIdx;
+                        } elseif ($penyerahanIdx === -1 && str_contains($h, 'penyerahan')) {
+                            $penyerahanIdx = $cIdx;
+                        } elseif ($pembimbingUmumIdx === -1 && (str_contains($h, 'monitoring') || str_contains($h, 'umum'))) {
+                            $pembimbingUmumIdx = $cIdx;
+                        } elseif ($penarikanIdx === -1 && str_contains($h, 'penarikan')) {
+                            $penarikanIdx = $cIdx;
+                        } elseif ($pembimbingIdx === -1 && (str_contains($h, 'pembimbing') || str_contains($h, 'guru') || str_contains($h, 'kejuruan'))) {
+                            $pembimbingIdx = $cIdx;
+                        } elseif ($wilayahIdx === -1 && (str_contains($h, 'wilayah') || str_contains($h, 'kota') || str_contains($h, 'kabupaten') || str_contains($h, 'lokasi'))) {
+                            $wilayahIdx = $cIdx;
+                        } elseif ($durasiIdx === -1 && str_contains($h, 'durasi')) {
+                            $durasiIdx = $cIdx;
+                        }
+                    }
+
+                    if ($pembimbingIdx === -1) {
+                        $pembimbingIdx = $penyerahanIdx !== -1 ? $penyerahanIdx : $penarikanIdx;
+                    }
+                    continue;
                 }
                 continue;
             }
 
-            // Lewati baris subheader jurusan jika tidak ada nama siswa (contoh: ,,,,,,AK,PBS,PM...)
-            if (empty($cols[0]) && empty($cols[1]) && empty($cols[2]) && empty($cols[4])) {
+            // Ambil data berdasarkan indeks yang terdeteksi secara cerdas
+            $s = $siswaIdx >= 0 ? ($cols[$siswaIdx] ?? '') : ($cols[4] ?? '');
+            $k = $kelasIdx >= 0 ? ($cols[$kelasIdx] ?? '') : ($cols[5] ?? '');
+            $d = $dudiIdx >= 0 ? ($cols[$dudiIdx] ?? '') : ($cols[3] ?? '');
+            $p = $pembimbingIdx >= 0 ? ($cols[$pembimbingIdx] ?? '') : '';
+            $pu = $pembimbingUmumIdx >= 0 ? ($cols[$pembimbingUmumIdx] ?? '') : '';
+            $w = $wilayahIdx >= 0 ? ($cols[$wilayahIdx] ?? '') : '';
+
+            // Lewati baris subheader atau baris rekapitulasi yang tidak memiliki nama siswa valid
+            if (empty($s) || strtoupper($s) === 'NAMA SISWA' || strtoupper($s) === 'JUMLAH SISWA' || empty($k) || strtoupper($k) === 'KELAS') {
                 continue;
             }
-
-            $w = $cols[1] ?? '';
-            $p = $cols[2] ?? '';
-            $d = $cols[3] ?? '';
-            $s = $cols[4] ?? '';
-            $k = $cols[5] ?? '';
 
             // Logika fill-down
             if (!empty($w)) $currentWilayah = $w;
             if (!empty($p)) $currentPembimbing = $p;
+            if (!empty($pu)) $currentPembimbingUmum = $pu;
             if (!empty($d)) $currentDudi = $d;
-
-            if (empty($s) || strtoupper($s) === 'NAMA SISWA' || empty($k)) {
-                continue;
-            }
 
             $prog = $this->detectProgramKeahlian($k);
 
-            // Smart filter: Jika jurusan tidak diizinkan (misal DKV), lewati!
-            if (!in_array($prog, $allowedJurusan) && !in_array($this->mapToBroadJurusan($prog), $allowedJurusan)) {
+            // Smart filter: Jika jurusan tidak diizinkan, lewati
+            if (!empty($allowedJurusan) && !in_array($prog, $allowedJurusan) && !in_array($this->mapToBroadJurusan($prog), $allowedJurusan)) {
                 $skippedCount++;
                 continue;
             }
 
             $cleanDudi = $this->cleanDudiName($currentDudi);
             $canonicalTeacher = $this->resolveCanonicalTeacher($currentPembimbing);
+            $canonicalTeacherUmum = $this->resolveCanonicalTeacher($currentPembimbingUmum);
 
             $parsedItems[] = [
                 'wilayah' => $currentWilayah ?: 'Ciamis',
                 'pembimbing_raw' => $currentPembimbing,
                 'pembimbing_canonical' => $canonicalTeacher,
+                'pembimbing_umum_raw' => $currentPembimbingUmum,
+                'pembimbing_umum_canonical' => $canonicalTeacherUmum,
                 'dudi_raw' => $currentDudi,
                 'dudi_name' => $cleanDudi,
                 'siswa_nama' => $s,
@@ -901,118 +970,185 @@ class PemetaanImportService
                 }
 
                 $teacherName = $item['pembimbing_canonical'] ?? '';
+                $teacherUmumName = $item['pembimbing_umum_canonical'] ?? '';
                 $dudiName = $item['dudi_name'] ?? '';
                 $studentName = $item['siswa_nama'] ?? '';
                 $wilayah = $item['wilayah'] ?? '';
 
-                if (empty($teacherName) || empty($dudiName)) {
+                if (empty($studentName) || (empty($dudiName) && empty($teacherName) && empty($teacherUmumName))) {
                     continue;
                 }
 
-                $cleanTeacher = $this->cleanTeacherName($teacherName);
-                $teacherKey = strtolower(trim($cleanTeacher));
                 $dudiKey = strtolower(trim($dudiName));
                 $studentKey = strtolower(trim($studentName));
 
-                // 1. RESOLUSI / PEMBUATAN AKUN PEMBIMBING SEKOLAH
-                $pembimbingSekolah = $existingTeachers->get($teacherKey);
-                $nip = $this->findTeacherNip($teacherName) ?: $this->findTeacherNip($cleanTeacher);
+                // 1. RESOLUSI / PEMBUATAN AKUN PEMBIMBING SEKOLAH (KEJURUAN)
+                $pembimbingSekolah = null;
+                if (!empty($teacherName)) {
+                    $cleanTeacher = $this->cleanTeacherName($teacherName);
+                    $teacherKey = strtolower(trim($cleanTeacher));
+                    $pembimbingSekolah = $existingTeachers->get($teacherKey);
+                    $nip = $this->findTeacherNip($teacherName) ?: $this->findTeacherNip($cleanTeacher);
 
-                if (!$pembimbingSekolah) {
-                    $username = $nip ?: Str::slug($cleanTeacher, '.');
-                    // Pastikan username unik
-                    $baseUsername = $username;
-                    $counter = 1;
-                    while (User::where('username', $username)->exists()) {
-                        $username = $baseUsername . $counter;
-                        $counter++;
-                    }
-
-                    $teacherPassword = $nip ?: $defaultPassword;
-
-                    $user = User::create([
-                        'name' => $cleanTeacher,
-                        'username' => $username,
-                        'email' => null,
-                        'password' => $teacherPassword, // di-hash otomatis via cast 'password' => 'hashed'
-                        'role' => 'pembimbing_sekolah',
-                        'is_active' => true,
-                        'force_password_change' => true,
-                    ]);
-
-                    $pembimbingSekolah = PembimbingSekolah::create([
-                        'user_id' => $user->id,
-                        'nama_lengkap' => $cleanTeacher,
-                        'nip' => $nip,
-                        'tipe' => 'kejuruan',
-                    ]);
-
-                    $existingTeachers->put($teacherKey, $pembimbingSekolah);
-                    $existingUsers->put($teacherKey, $user);
-                    $stats['pembimbing_created']++;
-                } else {
-                    // FITUR PINTAR: Nimpa data kredensial guru tanpa merubah penempatan DUDI atau siswa bimbingan
-                    if ($nip) {
-                        if ($pembimbingSekolah->nip !== $nip) {
-                            $pembimbingSekolah->nip = $nip;
-                            $pembimbingSekolah->saveQuietly();
+                    if (!$pembimbingSekolah) {
+                        $username = $nip ?: Str::slug($cleanTeacher, '.');
+                        // Pastikan username unik
+                        $baseUsername = $username;
+                        $counter = 1;
+                        while (User::where('username', $username)->exists()) {
+                            $username = $baseUsername . $counter;
+                            $counter++;
                         }
 
-                        $user = $pembimbingSekolah->user;
-                        if ($user) {
-                            $isUserDirty = false;
-                            if ($user->username !== $nip) {
-                                $user->username = $nip;
-                                $user->email = null;
-                                $isUserDirty = true;
+                        $teacherPassword = $nip ?: $defaultPassword;
+
+                        $user = User::create([
+                            'name' => $cleanTeacher,
+                            'username' => $username,
+                            'email' => null,
+                            'password' => $teacherPassword, // di-hash otomatis via cast 'password' => 'hashed'
+                            'role' => 'pembimbing_sekolah',
+                            'is_active' => true,
+                            'force_password_change' => true,
+                        ]);
+
+                        $pembimbingSekolah = PembimbingSekolah::create([
+                            'user_id' => $user->id,
+                            'nama_lengkap' => $cleanTeacher,
+                            'nip' => $nip,
+                            'tipe' => 'kejuruan',
+                        ]);
+
+                        $existingTeachers->put($teacherKey, $pembimbingSekolah);
+                        $existingUsers->put($teacherKey, $user);
+                        $stats['pembimbing_created']++;
+                    } else {
+                        // FITUR PINTAR: Nimpa data kredensial guru tanpa merubah penempatan DUDI atau siswa bimbingan
+                        if ($nip) {
+                            if ($pembimbingSekolah->nip !== $nip) {
+                                $pembimbingSekolah->nip = $nip;
+                                $pembimbingSekolah->saveQuietly();
                             }
-                            // Jika password masih berstatus default / belum diubah, perbarui ke NIP
-                            if ($user->force_password_change || Hash::check('smkn1ciamis', $user->password)) {
-                                $user->password = $nip;
-                                $user->force_password_change = true;
-                                $isUserDirty = true;
-                            }
-                            if ($isUserDirty) {
-                                $user->saveQuietly();
+
+                            $user = $pembimbingSekolah->user;
+                            if ($user) {
+                                $isUserDirty = false;
+                                if ($user->username !== $nip) {
+                                    $user->username = $nip;
+                                    $user->email = null;
+                                    $isUserDirty = true;
+                                }
+                                // Jika password masih berstatus default / belum diubah, perbarui ke NIP
+                                if ($user->force_password_change || Hash::check('smkn1ciamis', $user->password)) {
+                                    $user->password = $nip;
+                                    $user->force_password_change = true;
+                                    $isUserDirty = true;
+                                }
+                                if ($isUserDirty) {
+                                    $user->saveQuietly();
+                                }
                             }
                         }
+                        $stats['pembimbing_matched']++;
                     }
-                    $stats['pembimbing_matched']++;
                 }
 
-                // 2. PEMETAAN SISWA (Pencocokan Cerdas: Eksak, Prefix Nama Panggilan, & Typo Tolerant)
+                // 2. RESOLUSI / PEMBUATAN AKUN PEMBIMBING SEKOLAH UMUM (MONITORING)
+                $pembimbingSekolahUmum = null;
+                if (!empty($teacherUmumName)) {
+                    $cleanTeacherUmum = $this->cleanTeacherName($teacherUmumName);
+                    $teacherUmumKey = strtolower(trim($cleanTeacherUmum));
+                    $pembimbingSekolahUmum = $existingTeachers->get($teacherUmumKey);
+                    $nipUmum = $this->findTeacherNip($teacherUmumName) ?: $this->findTeacherNip($cleanTeacherUmum);
+
+                    if (!$pembimbingSekolahUmum) {
+                        $usernameUmum = $nipUmum ?: Str::slug($cleanTeacherUmum, '.');
+                        $baseUsernameUmum = $usernameUmum;
+                        $counterUmum = 1;
+                        while (User::where('username', $usernameUmum)->exists()) {
+                            $usernameUmum = $baseUsernameUmum . $counterUmum;
+                            $counterUmum++;
+                        }
+
+                        $userUmum = User::create([
+                            'name' => $cleanTeacherUmum,
+                            'username' => $usernameUmum,
+                            'email' => null,
+                            'password' => $nipUmum ?: $defaultPassword,
+                            'role' => 'pembimbing_sekolah',
+                            'is_active' => true,
+                            'force_password_change' => true,
+                        ]);
+
+                        $pembimbingSekolahUmum = PembimbingSekolah::create([
+                            'user_id' => $userUmum->id,
+                            'nama_lengkap' => $cleanTeacherUmum,
+                            'nip' => $nipUmum,
+                            'tipe' => 'umum',
+                        ]);
+
+                        $existingTeachers->put($teacherUmumKey, $pembimbingSekolahUmum);
+                        $existingUsers->put($teacherUmumKey, $userUmum);
+                        $stats['pembimbing_created']++;
+                    } else {
+                        if ($nipUmum) {
+                            if ($pembimbingSekolahUmum->nip !== $nipUmum) {
+                                $pembimbingSekolahUmum->nip = $nipUmum;
+                                $pembimbingSekolahUmum->saveQuietly();
+                            }
+                        }
+                        $stats['pembimbing_matched']++;
+                    }
+                }
+
+                // 3. PEMETAAN SISWA (Pencocokan Cerdas: Eksak, Prefix Nama Panggilan, & Typo Tolerant)
                 $siswa = $this->findStudent($studentName, $item['kelas'], $allStudents);
 
-                // 3. RESOLUSI / PEMBUATAN MASTER DUDI
-                $dudi = $existingDudis->get($dudiKey);
-                if (!$dudi) {
-                    $konsentrasiId = $siswa ? $siswa->konsentrasi_keahlian_id : ($allKonsentrasi->first()?->id ?? 1);
-                    $dudi = Dudi::create([
-                        'nama' => $dudiName,
-                        'konsentrasi_keahlian_id' => $konsentrasiId,
-                        'kota' => $wilayah,
-                        'alamat' => $wilayah,
-                        'is_active' => true,
-                    ]);
-                    $existingDudis->put($dudiKey, $dudi);
-                    $stats['dudi_created']++;
-                } else {
-                    $stats['dudi_matched']++;
+                // 4. RESOLUSI / PEMBUATAN MASTER DUDI
+                $dudi = null;
+                if (!empty($dudiName)) {
+                    $dudi = $existingDudis->get($dudiKey);
+                    if (!$dudi) {
+                        $konsentrasiId = $siswa ? $siswa->konsentrasi_keahlian_id : ($allKonsentrasi->first()?->id ?? 1);
+                        $dudi = Dudi::create([
+                            'nama' => $dudiName,
+                            'konsentrasi_keahlian_id' => $konsentrasiId,
+                            'kota' => $wilayah ?: 'Ciamis',
+                            'alamat' => $wilayah ?: 'Ciamis',
+                            'is_active' => true,
+                        ]);
+                        $existingDudis->put($dudiKey, $dudi);
+                        $stats['dudi_created']++;
+                    } else {
+                        $stats['dudi_matched']++;
+                    }
                 }
 
                 if ($siswa) {
-                    $siswa->update([
-                        'dudi_id' => $dudi->id,
-                        'pembimbing_sekolah_id' => $pembimbingSekolah->id,
-                        'status_pkl' => 'sedang_pkl',
-                    ]);
+                    $updateData = [];
+                    if ($dudi) {
+                        $updateData['dudi_id'] = $dudi->id;
+                        if ($siswa->status_pkl === 'belum_mulai' || empty($siswa->status_pkl)) {
+                            $updateData['status_pkl'] = 'sedang_pkl';
+                        }
+                    }
+                    if ($pembimbingSekolah) {
+                        $updateData['pembimbing_sekolah_id'] = $pembimbingSekolah->id;
+                    }
+                    if ($pembimbingSekolahUmum) {
+                        $updateData['pembimbing_sekolah_umum_id'] = $pembimbingSekolahUmum->id;
+                    }
+
+                    if (!empty($updateData)) {
+                        $siswa->update($updateData);
+                    }
 
                     // Hubungkan DUDI dengan Konsentrasi Keahlian siswa jika belum terhubung
-                    if ($siswa->konsentrasi_keahlian_id) {
+                    if ($dudi && $siswa->konsentrasi_keahlian_id) {
                         $dudi->konsentrasiKeahlians()->syncWithoutDetaching([$siswa->konsentrasi_keahlian_id]);
 
                         // Jika pembimbing sekolah belum memiliki konsentrasi, set dari siswa
-                        if (!$pembimbingSekolah->konsentrasi_keahlian_id) {
+                        if ($pembimbingSekolah && !$pembimbingSekolah->konsentrasi_keahlian_id) {
                             $pembimbingSekolah->update([
                                 'konsentrasi_keahlian_id' => $siswa->konsentrasi_keahlian_id,
                             ]);

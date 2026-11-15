@@ -41,7 +41,7 @@
                 @if($pembimbingProfile->konsentrasiKeahlian)
                     <div class="px-4 py-2.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-xl text-xs font-semibold text-blue-100 self-start md:self-center shadow-sm max-w-full">
                         <span class="text-blue-200 block text-[9px] uppercase tracking-wider mb-0.5">Konsentrasi</span>
-                        <span class="font-bold text-white block sm:inline leading-snug">{{ $pembimbingProfile->konsentrasiKeahlian->nama }}</span>
+                        <span class="font-bold text-white block sm:inline leading-snug">{{ $pembimbingProfile->konsentrasiKeahlian?->nama ?? '-' }}</span>
                     </div>
                 @endif
             </div>
