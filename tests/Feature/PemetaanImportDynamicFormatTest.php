@@ -136,4 +136,70 @@ CSV;
         $this->assertEquals('Bank BJB Ciamis', $siswa->dudi->nama);
         $this->assertNull($siswa->pembimbing_sekolah_id);
     }
+
+    public function test_import_resolves_duplicate_username_conflict_without_integrity_violation(): void
+    {
+        // 1. Create a conflict user who already took the NIP as username
+        $conflictUser = User::create([
+            'name' => 'Old Duplicate Account',
+            'username' => '198806272022212014',
+            'password' => 'password',
+            'role' => 'pembimbing_sekolah',
+            'is_active' => true,
+        ]);
+
+        // 2. Create the real teacher whose user currently has a slug username
+        $realTeacherUser = User::create([
+            'name' => 'Ati Sukmawati',
+            'username' => 'ati.sukmawati',
+            'password' => 'password',
+            'role' => 'pembimbing_sekolah',
+            'is_active' => true,
+        ]);
+
+        $teacher = PembimbingSekolah::create([
+            'user_id' => $realTeacherUser->id,
+            'nama_lengkap' => 'Ati Sukmawati, S.Pd.',
+            'nip' => null,
+            'tipe' => 'kejuruan',
+        ]);
+
+        $userSiswa = User::create([
+            'name' => 'Ade Yuni Sugiarti',
+            'username' => '242510101',
+            'password' => 'password',
+            'role' => 'siswa',
+            'is_active' => true,
+        ]);
+
+        $siswa = Siswa::create([
+            'user_id' => $userSiswa->id,
+            'konsentrasi_keahlian_id' => $this->konAkl->id,
+            'nis' => '242510101',
+            'nama_lengkap' => 'Ade Yuni Sugiarti',
+            'kelas' => 'XII AKL 1',
+            'jenis_kelamin' => 'P',
+            'tahun_ajaran' => '2026/2027',
+            'status_pkl' => 'belum_mulai',
+        ]);
+
+        $csvData = <<<CSV
+No,Durasi PKL,Nama DUDI,Nama Siswa,Kelas,Penyerahan
+1,6 BULAN,Herbal TV Tasikmalaya,Ade Yuni Sugiarti,XII AKL 1,Ati Sukmawati, S.Pd.
+CSV;
+
+        $service = new PemetaanImportService();
+        $parsed = $service->parseCsv($csvData);
+
+        // Execute import should NOT throw UniqueConstraintViolationException
+        $stats = $service->executeImport($parsed['items'], ['default_password' => 'smkn1ciamis']);
+
+        $this->assertEquals(1, $stats['siswa_mapped']);
+
+        $realTeacherUser->refresh();
+        $this->assertEquals('198806272022212014', $realTeacherUser->username);
+
+        $conflictUser->refresh();
+        $this->assertStringContainsString('_old_', $conflictUser->username);
+    }
 }

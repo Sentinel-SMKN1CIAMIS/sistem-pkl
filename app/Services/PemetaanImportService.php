@@ -990,27 +990,56 @@ class PemetaanImportService
                     $pembimbingSekolah = $existingTeachers->get($teacherKey);
                     $nip = $this->findTeacherNip($teacherName) ?: $this->findTeacherNip($cleanTeacher);
 
+                    // Cari berdasarkan NIP jika belum ketemu lewat nama persis
+                    if (!$pembimbingSekolah && !empty($nip)) {
+                        $pembimbingSekolah = $existingTeachers->first(fn($t) => !empty($t->nip) && $t->nip === $nip);
+                    }
+
+                    // Cari dengan toleransi kemiripan nama
                     if (!$pembimbingSekolah) {
-                        $username = $nip ?: Str::slug($cleanTeacher, '.');
-                        // Pastikan username unik
-                        $baseUsername = $username;
-                        $counter = 1;
-                        while (User::where('username', $username)->exists()) {
-                            $username = $baseUsername . $counter;
-                            $counter++;
+                        foreach ($existingTeachers as $t) {
+                            $cName = strtolower($this->cleanTeacherName($t->nama_lengkap));
+                            similar_text($cName, $teacherKey, $percent);
+                            if ($percent >= 85) {
+                                $pembimbingSekolah = $t;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!$pembimbingSekolah) {
+                        $user = null;
+                        if (!empty($nip)) {
+                            $existingUserWithNip = User::where('username', $nip)->first();
+                            if ($existingUserWithNip && $existingUserWithNip->role === 'pembimbing_sekolah' && !$existingUserWithNip->pembimbingSekolah) {
+                                $user = $existingUserWithNip;
+                            } elseif ($existingUserWithNip) {
+                                $existingUserWithNip->username = $existingUserWithNip->username . '_old_' . $existingUserWithNip->id;
+                                $existingUserWithNip->saveQuietly();
+                            }
                         }
 
-                        $teacherPassword = $nip ?: $defaultPassword;
+                        if (!$user) {
+                            $username = $nip ?: Str::slug($cleanTeacher, '.');
+                            $baseUsername = $username;
+                            $counter = 1;
+                            while (User::where('username', $username)->exists()) {
+                                $username = $baseUsername . '_' . $counter;
+                                $counter++;
+                            }
 
-                        $user = User::create([
-                            'name' => $cleanTeacher,
-                            'username' => $username,
-                            'email' => null,
-                            'password' => $teacherPassword, // di-hash otomatis via cast 'password' => 'hashed'
-                            'role' => 'pembimbing_sekolah',
-                            'is_active' => true,
-                            'force_password_change' => true,
-                        ]);
+                            $teacherPassword = $nip ?: $defaultPassword;
+
+                            $user = User::create([
+                                'name' => $cleanTeacher,
+                                'username' => $username,
+                                'email' => null,
+                                'password' => $teacherPassword,
+                                'role' => 'pembimbing_sekolah',
+                                'is_active' => true,
+                                'force_password_change' => true,
+                            ]);
+                        }
 
                         $pembimbingSekolah = PembimbingSekolah::create([
                             'user_id' => $user->id,
@@ -1023,7 +1052,7 @@ class PemetaanImportService
                         $existingUsers->put($teacherKey, $user);
                         $stats['pembimbing_created']++;
                     } else {
-                        // FITUR PINTAR: Nimpa data kredensial guru tanpa merubah penempatan DUDI atau siswa bimbingan
+                        // FITUR PINTAR: Sinkronkan NIP & username tanpa tabrakan duplikat constraint
                         if ($nip) {
                             if ($pembimbingSekolah->nip !== $nip) {
                                 $pembimbingSekolah->nip = $nip;
@@ -1034,11 +1063,15 @@ class PemetaanImportService
                             if ($user) {
                                 $isUserDirty = false;
                                 if ($user->username !== $nip) {
+                                    $conflictUser = User::where('username', $nip)->where('id', '!=', $user->id)->first();
+                                    if ($conflictUser) {
+                                        $conflictUser->username = $conflictUser->username . '_old_' . $conflictUser->id;
+                                        $conflictUser->saveQuietly();
+                                    }
                                     $user->username = $nip;
                                     $user->email = null;
                                     $isUserDirty = true;
                                 }
-                                // Jika password masih berstatus default / belum diubah, perbarui ke NIP
                                 if ($user->force_password_change || Hash::check('smkn1ciamis', $user->password)) {
                                     $user->password = $nip;
                                     $user->force_password_change = true;
@@ -1061,24 +1094,54 @@ class PemetaanImportService
                     $pembimbingSekolahUmum = $existingTeachers->get($teacherUmumKey);
                     $nipUmum = $this->findTeacherNip($teacherUmumName) ?: $this->findTeacherNip($cleanTeacherUmum);
 
+                    // Cari berdasarkan NIP jika belum ketemu lewat nama
+                    if (!$pembimbingSekolahUmum && !empty($nipUmum)) {
+                        $pembimbingSekolahUmum = $existingTeachers->first(fn($t) => !empty($t->nip) && $t->nip === $nipUmum);
+                    }
+
+                    // Cari dengan toleransi kemiripan nama
                     if (!$pembimbingSekolahUmum) {
-                        $usernameUmum = $nipUmum ?: Str::slug($cleanTeacherUmum, '.');
-                        $baseUsernameUmum = $usernameUmum;
-                        $counterUmum = 1;
-                        while (User::where('username', $usernameUmum)->exists()) {
-                            $usernameUmum = $baseUsernameUmum . $counterUmum;
-                            $counterUmum++;
+                        foreach ($existingTeachers as $t) {
+                            $cName = strtolower($this->cleanTeacherName($t->nama_lengkap));
+                            similar_text($cName, $teacherUmumKey, $percent);
+                            if ($percent >= 85) {
+                                $pembimbingSekolahUmum = $t;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!$pembimbingSekolahUmum) {
+                        $userUmum = null;
+                        if (!empty($nipUmum)) {
+                            $existingUserWithNip = User::where('username', $nipUmum)->first();
+                            if ($existingUserWithNip && $existingUserWithNip->role === 'pembimbing_sekolah' && !$existingUserWithNip->pembimbingSekolah) {
+                                $userUmum = $existingUserWithNip;
+                            } elseif ($existingUserWithNip) {
+                                $existingUserWithNip->username = $existingUserWithNip->username . '_old_' . $existingUserWithNip->id;
+                                $existingUserWithNip->saveQuietly();
+                            }
                         }
 
-                        $userUmum = User::create([
-                            'name' => $cleanTeacherUmum,
-                            'username' => $usernameUmum,
-                            'email' => null,
-                            'password' => $nipUmum ?: $defaultPassword,
-                            'role' => 'pembimbing_sekolah',
-                            'is_active' => true,
-                            'force_password_change' => true,
-                        ]);
+                        if (!$userUmum) {
+                            $usernameUmum = $nipUmum ?: Str::slug($cleanTeacherUmum, '.');
+                            $baseUsernameUmum = $usernameUmum;
+                            $counterUmum = 1;
+                            while (User::where('username', $usernameUmum)->exists()) {
+                                $usernameUmum = $baseUsernameUmum . '_' . $counterUmum;
+                                $counterUmum++;
+                            }
+
+                            $userUmum = User::create([
+                                'name' => $cleanTeacherUmum,
+                                'username' => $usernameUmum,
+                                'email' => null,
+                                'password' => $nipUmum ?: $defaultPassword,
+                                'role' => 'pembimbing_sekolah',
+                                'is_active' => true,
+                                'force_password_change' => true,
+                            ]);
+                        }
 
                         $pembimbingSekolahUmum = PembimbingSekolah::create([
                             'user_id' => $userUmum->id,
@@ -1095,6 +1158,29 @@ class PemetaanImportService
                             if ($pembimbingSekolahUmum->nip !== $nipUmum) {
                                 $pembimbingSekolahUmum->nip = $nipUmum;
                                 $pembimbingSekolahUmum->saveQuietly();
+                            }
+
+                            $userUmum = $pembimbingSekolahUmum->user;
+                            if ($userUmum) {
+                                $isUserUmumDirty = false;
+                                if ($userUmum->username !== $nipUmum) {
+                                    $conflictUser = User::where('username', $nipUmum)->where('id', '!=', $userUmum->id)->first();
+                                    if ($conflictUser) {
+                                        $conflictUser->username = $conflictUser->username . '_old_' . $conflictUser->id;
+                                        $conflictUser->saveQuietly();
+                                    }
+                                    $userUmum->username = $nipUmum;
+                                    $userUmum->email = null;
+                                    $isUserUmumDirty = true;
+                                }
+                                if ($userUmum->force_password_change || Hash::check('smkn1ciamis', $userUmum->password)) {
+                                    $userUmum->password = $nipUmum;
+                                    $userUmum->force_password_change = true;
+                                    $isUserUmumDirty = true;
+                                }
+                                if ($isUserUmumDirty) {
+                                    $userUmum->saveQuietly();
+                                }
                             }
                         }
                         $stats['pembimbing_matched']++;
