@@ -86,3 +86,4 @@ class CheckMaintenanceMode
         return redirect()->route('maintenance');
     }
 }
+

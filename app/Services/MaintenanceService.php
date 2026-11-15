@@ -202,3 +202,4 @@ class MaintenanceService
         Cache::forget(self::CACHE_KEY);
     }
 }
+

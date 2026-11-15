@@ -81,3 +81,4 @@ class MaintenanceController extends Controller
         return response()->view('errors.maintenance', compact('summary', 'allRoles'), 503);
     }
 }
+
