@@ -75,6 +75,10 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed'
         ]);
 
+        if ($request->role === 'super_admin' && User::where('role', 'super_admin')->exists()) {
+            return back()->withInput()->withErrors(['role' => 'Akun dengan role Super Admin sudah ada. Sistem hanya memperbolehkan 1 akun Super Admin utama.']);
+        }
+
         if ($request->role === 'kepala_sekolah' && User::where('role', 'kepala_sekolah')->exists()) {
             return back()->withInput()->withErrors(['role' => 'Akun dengan role Kepala Sekolah sudah ada. Maksimal hanya diperbolehkan 1 akun.']);
         }
@@ -103,6 +107,16 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8|confirmed'
         ]);
 
+        // Proteksi mutlak akun Super Admin: role tidak boleh diubah ke role lain
+        if ($user->role === 'super_admin' && $request->role !== 'super_admin') {
+            return back()->withInput()->withErrors(['role' => 'Hak akses akun Super Admin bersifat mutlak dan tidak dapat diubah ke role lain.']);
+        }
+
+        // Cegah pembuatan super_admin tambahan lewat edit akun lain
+        if ($request->role === 'super_admin' && $user->role !== 'super_admin' && User::where('role', 'super_admin')->exists()) {
+            return back()->withInput()->withErrors(['role' => 'Akun dengan role Super Admin sudah ada. Sistem hanya memperbolehkan 1 akun Super Admin utama.']);
+        }
+
         if ($request->role === 'kepala_sekolah' && $user->role !== 'kepala_sekolah' && User::where('role', 'kepala_sekolah')->exists()) {
             return back()->withInput()->withErrors(['role' => 'Akun dengan role Kepala Sekolah sudah ada. Maksimal hanya diperbolehkan 1 akun.']);
         }
@@ -122,6 +136,10 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if ($user->role === 'super_admin') {
+            return back()->with('error', 'Akun Super Admin bersifat mutlak dan tidak dapat dihapus.');
+        }
+
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
@@ -140,14 +158,16 @@ class UserController extends Controller
 
         $ids = $request->input('ids');
         
-        // Exclude the current authenticated user's ID
-        $filteredIds = array_filter($ids, function($id) {
-            return $id != auth()->id();
-        });
+        // Exclude the current authenticated user and all super_admin accounts
+        $filteredIds = User::whereIn('id', $ids)
+            ->where('id', '!=', auth()->id())
+            ->where('role', '!=', 'super_admin')
+            ->pluck('id')
+            ->toArray();
 
         if (empty($filteredIds)) {
             return redirect()->route('admin.users.index')
-                ->with('error', 'Tidak ada akun valid yang dapat dihapus.');
+                ->with('error', 'Tidak ada akun valid yang dapat dihapus. Akun Anda sendiri dan akun Super Admin tidak dapat dihapus.');
         }
 
         User::whereIn('id', $filteredIds)->delete();

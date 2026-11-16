@@ -80,4 +80,39 @@ class AdminUsersBulkDeleteTest extends TestCase
         // User 1 should be deleted
         $this->assertDatabaseMissing('users', ['id' => $u1->id]);
     }
+
+    public function test_super_admin_cannot_be_deleted_individually()
+    {
+        $response = $this->actingAs($this->superAdminUser)
+            ->delete(route('admin.users.destroy', $this->superAdminUser));
+
+        $response->assertSessionHas('error');
+        $this->assertDatabaseHas('users', ['id' => $this->superAdminUser->id, 'role' => 'super_admin']);
+    }
+
+    public function test_super_admin_role_cannot_be_changed()
+    {
+        $response = $this->actingAs($this->superAdminUser)
+            ->put(route('admin.users.update', $this->superAdminUser), [
+                'username' => 'admin_updated',
+                'role' => 'siswa',
+            ]);
+
+        $response->assertSessionHasErrors(['role']);
+        $this->assertDatabaseHas('users', ['id' => $this->superAdminUser->id, 'role' => 'super_admin']);
+    }
+
+    public function test_cannot_create_second_super_admin()
+    {
+        $response = $this->actingAs($this->superAdminUser)
+            ->post(route('admin.users.store'), [
+                'username' => 'admin2',
+                'role' => 'super_admin',
+                'password' => 'password123',
+                'password_confirmation' => 'password123',
+            ]);
+
+        $response->assertSessionHasErrors(['role']);
+        $this->assertEquals(1, User::where('role', 'super_admin')->count());
+    }
 }

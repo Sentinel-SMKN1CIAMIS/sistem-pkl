@@ -30,7 +30,7 @@
                             <option value="pembimbing_dudi">PEMBIMBING DUDI</option>
                             <option value="pokja">POKJA</option>
                             <option value="kaprog">KAPROG</option>
-                            <option value="super_admin">SUPER ADMIN</option>
+                            <option value="super_admin" @if(\App\Models\User::where('role', 'super_admin')->exists()) disabled title="Role Super Admin sudah dibuat (Maksimal 1 akun)" @endif>SUPER ADMIN</option>
                             <option value="kepala_sekolah" @if(\App\Models\User::where('role', 'kepala_sekolah')->exists()) disabled title="Role Kepala Sekolah sudah dibuat (Maksimal 1 akun)" @endif>KEPALA SEKOLAH</option>
                         </select>
                     </div>

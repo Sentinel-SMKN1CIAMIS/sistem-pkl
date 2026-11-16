@@ -199,7 +199,7 @@
                                        x-model="selectedIds" 
                                        @change="updateSelectAll" 
                                        class="user-checkbox rounded-sm border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-900 w-4 h-4 cursor-pointer"
-                                       @if($user->id === auth()->id()) disabled title="Anda tidak dapat menghapus akun Anda sendiri" @endif>
+                                       @if($user->role === 'super_admin') disabled title="Akun Super Admin bersifat mutlak dan tidak dapat dihapus" @elseif($user->id === auth()->id()) disabled title="Anda tidak dapat menghapus akun Anda sendiri" @endif>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-slate-800 dark:text-slate-200 font-bold font-mono">{{ $user->username }}</span>
@@ -244,6 +244,7 @@
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-500"></i>
                                             Edit
                                         </a>
+                                        @if($user->role !== 'super_admin' && $user->id !== auth()->id())
                                         <form action="{{ route('admin.users.destroy', $user) }}" method="POST" data-confirm-delete="{{ $user->name ?: $user->username }}" data-entity="akun pengguna">
                                             @csrf
                                             @method('DELETE')
@@ -252,6 +253,7 @@
                                                 Hapus
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

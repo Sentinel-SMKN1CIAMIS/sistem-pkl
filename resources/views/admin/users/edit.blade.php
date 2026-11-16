@@ -23,15 +23,24 @@
 
                     <div>
                         <label for="role" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Role / Hak Akses</label>
-                        <select name="role" id="role" required
-                                class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
-                            @foreach(['siswa', 'pembimbing_sekolah', 'pembimbing_dudi', 'pokja', 'kaprog', 'super_admin', 'kepala_sekolah'] as $roleVal)
-                                @php
-                                    $disabled = ($roleVal === 'kepala_sekolah' && $user->role !== 'kepala_sekolah' && \App\Models\User::where('role', 'kepala_sekolah')->exists());
-                                @endphp
-                                <option value="{{ $roleVal }}" {{ $user->role == $roleVal ? 'selected' : '' }} @if($disabled) disabled title="Role Kepala Sekolah sudah dibuat (Maksimal 1 akun)" @endif>{{ str_replace('_', ' ', strtoupper($roleVal)) }}</option>
-                            @endforeach
-                        </select>
+                        @if($user->role === 'super_admin')
+                            <div class="px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl flex items-center justify-between">
+                                <span class="font-bold text-red-500 font-mono text-sm">SUPER ADMIN</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400 italic">Hak akses mutlak (tidak dapat diubah)</span>
+                            </div>
+                            <input type="hidden" name="role" value="super_admin">
+                        @else
+                            <select name="role" id="role" required
+                                    class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
+                                @foreach(['siswa', 'pembimbing_sekolah', 'pembimbing_dudi', 'pokja', 'kaprog', 'super_admin', 'kepala_sekolah'] as $roleVal)
+                                    @php
+                                        $disabled = ($roleVal === 'super_admin' && \App\Models\User::where('role', 'super_admin')->exists())
+                                            || ($roleVal === 'kepala_sekolah' && $user->role !== 'kepala_sekolah' && \App\Models\User::where('role', 'kepala_sekolah')->exists());
+                                    @endphp
+                                    <option value="{{ $roleVal }}" {{ $user->role == $roleVal ? 'selected' : '' }} @if($disabled) disabled title="Role {{ str_replace('_', ' ', strtoupper($roleVal)) }} sudah dibuat (Maksimal 1 akun)" @endif>{{ str_replace('_', ' ', strtoupper($roleVal)) }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
 
                     <div class="pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
