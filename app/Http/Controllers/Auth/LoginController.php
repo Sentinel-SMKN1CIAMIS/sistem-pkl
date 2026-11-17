@@ -23,9 +23,10 @@ class LoginController extends Controller
         $loginInput = trim($request->input('username'));
         $password = (string) $request->input('password');
 
-        // 1. Cari user secara fleksibel: Username, Email, NIP Pembimbing, atau NIS/NISN Siswa
+        // 1. Cari user secara fleksibel: Username, Email, Nama Lengkap
         $user = \App\Models\User::where('username', $loginInput)
             ->orWhere('email', $loginInput)
+            ->orWhere('name', $loginInput)
             ->first();
 
         // Fallback pencarian berbasis NIP Guru Pembimbing Sekolah
@@ -50,10 +51,10 @@ class LoginController extends Controller
             }
         }
 
-        // Fallback pencarian berbasis NIS / NISN Siswa
+        // Fallback pencarian berbasis NIS atau Nama Lengkap Siswa
         if (!$user) {
             $siswa = \App\Models\Siswa::where('nis', $loginInput)
-                ->orWhere('nisn', $loginInput)
+                ->orWhere('nama_lengkap', $loginInput)
                 ->first();
             if ($siswa && $siswa->user) {
                 $user = $siswa->user;

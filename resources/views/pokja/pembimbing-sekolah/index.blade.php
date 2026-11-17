@@ -1,34 +1,11 @@
 <x-app-layout>
     <x-slot name="header">Kelola Pembimbing Sekolah</x-slot>
 
-    <style>
-        .pokja-header-container {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 1rem !important;
-        }
-        .pokja-btn {
-            width: 100% !important;
-            display: inline-flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-        }
-        @media (min-width: 768px) {
-            .pokja-header-container {
-                flex-direction: row !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-            }
-            .pokja-btn {
-                width: auto !important;
-            }
-        }
-    </style>
-
     <div x-data="{ 
         importPanelOpen: false, 
         guideModalOpen: false, 
         massResetModalOpen: false,
+        actionsDropdownOpen: false,
         isResetting: false,
         resetPercent: 0,
         resetProcessed: 0,
@@ -82,31 +59,79 @@
             }
         }
     }">
-        <div class="mb-6 pokja-header-container">
-            <div class="flex-1">
+        <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
                 <p class="text-slate-600 dark:text-slate-400 text-sm">Daftar guru pembimbing sekolah per konsentrasi keahlian.</p>
             </div>
             @if(auth()->user()->role !== 'kepala_sekolah')
-            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
-                <a href="{{ auth()->user()->role === 'super_admin' ? route('admin.custom_report.index') : route('pokja.custom_report.index') }}" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all gap-2">
-                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                    Ekspor Kredensial / Data
-                </a>
-                <button type="button" @click="massResetModalOpen = true" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-xl shadow-lg shadow-amber-500/25 transition-all gap-2 cursor-pointer">
-                    <i data-lucide="key-round" class="w-4 h-4"></i>
-                    Reset Sandi Masal
+            <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                <!-- Filter Toggle Button -->
+                <button type="button" @click="showFilters = !showFilters" 
+                        :class="showFilters ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60'"
+                        class="px-3.5 py-2 text-sm font-medium rounded-xl border transition-all inline-flex items-center gap-2 shadow-xs cursor-pointer">
+                    <i data-lucide="filter" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                    <span>Filter</span>
+                    @if(request()->hasAny(['search', 'tipe', 'konsentrasi_keahlian_id', 'sort_by', 'sort_dir']) && (request('search') != '' || request('tipe') != 'semua' || request('konsentrasi_keahlian_id') != 'semua'))
+                        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                    @endif
                 </button>
-                <button @click="showFilters = !showFilters" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-all gap-2 cursor-pointer shadow-sm">
-                    <i data-lucide="filter" class="w-4 h-4"></i>
-                    Filter & Cari
+
+                <!-- Impor Button -->
+                <button type="button" @click="importPanelOpen = !importPanelOpen" 
+                        :class="importPanelOpen ? 'bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60'"
+                        class="px-3.5 py-2 text-sm font-medium rounded-xl border transition-all inline-flex items-center gap-2 shadow-xs cursor-pointer">
+                    <i data-lucide="upload-cloud" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                    <span>Impor</span>
                 </button>
-                <button @click="importPanelOpen = !importPanelOpen" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all gap-2 cursor-pointer border border-slate-700">
-                    <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                    Impor Pembimbing
-                </button>
-                <a href="{{ route('pokja.pembimbing_sekolah.create') }}" class="pokja-btn px-4 py-2 text-sm whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all gap-2">
-                    <i data-lucide="user-plus" class="w-4 h-4"></i>
-                    Tambah Pembimbing
+
+                <!-- Alat / Menu Lainnya Dropdown -->
+                <div class="relative" @click.away="actionsDropdownOpen = false">
+                    <button type="button" @click="actionsDropdownOpen = !actionsDropdownOpen" 
+                            class="px-3.5 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-300 transition-all inline-flex items-center gap-2 shadow-xs cursor-pointer">
+                        <i data-lucide="more-horizontal" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <span>Alat</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" :class="actionsDropdownOpen ? 'rotate-180' : ''"></i>
+                    </button>
+
+                    <div x-show="actionsDropdownOpen" 
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                         class="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 shadow-xl py-1.5 z-50 text-left divide-y divide-slate-100 dark:divide-slate-800"
+                         x-cloak>
+                        <div class="py-1">
+                            <a href="{{ auth()->user()->role === 'super_admin' ? route('admin.custom_report.index') : route('pokja.custom_report.index') }}" 
+                               class="flex items-start gap-3 px-3.5 py-2.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
+                                <div class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500/20 transition-colors mt-0.5">
+                                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <span class="font-semibold block text-slate-900 dark:text-slate-100">Ekspor Kredensial / Data</span>
+                                    <span class="text-[11px] text-slate-500 dark:text-slate-400">Unduh data pembimbing & sandi Excel</span>
+                                </div>
+                            </a>
+                            <button type="button" @click="actionsDropdownOpen = false; massResetModalOpen = true" 
+                                    class="w-full flex items-start gap-3 px-3.5 py-2.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group cursor-pointer">
+                                <div class="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500/20 transition-colors mt-0.5">
+                                    <i data-lucide="key-round" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <span class="font-semibold block text-slate-900 dark:text-slate-100">Reset Sandi Masal</span>
+                                    <span class="text-[11px] text-slate-500 dark:text-slate-400">Sinkronkan password ke NIP guru</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tambah Pembimbing (Primary Action) -->
+                <a href="{{ route('pokja.pembimbing_sekolah.create') }}" 
+                   class="px-4 py-2 text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-all inline-flex items-center gap-2 shadow-sm hover:shadow-md whitespace-nowrap">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Tambah Pembimbing</span>
                 </a>
             </div>
             @endif
