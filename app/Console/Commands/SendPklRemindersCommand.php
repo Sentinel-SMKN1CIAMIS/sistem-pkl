@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Absensi;
 use App\Models\Jurnal;
 use App\Models\Notifikasi;
+use App\Models\Siswa;
 use App\Services\WebPushService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -21,8 +22,48 @@ class SendPklRemindersCommand extends Command
         $todayStr = $now->toDateString();
         $yesterdayStr = $now->copy()->subDay()->toDateString();
 
+        $checkinUserIds = [];
         $checkoutUserIds = [];
         $jurnalUserIds = [];
+
+        // 0. Pengingat Absen Masuk Pagi (07:00 - 09:00 WIB) untuk siswa status sedang_pkl yang belum absen hari ini
+        $currentTime = $now->format('H:i');
+        if ($currentTime >= '07:00' && $currentTime <= '09:00') {
+            $alreadyRemindedUserIds = Notifikasi::where('judul', 'Jangan Lupa Absen Masuk PKL')
+                ->whereDate('created_at', $todayStr)
+                ->pluck('to_user_id')
+                ->flip();
+
+            $studentsToRemind = Siswa::with('user')
+                ->where('status_pkl', 'sedang_pkl')
+                ->whereHas('user', fn($q) => $q->where('is_active', true))
+                ->whereDoesntHave('absensi', fn($q) => $q->whereDate('tanggal', $todayStr))
+                // Kecualikan siswa shift malam yang masih aktif bertugas dari kemarin (belum absen pulang)
+                ->whereDoesntHave('absensi', function ($q) use ($yesterdayStr) {
+                    $q->whereDate('tanggal', $yesterdayStr)
+                        ->where('status', 'hadir')
+                        ->whereNull('waktu_pulang');
+                })
+                ->get();
+
+            foreach ($studentsToRemind as $siswa) {
+                $user = $siswa->user;
+                if (!$user || $alreadyRemindedUserIds->has($user->id)) {
+                    continue;
+                }
+
+                Notifikasi::create([
+                    'from_user_id' => null,
+                    'to_user_id' => $user->id,
+                    'judul' => 'Jangan Lupa Absen Masuk PKL',
+                    'pesan' => 'Selamat pagi! Silakan lakukan Absen Masuk PKL hari ini saat tiba di tempat DUDI.',
+                    'tipe' => 'info',
+                    'is_read' => false,
+                ]);
+
+                $checkinUserIds[] = $user->id;
+            }
+        }
 
         // 1. Pengingat Absen Pulang (Checkout) Relatif terhadap Jam Masuk masing-masing siswa (Shift Pagi/Siang/Malam)
         $pendingCheckouts = Absensi::with('siswa.user')
@@ -127,6 +168,13 @@ class SendPklRemindersCommand extends Command
             }
         }
 
+        $checkinPayload = [
+            'title' => 'Jangan Lupa Absen Masuk PKL',
+            'body' => 'Selamat pagi! Silakan lakukan Absen Masuk PKL hari ini saat tiba di tempat DUDI.',
+            'url' => '/siswa/absensi',
+            'tag' => 'pkl-reminder-checkin',
+        ];
+
         $checkoutPayload = [
             'title' => 'Waktunya Absen Pulang PKL',
             'body' => 'Sudah lebih dari 7,5 jam sejak absen masuk. Jangan lupa lakukan Absen Pulang!',
@@ -142,14 +190,16 @@ class SendPklRemindersCommand extends Command
         ];
 
         if ($this->option('queue')) {
+            $webPush->dispatchBroadcast($checkinUserIds, $checkinPayload);
             $webPush->dispatchBroadcast($checkoutUserIds, $checkoutPayload);
             $webPush->dispatchBroadcast($jurnalUserIds, $jurnalPayload);
         } else {
+            $webPush->sendToUsers($checkinUserIds, $checkinPayload);
             $webPush->sendToUsers($checkoutUserIds, $checkoutPayload);
             $webPush->sendToUsers($jurnalUserIds, $jurnalPayload);
         }
 
-        $this->info('Reminders processed: ' . count($checkoutUserIds) . ' checkout, ' . count($jurnalUserIds) . ' jurnal.');
+        $this->info('Reminders processed: ' . count($checkinUserIds) . ' checkin, ' . count($checkoutUserIds) . ' checkout, ' . count($jurnalUserIds) . ' jurnal.');
 
         return self::SUCCESS;
     }

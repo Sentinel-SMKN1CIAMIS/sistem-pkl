@@ -321,6 +321,47 @@ class WebPushReminderTest extends TestCase
         Queue::assertPushed(SendWebPushBatchJob::class, 3);
     }
 
+    public function test_morning_checkin_reminder_targets_only_unattended_sedang_pkl_students_without_duplicates(): void
+    {
+        Carbon::setTestNow(Carbon::create(2026, 11, 18, 7, 15, 0, 'Asia/Jakarta'));
+
+        $needsCheckin = $this->createStudent('2425040', 'Siswa Belum Absen Pagi');
+        $alreadyCheckedIn = $this->createStudent('2425041', 'Siswa Sudah Absen Pagi');
+        $notStarted = $this->createStudent('2425042', 'Siswa Belum Mulai');
+        $notStarted->update(['status_pkl' => 'belum_mulai']);
+        $nightShiftActive = $this->createStudent('2425043', 'Siswa Shift Malam Aktif');
+
+        Absensi::create([
+            'siswa_id' => $alreadyCheckedIn->id,
+            'tanggal' => '2026-11-18',
+            'status' => 'hadir',
+            'approval_status' => 'approved',
+            'waktu_datang' => '06:50:00',
+        ]);
+
+        Absensi::create([
+            'siswa_id' => $nightShiftActive->id,
+            'tanggal' => '2026-11-17',
+            'status' => 'hadir',
+            'approval_status' => 'approved',
+            'waktu_datang' => '21:00:00',
+        ]);
+
+        $this->artisan('pkl:send-reminders')->assertExitCode(0);
+
+        $this->assertEquals(1, Notifikasi::where('to_user_id', $needsCheckin->user_id)->where('judul', 'Jangan Lupa Absen Masuk PKL')->count());
+        $this->assertEquals(0, Notifikasi::where('to_user_id', $alreadyCheckedIn->user_id)->where('judul', 'Jangan Lupa Absen Masuk PKL')->count());
+        $this->assertEquals(0, Notifikasi::where('to_user_id', $notStarted->user_id)->where('judul', 'Jangan Lupa Absen Masuk PKL')->count());
+        $this->assertEquals(0, Notifikasi::where('to_user_id', $nightShiftActive->user_id)->where('judul', 'Jangan Lupa Absen Masuk PKL')->count());
+
+        // Running again at 07:30 must NOT send duplicate
+        Carbon::setTestNow(Carbon::create(2026, 11, 18, 7, 30, 0, 'Asia/Jakarta'));
+        $this->artisan('pkl:send-reminders')->assertExitCode(0);
+        $this->assertEquals(1, Notifikasi::where('to_user_id', $needsCheckin->user_id)->where('judul', 'Jangan Lupa Absen Masuk PKL')->count());
+
+        Carbon::setTestNow();
+    }
+
     public function test_vapid_artisan_command_generates_keys(): void
     {
         $this->artisan('webpush:vapid --show')
