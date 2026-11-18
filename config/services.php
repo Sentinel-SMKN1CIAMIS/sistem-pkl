@@ -41,4 +41,8 @@ return [
         'private_key' => env('VAPID_PRIVATE_KEY'),
     ],
 
+    'cron' => [
+        'token' => env('CRON_SECRET_TOKEN'),
+    ],
+
 ];

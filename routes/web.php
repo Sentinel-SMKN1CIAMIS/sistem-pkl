@@ -18,6 +18,11 @@ Route::get('/sitemap.xml', function () {
 
 Route::get('/maintenance', [\App\Http\Controllers\Admin\MaintenanceController::class, 'showMaintenancePage'])->name('maintenance');
 
+// Secret-protected HTTP Cron endpoint (for cron-job.org / ISPConfig URL Cron)
+Route::get('/cron/run', [\App\Http\Controllers\CronController::class, 'run'])
+    ->middleware('throttle:10,1')
+    ->name('cron.run');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     // [SECURITY FIX CRIT-02] Rate limit: max 5 percobaan login per menit per IP
