@@ -38,7 +38,7 @@ class WebPushService
             ],
         ];
 
-        $webPush = new WebPush($auth);
+        $webPush = new WebPush($auth, logger: Log::getLogger());
         $webPush->setReuseVAPIDHeaders(true);
 
         return $this->client = $webPush;
