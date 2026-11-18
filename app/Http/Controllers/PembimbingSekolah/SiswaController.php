@@ -114,7 +114,7 @@ class SiswaController extends Controller
             if ($student->status_pkl !== 'sedang_pkl') {
                 $student->status_hari_ini_computed = str_replace('_', ' ', $student->status_pkl);
             } elseif ($absensi) {
-                if (in_array($absensi->status, ['sakit', 'izin', 'alpha'])) {
+                if (in_array($absensi->status, ['sakit', 'izin', 'alpha', 'libur'])) {
                     $student->status_hari_ini_computed = $absensi->status;
                 } elseif ($absensi->waktu_pulang) {
                     $student->status_hari_ini_computed = 'pulang kerja';
@@ -135,7 +135,7 @@ class SiswaController extends Controller
             ->keyBy('siswa_id');
 
         $attendanceCounts = [
-            'hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0, 'belum_absen' => 0
+            'hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0, 'libur' => 0, 'belum_absen' => 0
         ];
         $dudiRawCounts = [];
 
@@ -145,7 +145,7 @@ class SiswaController extends Controller
                 $absensi = $allTodayAbsensi[$student->id] ?? null;
                 $status = 'belum_absen';
                 if ($absensi) {
-                    if (in_array($absensi->status, ['sakit', 'izin', 'alpha'])) {
+                    if (in_array($absensi->status, ['sakit', 'izin', 'alpha', 'libur'])) {
                         $status = $absensi->status;
                     } else {
                         $status = 'hadir'; // masuk kerja / pulang kerja

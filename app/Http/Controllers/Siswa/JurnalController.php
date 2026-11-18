@@ -120,7 +120,7 @@ class JurnalController extends Controller
                 $status = $jurnal->approval_status ?? 'pending';
             } elseif ($dateStr > $today) {
                 $status = 'akan_datang';
-            } elseif ($absensi && in_array($absensi->status, ['izin', 'sakit'])) {
+            } elseif ($absensi && in_array($absensi->status, ['izin', 'sakit', 'libur'])) {
                 $status = 'libur';
             } elseif ($diffInDays > $maxBackdateDays) {
                 $status = 'terlewat';
@@ -218,9 +218,9 @@ class JurnalController extends Controller
             ->where('tanggal', $request->tanggal)
             ->first();
 
-        // Block journal creation if status is izin or sakit
-        if ($absensi && in_array($absensi->status, ['izin', 'sakit'])) {
-            return back()->withInput()->with('error', 'Anda tidak dapat mengisi jurnal pada hari di mana Anda sedang Izin atau Sakit.');
+        // Block journal creation if status is izin, sakit, or libur
+        if ($absensi && in_array($absensi->status, ['izin', 'sakit', 'libur'])) {
+            return back()->withInput()->with('error', 'Anda tidak dapat mengisi jurnal pada hari di mana Anda berstatus Izin, Sakit, atau Libur.');
         }
 
         if (!$absensi) {
