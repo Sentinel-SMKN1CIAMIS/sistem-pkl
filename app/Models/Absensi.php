@@ -11,7 +11,13 @@ class Absensi extends Model
         'keterangan', 'alasan', 'waktu_datang', 'waktu_pulang', 'ttd_siswa_path', 
         'ttd_pembimbing_dudi_path', 'latitude', 'longitude',
         'early_leave_request_status', 'early_leave_reason', 'early_leave_requested_at',
-        'early_leave_approved_by', 'early_leave_approved_at', 'early_leave_approval_note'
+        'early_leave_approved_by', 'early_leave_approved_at', 'early_leave_approval_note',
+        'reminded_checkout_at', 'reminded_jurnal_at',
+    ];
+
+    protected $casts = [
+        'reminded_checkout_at' => 'datetime',
+        'reminded_jurnal_at' => 'datetime',
     ];
 
     public function siswa()

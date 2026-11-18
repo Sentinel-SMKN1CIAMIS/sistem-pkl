@@ -103,4 +103,9 @@ class User extends Authenticatable
         }
         return $query->get();
     }
+
+    public function pushSubscriptions()
+    {
+        return $this->hasMany(PushSubscription::class);
+    }
 }

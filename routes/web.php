@@ -148,6 +148,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::patch('notifikasi/read-all', [\App\Http\Controllers\NotifikasiController::class, 'readAll'])->name('notifications.read_all');
     Route::delete('notifikasi/clear-all', [\App\Http\Controllers\NotifikasiController::class, 'clearAll'])->name('notifications.clear_all');
     Route::delete('notifikasi/{notifikasi}', [\App\Http\Controllers\NotifikasiController::class, 'destroy'])->name('notifications.destroy');
+    Route::post('push/subscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
+    Route::post('push/unsubscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');
     Route::get('panduan-interaktif', [\App\Http\Controllers\PanduanInteraktifController::class, 'index'])->name('panduan.interaktif');
 
     // Pesan (Chat) Routes
