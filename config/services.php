@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'webpush' => [
+        'subject' => env('VAPID_SUBJECT', env('APP_URL', 'mailto:admin@pkl.smkn1ciamis.id')),
+        'public_key' => env('VAPID_PUBLIC_KEY'),
+        'private_key' => env('VAPID_PRIVATE_KEY'),
+    ],
+
+    'cron' => [
+        'token' => env('CRON_SECRET_TOKEN'),
+    ],
+
 ];

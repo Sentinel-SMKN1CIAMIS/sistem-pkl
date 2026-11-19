@@ -18,6 +18,11 @@ Route::get('/sitemap.xml', function () {
 
 Route::get('/maintenance', [\App\Http\Controllers\Admin\MaintenanceController::class, 'showMaintenancePage'])->name('maintenance');
 
+// Secret-protected HTTP Cron endpoint (for cron-job.org / ISPConfig URL Cron)
+Route::get('/cron/run', [\App\Http\Controllers\CronController::class, 'run'])
+    ->middleware('throttle:10,1')
+    ->name('cron.run');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     // [SECURITY FIX CRIT-02] Rate limit: max 5 percobaan login per menit per IP
@@ -148,6 +153,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::patch('notifikasi/read-all', [\App\Http\Controllers\NotifikasiController::class, 'readAll'])->name('notifications.read_all');
     Route::delete('notifikasi/clear-all', [\App\Http\Controllers\NotifikasiController::class, 'clearAll'])->name('notifications.clear_all');
     Route::delete('notifikasi/{notifikasi}', [\App\Http\Controllers\NotifikasiController::class, 'destroy'])->name('notifications.destroy');
+    Route::post('push/subscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'subscribe'])->name('push.subscribe');
+    Route::post('push/unsubscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'unsubscribe'])->name('push.unsubscribe');
     Route::get('panduan-interaktif', [\App\Http\Controllers\PanduanInteraktifController::class, 'index'])->name('panduan.interaktif');
 
     // Pesan (Chat) Routes

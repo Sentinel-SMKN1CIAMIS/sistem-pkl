@@ -712,6 +712,8 @@
                                              $statusClass = 'bg-purple-500/10 text-purple-500 border-purple-500/20';
                                          } elseif ($hariIni === 'alpha') {
                                              $statusClass = 'bg-red-500/10 text-red-500 border-red-500/20';
+                                         } elseif ($hariIni === 'libur') {
+                                             $statusClass = 'bg-teal-500/10 text-teal-500 border-teal-500/20';
                                          } elseif ($hariIni === 'selesai') {
                                              $statusClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
                                          } elseif ($hariIni === 'dibatalkan') {
@@ -780,6 +782,8 @@
                                     $statusClass = 'bg-purple-500/10 text-purple-500 border-purple-500/20';
                                 } elseif ($hariIni === 'alpha') {
                                     $statusClass = 'bg-red-500/10 text-red-500 border-red-500/20';
+                                } elseif ($hariIni === 'libur') {
+                                    $statusClass = 'bg-teal-500/10 text-teal-500 border-teal-500/20';
                                 } elseif ($hariIni === 'selesai') {
                                     $statusClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
                                 } elseif ($hariIni === 'dibatalkan') {

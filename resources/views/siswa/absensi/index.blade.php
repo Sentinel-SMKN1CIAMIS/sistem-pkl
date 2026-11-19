@@ -156,25 +156,40 @@
                     Tidak Bisa Hadir Hari Ini?
                 </h3>
                 
-                <form action="{{ route('siswa.absensi.submit-absence-request') }}" method="POST" class="space-y-4">
+                <form action="{{ route('siswa.absensi.submit-absence-request') }}" method="POST" class="space-y-4" x-data="{ absenceStatus: '{{ old('status', '') }}' }">
                     @csrf
                     <div>
                         <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Status</label>
                         <div class="space-y-2">
                             <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-500/10 cursor-pointer">
-                                <input type="radio" name="status" value="izin" class="w-4 h-4 text-blue-500">
+                                <input type="radio" name="status" value="izin" x-model="absenceStatus" class="w-4 h-4 text-blue-500" required>
                                 <span class="text-sm">Izin</span>
                             </label>
                             <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-500/10 cursor-pointer">
-                                <input type="radio" name="status" value="sakit" class="w-4 h-4 text-red-500">
+                                <input type="radio" name="status" value="sakit" x-model="absenceStatus" class="w-4 h-4 text-red-500">
                                 <span class="text-sm">Sakit</span>
                             </label>
+                            <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-500/10 cursor-pointer">
+                                <input type="radio" name="status" value="libur" x-model="absenceStatus" class="w-4 h-4 text-purple-500">
+                                <span class="text-sm">Libur <span class="text-xs text-slate-400">(Libur DUDI / Tanggal Merah / Off Shift)</span></span>
+                            </label>
                         </div>
+                        @error('status')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Alasan (minimal 10 karakter)</label>
-                        <textarea name="alasan" rows="3" placeholder="Jelaskan alasan Anda..." class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">
+                            <span x-show="absenceStatus === 'libur'" x-cloak>Alasan Libur (wajib diisi, minimal 10 karakter)</span>
+                            <span x-show="absenceStatus !== 'libur'">Alasan (wajib diisi, minimal 10 karakter)</span>
+                        </label>
+                        <textarea name="alasan" rows="3" required minlength="10"
+                                  x-bind:placeholder="absenceStatus === 'libur' ? 'Contoh: Libur rutin hari Minggu di Setda / Tanggal merah nasional / Jadwal off shift...' : 'Jelaskan alasan Anda...'"
+                                  class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">{{ old('alasan') }}</textarea>
+                        @error('alasan')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <x-button type="submit" variant="blue" class="w-full" icon="send">
@@ -230,6 +245,7 @@
                                                 'izin' => ['bg' => 'bg-blue-500/10', 'text' => 'text-blue-400', 'label' => 'Izin'],
                                                 'sakit' => ['bg' => 'bg-red-500/10', 'text' => 'text-red-400', 'label' => 'Sakit'],
                                                 'alpha' => ['bg' => 'bg-gray-500/10', 'text' => 'text-gray-400', 'label' => 'Alpa'],
+                                                'libur' => ['bg' => 'bg-purple-500/10', 'text' => 'text-purple-400', 'label' => 'Libur'],
                                             ];
                                             $config = $statusConfig[$row->status] ?? $statusConfig['hadir'];
                                         @endphp

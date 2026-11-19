@@ -40,6 +40,7 @@
                                             'izin' => ['bg' => 'bg-blue-500/10', 'text' => 'text-blue-400', 'label' => 'Izin'],
                                             'sakit' => ['bg' => 'bg-red-500/10', 'text' => 'text-red-400', 'label' => 'Sakit'],
                                             'alpha' => ['bg' => 'bg-gray-500/10', 'text' => 'text-gray-400', 'label' => 'Alpa'],
+                                            'libur' => ['bg' => 'bg-purple-500/10', 'text' => 'text-purple-400', 'label' => 'Libur'],
                                         ];
                                         $config = $statusConfig[$absence->status] ?? [];
                                     @endphp

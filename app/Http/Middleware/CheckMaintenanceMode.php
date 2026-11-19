@@ -19,6 +19,7 @@ class CheckMaintenanceMode
         'logout',
         'auth.change-password.show',
         'auth.change-password.update',
+        'cron.run',
     ];
 
     protected array $exceptPaths = [
@@ -26,6 +27,7 @@ class CheckMaintenanceMode
         'login',
         'logout',
         'up',
+        'cron/*',
         'storage/*',
         'build/*',
     ];

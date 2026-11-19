@@ -27,7 +27,7 @@ class AbsensiApprovalController extends Controller
                   ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id);
         })
         ->where('approval_status' . '', 'pending')
-        ->whereIn('status' . '', ['izin', 'sakit', 'alpha'])
+        ->whereIn('status' . '', ['izin', 'sakit', 'alpha', 'libur'])
         ->with(['siswa', 'siswa.user', 'approvedBy'])
         ->orderBy('tanggal' . '', 'desc')
         ->paginate(15);
@@ -38,7 +38,7 @@ class AbsensiApprovalController extends Controller
                   ->orWhere('pembimbing_sekolah_umum_id', $pembimbing->id);
         })
         ->whereIn('approval_status' . '', ['approved', 'rejected'])
-        ->whereIn('status' . '', ['izin', 'sakit', 'alpha'])
+        ->whereIn('status' . '', ['izin', 'sakit', 'alpha', 'libur'])
         ->with(['siswa', 'siswa.user', 'approvedBy'])
         ->orderBy('updated_at', 'desc')
         ->limit(50)

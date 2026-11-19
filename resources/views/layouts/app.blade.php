@@ -854,13 +854,82 @@
                 }
             }
 
+            const vapidPublicKey = @json(config('services.webpush.public_key'));
+            const pushSubscribeUrl = @json(route('push.subscribe'));
+            const currentAuthUserId = @json(auth()->id());
+
+            function urlBase64ToUint8Array(base64String) {
+                const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+                const rawData = window.atob(base64);
+                const outputArray = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                }
+                return outputArray;
+            }
+
+            async function syncWebPushSubscription() {
+                if (!vapidPublicKey || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+                    return;
+                }
+                if (Notification.permission !== 'granted') {
+                    return;
+                }
+
+                try {
+                    const reg = await navigator.serviceWorker.ready;
+                    let subscription = await reg.pushManager.getSubscription();
+                    if (!subscription) {
+                        subscription = await reg.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+                        });
+                    }
+
+                    const subJson = subscription.toJSON();
+                    if (!subJson || !subJson.endpoint || !subJson.keys) return;
+
+                    const syncKey = currentAuthUserId + ':' + subJson.endpoint;
+                    if (sessionStorage.getItem('webpush_synced') === syncKey) {
+                        return;
+                    }
+
+                    const encoding = (PushManager.supportedContentEncodings || ['aes128gcm'])[0];
+                    const res = await fetch(pushSubscribeUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        },
+                        body: JSON.stringify({
+                            endpoint: subJson.endpoint,
+                            keys: subJson.keys,
+                            contentEncoding: encoding
+                        })
+                    });
+
+                    if (res.ok) {
+                        sessionStorage.setItem('webpush_synced', syncKey);
+                    }
+                } catch (err) {
+                    console.warn('WebPush subscription skipped:', err);
+                }
+            }
+
             // Request Native Notification Permission
             function requestNotificationPermission() {
                 if (!('Notification' in window)) return;
+                if (Notification.permission === 'granted') {
+                    syncWebPushSubscription();
+                    return;
+                }
                 if (Notification.permission === 'default') {
                     Notification.requestPermission().then(function(perm) {
                         if (perm === 'granted') {
                             console.log('Izin notifikasi perangkat diaktifkan.');
+                            syncWebPushSubscription();
                         }
                     });
                 }

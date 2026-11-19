@@ -73,6 +73,7 @@
                                 'izin' => 'Izin',
                                 'sakit' => 'Sakit',
                                 'alpha' => 'Alpa',
+                                'libur' => 'Libur',
                             ];
                         @endphp
                         {{ $statusLabels[$item->status] ?? ucfirst($item->status) }}

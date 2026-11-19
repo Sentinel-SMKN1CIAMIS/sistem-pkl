@@ -162,14 +162,21 @@ class AbsensiController extends Controller
         return redirect()->route('siswa.absensi.index')->with('success', 'Berhasil melakukan Absen Pulang.');
     }
 
-    // T5.3: Submit absence request (izin, sakit, alpa)
+    // T5.3: Submit absence request (izin, sakit, libur)
     public function submitAbsenceRequest(Request $request)
     {
         if ($redirect = $this->requirePkl()) return $redirect;
 
         $request->validate([
-            'status' => 'required|in:izin,sakit',
-            'alasan' => 'required|min:10',
+            'status' => 'required|in:izin,sakit,libur',
+            'alasan' => 'required|string|min:10',
+        ], [
+            'status.required' => 'Silakan pilih status ketidakhadiran.',
+            'status.in' => 'Status ketidakhadiran tidak valid.',
+            'alasan.required' => $request->input('status') === 'libur'
+                ? 'Alasan libur wajib diisi (misal: Libur DUDI / Tanggal Merah / Off Shift).'
+                : 'Alasan ketidakhadiran wajib diisi.',
+            'alasan.min' => 'Alasan minimal 10 karakter.',
         ]);
 
         $siswa = auth()->user()->siswa;

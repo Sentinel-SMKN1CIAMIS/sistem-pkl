@@ -43,7 +43,7 @@ class AbsensiController extends Controller
         $request->validate([
             'siswa_id' => 'required|exists:siswas,id',
             'tanggal' => 'required|date|before_or_equal:today',
-            'status' => 'required|in:hadir,sakit,izin,alpha',
+            'status' => 'required|in:hadir,sakit,izin,alpha,libur',
             'keterangan' => 'nullable|string|max:255',
         ]);
 
