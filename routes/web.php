@@ -183,6 +183,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::resource('panduan', \App\Http\Controllers\Admin\BukuPanduanController::class);
         Route::post('users/bulk-destroy', [\App\Http\Controllers\Admin\UserController::class, 'bulkDestroy'])->name('users.bulk-destroy');
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+        Route::put('pembimbing-dudi/{pembimbing_dudi}/password', [\App\Http\Controllers\PembimbingDudiController::class, 'updatePassword'])
+            ->name('pembimbing_dudi.password.update');
         Route::post('pokja-groups/bulk-destroy', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'bulkDestroy'])->name('pokja-groups.bulk-destroy');
         Route::resource('pokja-groups', \App\Http\Controllers\Admin\PokjaGroupController::class);
         Route::post('pokja-groups/{pokjaGroup}/add-member', [\App\Http\Controllers\Admin\PokjaGroupController::class, 'addMember'])->name('pokja-groups.add-member');

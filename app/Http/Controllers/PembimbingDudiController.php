@@ -153,6 +153,46 @@ class PembimbingDudiController extends Controller
             ->with('success', 'Data pembimbing DUDI berhasil diperbarui.');
     }
 
+    /**
+     * Ganti kata sandi akun Pembimbing DUDI (khusus Super Admin).
+     */
+    public function updatePassword(Request $request, \App\Models\PembimbingDudi $pembimbing_dudi)
+    {
+        if (auth()->user()?->role !== 'super_admin') {
+            abort(403, 'Hanya Super Admin yang dapat mengganti kata sandi Pembimbing DUDI.');
+        }
+
+        $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+            'force_password_change' => 'nullable|boolean',
+        ], [
+            'password.required' => 'Kata sandi baru wajib diisi.',
+            'password.min' => 'Kata sandi baru minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+        ]);
+
+        $user = $pembimbing_dudi->user;
+        if (!$user) {
+            return back()->with('error', 'Akun pengguna pembimbing DUDI tidak ditemukan.');
+        }
+
+        $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
+        $user->force_password_change = $request->boolean('force_password_change');
+        $user->save();
+
+        if (class_exists(\App\Models\ActivityLog::class)) {
+            \App\Models\ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'Ganti Password Pembimbing DUDI',
+                'description' => "Super Admin mengganti kata sandi akun pembimbing DUDI {$pembimbing_dudi->nama_lengkap} ({$user->username}).",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        }
+
+        return back()->with('success', "Kata sandi pembimbing DUDI {$pembimbing_dudi->nama_lengkap} berhasil diperbarui.");
+    }
+
     public function destroy(\App\Models\PembimbingDudi $pembimbing_dudi)
     {
         $user = $pembimbing_dudi->user;
