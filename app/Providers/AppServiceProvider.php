@@ -153,6 +153,7 @@ class AppServiceProvider extends ServiceProvider
                             ['name' => 'Pembimbing DUDI', 'route' => 'pokja.pembimbing_dudi.index', 'icon' => 'user-cog'],
                             ['name' => 'Akun Kaprog', 'route' => 'pokja.kaprog.index', 'icon' => 'award'],
                             ['name' => 'Data DUDI', 'route' => 'pokja.dudi.index', 'icon' => 'building-2'],
+                            ['name' => 'Grup Pokja', 'route' => 'admin.pokja-groups.index', 'icon' => 'users'],
                             ['name' => 'Akun Sistem', 'route' => 'admin.users.index', 'icon' => 'user'],
                         ]
                     ],
@@ -162,7 +163,27 @@ class AppServiceProvider extends ServiceProvider
                         'children' => [
                             ['name' => 'Program Keahlian', 'route' => 'admin.program_keahlian.index', 'icon' => 'book-open'],
                             ['name' => 'Konsentrasi Keahlian', 'route' => 'admin.konsentrasi_keahlian.index', 'icon' => 'layers'],
-                            ['name' => 'Kompetensi', 'route' => 'admin.kompetensi.index', 'icon' => 'target'],
+                            ['name' => 'Kelola TP/CP', 'route' => 'pokja.kompetensi.index', 'icon' => 'target'],
+                            ['name' => 'Buku Panduan', 'route' => 'admin.panduan.index', 'icon' => 'library'],
+                        ]
+                    ],
+                    [
+                        'name' => 'Pemetaan & Penempatan',
+                        'icon' => 'network',
+                        'children' => [
+                            ['name' => 'Validasi Pengajuan', 'route' => 'pokja.pengajuan_pkl.index', 'icon' => 'file-check'],
+                            ['name' => 'Pemetaan', 'route' => 'pokja.pemetaan.index', 'icon' => 'git-branch'],
+                            ['name' => 'Peta DUDI', 'route' => 'pokja.pemetaan.maps', 'icon' => 'map'],
+                            ['name' => 'Kelola Zona', 'route' => 'pokja.zona.index', 'icon' => 'compass'],
+                        ]
+                    ],
+                    [
+                        'name' => 'Monitoring & Evaluasi',
+                        'icon' => 'eye',
+                        'children' => [
+                            ['name' => 'Monitoring Pembimbing', 'route' => 'pokja.monitoring.index', 'icon' => 'eye'],
+                            ['name' => 'Evaluasi PKL', 'route' => 'pokja.evaluasi.index', 'icon' => 'bar-chart-3'],
+                            ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
                         ]
                     ],
                     [
@@ -170,7 +191,12 @@ class AppServiceProvider extends ServiceProvider
                         'icon' => 'settings',
                         'children' => [
                             ['name' => 'Custom Report & Ekspor', 'route' => 'admin.custom_report.index', 'icon' => 'file-spreadsheet'],
+                            ['name' => 'Impor Pemetaan PKL', 'route' => 'pokja.pengaturan.import_pemetaan', 'icon' => 'file-up'],
+                            ['name' => 'Template Sertifikat', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'award'],
+                            ['name' => 'Template Surat PKL', 'route' => 'pokja.pengaturan.surat_pengantar', 'icon' => 'file-text'],
+                            ['name' => 'Kop Laporan PDF', 'route' => 'pokja.pengaturan.kop_laporan', 'icon' => 'building'],
                             ['name' => 'Konfigurasi Sistem', 'route' => 'admin.config.index', 'icon' => 'sliders'],
+                            ['name' => 'Mode Maintenance', 'route' => 'admin.maintenance.index', 'icon' => 'shield-alert'],
                         ]
                     ],
                     ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
