@@ -45,4 +45,11 @@ return [
         'token' => env('CRON_SECRET_TOKEN'),
     ],
 
+    'groq' => [
+        'key' => env('GROQ_API_KEY'),
+        'model' => env('GROQ_MODEL', 'qwen/qwen3.8-27b'),
+        'whitelist_nis' => env('GROQ_WHITELIST_NIS', '242510648'),
+    ],
+
+
 ];

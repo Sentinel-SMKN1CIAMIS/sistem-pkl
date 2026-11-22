@@ -155,6 +155,8 @@
                         </div>
                     </div>
 
+                    @include('siswa.jurnal.partials.ai-assistant')
+
                     <div class="md:col-span-2">
                         <label for="kegiatan" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pekerjaan</label>
                         <input type="text" name="kegiatan" id="kegiatan" required

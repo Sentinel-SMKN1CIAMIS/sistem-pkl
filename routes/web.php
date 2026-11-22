@@ -55,6 +55,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('jurnal/portofolio', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'portofolio'])->name('jurnal.portofolio');
         Route::get('jurnal/sertifikat', [\App\Http\Controllers\Siswa\JurnalExportController::class, 'sertifikat'])->name('jurnal.sertifikat');
         Route::get('jurnal/check-attendance', [\App\Http\Controllers\Siswa\JurnalController::class, 'checkAttendance'])->name('jurnal.check-attendance');
+        Route::post('jurnal/ai-assist', [\App\Http\Controllers\Siswa\JurnalAiAssistantController::class, 'generate'])->name('jurnal.ai-assist');
         Route::resource('jurnal', \App\Http\Controllers\Siswa\JurnalController::class);
         Route::get('absensi', [\App\Http\Controllers\Siswa\AbsensiController::class, 'index'])->name('absensi.index');
         Route::post('absensi/clock-in', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockIn'])->name('absensi.clock-in');
