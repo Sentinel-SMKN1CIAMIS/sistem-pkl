@@ -28,22 +28,31 @@ class ProfileController extends Controller
         ]);
 
         // 1. Update siswa attributes
-        $updateFields = ['unit_pekerjaan', 'no_hp', 'alamat'];
+        $updateFields = ['unit_pekerjaan', 'no_hp'];
         if (!$siswa->pembimbing_dudi_id) {
             $updateFields = array_merge($updateFields, ['pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'pembimbing_dudi_no_hp']);
         }
-        $siswa->update($request->only($updateFields));
+        
+        $siswaData = $request->only($updateFields);
+        if (!$siswa->dudi && !$siswa->pengajuanPkl) {
+            $siswaData['alamat'] = $request->alamat;
+        } elseif ($request->filled('alamat')) {
+            $siswaData['alamat'] = $request->alamat;
+        }
+        $siswa->update($siswaData);
 
-        // 2. Synchronize address to DUDI or Pengajuan
-        if ($siswa->dudi) {
-            $siswa->dudi->update(['alamat' => $request->alamat]);
-        } elseif ($siswa->pengajuanPkl) {
-            if ($siswa->pengajuanPkl->dudi_id) {
-                if ($siswa->pengajuanPkl->dudi) {
-                    $siswa->pengajuanPkl->dudi->update(['alamat' => $request->alamat]);
+        // 2. Synchronize address to DUDI or Pengajuan (only if non-empty, as dudis.alamat cannot be null)
+        if ($request->filled('alamat')) {
+            if ($siswa->dudi) {
+                $siswa->dudi->update(['alamat' => $request->alamat]);
+            } elseif ($siswa->pengajuanPkl) {
+                if ($siswa->pengajuanPkl->dudi_id) {
+                    if ($siswa->pengajuanPkl->dudi) {
+                        $siswa->pengajuanPkl->dudi->update(['alamat' => $request->alamat]);
+                    }
+                } else {
+                    $siswa->pengajuanPkl->update(['alamat' => $request->alamat]);
                 }
-            } else {
-                $siswa->pengajuanPkl->update(['alamat' => $request->alamat]);
             }
         }
 
