@@ -17,15 +17,11 @@
      data-configured="{{ $siswa->reminder_settings_configured ? '1' : '0' }}">
     
     <div class="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xl p-6 sm:p-8 animate-in overflow-hidden" onclick="event.stopPropagation()">
-        {{-- Decorative glowing accent --}}
-        <div class="absolute -top-16 -right-16 w-36 h-36 bg-amber-500/15 rounded-full blur-2xl pointer-events-none"></div>
-        <div class="absolute -bottom-16 -left-16 w-36 h-36 bg-blue-500/15 rounded-full blur-2xl pointer-events-none"></div>
-
         {{-- Header --}}
         <div class="flex items-start justify-between gap-4 mb-6">
             <div class="flex items-center gap-3">
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 text-white shadow-lg shadow-amber-500/30">
-                    <i data-lucide="bell-ring" class="w-6 h-6 animate-bounce"></i>
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-sm">
+                    <i data-lucide="bell-ring" class="w-6 h-6"></i>
                 </div>
                 <div>
                     <h3 class="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -112,7 +108,7 @@
             {{-- Action buttons --}}
             <div class="flex flex-col sm:flex-row items-center gap-2.5 pt-2">
                 <button type="submit" id="btn-save-reminder"
-                        class="w-full sm:flex-1 py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                        class="w-full sm:flex-1 py-3 px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-colors cursor-pointer">
                     <i data-lucide="check" class="w-4 h-4"></i>
                     Simpan Alarm Pengingat
                 </button>
