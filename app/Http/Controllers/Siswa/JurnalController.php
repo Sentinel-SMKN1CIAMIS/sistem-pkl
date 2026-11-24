@@ -118,7 +118,13 @@ class JurnalController extends Controller
             
             $status = 'belum_diisi';
             if ($jurnal) {
-                $status = $jurnal->approval_status ?? 'pending';
+                if ($jurnal->isRejected()) {
+                    $status = 'rejected';
+                } elseif ($jurnal->approval_status === 'approved' || $jurnal->status === 'valid') {
+                    $status = 'approved';
+                } else {
+                    $status = $jurnal->approval_status ?? 'pending';
+                }
             } elseif ($absensi && in_array($absensi->status, ['izin', 'sakit', 'libur'])) {
                 $status = 'libur';
             } elseif ($isRoutineOff && (!$absensi || $absensi->status !== 'hadir')) {
@@ -309,8 +315,8 @@ class JurnalController extends Controller
         $siswa = auth()->user()->siswa;
 
         if ($jurnal->siswa_id !== $siswa->id) { abort(403); }
-        if ($jurnal->status !== 'pending') {
-            return redirect()->route('siswa.jurnal.index')->with('error', 'Jurnal yang sudah diproses tidak dapat diedit.');
+        if (!$jurnal->isEditableByStudent()) {
+            return redirect()->route('siswa.jurnal.index')->with('error', 'Jurnal yang sudah disetujui tidak dapat diedit.');
         }
 
         $kompetensis = Kompetensi::where('konsentrasi_keahlian_id', $siswa->konsentrasi_keahlian_id)
@@ -324,6 +330,10 @@ class JurnalController extends Controller
         $today = \Carbon\Carbon::today();
         $maxBackdateDays = Jurnal::getMaxBackdateDays();
         $minDate = $today->copy()->subDays($maxBackdateDays)->format('Y-m-d');
+        $jurnalDateStr = \Carbon\Carbon::parse($jurnal->tanggal)->format('Y-m-d');
+        if ($jurnalDateStr < $minDate) {
+            $minDate = $jurnalDateStr;
+        }
         $maxDate = $today->format('Y-m-d');
 
         return view('siswa.jurnal.edit', compact('jurnal', 'kompetensis', 'tujuanPembelajaran', 'minDate', 'maxDate'));
@@ -336,8 +346,8 @@ class JurnalController extends Controller
         $siswa = auth()->user()->siswa;
 
         if ($jurnal->siswa_id !== $siswa->id) { abort(403); }
-        if ($jurnal->status !== 'pending') {
-            return redirect()->route('siswa.jurnal.index')->with('error', 'Jurnal yang sudah diproses tidak dapat diedit.');
+        if (!$jurnal->isEditableByStudent()) {
+            return redirect()->route('siswa.jurnal.index')->with('error', 'Jurnal yang sudah disetujui tidak dapat diedit.');
         }
 
         $request->validate([
@@ -351,15 +361,17 @@ class JurnalController extends Controller
         ]);
 
         $requestDate = \Carbon\Carbon::parse($request->tanggal);
+        $originalDateStr = \Carbon\Carbon::parse($jurnal->tanggal)->format('Y-m-d');
+        $isSameDate = $requestDate->format('Y-m-d') === $originalDateStr;
 
-        // Validasi backdate
-        if (!Jurnal::isDateAllowedForEntry($request->tanggal)) {
+        // Validasi backdate hanya jika siswa mengubah tanggal (revisi jurnal ditolak pada tanggal aslinya tetap diizinkan)
+        if (!$isSameDate && !Jurnal::isDateAllowedForEntry($request->tanggal)) {
             $maxBackdateDays = Jurnal::getMaxBackdateDays();
             return back()->withInput()->with('error', 'Anda hanya dapat mengisi jurnal untuk maksimal ' . $maxBackdateDays . ' hari sebelumnya.');
         }
 
         // Cek tanggal duplikat jika tanggal diubah
-        if ($jurnal->tanggal !== $request->tanggal) {
+        if (!$isSameDate) {
             $hasJurnalForDate = Jurnal::where('siswa_id', $siswa->id)
                 ->where('tanggal', $request->tanggal)
                 ->exists();
@@ -395,6 +407,8 @@ class JurnalController extends Controller
             ]);
         }
 
+        $wasRejected = $jurnal->isRejected();
+
         $data = [
             'kompetensi_id'      => $request->kompetensi_id,
             'cp_id'              => $request->cp_id,
@@ -403,6 +417,14 @@ class JurnalController extends Controller
             'deskripsi_pekerjaan'=> $request->kegiatan,
             'catatan'            => $request->catatan,
         ];
+
+        // Jika siswa merevisi jurnal yang ditolak, kembalikan status ke pending agar bisa diverifikasi ulang
+        if ($wasRejected) {
+            $data['status'] = 'pending';
+            $data['approval_status'] = 'pending';
+            $data['approved_by'] = null;
+            $data['approved_at'] = null;
+        }
 
         if ($request->filled('foto_cropped')) {
             $imageData = $request->foto_cropped;
@@ -434,6 +456,21 @@ class JurnalController extends Controller
         }
 
         $jurnal->update($data);
+
+        if ($wasRejected) {
+            if ($siswa->pembimbingSekolah && $siswa->pembimbingSekolah->user_id) {
+                \App\Models\Notifikasi::create([
+                    'from_user_id' => auth()->id(),
+                    'to_user_id' => $siswa->pembimbingSekolah->user_id,
+                    'judul' => 'Revisi Jurnal dari ' . $siswa->nama_lengkap,
+                    'pesan' => 'Siswa telah merevisi jurnal yang ditolak untuk tanggal ' . $data['tanggal'] . '. Silakan tinjau kembali.',
+                    'tipe' => 'info',
+                    'is_read' => false,
+                ]);
+            }
+
+            return redirect()->route('siswa.jurnal.index')->with('success', 'Revisi jurnal berhasil dikirim ulang untuk diverifikasi.');
+        }
 
         return redirect()->route('siswa.jurnal.index')->with('success', 'Jurnal berhasil diperbarui.');
     }

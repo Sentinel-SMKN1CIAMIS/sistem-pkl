@@ -9,6 +9,24 @@
     </div>
 
     <div class="max-w-4xl text-slate-700 dark:text-slate-300">
+        @if($jurnal->isRejected())
+            <div class="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-sm">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 shrink-0 mt-0.5 text-red-500"></i>
+                    <div>
+                        <p class="font-bold">Jurnal Ditolak — Silakan Lakukan Revisi</p>
+                        @if($jurnal->approval_notes || $jurnal->catatan_pembimbing)
+                            <p class="mt-1 text-xs leading-relaxed">
+                                <span class="font-semibold">Catatan Pembimbing:</span>
+                                "{{ $jurnal->approval_notes ?: $jurnal->catatan_pembimbing }}"
+                            </p>
+                        @endif
+                        <p class="mt-1 text-xs opacity-80">Setelah Anda menyimpan perubahan, status jurnal akan otomatis kembali menjadi <strong>Menunggu Verifikasi</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="glass-card p-8">
             <form action="{{ route('siswa.jurnal.update', $jurnal) }}" method="POST" id="jurnal-form" class="space-y-6">
                 @csrf
@@ -178,7 +196,7 @@
                                         <i data-lucide="camera" class="w-7 h-7 text-blue-500"></i>
                                     </div>
                                     <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Klik untuk ubah foto</p>
-                                    <p class="text-[10px] text-slate-500 dark:text-slate-500 mt-1">JPG, PNG — max 2MB</p>
+                                    <p class="text-[10px] text-slate-500 dark:text-slate-500 mt-1">JPG, PNG — otomatis dikompres (maks. 15MB)</p>
                                 </div>
                                 <input id="foto-raw" type="file" class="hidden" accept="image/*" />
                             </label>
@@ -750,18 +768,18 @@
                     fileInput.value = '';
                     return;
                 }
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('Ukuran file maksimal 2MB.');
+                if (file.size > 15 * 1024 * 1024) {
+                    alert('Ukuran foto mentah maksimal 15MB.');
                     fileInput.value = '';
                     return;
                 }
 
-                // Read file and open crop modal
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    openCropModal(event.target.result);
-                };
-                reader.readAsDataURL(file);
+                // Use ObjectURL for fast, low-memory loading on mobile cameras before client-side crop & compression
+                if (window._activeCropObjectUrl) {
+                    URL.revokeObjectURL(window._activeCropObjectUrl);
+                }
+                window._activeCropObjectUrl = URL.createObjectURL(file);
+                openCropModal(window._activeCropObjectUrl);
             });
 
             // Attendance check logic
@@ -839,11 +857,7 @@
                 cropper = null;
             }
 
-            cropSource.src = imageSrc;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-
-            // Initialize Cropper after image loads
+            // Bind onload BEFORE setting src to avoid race condition with fast ObjectURL loads
             cropSource.onload = function() {
                 cropper = new Cropper(cropSource, {
                     aspectRatio: 1 / 1,
@@ -861,6 +875,10 @@
                     background: true,
                 });
             };
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            cropSource.src = imageSrc;
         }
 
         function closeCropModal() {

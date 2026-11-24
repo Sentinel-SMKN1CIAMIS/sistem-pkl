@@ -211,7 +211,9 @@
                                                         'approved' => 'Valid',
                                                         'rejected' => 'Ditolak'
                                                     ];
-                                                    $statusKey = $item->approval_status ?? 'pending';
+                                                    $statusKey = $item->isRejected()
+                                                        ? 'rejected'
+                                                        : (($item->approval_status === 'approved' || $item->status === 'valid') ? 'approved' : ($item->approval_status ?? 'pending'));
                                                 @endphp
                                                 <span class="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold border {{ $statusClasses[$statusKey] }}">
                                                     {{ $statusLabels[$statusKey] }}
@@ -248,7 +250,11 @@
                                     </div>
                                     
                                     <div class="flex flex-row justify-end gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-700/50">
-                                        @if($statusKey === 'pending')
+                                        @if($statusKey === 'rejected')
+                                            <a href="{{ route('siswa.jurnal.edit', $item) }}" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors flex items-center gap-2 text-sm shadow-sm">
+                                                <i data-lucide="edit-3" class="w-4 h-4"></i> Revisi Jurnal
+                                            </a>
+                                        @elseif($statusKey === 'pending')
                                             <a href="{{ route('siswa.jurnal.edit', $item) }}" class="px-4 py-2 bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-900/20 text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 font-medium rounded-xl transition-colors flex items-center gap-2 text-sm border border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800">
                                                 <i data-lucide="edit-3" class="w-4 h-4"></i> Edit
                                             </a>

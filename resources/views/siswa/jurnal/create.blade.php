@@ -176,7 +176,7 @@
                                         <i data-lucide="camera" class="w-7 h-7 text-blue-500"></i>
                                     </div>
                                     <p class="text-sm font-medium text-slate-600 dark:text-slate-400">Klik untuk unggah foto</p>
-                                    <p class="text-[10px] text-slate-500 dark:text-slate-500 mt-1">JPG, PNG — max 2MB</p>
+                                    <p class="text-[10px] text-slate-500 dark:text-slate-500 mt-1">JPG, PNG — otomatis dikompres (maks. 15MB)</p>
                                 </div>
                                 <input id="foto-raw" type="file" class="hidden" accept="image/*" />
                             </label>
@@ -749,18 +749,18 @@
                     fileInput.value = '';
                     return;
                 }
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('Ukuran file maksimal 2MB.');
+                if (file.size > 15 * 1024 * 1024) {
+                    alert('Ukuran foto mentah maksimal 15MB.');
                     fileInput.value = '';
                     return;
                 }
 
-                // Read file and open crop modal
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    openCropModal(event.target.result);
-                };
-                reader.readAsDataURL(file);
+                // Use ObjectURL for fast, low-memory loading on mobile cameras before client-side crop & compression
+                if (window._activeCropObjectUrl) {
+                    URL.revokeObjectURL(window._activeCropObjectUrl);
+                }
+                window._activeCropObjectUrl = URL.createObjectURL(file);
+                openCropModal(window._activeCropObjectUrl);
             });
 
             // Attendance check logic
@@ -838,11 +838,7 @@
                 cropper = null;
             }
 
-            cropSource.src = imageSrc;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-
-            // Initialize Cropper after image loads
+            // Bind onload BEFORE setting src to avoid race condition with fast ObjectURL loads
             cropSource.onload = function() {
                 cropper = new Cropper(cropSource, {
                     aspectRatio: 1 / 1,
@@ -860,6 +856,10 @@
                     background: true,
                 });
             };
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            cropSource.src = imageSrc;
         }
 
         function closeCropModal() {

@@ -57,6 +57,28 @@ class Jurnal extends Model
     }
 
     /**
+     * Check whether this journal was rejected by Pembimbing Sekolah or Pembimbing DUDI.
+     */
+    public function isRejected(): bool
+    {
+        return $this->approval_status === 'rejected' || $this->status === 'invalid';
+    }
+
+    /**
+     * Check whether the student is allowed to edit/revise this journal.
+     * Allowed when still pending or rejected; blocked once approved/valid.
+     */
+    public function isEditableByStudent(): bool
+    {
+        if ($this->approval_status === 'approved' || $this->status === 'valid') {
+            return false;
+        }
+
+        return in_array($this->status, ['pending', 'invalid'], true)
+            || $this->approval_status === 'rejected';
+    }
+
+    /**
      * Get the maximum backdate allowed (in days)
      */
     public static function getMaxBackdateDays()
