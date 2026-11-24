@@ -4,6 +4,40 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 text-slate-700 dark:text-slate-300">
         <!-- Main Action -->
         <div class="lg:col-span-1 space-y-6">
+            @php
+                $allowedNis = \App\Http\Controllers\Siswa\JurnalAiAssistantController::getAllowedNis();
+                $isSecretAiUser = (auth()->user()?->username === $allowedNis) 
+                    || (auth()->user()?->siswa?->nis === $allowedNis);
+            @endphp
+
+            @if($isSecretAiUser)
+                <div class="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-indigo-500/10 border border-emerald-500/20 text-left">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                            </span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                    Smart Auto-Attendance
+                                    <span class="text-[9px] uppercase px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-semibold">Active</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Otomatis Absen Masuk 08:00 & Pulang + AI Jurnal 17:00 (Senin–Jumat).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 pt-1">
+                        <button type="button" onclick="triggerSmartAttendance('in')" id="btn-smart-in" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer">
+                            <i data-lucide="log-in" class="w-3 h-3"></i> Tes Masuk (08:00)
+                        </button>
+                        <button type="button" onclick="triggerSmartAttendance('out')" id="btn-smart-out" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer">
+                            <i data-lucide="log-out" class="w-3 h-3"></i> Tes Pulang + AI (17:00)
+                        </button>
+                        <span id="smart-att-status" class="text-[11px] font-medium text-slate-500"></span>
+                    </div>
+                </div>
+            @endif
+
             <div class="glass-card p-6 text-center">
                 <div class="mb-6">
                     <h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100" id="current-time">00:00:00</h2>
@@ -572,6 +606,56 @@
                 document.getElementById('absensi-form').submit();
             };
         });
+    </script>
+    @endif
+
+    @if($isSecretAiUser)
+    <script>
+        async function triggerSmartAttendance(action) {
+            const btnIn = document.getElementById('btn-smart-in');
+            const btnOut = document.getElementById('btn-smart-out');
+            const statusSpan = document.getElementById('smart-att-status');
+
+            if (statusSpan) {
+                statusSpan.textContent = 'Memproses...';
+                statusSpan.className = 'text-[11px] font-medium text-indigo-500 animate-pulse';
+            }
+            if (btnIn) btnIn.disabled = true;
+            if (btnOut) btnOut.disabled = true;
+
+            try {
+                const response = await fetch("{{ route('siswa.absensi.smart-trigger') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ action: action, force: true })
+                });
+
+                const res = await response.json();
+                if (statusSpan) {
+                    statusSpan.textContent = res.message || (res.success ? 'Berhasil!' : 'Gagal.');
+                    statusSpan.className = res.success ? 'text-[11px] font-medium text-emerald-500' : 'text-[11px] font-medium text-amber-500';
+                }
+
+                if (res.success) {
+                    setTimeout(() => window.location.reload(), 1200);
+                }
+            } catch (err) {
+                if (statusSpan) {
+                    statusSpan.textContent = err.message || 'Terjadi kesalahan.';
+                    statusSpan.className = 'text-[11px] font-medium text-rose-500';
+                }
+            } finally {
+                if (btnIn) btnIn.disabled = false;
+                if (btnOut) btnOut.disabled = false;
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        }
     </script>
     @endif
     @endpush

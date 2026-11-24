@@ -63,4 +63,48 @@ class JurnalAiAssistantController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Handle manual trigger for smart attendance (in / out) for allowed NIS.
+     */
+    public function triggerAttendance(Request $request, \App\Services\SmartAttendanceService $service): JsonResponse
+    {
+        $user = $request->user();
+        $allowedNis = self::getAllowedNis();
+        $isAllowed = ($user?->username === $allowedNis) || ($user?->siswa?->nis === $allowedNis);
+
+        if (! $isAllowed) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur ini tidak tersedia untuk akun Anda.',
+            ], 403);
+        }
+
+        $siswa = $user->siswa;
+        if (! $siswa) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data siswa tidak ditemukan.',
+            ], 404);
+        }
+
+        $action = $request->input('action', 'auto');
+        $force = (bool) $request->input('force', true);
+        $now = \Carbon\Carbon::now();
+
+        if ($action === 'in') {
+            $result = $service->clockIn($siswa, $now, $force);
+        } elseif ($action === 'out') {
+            $result = $service->clockOut($siswa, $now, withAutoJournal: true, force: $force);
+        } else {
+            $result = $service->processAuto($siswa, $now, $force);
+        }
+
+        return response()->json([
+            'success' => $result['status'] === 'success',
+            'status' => $result['status'],
+            'message' => $result['message'],
+            'data' => $result['data'] ?? null,
+        ]);
+    }
 }

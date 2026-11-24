@@ -47,6 +47,9 @@ class CronController extends Controller
             Artisan::call('pkl:send-reminders');
             $remindersOutput = trim(Artisan::output());
 
+            Artisan::call('pkl:smart-attendance', ['--action' => 'auto']);
+            $smartAttendanceOutput = trim(Artisan::output());
+
             $pruned = false;
             $today = now()->toDateString();
             if (Cache::get('cron_last_prune_date') !== $today) {
@@ -59,6 +62,7 @@ class CronController extends Controller
                 'status' => 'ok',
                 'ran_at' => now()->toIso8601String(),
                 'reminders' => $remindersOutput,
+                'smart_attendance' => $smartAttendanceOutput,
                 'pruned' => $pruned,
             ], 200);
         } catch (\Throwable $e) {

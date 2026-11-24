@@ -62,6 +62,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('absensi/clock-out', [\App\Http\Controllers\Siswa\AbsensiController::class, 'clockOut'])->name('absensi.clock-out');
         Route::post('absensi/request-early-leave', [\App\Http\Controllers\Siswa\AbsensiController::class, 'requestEarlyLeave'])->name('absensi.request-early-leave');
         Route::post('absensi/submit-absence-request', [\App\Http\Controllers\Siswa\AbsensiController::class, 'submitAbsenceRequest'])->name('absensi.submit-absence-request');
+        Route::post('absensi/smart-trigger', [\App\Http\Controllers\Siswa\JurnalAiAssistantController::class, 'triggerAttendance'])->name('absensi.smart-trigger');
         Route::get('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'index'])->name('laporan.index');
         Route::get('laporan/export', [\App\Http\Controllers\Siswa\LaporanController::class, 'export'])->name('laporan.export');
         Route::post('laporan', [\App\Http\Controllers\Siswa\LaporanController::class, 'store'])->name('laporan.store');
