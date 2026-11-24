@@ -1080,6 +1080,12 @@
     </script>
     @endauth
 
+    @auth
+        @if(auth()->user()->role === 'siswa')
+            <x-reminder-settings-modal />
+        @endif
+    @endauth
+
     @include('components.pwa-prompt')
 </body>
 </html>

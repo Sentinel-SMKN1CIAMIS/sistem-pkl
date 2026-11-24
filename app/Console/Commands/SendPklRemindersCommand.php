@@ -26,9 +26,9 @@ class SendPklRemindersCommand extends Command
         $checkoutUserIds = [];
         $jurnalUserIds = [];
 
-        // 0. Pengingat Absen Masuk Pagi (07:00 - 09:00 WIB) untuk siswa status sedang_pkl yang belum absen hari ini
+        // 0. Pengingat Absen Masuk Pagi/Shift: Diperluas dari 06:00 hingga 11:00 WIB
         $currentTime = $now->format('H:i');
-        if ($currentTime >= '07:00' && $currentTime <= '09:00') {
+        if ($currentTime >= '06:00' && $currentTime <= '11:00') {
             $alreadyRemindedUserIds = Notifikasi::where('judul', 'Jangan Lupa Absen Masuk PKL')
                 ->whereDate('created_at', $todayStr)
                 ->pluck('to_user_id')
@@ -52,6 +52,12 @@ class SendPklRemindersCommand extends Command
                     continue;
                 }
 
+                // Periksa apakah waktu saat ini sudah mencapai jam pengingat masuk pilihan siswa (default '07:00')
+                $targetMasuk = $siswa->jam_notif_masuk ?: '07:00';
+                if ($currentTime < $targetMasuk) {
+                    continue;
+                }
+
                 Notifikasi::create([
                     'from_user_id' => null,
                     'to_user_id' => $user->id,
@@ -65,7 +71,7 @@ class SendPklRemindersCommand extends Command
             }
         }
 
-        // 1. Pengingat Absen Pulang (Checkout) Relatif terhadap Jam Masuk masing-masing siswa (Shift Pagi/Siang/Malam)
+        // 1. Pengingat Absen Pulang (Checkout) Relatif terhadap Jam Masuk atau Waktu Pilihan Siswa
         $pendingCheckouts = Absensi::with('siswa.user')
             ->where('status', 'hadir')
             ->whereNotNull('waktu_datang')
@@ -85,13 +91,20 @@ class SendPklRemindersCommand extends Command
             $clockInAt = Carbon::parse($tanggalStr . ' ' . $absensi->waktu_datang);
             $hoursSinceClockIn = $clockInAt->diffInMinutes($now, false) / 60;
 
-            // Kirim pengingat jika sudah >= 7.5 jam sejak masuk dan masih dalam jendela 18 jam
-            if ($hoursSinceClockIn >= 7.5 && $hoursSinceClockIn <= 18) {
+            $customPulang = $absensi->siswa?->jam_notif_pulang;
+            $isCustomPulangReached = $customPulang
+                && $tanggalStr === $todayStr
+                && $hoursSinceClockIn >= 1
+                && $clockInAt->format('H:i') < $customPulang
+                && $currentTime >= $customPulang;
+
+            // Kirim pengingat jika sudah mencapai jam pilihan siswa ATAU >= 7.5 jam sejak masuk (dalam jendela 18 jam)
+            if (($hoursSinceClockIn >= 7.5 || $isCustomPulangReached) && $hoursSinceClockIn <= 18) {
                 Notifikasi::create([
                     'from_user_id' => null,
                     'to_user_id' => $user->id,
                     'judul' => 'Waktunya Absen Pulang PKL',
-                    'pesan' => 'Sudah lebih dari 7,5 jam sejak Anda absen masuk (' . $clockInAt->format('H:i') . '). Jangan lupa lakukan Absen Pulang!',
+                    'pesan' => 'Sudah waktunya absen pulang' . ($customPulang ? " (jadwal: {$customPulang})" : ' (lebih dari 7,5 jam kerja)') . '. Jangan lupa lakukan Absen Pulang!',
                     'tipe' => 'info',
                     'is_read' => false,
                 ]);
@@ -101,7 +114,7 @@ class SendPklRemindersCommand extends Command
             }
         }
 
-        // 2. Pengingat Isi Jurnal Harian (Fleksibel setelah pulang atau malam hari)
+        // 2. Pengingat Isi Jurnal Harian (Fleksibel setelah pulang atau waktu pilihan malam hari)
         $attendanceForJurnal = Absensi::with('siswa.user')
             ->where('status', 'hadir')
             ->whereNotNull('waktu_datang')
@@ -131,6 +144,7 @@ class SendPklRemindersCommand extends Command
                 }
 
                 $clockInAt = Carbon::parse($tanggalStr . ' ' . $absensi->waktu_datang);
+                $targetJurnal = $absensi->siswa?->jam_notif_jurnal ?: '19:30';
                 $shouldRemind = false;
 
                 if ($absensi->waktu_pulang) {
@@ -139,14 +153,14 @@ class SendPklRemindersCommand extends Command
                         $clockOutAt->addDay();
                     }
                     $minutesSinceOut = $clockOutAt->diffInMinutes($now, false);
-                    // Kirim 30 menit s/d 24 jam setelah siswa absen pulang
-                    if ($minutesSinceOut >= 30 && $minutesSinceOut <= 1440) {
+                    // Kirim jika sudah 30 menit setelah absen pulang ATAU sudah mencapai target jam jurnal hari ini
+                    if (($minutesSinceOut >= 30 && $minutesSinceOut <= 1440) || ($tanggalStr === $todayStr && $currentTime >= $targetJurnal)) {
                         $shouldRemind = true;
                     }
-                } elseif ($tanggalStr === $todayStr && $clockInAt->hour < 15 && $now->format('H:i') >= '19:30') {
-                    // Shift pagi/siang yang lupa absen pulang & belum isi jurnal pada malam hari
+                } elseif ($tanggalStr === $todayStr && $clockInAt->hour < 15 && $currentTime >= $targetJurnal) {
+                    // Shift pagi/siang yang belum isi jurnal pada target waktu pilihan
                     $shouldRemind = true;
-                } elseif ($tanggalStr === $yesterdayStr && $now->format('H:i') >= '09:00' && $clockInAt->diffInHours($now, false) <= 24) {
+                } elseif ($tanggalStr === $yesterdayStr && $currentTime >= '09:00' && $clockInAt->diffInHours($now, false) <= 24) {
                     // Shift malam kemarin atau belum terisi sampai pagi berikutnya
                     $shouldRemind = true;
                 }

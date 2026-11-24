@@ -5,9 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'konsentrasi_keahlian_id', 'dudi_id', 'pembimbing_sekolah_id', 'pembimbing_sekolah_umum_id', 'pembimbing_dudi_id', 'nis', 'nama_lengkap', 'kelas', 'jenis_kelamin', 'no_hp', 'alamat', 'tahun_ajaran', 'status_pkl', 'pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'pembimbing_dudi_no_hp', 'unit_pekerjaan'])]
+#[Fillable(['user_id', 'konsentrasi_keahlian_id', 'dudi_id', 'pembimbing_sekolah_id', 'pembimbing_sekolah_umum_id', 'pembimbing_dudi_id', 'nis', 'nama_lengkap', 'kelas', 'jenis_kelamin', 'no_hp', 'alamat', 'tahun_ajaran', 'status_pkl', 'pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'pembimbing_dudi_no_hp', 'unit_pekerjaan', 'jam_notif_masuk', 'jam_notif_pulang', 'jam_notif_jurnal', 'reminder_settings_configured'])]
 class Siswa extends Model
 {
+    protected $casts = [
+        'reminder_settings_configured' => 'boolean',
+    ];
+
     protected static function boot()
     {
         parent::boot();

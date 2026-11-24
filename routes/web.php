@@ -70,6 +70,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('profile.index');
         Route::patch('profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'update'])->name('profile.update');
         Route::post('profile/update-lokasi-dudi', [\App\Http\Controllers\Siswa\ProfileController::class, 'updateLokasiDudi'])->name('profile.update-lokasi-dudi');
+        Route::post('profile/reminder-settings', [\App\Http\Controllers\Siswa\ProfileController::class, 'updateReminderSettings'])->name('profile.reminder-settings');
         Route::get('bantuan', [\App\Http\Controllers\Siswa\BantuanController::class, 'index'])->name('bantuan.index');
 
         // Pengajuan PKL

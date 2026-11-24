@@ -230,6 +230,49 @@
                         </div>
                     </div>
 
+                    <!-- Alarm & Pengingat PKL -->
+                    <div class="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                    <i data-lucide="bell-ring" class="w-4 h-4 text-amber-500"></i>
+                                    Alarm & Pengingat PKL
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                    Sesuaikan jam pengingat notifikasi dengan jam kerja tempat DUDI Anda.
+                                </p>
+                            </div>
+                            <button type="button" onclick="openReminderModal()" 
+                                    class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 flex items-center gap-1.5 transition-all w-fit cursor-pointer">
+                                <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+                                Buka Pengaturan Alarm
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/40">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Alarm Masuk</span>
+                                <span class="text-base font-black font-mono text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                    <i data-lucide="sunrise" class="w-4 h-4 text-amber-500"></i>
+                                    {{ $siswa->jam_notif_masuk ?: '07:00' }} WIB
+                                </span>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/40">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Alarm Pulang</span>
+                                <span class="text-base font-black font-mono text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                    <i data-lucide="sunset" class="w-4 h-4 text-orange-500"></i>
+                                    {{ $siswa->jam_notif_pulang ?: '16:00' }} WIB
+                                </span>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/40">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Alarm Jurnal</span>
+                                <span class="text-base font-black font-mono text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                    <i data-lucide="book-open" class="w-4 h-4 text-blue-500"></i>
+                                    {{ $siswa->jam_notif_jurnal ?: '19:30' }} WIB
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="pt-6 flex justify-end">
                         <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-1 flex items-center gap-2">
                             <i data-lucide="save" class="w-5 h-5"></i>
