@@ -46,7 +46,38 @@ class AbsensiController extends Controller
             ->orderBy('tanggal', 'desc')
             ->paginate(10);
 
-        return view('siswa.absensi.index', compact('absensiToday', 'history'));
+        // Deteksi maksimal 3 hari ke belakang (H-1 s/d H-7) yang belum ada absensi & bukan hari libur rutin
+        $maxBackdateDays = \App\Models\Jurnal::getMaxBackdateDays();
+        $recentDates = collect();
+        $windowStart = $today->copy()->subDays($maxBackdateDays);
+        $existingDates = Absensi::where('siswa_id', $siswa->id)
+            ->whereBetween('tanggal', [$windowStart->toDateString(), $today->copy()->subDay()->toDateString()])
+            ->pluck('tanggal')
+            ->map(fn($d) => Carbon::parse($d)->toDateString())
+            ->flip();
+
+        $hasStartedPkl = Absensi::where('siswa_id', $siswa->id)->exists();
+        if ($hasStartedPkl) {
+            for ($offset = 1; $offset <= min($maxBackdateDays, 7); $offset++) {
+                $checkDate = $today->copy()->subDays($offset);
+                $dateStr = $checkDate->toDateString();
+                if ($existingDates->has($dateStr) || $siswa->isRoutineDayOff($checkDate)) {
+                    continue;
+                }
+                $recentDates->push([
+                    'date' => $dateStr,
+                    'label' => $checkDate->isoFormat('dddd, D MMMM YYYY'),
+                    'days_ago' => $offset,
+                ]);
+                if ($recentDates->count() >= 3) {
+                    break;
+                }
+            }
+        }
+
+        $missingRecentDates = $recentDates;
+
+        return view('siswa.absensi.index', compact('absensiToday', 'history', 'missingRecentDates'));
     }
 
     public function clockIn(Request $request)
@@ -162,15 +193,23 @@ class AbsensiController extends Controller
         return redirect()->route('siswa.absensi.index')->with('success', 'Berhasil melakukan Absen Pulang.');
     }
 
-    // T5.3: Submit absence request (izin, sakit, libur)
+    // T5.3: Submit absence request (izin, sakit, libur) — mendukung hari ini atau susulan (backdate maks H-7)
     public function submitAbsenceRequest(Request $request)
     {
         if ($redirect = $this->requirePkl()) return $redirect;
 
+        $maxBackdateDays = \App\Models\Jurnal::getMaxBackdateDays();
+        $today = Carbon::today();
+        $minDate = $today->copy()->subDays($maxBackdateDays)->toDateString();
+
         $request->validate([
+            'tanggal' => ['nullable', 'date', 'after_or_equal:' . $minDate, 'before_or_equal:' . $today->toDateString()],
             'status' => 'required|in:izin,sakit,libur',
             'alasan' => 'required|string|min:10',
         ], [
+            'tanggal.date' => 'Format tanggal tidak valid.',
+            'tanggal.after_or_equal' => "Tanggal pengajuan susulan maksimal {$maxBackdateDays} hari ke belakang.",
+            'tanggal.before_or_equal' => 'Tanggal pengajuan tidak boleh melebihi hari ini.',
             'status.required' => 'Silakan pilih status ketidakhadiran.',
             'status.in' => 'Status ketidakhadiran tidak valid.',
             'alasan.required' => $request->input('status') === 'libur'
@@ -180,26 +219,28 @@ class AbsensiController extends Controller
         ]);
 
         $siswa = auth()->user()->siswa;
-        $tanggal = Carbon::today();
+        $tanggal = $request->filled('tanggal') ? Carbon::parse($request->tanggal)->startOfDay() : $today;
 
-        // Check if already submitted for today
+        // Check if already submitted for target date
         $exists = Absensi::where('siswa_id', $siswa->id)
-            ->where('tanggal', $tanggal)
+            ->whereDate('tanggal', $tanggal->toDateString())
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Anda sudah memiliki absensi untuk hari ini.');
+            return back()->with('error', 'Anda sudah memiliki catatan absensi untuk tanggal ' . $tanggal->isoFormat('D MMMM YYYY') . '.');
         }
 
         Absensi::create([
             'siswa_id' => $siswa->id,
-            'tanggal' => $tanggal,
+            'tanggal' => $tanggal->toDateString(),
             'status' => $request->status,
             'alasan' => $request->alasan,
             'approval_status' => 'pending',
         ]);
 
-        return back()->with('success', 'Berhasil mengajukan permintaan ' . $request->status . '. Menunggu persetujuan guru pembimbing.');
+        $dateLabel = $tanggal->isSameDay($today) ? 'hari ini' : 'tanggal ' . $tanggal->isoFormat('D MMMM YYYY');
+
+        return back()->with('success', 'Berhasil mengajukan keterangan ' . $request->status . ' untuk ' . $dateLabel . '. Menunggu persetujuan guru pembimbing.');
     }
 
     // Request early leave (pulang cepat) - requires approval from Pembimbing DUDI

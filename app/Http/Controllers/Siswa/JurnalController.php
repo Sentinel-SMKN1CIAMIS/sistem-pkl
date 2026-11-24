@@ -112,16 +112,19 @@ class JurnalController extends Controller
             $dateStr = $dateObj->format('Y-m-d');
             $jurnal = $jurnals->get($dateStr);
             $absensi = $absensis->get($dateStr);
+            $isRoutineOff = $siswa->isRoutineDayOff($dateObj);
             
             $diffInDays = \Carbon\Carbon::parse($dateStr)->diffInDays(\Carbon\Carbon::today(), false);
             
             $status = 'belum_diisi';
             if ($jurnal) {
                 $status = $jurnal->approval_status ?? 'pending';
-            } elseif ($dateStr > $today) {
-                $status = 'akan_datang';
             } elseif ($absensi && in_array($absensi->status, ['izin', 'sakit', 'libur'])) {
                 $status = 'libur';
+            } elseif ($isRoutineOff && (!$absensi || $absensi->status !== 'hadir')) {
+                $status = 'libur_rutin';
+            } elseif ($dateStr > $today) {
+                $status = 'akan_datang';
             } elseif ($diffInDays > $maxBackdateDays) {
                 $status = 'terlewat';
             }
@@ -131,6 +134,7 @@ class JurnalController extends Controller
                 'day' => $i,
                 'is_current_month' => true,
                 'is_today' => $dateStr === $today,
+                'is_routine_off' => $isRoutineOff,
                 'status' => $status,
                 'jurnal' => $jurnal,
                 'absensi' => $absensi,
@@ -148,10 +152,11 @@ class JurnalController extends Controller
         $hasAbsenToday = \App\Models\Absensi::where('siswa_id', $siswa->id)
             ->where('tanggal', \Carbon\Carbon::today()->toDateString())
             ->exists();
+        $isTodayRoutineOff = $siswa->isRoutineDayOff(\Carbon\Carbon::today());
             
         $maxBackdateDays = Jurnal::getMaxBackdateDays();
             
-        return view('siswa.jurnal.index', compact('calendar', 'currentDate', 'hasAbsenToday', 'maxBackdateDays'));
+        return view('siswa.jurnal.index', compact('calendar', 'currentDate', 'hasAbsenToday', 'isTodayRoutineOff', 'maxBackdateDays'));
     }
 
     public function create()

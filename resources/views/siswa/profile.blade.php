@@ -271,6 +271,16 @@
                                 </span>
                             </div>
                         </div>
+                        <div class="mt-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/40 flex items-center justify-between gap-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Hari Libur Rutin DUDI</span>
+                                <span class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                    <i data-lucide="calendar-off" class="w-4 h-4 text-sky-500"></i>
+                                    {{ $siswa->hari_libur_rutin_label }}
+                                </span>
+                            </div>
+                            <span class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline">Otomatis ditandai di kalender &amp; bebas notif pagi</span>
+                        </div>
                     </div>
 
                     <div class="pt-6 flex justify-end">

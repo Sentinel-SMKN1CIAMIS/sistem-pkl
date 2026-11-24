@@ -1,6 +1,58 @@
 <x-app-layout>
     <x-slot name="header">Absensi Harian PKL</x-slot>
 
+    @if(isset($missingRecentDates) && $missingRecentDates->isNotEmpty())
+        <div x-data="{ openBackdateForm: false, selectedDate: '{{ $missingRecentDates->first()['date'] }}' }"
+             class="mb-6 p-4 sm:p-5 rounded-2xl bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800/60 text-slate-700 dark:text-slate-200">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 shrink-0 rounded-xl bg-sky-500 text-white flex items-center justify-center">
+                        <i data-lucide="calendar-off" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">
+                            Ada tanggal sebelumnya yang belum ada keterangan absensi
+                        </h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                            Contoh: <span class="font-semibold text-sky-700 dark:text-sky-300">{{ $missingRecentDates->first()['label'] }}</span>. Jika hari tersebut adalah <strong>Libur DUDI / Off Shift</strong>, tandai langsung di sini.
+                        </p>
+                    </div>
+                </div>
+                <button type="button" @click="openBackdateForm = !openBackdateForm"
+                        class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-colors shrink-0 cursor-pointer">
+                    <span x-text="openBackdateForm ? 'Tutup Form' : 'Tandai Kemarin Libur'"></span>
+                </button>
+            </div>
+
+            <form x-show="openBackdateForm" x-cloak action="{{ route('siswa.absensi.submit-absence-request') }}" method="POST"
+                  class="mt-4 pt-4 border-t border-sky-200/70 dark:border-sky-800/50 grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                @csrf
+                <input type="hidden" name="status" value="libur">
+                <div class="md:col-span-4">
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Pilih Tanggal</label>
+                    <select name="tanggal" x-model="selectedDate" required
+                            class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-200">
+                        @foreach($missingRecentDates as $missing)
+                            <option value="{{ $missing['date'] }}">{{ $missing['label'] }} ({{ $missing['days_ago'] === 1 ? 'Kemarin' : $missing['days_ago'] . ' hari lalu' }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="md:col-span-6">
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Alasan Libur (min. 10 karakter)</label>
+                    <input type="text" name="alasan" required minlength="10"
+                           placeholder="Contoh: Libur rutin DUDI / jadwal off shift mingguan"
+                           class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-200">
+                </div>
+                <div class="md:col-span-2">
+                    <button type="submit"
+                            class="w-full py-2 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-colors cursor-pointer">
+                        Simpan Libur
+                    </button>
+                </div>
+            </form>
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 text-slate-700 dark:text-slate-300">
         <!-- Main Action -->
         <div class="lg:col-span-1 space-y-6">

@@ -52,6 +52,11 @@ class SendPklRemindersCommand extends Command
                     continue;
                 }
 
+                // Lewati pengingat pagi jika hari ini adalah jadwal libur rutin siswa
+                if ($siswa->isRoutineDayOff($now)) {
+                    continue;
+                }
+
                 // Periksa apakah waktu saat ini sudah mencapai jam pengingat masuk pilihan siswa (default '07:00')
                 $targetMasuk = $siswa->jam_notif_masuk ?: '07:00';
                 if ($currentTime < $targetMasuk) {

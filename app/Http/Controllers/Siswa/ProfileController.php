@@ -94,11 +94,14 @@ class ProfileController extends Controller
             'jam_notif_masuk' => ['required', 'string', 'regex:/^(?:[01]\d|2[0-3]):[0-5]\d$/'],
             'jam_notif_pulang' => ['nullable', 'string', 'regex:/^(?:[01]\d|2[0-3]):[0-5]\d$/'],
             'jam_notif_jurnal' => ['nullable', 'string', 'regex:/^(?:[01]\d|2[0-3]):[0-5]\d$/'],
+            'hari_libur_rutin' => ['nullable', 'array'],
+            'hari_libur_rutin.*' => ['integer', 'between:1,7'],
         ], [
             'jam_notif_masuk.required' => 'Jam pengingat masuk wajib diisi.',
             'jam_notif_masuk.regex' => 'Format jam pengingat masuk harus HH:MM (contoh: 07:30).',
             'jam_notif_pulang.regex' => 'Format jam pengingat pulang harus HH:MM (contoh: 16:00).',
             'jam_notif_jurnal.regex' => 'Format jam pengingat jurnal harus HH:MM (contoh: 19:30).',
+            'hari_libur_rutin.*.between' => 'Hari libur rutin harus di antara Senin (1) sampai Minggu (7).',
         ]);
 
         $siswa = auth()->user()->siswa;
@@ -109,25 +112,35 @@ class ProfileController extends Controller
             return back()->with('error', 'Data siswa tidak ditemukan.');
         }
 
+        $offDays = collect($request->input('hari_libur_rutin', []))
+            ->map(fn($d) => (int) $d)
+            ->filter(fn($d) => $d >= 1 && $d <= 7)
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
         $siswa->update([
             'jam_notif_masuk' => $request->jam_notif_masuk,
             'jam_notif_pulang' => $request->jam_notif_pulang ?: '16:00',
             'jam_notif_jurnal' => $request->jam_notif_jurnal ?: '19:30',
+            'hari_libur_rutin' => $offDays,
             'reminder_settings_configured' => true,
         ]);
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Jadwal alarm pengingat berhasil disimpan.',
+                'message' => 'Jadwal alarm & hari libur rutin berhasil disimpan.',
                 'data' => [
                     'jam_notif_masuk' => $siswa->jam_notif_masuk,
                     'jam_notif_pulang' => $siswa->jam_notif_pulang,
                     'jam_notif_jurnal' => $siswa->jam_notif_jurnal,
+                    'hari_libur_rutin' => $siswa->hari_libur_rutin,
                 ],
             ]);
         }
 
-        return back()->with('success', 'Jadwal alarm pengingat berhasil disimpan.');
+        return back()->with('success', 'Jadwal alarm & hari libur rutin berhasil disimpan.');
     }
 }

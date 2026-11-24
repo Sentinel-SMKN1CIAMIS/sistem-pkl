@@ -5,12 +5,62 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'konsentrasi_keahlian_id', 'dudi_id', 'pembimbing_sekolah_id', 'pembimbing_sekolah_umum_id', 'pembimbing_dudi_id', 'nis', 'nama_lengkap', 'kelas', 'jenis_kelamin', 'no_hp', 'alamat', 'tahun_ajaran', 'status_pkl', 'pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'pembimbing_dudi_no_hp', 'unit_pekerjaan', 'jam_notif_masuk', 'jam_notif_pulang', 'jam_notif_jurnal', 'reminder_settings_configured'])]
+#[Fillable(['user_id', 'konsentrasi_keahlian_id', 'dudi_id', 'pembimbing_sekolah_id', 'pembimbing_sekolah_umum_id', 'pembimbing_dudi_id', 'nis', 'nama_lengkap', 'kelas', 'jenis_kelamin', 'no_hp', 'alamat', 'tahun_ajaran', 'status_pkl', 'pembimbing_dudi_nama', 'pembimbing_dudi_jabatan', 'pembimbing_dudi_no_hp', 'unit_pekerjaan', 'jam_notif_masuk', 'jam_notif_pulang', 'jam_notif_jurnal', 'reminder_settings_configured', 'hari_libur_rutin'])]
 class Siswa extends Model
 {
     protected $casts = [
         'reminder_settings_configured' => 'boolean',
+        'hari_libur_rutin' => 'array',
     ];
+
+    /**
+     * Check whether a given date falls on this student's routine weekly off-day.
+     */
+    public function isRoutineDayOff(\Carbon\CarbonInterface|string $date): bool
+    {
+        $offDays = $this->hari_libur_rutin;
+        if (!is_array($offDays) || empty($offDays)) {
+            return false;
+        }
+
+        $carbon = $date instanceof \Carbon\CarbonInterface ? $date : \Carbon\Carbon::parse($date);
+        $isoDay = (int) $carbon->dayOfWeekIso; // 1 = Senin .. 7 = Minggu
+
+        return in_array($isoDay, array_map('intval', $offDays), true);
+    }
+
+    /**
+     * Human-readable Indonesian label for routine off-days.
+     */
+    public function getHariLiburRutinLabelAttribute(): string
+    {
+        $offDays = $this->hari_libur_rutin;
+        if (!is_array($offDays) || empty($offDays)) {
+            return 'Shift Rolling / Tidak Tetap';
+        }
+
+        $dayNames = [
+            1 => 'Senin',
+            2 => 'Selasa',
+            3 => 'Rabu',
+            4 => 'Kamis',
+            5 => 'Jumat',
+            6 => 'Sabtu',
+            7 => 'Minggu',
+        ];
+
+        $normalized = array_values(array_unique(array_map('intval', $offDays)));
+        sort($normalized);
+
+        $labels = [];
+        foreach ($normalized as $d) {
+            if (isset($dayNames[$d])) {
+                $labels[] = $dayNames[$d];
+            }
+        }
+
+        return empty($labels) ? 'Shift Rolling / Tidak Tetap' : implode(', ', $labels);
+    }
 
     protected static function boot()
     {

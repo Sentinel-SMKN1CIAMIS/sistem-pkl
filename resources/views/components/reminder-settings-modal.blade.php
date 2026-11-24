@@ -9,6 +9,7 @@
     $defaultMasuk = $siswa?->jam_notif_masuk ?: '07:00';
     $defaultPulang = $siswa?->jam_notif_pulang ?: '16:00';
     $defaultJurnal = $siswa?->jam_notif_jurnal ?: '19:30';
+    $defaultOffDays = is_array($siswa?->hari_libur_rutin) ? array_map('intval', $siswa->hari_libur_rutin) : [6, 7];
 @endphp
 
 @if($siswa)
@@ -16,7 +17,7 @@
      class="fixed inset-0 z-50 {{ $shouldShow ? 'flex' : 'hidden' }} items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md transition-opacity duration-300"
      data-configured="{{ $siswa->reminder_settings_configured ? '1' : '0' }}">
     
-    <div class="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xl p-6 sm:p-8 animate-in overflow-hidden" onclick="event.stopPropagation()">
+    <div class="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xl p-6 sm:p-8 animate-in" onclick="event.stopPropagation()">
         {{-- Header --}}
         <div class="flex items-start justify-between gap-4 mb-6">
             <div class="flex items-center gap-3">
@@ -103,6 +104,43 @@
                 </div>
             </div>
 
+            {{-- 4. Hari Libur Rutin DUDI --}}
+            <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 space-y-3">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
+                        <i data-lucide="calendar-off" class="w-4 h-4 text-sky-500"></i>
+                        Hari Libur Rutin DUDI
+                    </label>
+                    <span class="text-[10px] text-slate-400">Otomatis ditandai di kalender</span>
+                </div>
+                <div class="grid grid-cols-7 gap-1.5" id="routine-off-days-grid">
+                    @foreach([1 => 'Sen', 2 => 'Sel', 3 => 'Rab', 4 => 'Kam', 5 => 'Jum', 6 => 'Sab', 7 => 'Min'] as $iso => $dayLabel)
+                        @php $isChecked = in_array($iso, $defaultOffDays, true); @endphp
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="hari_libur_rutin[]" value="{{ $iso }}" {{ $isChecked ? 'checked' : '' }} class="peer sr-only routine-off-checkbox">
+                            <span class="flex items-center justify-center py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 peer-checked:bg-sky-500 peer-checked:text-white peer-checked:border-sky-500 transition-colors select-none">
+                                {{ $dayLabel }}
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span class="text-[10px] text-slate-400 font-medium">Pilihan cepat:</span>
+                    <button type="button" onclick="setOffDaysPreset([6, 7])"
+                            class="px-2 py-0.5 text-[11px] font-semibold rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-sky-500 hover:text-sky-500 transition-colors cursor-pointer">
+                        Sabtu &amp; Minggu
+                    </button>
+                    <button type="button" onclick="setOffDaysPreset([7])"
+                            class="px-2 py-0.5 text-[11px] font-semibold rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-sky-500 hover:text-sky-500 transition-colors cursor-pointer">
+                        Minggu Saja
+                    </button>
+                    <button type="button" onclick="setOffDaysPreset([])"
+                            class="px-2 py-0.5 text-[11px] font-semibold rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-sky-500 hover:text-sky-500 transition-colors cursor-pointer">
+                        Shift Rolling / Tidak Tetap
+                    </button>
+                </div>
+            </div>
+
             <div id="reminder-msg" class="hidden text-xs font-medium text-center py-1"></div>
 
             {{-- Action buttons --}}
@@ -132,6 +170,12 @@
         if (el) el.value = time;
     }
 
+    function setOffDaysPreset(days) {
+        document.querySelectorAll('.routine-off-checkbox').forEach(cb => {
+            cb.checked = days.includes(parseInt(cb.value, 10));
+        });
+    }
+
     function closeReminderModal(rememberSession = false) {
         const modal = document.getElementById('reminder-settings-modal');
         if (modal) {
@@ -156,6 +200,7 @@
         setPreset('jam_notif_masuk', '07:00');
         setPreset('jam_notif_pulang', '16:00');
         setPreset('jam_notif_jurnal', '19:30');
+        setOffDaysPreset([6, 7]);
         document.getElementById('reminder-settings-form').requestSubmit();
     }
 
@@ -165,8 +210,15 @@
         const btn = document.getElementById('btn-save-reminder');
         const msg = document.getElementById('reminder-msg');
 
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+        const selectedOffDays = Array.from(document.querySelectorAll('.routine-off-checkbox:checked'))
+            .map(cb => parseInt(cb.value, 10));
+
+        const data = {
+            jam_notif_masuk: document.getElementById('jam_notif_masuk')?.value || '07:00',
+            jam_notif_pulang: document.getElementById('jam_notif_pulang')?.value || '16:00',
+            jam_notif_jurnal: document.getElementById('jam_notif_jurnal')?.value || '19:30',
+            hari_libur_rutin: selectedOffDays,
+        };
 
         if (btn) btn.disabled = true;
         if (msg) {

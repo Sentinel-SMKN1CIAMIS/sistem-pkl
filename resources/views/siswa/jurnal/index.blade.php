@@ -68,7 +68,7 @@
             </div>
         @endif
 
-        @if(!$hasAbsenToday)
+        @if(!$hasAbsenToday && empty($isTodayRoutineOff))
             <div class="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 dark:text-amber-400 text-sm flex items-center gap-3">
                 <i data-lucide="info" class="w-4 h-4"></i>
                 <div>
@@ -129,6 +129,7 @@
                                 'belum_diisi' => 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800',
                                 'akan_datang' => 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700',
                                 'libur' => 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+                                'libur_rutin' => 'bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-800',
                                 'terlewat' => 'bg-slate-200 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-600 border-dashed',
                             ];
                             
@@ -139,6 +140,7 @@
                                 'belum_diisi' => 'edit-3',
                                 'akan_datang' => 'minus',
                                 'libur' => 'user-x',
+                                'libur_rutin' => 'calendar-off',
                                 'terlewat' => 'calendar-x',
                             ];
                             
@@ -168,7 +170,8 @@
                 <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400"><div class="w-3 h-3 rounded-full bg-red-400"></div> Ditolak</div>
                 <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400"><div class="w-3 h-3 rounded-full bg-orange-400"></div> Belum Diisi</div>
                 <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400"><div class="w-3 h-3 rounded-full border border-dashed border-slate-400 bg-slate-200 dark:bg-slate-700"></div> Terlewat</div>
-                <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400"><div class="w-3 h-3 rounded-full bg-blue-300"></div> Izin/Sakit</div>
+                <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400"><div class="w-3 h-3 rounded-full bg-blue-300"></div> Izin/Sakit/Libur</div>
+                <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400"><div class="w-3 h-3 rounded-full bg-sky-200 border border-sky-400"></div> Libur Rutin</div>
                 <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400"><div class="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-600"></div> Akan datang</div>
             </div>
         </div>
@@ -277,6 +280,8 @@
                                 <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-200 dark:border-slate-700/50">
                                     @if($dayData['status'] === 'akan_datang')
                                         <i data-lucide="calendar" class="w-10 h-10 text-slate-400"></i>
+                                    @elseif($dayData['status'] === 'libur_rutin')
+                                        <i data-lucide="calendar-off" class="w-10 h-10 text-sky-500"></i>
                                     @elseif($dayData['status'] === 'libur')
                                         <i data-lucide="user-x" class="w-10 h-10 text-blue-400"></i>
                                     @else
@@ -290,6 +295,9 @@
                                 
                                 @if($dayData['status'] === 'akan_datang')
                                     <p class="text-slate-500 dark:text-slate-400 mb-0">Tanggal ini belum tiba. Anda belum bisa mengisi jurnal.</p>
+                                @elseif($dayData['status'] === 'libur_rutin')
+                                    <p class="text-slate-500 dark:text-slate-400 mb-2">Tanggal ini adalah jadwal <span class="font-bold text-sky-500">Libur Rutin DUDI</span> Anda. Jurnal tidak wajib diisi.</p>
+                                    <p class="text-xs text-slate-400">Jika tetap masuk kerja / lembur pada tanggal ini, silakan lakukan absensi masuk terlebih dahulu.</p>
                                 @elseif($dayData['status'] === 'libur')
                                     <p class="text-slate-500 dark:text-slate-400 mb-0">Anda sedang <span class="font-bold uppercase text-blue-500">{{ $dayData['absensi']->status ?? '' }}</span> pada tanggal ini. Jurnal tidak wajib diisi.</p>
                                 @else
@@ -320,11 +328,40 @@
                                             </div>
                                         @endif
                                     @elseif($isAllowedBackdate)
-                                        <a href="{{ route('siswa.jurnal.create', ['date' => $dayData['date']]) }}" class="inline-flex px-6 py-3 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all items-center gap-2 hover:-translate-y-0.5">
-                                            <i data-lucide="plus" class="w-4 h-4"></i>
-                                            Isi Jurnal Susulan
-                                        </a>
-                                        <p class="text-xs text-slate-400 mt-3">Sisa waktu susulan: {{ $maxBackdateDays - $diffInDays }} hari lagi</p>
+                                        <div x-data="{ showLiburForm: false }" class="flex flex-col items-center gap-3">
+                                            <div class="flex flex-wrap items-center justify-center gap-3">
+                                                <a href="{{ route('siswa.jurnal.create', ['date' => $dayData['date']]) }}" class="inline-flex px-6 py-3 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all items-center gap-2 hover:-translate-y-0.5">
+                                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                                    Isi Jurnal Susulan
+                                                </a>
+                                                @if(!$dayData['absensi'])
+                                                    <button type="button" @click="showLiburForm = !showLiburForm"
+                                                            class="inline-flex px-5 py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl shadow-sm transition-colors items-center gap-2 cursor-pointer">
+                                                        <i data-lucide="calendar-off" class="w-4 h-4"></i>
+                                                        Tandai Libur DUDI
+                                                    </button>
+                                                @endif
+                                            </div>
+                                            <p class="text-xs text-slate-400">Sisa waktu susulan: {{ $maxBackdateDays - $diffInDays }} hari lagi</p>
+
+                                            @if(!$dayData['absensi'])
+                                                <form x-show="showLiburForm" x-cloak action="{{ route('siswa.absensi.submit-absence-request') }}" method="POST"
+                                                      class="w-full max-w-md mt-2 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-left space-y-3">
+                                                    @csrf
+                                                    <input type="hidden" name="tanggal" value="{{ $dayData['date'] }}">
+                                                    <input type="hidden" name="status" value="libur">
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Alasan Libur (min. 10 karakter)</label>
+                                                        <input type="text" name="alasan" required minlength="10"
+                                                               placeholder="Contoh: Libur DUDI / Off shift mingguan"
+                                                               class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-200">
+                                                    </div>
+                                                    <button type="submit" class="w-full py-2 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-colors cursor-pointer">
+                                                        Simpan Keterangan Libur
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     @else
                                         <div class="inline-flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-800/50 text-sm font-medium">
                                             <i data-lucide="x-circle" class="w-4 h-4"></i>
