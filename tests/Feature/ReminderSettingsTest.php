@@ -212,4 +212,39 @@ class ReminderSettingsTest extends TestCase
             ->count();
         $this->assertEquals(1, $countA);
     }
+
+    public function test_send_pkl_reminders_supports_afternoon_shift_and_rescheduled_alarm_same_day(): void
+    {
+        // Siswa A sets alarm to 13:00 (afternoon shift / live test after 11:00)
+        $this->siswaA->update(['jam_notif_masuk' => '13:00']);
+
+        Carbon::setTestNow(Carbon::parse('2026-11-23 12:55:00'));
+        $this->artisan('pkl:send-reminders')->assertExitCode(0);
+        $this->assertDatabaseMissing('notifikasis', [
+            'to_user_id' => $this->userA->id,
+            'judul' => 'Jangan Lupa Absen Masuk PKL',
+        ]);
+
+        // At 13:00 WIB -> alarm fires!
+        Carbon::setTestNow(Carbon::parse('2026-11-23 13:00:00'));
+        $this->artisan('pkl:send-reminders')->assertExitCode(0);
+        $this->assertEquals(1, Notifikasi::where('to_user_id', $this->userA->id)
+            ->where('judul', 'Jangan Lupa Absen Masuk PKL')
+            ->count());
+
+        // At 13:01 WIB -> does NOT duplicate
+        Carbon::setTestNow(Carbon::parse('2026-11-23 13:01:00'));
+        $this->artisan('pkl:send-reminders')->assertExitCode(0);
+        $this->assertEquals(1, Notifikasi::where('to_user_id', $this->userA->id)
+            ->where('judul', 'Jangan Lupa Absen Masuk PKL')
+            ->count());
+
+        // Student reschedules alarm to 14:15 same day to re-test -> fires at 14:15
+        $this->siswaA->update(['jam_notif_masuk' => '14:15']);
+        Carbon::setTestNow(Carbon::parse('2026-11-23 14:15:00'));
+        $this->artisan('pkl:send-reminders')->assertExitCode(0);
+        $this->assertEquals(2, Notifikasi::where('to_user_id', $this->userA->id)
+            ->where('judul', 'Jangan Lupa Absen Masuk PKL')
+            ->count());
+    }
 }

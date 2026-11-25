@@ -26,54 +26,63 @@ class SendPklRemindersCommand extends Command
         $checkoutUserIds = [];
         $jurnalUserIds = [];
 
-        // 0. Pengingat Absen Masuk Pagi/Shift: Diperluas dari 06:00 hingga 11:00 WIB
+        // 0. Pengingat Absen Masuk (Mendukung semua shift & jam alarm custom per siswa)
         $currentTime = $now->format('H:i');
-        if ($currentTime >= '06:00' && $currentTime <= '11:00') {
-            $alreadyRemindedUserIds = Notifikasi::where('judul', 'Jangan Lupa Absen Masuk PKL')
-                ->whereDate('created_at', $todayStr)
-                ->pluck('to_user_id')
-                ->flip();
+        $todayCheckinNotifications = Notifikasi::where('judul', 'Jangan Lupa Absen Masuk PKL')
+            ->whereDate('created_at', $todayStr)
+            ->get(['to_user_id', 'created_at'])
+            ->groupBy('to_user_id');
 
-            $studentsToRemind = Siswa::with('user')
-                ->where('status_pkl', 'sedang_pkl')
-                ->whereHas('user', fn($q) => $q->where('is_active', true))
-                ->whereDoesntHave('absensi', fn($q) => $q->whereDate('tanggal', $todayStr))
-                // Kecualikan siswa shift malam yang masih aktif bertugas dari kemarin (belum absen pulang)
-                ->whereDoesntHave('absensi', function ($q) use ($yesterdayStr) {
-                    $q->whereDate('tanggal', $yesterdayStr)
-                        ->where('status', 'hadir')
-                        ->whereNull('waktu_pulang');
-                })
-                ->get();
+        $studentsToRemind = Siswa::with('user')
+            ->where('status_pkl', 'sedang_pkl')
+            ->whereHas('user', fn($q) => $q->where('is_active', true))
+            ->whereDoesntHave('absensi', fn($q) => $q->whereDate('tanggal', $todayStr))
+            // Kecualikan siswa shift malam yang masih aktif bertugas dari kemarin (belum absen pulang)
+            ->whereDoesntHave('absensi', function ($q) use ($yesterdayStr) {
+                $q->whereDate('tanggal', $yesterdayStr)
+                    ->where('status', 'hadir')
+                    ->whereNull('waktu_pulang');
+            })
+            ->get();
 
-            foreach ($studentsToRemind as $siswa) {
-                $user = $siswa->user;
-                if (!$user || $alreadyRemindedUserIds->has($user->id)) {
-                    continue;
-                }
-
-                // Lewati pengingat pagi jika hari ini adalah jadwal libur rutin siswa
-                if ($siswa->isRoutineDayOff($now)) {
-                    continue;
-                }
-
-                // Periksa apakah waktu saat ini sudah mencapai jam pengingat masuk pilihan siswa (default '07:00')
-                $targetMasuk = $siswa->jam_notif_masuk ?: '07:00';
-                if ($currentTime < $targetMasuk) {
-                    continue;
-                }
-
-                Notifikasi::create([
-                    'from_user_id' => null,
-                    'to_user_id' => $user->id,
-                    'judul' => 'Jangan Lupa Absen Masuk PKL',
-                    'pesan' => 'Selamat pagi! Silakan lakukan Absen Masuk PKL hari ini saat tiba di tempat DUDI.',
-                    'tipe' => 'info',
-                    'is_read' => false,
-                ]);
-
-                $checkinUserIds[] = $user->id;
+        foreach ($studentsToRemind as $siswa) {
+            $user = $siswa->user;
+            if (!$user) {
+                continue;
             }
+
+            // Lewati pengingat masuk jika hari ini adalah jadwal libur rutin siswa
+            if ($siswa->isRoutineDayOff($now)) {
+                continue;
+            }
+
+            // Periksa apakah waktu saat ini sudah mencapai jam alarm masuk pilihan siswa (jendela 0 s/d 120 menit setelah jam target)
+            $targetMasukStr = $siswa->jam_notif_masuk ?: '07:00';
+            $targetMasukAt = Carbon::parse($todayStr . ' ' . $targetMasukStr);
+            $minutesSinceTarget = $targetMasukAt->diffInMinutes($now, false);
+
+            if ($minutesSinceTarget < 0 || $minutesSinceTarget > 120) {
+                continue;
+            }
+
+            // Cegah duplikat jika sudah pernah diingatkan pada/setelah jam alarm target hari ini
+            $alreadyRemindedForTarget = $todayCheckinNotifications->get($user->id, collect())
+                ->contains(fn($notif) => Carbon::parse($notif->created_at)->greaterThanOrEqualTo($targetMasukAt));
+
+            if ($alreadyRemindedForTarget) {
+                continue;
+            }
+
+            Notifikasi::create([
+                'from_user_id' => null,
+                'to_user_id' => $user->id,
+                'judul' => 'Jangan Lupa Absen Masuk PKL',
+                'pesan' => "Pengingat jadwal ({$targetMasukStr} WIB): Silakan lakukan Absen Masuk PKL hari ini saat tiba di tempat DUDI.",
+                'tipe' => 'info',
+                'is_read' => false,
+            ]);
+
+            $checkinUserIds[] = $user->id;
         }
 
         // 1. Pengingat Absen Pulang (Checkout) Relatif terhadap Jam Masuk atau Waktu Pilihan Siswa
@@ -162,8 +171,8 @@ class SendPklRemindersCommand extends Command
                     if (($minutesSinceOut >= 30 && $minutesSinceOut <= 1440) || ($tanggalStr === $todayStr && $currentTime >= $targetJurnal)) {
                         $shouldRemind = true;
                     }
-                } elseif ($tanggalStr === $todayStr && $clockInAt->hour < 15 && $currentTime >= $targetJurnal) {
-                    // Shift pagi/siang yang belum isi jurnal pada target waktu pilihan
+                } elseif ($tanggalStr === $todayStr && $currentTime >= $targetJurnal && $currentTime > $clockInAt->format('H:i')) {
+                    // Siswa yang belum isi jurnal saat jam alarm jurnal hari ini tercapai
                     $shouldRemind = true;
                 } elseif ($tanggalStr === $yesterdayStr && $currentTime >= '09:00' && $clockInAt->diffInHours($now, false) <= 24) {
                     // Shift malam kemarin atau belum terisi sampai pagi berikutnya
