@@ -72,4 +72,33 @@ class PesanSearchTest extends TestCase
             ->assertOk()
             ->assertJsonCount(0, 'messages');
     }
+
+    public function test_sending_normal_chat_message_triggers_web_push_and_layout_renders_permission_gate(): void
+    {
+        $admin = User::factory()->create(['name' => 'Super Admin', 'role' => 'super_admin', 'is_active' => true]);
+        $studentUser = User::factory()->create(['name' => 'Siswa Tes', 'role' => 'siswa', 'is_active' => true]);
+
+        $mockPush = \Mockery::mock(\App\Services\WebPushService::class);
+        $mockPush->shouldReceive('sendToUser')
+            ->once()
+            ->withArgs(function ($userId, $payload) use ($studentUser, $admin) {
+                return $userId === $studentUser->id
+                    && str_contains($payload['title'], 'Super Admin')
+                    && str_contains($payload['body'], 'Halo tes push chat')
+                    && str_contains($payload['url'], '/pesan/' . $admin->id);
+            })
+            ->andReturn(['sent' => 1, 'failed' => 0, 'expired' => 0]);
+
+        $this->app->instance(\App\Services\WebPushService::class, $mockPush);
+
+        $this->actingAs($admin)
+            ->postJson(route('pesan.store', $studentUser), ['isi' => 'Halo tes push chat'])
+            ->assertOk()
+            ->assertJsonPath('ok', true);
+
+        $this->actingAs($studentUser)
+            ->get(route('pesan.index'))
+            ->assertOk()
+            ->assertSee('Wajib Aktifkan Notifikasi');
+    }
 }

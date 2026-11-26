@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pesan;
 use App\Models\User;
 use App\Models\Notifikasi;
+use App\Services\WebPushService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -309,7 +310,7 @@ class PesanController extends Controller
     /**
      * Kirim pesan ke satu user.
      */
-    public function store(Request $request, User $user)
+    public function store(Request $request, User $user, WebPushService $webPushService)
     {
         $this->authorizeKontak($user);
 
@@ -331,6 +332,18 @@ class PesanController extends Controller
             'is_read'      => 0
         ]);
 
+        // Kirim Web Push Notification langsung ke HP / browser penerima
+        try {
+            $webPushService->sendToUser($user->id, [
+                'title' => 'Pesan dari ' . Auth::user()->name,
+                'body'  => \Illuminate\Support\Str::limit($request->isi, 120),
+                'url'   => route('pesan.show', Auth::id()),
+                'tag'   => 'pesan-' . Auth::id() . '-' . $pesan->id,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Pesan WebPush failed: ' . $e->getMessage());
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'ok' => true, 
@@ -345,11 +358,12 @@ class PesanController extends Controller
     /**
      * Broadcast pesan ke semua kontak.
      */
-    public function broadcast(Request $request)
+    public function broadcast(Request $request, WebPushService $webPushService)
     {
         $request->validate(['isi' => 'required|string|max:2000']);
         $kontak = $this->getKontak();
         $authId = Auth::id();
+        $recipientIds = [];
 
         foreach ($kontak as $k) {
             if (!$k) continue;
@@ -368,6 +382,27 @@ class PesanController extends Controller
                 'tipe'         => 'pesan_broadcast',
                 'is_read'      => 0
             ]);
+
+            $recipientIds[] = $k->id;
+        }
+
+        // Kirim Web Push Notification ke semua kontak penerima
+        if (!empty($recipientIds)) {
+            $payload = [
+                'title' => 'Broadcast dari ' . Auth::user()->name,
+                'body'  => \Illuminate\Support\Str::limit($request->isi, 120),
+                'url'   => route('pesan.show', $authId),
+                'tag'   => 'pesan-broadcast-' . $authId . '-' . now()->timestamp,
+            ];
+            try {
+                if (count($recipientIds) <= 50) {
+                    $webPushService->sendToUsers($recipientIds, $payload);
+                } else {
+                    $webPushService->dispatchBroadcast($recipientIds, $payload);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Broadcast Pesan WebPush failed: ' . $e->getMessage());
+            }
         }
 
         return back()->with('success', 'Pesan broadcast berhasil dikirim ke ' . $kontak->count() . ' kontak.');
