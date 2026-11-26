@@ -51,6 +51,8 @@
         </div>
     </div>
 
+    <x-early-warning-widget :earlyWarning="$earlyWarning ?? null" :detailUrl="route('pokja.siswa.index')" />
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
         <!-- Chart 1: Distribusi Siswa per Kompetensi -->
         <div class="glass-card p-6 border-t-2 border-slate-200/50 dark:border-slate-700/50">

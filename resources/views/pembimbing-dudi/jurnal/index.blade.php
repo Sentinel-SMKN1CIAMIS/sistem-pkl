@@ -1,9 +1,48 @@
 <x-app-layout>
     <x-slot name="header">Validasi Jurnal Siswa</x-slot>
 
-    <div x-data="{ imageModalOpen: false, modalImageUrl: '' }">
-        <div class="mb-6 flex justify-between items-center">
+    @php
+        $pendingIds = $jurnals->filter(fn($j) => $j->status === 'pending')->pluck('id')->values()->all();
+    @endphp
+
+    <div x-data="{
+            imageModalOpen: false,
+            modalImageUrl: '',
+            selectedIds: [],
+            allPendingIds: @json($pendingIds),
+            toggleAll() {
+                if (this.selectedIds.length === this.allPendingIds.length) {
+                    this.selectedIds = [];
+                } else {
+                    this.selectedIds = [...this.allPendingIds];
+                }
+            }
+        }">
+        <div class="mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <p class="text-slate-600 dark:text-slate-400">Review dan berikan feedback pada laporan harian siswa PKL di perusahaan Anda.</p>
+
+            @if(count($pendingIds) > 0)
+                <div class="flex items-center gap-2 shrink-0">
+                    <button type="button" @click="toggleAll()"
+                            class="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                        <span x-text="selectedIds.length === allPendingIds.length ? 'Batal Pilih Semua' : 'Pilih Semua Pending (' + allPendingIds.length + ')'"></span>
+                    </button>
+
+                    <form action="{{ route('pembimbing_dudi.jurnal.bulk-approve') }}" method="POST"
+                          x-show="selectedIds.length > 0" x-cloak
+                          onsubmit="return confirm('Setujui (ACC) semua jurnal terpilih?')">
+                        @csrf
+                        <template x-for="id in selectedIds" :key="id">
+                            <input type="hidden" name="jurnal_ids[]" :value="id">
+                        </template>
+                        <button type="submit"
+                                class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer">
+                            <i data-lucide="check-check" class="w-4 h-4"></i>
+                            <span>Setujui Terpilih (<span x-text="selectedIds.length"></span>)</span>
+                        </button>
+                    </form>
+                </div>
+            @endif
         </div>
 
     @if(session('success'))
@@ -20,6 +59,10 @@
                     <div class="flex flex-col md:flex-row justify-between gap-6">
                         <div class="flex-1">
                             <div class="flex items-center gap-4 mb-3">
+                                @if($item->status === 'pending')
+                                    <input type="checkbox" :value="{{ $item->id }}" x-model.number="selectedIds"
+                                           class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0">
+                                @endif
                                 <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-blue-400 font-bold">
                                     {{ substr($item->siswa->nama_lengkap, 0, 1) }}
                                 </div>

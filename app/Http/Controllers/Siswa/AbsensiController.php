@@ -61,7 +61,7 @@ class AbsensiController extends Controller
             for ($offset = 1; $offset <= min($maxBackdateDays, 7); $offset++) {
                 $checkDate = $today->copy()->subDays($offset);
                 $dateStr = $checkDate->toDateString();
-                if ($existingDates->has($dateStr) || $siswa->isRoutineDayOff($checkDate)) {
+                if ($existingDates->has($dateStr) || $siswa->isRoutineDayOff($checkDate) || \App\Models\HariLiburNasional::findByDate($checkDate) !== null) {
                     continue;
                 }
                 $recentDates->push([

@@ -62,6 +62,7 @@ class AppServiceProvider extends ServiceProvider
                     ['name' => 'Persetujuan Absensi', 'route' => 'pembimbing_sekolah.absensi.approval.index', 'icon' => 'check-circle'],
                     ['name' => 'Evaluasi Laporan', 'route' => 'pembimbing_sekolah.laporan.index', 'icon' => 'file-check'],
                     ['name' => 'Peta DUDI', 'route' => 'shared.pemetaan.maps', 'icon' => 'map'],
+                    ['name' => 'Log Kunjungan', 'route' => 'pembimbing_sekolah.kunjungan.index', 'icon' => 'map-pin'],
                     ['name' => 'Akun Mentor DUDI', 'route' => 'pembimbing_sekolah.dudi_mentor.index', 'icon' => 'building-2'],
                     ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
                 ];
@@ -111,6 +112,7 @@ class AppServiceProvider extends ServiceProvider
                         'icon' => 'activity',
                         'children' => [
                             ['name' => 'Monitoring Pembimbing', 'route' => 'pokja.monitoring.index', 'icon' => 'eye'],
+                            ['name' => 'Log Kunjungan Lapangan', 'route' => 'pokja.kunjungan.index', 'icon' => 'map-pin'],
                             ['name' => 'Evaluasi PKL', 'route' => 'pokja.evaluasi.index', 'icon' => 'bar-chart-3'],
                             ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
                         ]
@@ -122,12 +124,16 @@ class AppServiceProvider extends ServiceProvider
                         'name' => 'Pengaturan',
                         'icon' => 'settings',
                         'children' => [
+                            ['name' => 'Tanggal Merah Nasional', 'route' => 'pokja.hari_libur.index', 'icon' => 'calendar-off'],
+                            ['name' => 'Broadcast Pengumuman', 'route' => 'pokja.pengumuman.index', 'icon' => 'megaphone'],
                             ['name' => 'Custom Report & Ekspor', 'route' => 'pokja.custom_report.index', 'icon' => 'file-spreadsheet'],
                             ['name' => 'Template Sertifikat', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'award'],
                             ['name' => 'Template Surat PKL', 'route' => 'pokja.pengaturan.surat_pengantar', 'icon' => 'file-text'],
                             ['name' => 'Kop Laporan PDF', 'route' => 'pokja.pengaturan.kop_laporan', 'icon' => 'building'],
                         ]
                     ];
+                } else {
+                    $navItems[] = ['name' => 'Broadcast Pengumuman', 'route' => 'pokja.pengumuman.index', 'icon' => 'megaphone'];
                 }
 
                 $navItems[] = ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'];
@@ -138,6 +144,7 @@ class AppServiceProvider extends ServiceProvider
                     ['name' => 'Data DUDI', 'route' => 'kaprog.dudi.index', 'icon' => 'building-2'],
                     ['name' => 'Peta DUDI', 'route' => 'shared.pemetaan.maps', 'icon' => 'map'],
                     ['name' => 'Monitoring Pembimbing', 'route' => 'kaprog.monitoring.index', 'icon' => 'eye'],
+                    ['name' => 'Rekap Kehadiran Jurusan', 'route' => 'kaprog.rekap_kehadiran.index', 'icon' => 'clipboard-list'],
                     ['name' => 'Laporan Kaprog', 'route' => 'kaprog.laporan.index', 'icon' => 'file-bar-chart-2'],
                     ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
                 ];
@@ -182,6 +189,7 @@ class AppServiceProvider extends ServiceProvider
                         'icon' => 'eye',
                         'children' => [
                             ['name' => 'Monitoring Pembimbing', 'route' => 'pokja.monitoring.index', 'icon' => 'eye'],
+                            ['name' => 'Log Kunjungan Lapangan', 'route' => 'pokja.kunjungan.index', 'icon' => 'map-pin'],
                             ['name' => 'Evaluasi PKL', 'route' => 'pokja.evaluasi.index', 'icon' => 'bar-chart-3'],
                             ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
                         ]
@@ -190,6 +198,8 @@ class AppServiceProvider extends ServiceProvider
                         'name' => 'Pengaturan',
                         'icon' => 'settings',
                         'children' => [
+                            ['name' => 'Tanggal Merah Nasional', 'route' => 'pokja.hari_libur.index', 'icon' => 'calendar-off'],
+                            ['name' => 'Broadcast Pengumuman', 'route' => 'pokja.pengumuman.index', 'icon' => 'megaphone'],
                             ['name' => 'Custom Report & Ekspor', 'route' => 'admin.custom_report.index', 'icon' => 'file-spreadsheet'],
                             ['name' => 'Impor Pemetaan PKL', 'route' => 'pokja.pengaturan.import_pemetaan', 'icon' => 'file-up'],
                             ['name' => 'Template Sertifikat', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'award'],

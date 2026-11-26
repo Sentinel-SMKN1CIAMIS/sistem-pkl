@@ -112,11 +112,15 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::patch('profile', [\App\Http\Controllers\PembimbingSekolah\ProfileController::class, 'update'])->name('profile.update');
         Route::get('dudi-mentor', [\App\Http\Controllers\PembimbingSekolah\DudiMentorController::class, 'index'])->name('dudi_mentor.index');
         Route::post('dudi-mentor', [\App\Http\Controllers\PembimbingSekolah\DudiMentorController::class, 'store'])->name('dudi_mentor.store');
+        Route::get('kunjungan', [\App\Http\Controllers\PembimbingSekolah\KunjunganMonitoringController::class, 'index'])->name('kunjungan.index');
+        Route::post('kunjungan', [\App\Http\Controllers\PembimbingSekolah\KunjunganMonitoringController::class, 'store'])->name('kunjungan.store');
+        Route::delete('kunjungan/{kunjungan}', [\App\Http\Controllers\PembimbingSekolah\KunjunganMonitoringController::class, 'destroy'])->name('kunjungan.destroy');
     });
 
     Route::middleware('role:pembimbing_dudi')->prefix('pembimbing_dudi')->name('pembimbing_dudi.')->group(function () {
         Route::get('siswa', [\App\Http\Controllers\PembimbingDudi\SiswaController::class, 'index'])->name('siswa.index');
         Route::get('jurnal', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'index'])->name('jurnal.index');
+        Route::post('jurnal/bulk-approve', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'bulkApprove'])->name('jurnal.bulk-approve');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'update'])->name('jurnal.update');
         Route::get('absensi', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'index'])->name('absensi.index');
         Route::patch('absensi/{absensi}/approve-early-leave', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'approveEarlyLeave'])->name('absensi.approve-early-leave');
@@ -139,6 +143,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // Monitoring Pembimbing (View Only)
         Route::get('monitoring', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'index'])->name('monitoring.index');
         Route::get('monitoring/{pembimbingSekolah}', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'show'])->name('monitoring.show');
+        Route::get('rekap-kehadiran', [\App\Http\Controllers\Kaprog\RekapKehadiranController::class, 'index'])->name('rekap_kehadiran.index');
         
         // Pengajuan PKL
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
@@ -152,6 +157,23 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::middleware('role:pokja,kaprog,pembimbing_sekolah,super_admin,kepala_sekolah')->group(function () {
         Route::get('peta-dudi', [\App\Http\Controllers\Pokja\PemetaanController::class, 'maps'])->name('shared.pemetaan.maps');
         Route::get('peta-dudi/data', [\App\Http\Controllers\Pokja\PemetaanController::class, 'mapsData'])->name('shared.pemetaan.maps.data');
+    });
+
+    // Rekap Kunjungan Monitoring Lapangan - Pokja, Super Admin, Kepala Sekolah, Kaprog
+    Route::middleware('role:pokja,kaprog,super_admin,kepala_sekolah')->group(function () {
+        Route::get('pokja/kunjungan-monitoring', [\App\Http\Controllers\Pokja\KunjunganMonitoringController::class, 'index'])->name('pokja.kunjungan.index');
+    });
+
+    // Tanggal Merah Nasional & Broadcast Pengumuman - Pokja, Super Admin, Kepala Sekolah
+    Route::middleware('role:pokja,super_admin,kepala_sekolah')->prefix('pokja')->name('pokja.')->group(function () {
+        Route::get('hari-libur', [\App\Http\Controllers\Pokja\HariLiburNasionalController::class, 'index'])->name('hari_libur.index');
+        Route::post('hari-libur', [\App\Http\Controllers\Pokja\HariLiburNasionalController::class, 'store'])->name('hari_libur.store');
+        Route::delete('hari-libur/{hariLibur}', [\App\Http\Controllers\Pokja\HariLiburNasionalController::class, 'destroy'])->name('hari_libur.destroy');
+
+        Route::get('pengumuman', [\App\Http\Controllers\Pokja\PengumumanController::class, 'index'])->name('pengumuman.index');
+        Route::post('pengumuman', [\App\Http\Controllers\Pokja\PengumumanController::class, 'store'])->name('pengumuman.store');
+        Route::patch('pengumuman/{pengumuman}/toggle', [\App\Http\Controllers\Pokja\PengumumanController::class, 'toggle'])->name('pengumuman.toggle');
+        Route::delete('pengumuman/{pengumuman}', [\App\Http\Controllers\Pokja\PengumumanController::class, 'destroy'])->name('pengumuman.destroy');
     });
 
     // General Auth Routes

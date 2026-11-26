@@ -92,6 +92,11 @@ class JurnalController extends Controller
             ->keyBy(function($item) {
                 return \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d');
             });
+
+        $nationalHolidays = \App\Models\HariLiburNasional::whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->get()
+            ->keyBy(fn($h) => \Carbon\Carbon::parse($h->tanggal)->format('Y-m-d'));
             
         $startDayOfWeek = $currentDate->copy()->startOfMonth()->dayOfWeekIso;
         $calendar = [];
@@ -112,6 +117,7 @@ class JurnalController extends Controller
             $dateStr = $dateObj->format('Y-m-d');
             $jurnal = $jurnals->get($dateStr);
             $absensi = $absensis->get($dateStr);
+            $nationalHoliday = $nationalHolidays->get($dateStr);
             $isRoutineOff = $siswa->isRoutineDayOff($dateObj);
             
             $diffInDays = \Carbon\Carbon::parse($dateStr)->diffInDays(\Carbon\Carbon::today(), false);
@@ -127,6 +133,8 @@ class JurnalController extends Controller
                 }
             } elseif ($absensi && in_array($absensi->status, ['izin', 'sakit', 'libur'])) {
                 $status = 'libur';
+            } elseif ($nationalHoliday && (!$absensi || $absensi->status !== 'hadir')) {
+                $status = 'libur_nasional';
             } elseif ($isRoutineOff && (!$absensi || $absensi->status !== 'hadir')) {
                 $status = 'libur_rutin';
             } elseif ($dateStr > $today) {
@@ -141,6 +149,7 @@ class JurnalController extends Controller
                 'is_current_month' => true,
                 'is_today' => $dateStr === $today,
                 'is_routine_off' => $isRoutineOff,
+                'national_holiday' => $nationalHoliday,
                 'status' => $status,
                 'jurnal' => $jurnal,
                 'absensi' => $absensi,
@@ -158,7 +167,8 @@ class JurnalController extends Controller
         $hasAbsenToday = \App\Models\Absensi::where('siswa_id', $siswa->id)
             ->where('tanggal', \Carbon\Carbon::today()->toDateString())
             ->exists();
-        $isTodayRoutineOff = $siswa->isRoutineDayOff(\Carbon\Carbon::today());
+        $isTodayRoutineOff = $siswa->isRoutineDayOff(\Carbon\Carbon::today())
+            || \App\Models\HariLiburNasional::findByDate(\Carbon\Carbon::today()) !== null;
             
         $maxBackdateDays = Jurnal::getMaxBackdateDays();
             

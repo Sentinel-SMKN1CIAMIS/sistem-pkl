@@ -36,6 +36,8 @@
         </div>
     </div>
 
+    <x-early-warning-widget :earlyWarning="$earlyWarning ?? null" :detailUrl="route('kaprog.rekap_kehadiran.index')" />
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <!-- Attendance Rate Widget -->
         <div class="glass-card p-6 flex flex-col justify-between">

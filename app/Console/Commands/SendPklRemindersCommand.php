@@ -28,6 +28,9 @@ class SendPklRemindersCommand extends Command
 
         // 0. Pengingat Absen Masuk (Mendukung semua shift & jam alarm custom per siswa)
         $currentTime = $now->format('H:i');
+        $isNationalHolidayToday = \App\Models\HariLiburNasional::findByDate($now) !== null;
+
+        if (!$isNationalHolidayToday) {
         $todayCheckinNotifications = Notifikasi::where('judul', 'Jangan Lupa Absen Masuk PKL')
             ->whereDate('created_at', $todayStr)
             ->get(['to_user_id', 'created_at'])
@@ -83,6 +86,7 @@ class SendPklRemindersCommand extends Command
             ]);
 
             $checkinUserIds[] = $user->id;
+        }
         }
 
         // 1. Pengingat Absen Pulang (Checkout) Relatif terhadap Jam Masuk atau Waktu Pilihan Siswa

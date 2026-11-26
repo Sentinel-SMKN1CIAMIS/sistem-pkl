@@ -102,7 +102,8 @@ class DashboardController extends Controller
                             ])->toArray(),
                     ];
                 });
-                return view('dashboards.pembimbing-sekolah', compact('stats'));
+                $earlyWarning = app(\App\Services\EarlyWarningService::class)->getWarningsForUser($user);
+                return view('dashboards.pembimbing-sekolah', compact('stats', 'earlyWarning'));
             case 'pembimbing_dudi':
                 $mentor = $user->pembimbingDudi;
                 $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_pembimbing_dudi_{$mentor->id}", 300, function() use ($mentor) {
@@ -202,7 +203,8 @@ class DashboardController extends Controller
                 $stats['missing_attendance'] = collect($stats['missing_attendance'])->map(fn($s) => (object)$s);
                 $stats['missing_journal'] = collect($stats['missing_journal'])->map(fn($s) => (object)$s);
 
-                return view('dashboards.kaprog', compact('stats'));
+                $earlyWarning = app(\App\Services\EarlyWarningService::class)->getWarningsForUser($user);
+                return view('dashboards.kaprog', compact('stats', 'earlyWarning'));
             case 'kepala_sekolah':
             case 'pokja':
                 $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_{$role}_{$user->id}", 300, function() use ($user) {
@@ -270,7 +272,8 @@ class DashboardController extends Controller
                         'week_absensi' => $weekAbsensiData,
                     ];
                 });
-                return view('dashboards.pokja', compact('stats'));
+                $earlyWarning = app(\App\Services\EarlyWarningService::class)->getWarningsForUser($user);
+                return view('dashboards.pokja', compact('stats', 'earlyWarning'));
             case 'super_admin':
                 $stats = \Illuminate\Support\Facades\Cache::remember("dashboard_{$role}", 300, function() {
                     return [

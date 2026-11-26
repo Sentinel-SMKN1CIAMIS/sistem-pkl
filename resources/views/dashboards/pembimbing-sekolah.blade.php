@@ -17,6 +17,8 @@
         }
     @endphp
 
+    <x-pengumuman-banner />
+
     @if($pembimbingProfile)
         <div class="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-600 to-indigo-700 p-5 sm:p-6 text-white shadow-xl shadow-blue-500/10 mb-6">
             <!-- Decorative background glow circles -->
@@ -86,6 +88,8 @@
             </div>
         </a>
     </div>
+
+    <x-early-warning-widget :earlyWarning="$earlyWarning ?? null" :detailUrl="route('pembimbing_sekolah.siswa.index')" />
 
     <!-- Quick Actions (Mobile Only) -->
     <div class="block lg:hidden mt-8 mb-8">

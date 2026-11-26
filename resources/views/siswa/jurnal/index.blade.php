@@ -130,6 +130,7 @@
                                 'akan_datang' => 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700',
                                 'libur' => 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
                                 'libur_rutin' => 'bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-800',
+                                'libur_nasional' => 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800',
                                 'terlewat' => 'bg-slate-200 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-600 border-dashed',
                             ];
                             
@@ -141,6 +142,7 @@
                                 'akan_datang' => 'minus',
                                 'libur' => 'user-x',
                                 'libur_rutin' => 'calendar-off',
+                                'libur_nasional' => 'flag',
                                 'terlewat' => 'calendar-x',
                             ];
                             
@@ -301,6 +303,11 @@
                                 
                                 @if($dayData['status'] === 'akan_datang')
                                     <p class="text-slate-500 dark:text-slate-400 mb-0">Tanggal ini belum tiba. Anda belum bisa mengisi jurnal.</p>
+                                @elseif($dayData['status'] === 'libur_nasional')
+                                    <p class="text-slate-500 dark:text-slate-400 mb-2">
+                                        Tanggal Merah Nasional: <span class="font-bold text-rose-600 dark:text-rose-400">{{ $dayData['national_holiday']->nama ?? 'Libur Nasional' }}</span>. Jurnal tidak wajib diisi.
+                                    </p>
+                                    <p class="text-xs text-slate-400">Jika DUDI Anda tetap beroperasi pada tanggal merah ini, Anda tetap dapat absen masuk dan mengisi jurnal seperti biasa.</p>
                                 @elseif($dayData['status'] === 'libur_rutin')
                                     <p class="text-slate-500 dark:text-slate-400 mb-2">Tanggal ini adalah jadwal <span class="font-bold text-sky-500">Libur Rutin DUDI</span> Anda. Jurnal tidak wajib diisi.</p>
                                     <p class="text-xs text-slate-400">Jika tetap masuk kerja / lembur pada tanggal ini, silakan lakukan absensi masuk terlebih dahulu.</p>

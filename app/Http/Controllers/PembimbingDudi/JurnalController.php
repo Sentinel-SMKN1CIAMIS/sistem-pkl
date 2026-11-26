@@ -79,4 +79,59 @@ class JurnalController extends Controller
 
         return back()->with('success', 'Status jurnal berhasil diperbarui.');
     }
+
+    /**
+     * Bulk approve (ACC) multiple pending journals belonging to this DUDI mentor's students.
+     */
+    public function bulkApprove(Request $request)
+    {
+        $mentor = auth()->user()->pembimbingDudi;
+        if (!$mentor) {
+            abort(403, 'Akun Anda bukan Pembimbing DUDI.');
+        }
+
+        $validated = $request->validate([
+            'jurnal_ids' => ['required', 'array', 'min:1'],
+            'jurnal_ids.*' => ['integer', 'exists:jurnals,id'],
+            'catatan_pembimbing' => ['nullable', 'string', 'max:500'],
+        ], [
+            'jurnal_ids.required' => 'Pilih minimal 1 jurnal untuk disetujui.',
+        ]);
+
+        // Only approve pending journals strictly owned by students assigned to this DUDI mentor
+        $jurnals = Jurnal::with('siswa')
+            ->whereIn('id', $validated['jurnal_ids'])
+            ->where('status', 'pending')
+            ->whereHas('siswa', fn($q) => $q->where('pembimbing_dudi_id', $mentor->id))
+            ->get();
+
+        if ($jurnals->isEmpty()) {
+            return back()->with('error', 'Tidak ada jurnal pending yang valid untuk disetujui.');
+        }
+
+        $count = 0;
+        $note = $validated['catatan_pembimbing'] ?? null;
+
+        foreach ($jurnals as $jurnal) {
+            $jurnal->update([
+                'status' => 'valid',
+                'catatan_pembimbing' => $note ?: $jurnal->catatan_pembimbing,
+            ]);
+
+            if ($jurnal->siswa && $jurnal->siswa->user_id) {
+                \App\Models\Notifikasi::create([
+                    'from_user_id' => auth()->id(),
+                    'to_user_id' => $jurnal->siswa->user_id,
+                    'judul' => 'Jurnal Divalidasi',
+                    'pesan' => 'Jurnal kegiatan Anda pada tanggal ' . $jurnal->tanggal . ' telah disetujui oleh pembimbing DUDI.',
+                    'tipe' => 'success',
+                    'is_read' => false,
+                ]);
+            }
+
+            $count++;
+        }
+
+        return back()->with('success', "{$count} jurnal siswa berhasil disetujui (ACC) sekaligus.");
+    }
 }
