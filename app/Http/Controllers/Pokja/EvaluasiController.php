@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Pokja;
 use App\Http\Controllers\Controller;
 use App\Models\Siswa;
 use App\Models\LaporanPkl;
+use App\Services\PdfKopService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class EvaluasiController extends Controller
@@ -35,5 +37,39 @@ class EvaluasiController extends Controller
         $rataJurnal = Siswa::withCount(['jurnal' => function($q) { $q->where('status', 'valid'); }])->get()->avg('jurnal_count');
         
         return view('pokja.evaluasi.index', compact('siswas', 'totalSiswa', 'laporanMasuk', 'rataJurnal'));
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $search = $request->search;
+
+        $siswas = Siswa::with(['dudi', 'laporan', 'pembimbingSekolah', 'konsentrasiKeahlian'])
+            ->withCount([
+                'jurnal as total_jurnal',
+                'jurnal as valid_jurnal' => fn($q) => $q->where('status', 'valid'),
+                'absensi',
+            ])
+            ->when($search, function ($query) use ($search) {
+                $query->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('nis', 'like', "%{$search}%");
+            })
+            ->orderBy('kelas')
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        $totalSiswa = $siswas->count();
+        $laporanMasuk = $siswas->filter(fn($s) => $s->laporan !== null)->count();
+        $rataJurnal = $totalSiswa > 0 ? round($siswas->avg('valid_jurnal'), 1) : 0;
+
+        $kopData = PdfKopService::getKopData();
+        $pdf = Pdf::loadView('pokja.evaluasi.export-pdf', array_merge($kopData, compact(
+            'siswas',
+            'totalSiswa',
+            'laporanMasuk',
+            'rataJurnal',
+            'search'
+        )))->setPaper('a4', 'landscape');
+
+        return $pdf->download('rekap-evaluasi-progres-pkl-' . now()->format('Y-m-d') . '.pdf');
     }
 }

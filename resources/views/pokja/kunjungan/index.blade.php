@@ -1,6 +1,15 @@
 <x-app-layout>
     <x-slot name="header">Rekap Kunjungan Monitoring Lapangan</x-slot>
 
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <p class="text-xs text-slate-500 dark:text-slate-400">Rekap seluruh catatan kunjungan supervisi lapangan guru pembimbing ke lokasi DUDI.</p>
+        <a href="{{ route('pokja.kunjungan.export_pdf', request()->query()) }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors shrink-0 w-fit">
+            <i data-lucide="file-down" class="w-4 h-4"></i>
+            Export PDF
+        </a>
+    </div>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div class="glass-card p-5 border-l-4 border-blue-500">
             <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Kunjungan Tercatat</p>

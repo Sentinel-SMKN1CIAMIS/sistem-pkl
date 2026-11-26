@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\Absensi;
+use App\Services\PdfKopService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
 class AbsensiController extends Controller
@@ -32,9 +34,31 @@ class AbsensiController extends Controller
             })
             ->with('siswa')
             ->latest('tanggal')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return view('pembimbing-dudi.absensi.index', compact('absensis', 'pendingEarlyLeaves'));
+    }
+
+    public function exportPdf()
+    {
+        $mentor = auth()->user()->pembimbingDudi;
+        if (!$mentor) {
+            abort(403, 'Anda bukan Pembimbing DUDI.');
+        }
+
+        $mentor->load('dudi');
+        $absensis = Absensi::whereHas('siswa', fn($q) => $q->where('pembimbing_dudi_id', $mentor->id))
+            ->with('siswa')
+            ->orderByDesc('tanggal')
+            ->orderByDesc('id')
+            ->get();
+
+        $kopData = PdfKopService::getKopData();
+        $pdf = Pdf::loadView('pembimbing-dudi.absensi.export-pdf', array_merge($kopData, compact('mentor', 'absensis')))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('rekap-kehadiran-siswa-dudi-' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function approveEarlyLeave(Request $request, Absensi $absensi)

@@ -7,12 +7,14 @@ use App\Models\Dudi;
 use App\Models\KonsentrasiKeahlian;
 use App\Models\KunjunganMonitoring;
 use App\Models\PembimbingSekolah;
+use App\Services\PdfKopService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class KunjunganMonitoringController extends Controller
 {
-    public function index(Request $request)
+    private function buildQuery(Request $request)
     {
         $user = Auth::user();
         $pembimbingId = $request->query('pembimbing_sekolah_id', 'semua');
@@ -25,7 +27,6 @@ class KunjunganMonitoringController extends Controller
             'dudi:id,nama,kota,konsentrasi_keahlian_id',
         ]);
 
-        // Scope Kaprog to their Program Keahlian
         if ($user->role === 'kaprog' && $user->program_keahlian_id) {
             $allowedIds = KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id')->all();
             $query->whereHas('pembimbingSekolah', fn($q) => $q->whereIn('konsentrasi_keahlian_id', $allowedIds));
@@ -52,6 +53,13 @@ class KunjunganMonitoringController extends Controller
             });
         }
 
+        return [$query, $pembimbingId, $dudiId, $month, $search];
+    }
+
+    public function index(Request $request)
+    {
+        [$query, $pembimbingId, $dudiId, $month, $search] = $this->buildQuery($request);
+
         $kunjungans = $query->orderByDesc('tanggal_kunjungan')->orderByDesc('id')->paginate(15)->withQueryString();
         $teachers = PembimbingSekolah::orderBy('nama_lengkap')->get(['id', 'nama_lengkap']);
         $dudis = Dudi::orderBy('nama')->get(['id', 'nama']);
@@ -72,5 +80,19 @@ class KunjunganMonitoringController extends Controller
             'month',
             'search'
         ));
+    }
+
+    public function exportPdf(Request $request)
+    {
+        [$query, $pembimbingId, $dudiId, $month, $search] = $this->buildQuery($request);
+        $kunjungans = $query->orderByDesc('tanggal_kunjungan')->orderByDesc('id')->get();
+        $kopData = PdfKopService::getKopData();
+
+        $pdf = Pdf::loadView('pokja.kunjungan.export-pdf', array_merge($kopData, compact(
+            'kunjungans',
+            'month'
+        )))->setPaper('a4', 'landscape');
+
+        return $pdf->download('rekap-kunjungan-monitoring-' . now()->format('Y-m-d') . '.pdf');
     }
 }

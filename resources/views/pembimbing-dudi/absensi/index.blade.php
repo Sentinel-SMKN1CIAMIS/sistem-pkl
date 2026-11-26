@@ -1,8 +1,13 @@
 <x-app-layout>
     <x-slot name="header">Kehadiran Siswa PKL</x-slot>
 
-    <div class="mb-6">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p class="text-slate-600 dark:text-slate-400">Pantau dan cek tanda tangan serta lokasi kehadiran siswa hari ini.</p>
+        <a href="{{ route('pembimbing_dudi.absensi.export_pdf') }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors shrink-0 w-fit">
+            <i data-lucide="file-down" class="w-4 h-4"></i>
+            Export PDF
+        </a>
     </div>
 
     @if(session('success'))

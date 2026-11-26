@@ -113,6 +113,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('dudi-mentor', [\App\Http\Controllers\PembimbingSekolah\DudiMentorController::class, 'index'])->name('dudi_mentor.index');
         Route::post('dudi-mentor', [\App\Http\Controllers\PembimbingSekolah\DudiMentorController::class, 'store'])->name('dudi_mentor.store');
         Route::get('kunjungan', [\App\Http\Controllers\PembimbingSekolah\KunjunganMonitoringController::class, 'index'])->name('kunjungan.index');
+        Route::get('kunjungan/export-pdf', [\App\Http\Controllers\PembimbingSekolah\KunjunganMonitoringController::class, 'exportPdf'])->name('kunjungan.export_pdf');
         Route::post('kunjungan', [\App\Http\Controllers\PembimbingSekolah\KunjunganMonitoringController::class, 'store'])->name('kunjungan.store');
         Route::delete('kunjungan/{kunjungan}', [\App\Http\Controllers\PembimbingSekolah\KunjunganMonitoringController::class, 'destroy'])->name('kunjungan.destroy');
     });
@@ -123,6 +124,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('jurnal/bulk-approve', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'bulkApprove'])->name('jurnal.bulk-approve');
         Route::patch('jurnal/{jurnal}', [\App\Http\Controllers\PembimbingDudi\JurnalController::class, 'update'])->name('jurnal.update');
         Route::get('absensi', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'index'])->name('absensi.index');
+        Route::get('absensi/export-pdf', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'exportPdf'])->name('absensi.export_pdf');
         Route::patch('absensi/{absensi}/approve-early-leave', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'approveEarlyLeave'])->name('absensi.approve-early-leave');
         Route::patch('absensi/{absensi}/reject-early-leave', [\App\Http\Controllers\PembimbingDudi\AbsensiController::class, 'rejectEarlyLeave'])->name('absensi.reject-early-leave');
         Route::get('feedback', [\App\Http\Controllers\PembimbingDudi\FeedbackController::class, 'index'])->name('feedback.index');
@@ -142,10 +144,13 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
         // Monitoring Pembimbing & Monitoring Siswa Langsung (View Only)
         Route::get('monitoring', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'index'])->name('monitoring.index');
+        Route::get('monitoring/export-pdf', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'exportPdf'])->name('monitoring.export_pdf');
         Route::get('monitoring/{pembimbingSekolah}', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'show'])->name('monitoring.show');
         Route::get('monitoring-siswa', [\App\Http\Controllers\Kaprog\MonitoringSiswaController::class, 'index'])->name('monitoring_siswa.index');
+        Route::get('monitoring-siswa/export-pdf', [\App\Http\Controllers\Kaprog\MonitoringSiswaController::class, 'exportPdf'])->name('monitoring_siswa.export_pdf');
         Route::get('monitoring-siswa/{siswa}', [\App\Http\Controllers\Kaprog\MonitoringSiswaController::class, 'show'])->name('monitoring_siswa.show');
         Route::get('rekap-kehadiran', [\App\Http\Controllers\Kaprog\RekapKehadiranController::class, 'index'])->name('rekap_kehadiran.index');
+        Route::get('rekap-kehadiran/export-pdf', [\App\Http\Controllers\Kaprog\RekapKehadiranController::class, 'exportPdf'])->name('rekap_kehadiran.export_pdf');
         
         // Pengajuan PKL
         Route::get('pengajuan-pkl', [\App\Http\Controllers\Kaprog\PengajuanPklController::class, 'index'])->name('pengajuan_pkl.index');
@@ -164,6 +169,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     // Rekap Kunjungan Monitoring Lapangan - Pokja, Super Admin, Kepala Sekolah, Kaprog
     Route::middleware('role:pokja,kaprog,super_admin,kepala_sekolah')->group(function () {
         Route::get('pokja/kunjungan-monitoring', [\App\Http\Controllers\Pokja\KunjunganMonitoringController::class, 'index'])->name('pokja.kunjungan.index');
+        Route::get('pokja/kunjungan-monitoring/export-pdf', [\App\Http\Controllers\Pokja\KunjunganMonitoringController::class, 'exportPdf'])->name('pokja.kunjungan.export_pdf');
     });
 
     // Tanggal Merah Nasional & Broadcast Pengumuman - Pokja, Super Admin, Kepala Sekolah
@@ -284,9 +290,11 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('zona/geojson', [\App\Http\Controllers\Pokja\ZonaController::class, 'geojson'])->name('zona.geojson');
 
         Route::get('monitoring', [\App\Http\Controllers\Pokja\MonitoringController::class, 'index'])->name('monitoring.index');
+        Route::get('monitoring/export-pdf', [\App\Http\Controllers\Pokja\MonitoringController::class, 'exportPdf'])->name('monitoring.export_pdf');
         Route::get('monitoring/{pembimbingSekolah}', [\App\Http\Controllers\Pokja\MonitoringController::class, 'show'])->name('monitoring.show');
         Route::post('monitoring/{pembimbingSekolah}/note', [\App\Http\Controllers\Pokja\MonitoringController::class, 'storeNote'])->name('monitoring.storeNote');
         Route::get('evaluasi', [\App\Http\Controllers\Pokja\EvaluasiController::class, 'index'])->name('evaluasi.index');
+        Route::get('evaluasi/export-pdf', [\App\Http\Controllers\Pokja\EvaluasiController::class, 'exportPdf'])->name('evaluasi.export_pdf');
         Route::get('feedback', [\App\Http\Controllers\Pokja\FeedbackController::class, 'index'])->name('feedback.index');
         Route::get('feedback/{feedback}/print', [\App\Http\Controllers\Pokja\FeedbackController::class, 'print'])->name('feedback.print');
 

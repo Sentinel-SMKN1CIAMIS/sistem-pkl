@@ -92,10 +92,17 @@
         {{-- Right: Riwayat Kunjungan --}}
         <div class="lg:col-span-2 space-y-4">
             <div class="glass-card p-6">
-                <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                    <i data-lucide="history" class="w-4 h-4 text-emerald-500"></i>
-                    Riwayat Kunjungan Lapangan Anda
-                </h3>
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-emerald-500"></i>
+                        Riwayat Kunjungan Lapangan Anda
+                    </h3>
+                    <a href="{{ route('pembimbing_sekolah.kunjungan.export_pdf') }}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors shrink-0">
+                        <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                        Export PDF
+                    </a>
+                </div>
 
                 @forelse($kunjungans as $item)
                     <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 mb-3 last:mb-0">

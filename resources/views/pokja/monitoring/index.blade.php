@@ -1,8 +1,13 @@
 <x-app-layout>
     <x-slot name="header">Monitoring Pembimbing Sekolah</x-slot>
 
-    <div class="mb-6">
-        <p class="text-slate-600 dark:text-slate-400">Review performa dan tingkat keaktifan pembimbing sekolah dalam mengawal jurnal & kehadiran siswa PKL secara real-time.</p>
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <p class="text-slate-600 dark:text-slate-400">Review performa dan tingkat keaktifan pembimbing sekolah dalam mengawal jurnal &amp; kehadiran siswa PKL secara real-time.</p>
+        <a href="{{ route('pokja.monitoring.export_pdf', request()->query()) }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors shrink-0 w-fit">
+            <i data-lucide="file-down" class="w-4 h-4"></i>
+            Export PDF
+        </a>
     </div>
 
     <!-- Summary Cards -->
@@ -254,5 +259,9 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Tidak ada pembimbing sekolah yang cocok dengan kriteria pencarian Anda.</p>
             </div>
         @endforelse
+    </div>
+
+    <div class="mt-6 glass-card px-5 py-3.5">
+        {{ $mentors->links() }}
     </div>
 </x-app-layout>

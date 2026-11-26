@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Dudi;
 use App\Models\KunjunganMonitoring;
 use App\Models\Siswa;
+use App\Services\PdfKopService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -38,9 +40,30 @@ class KunjunganMonitoringController extends Controller
             ->where('pembimbing_sekolah_id', $teacher->id)
             ->orderByDesc('tanggal_kunjungan')
             ->orderByDesc('id')
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
 
         return view('pembimbing-sekolah.kunjungan.index', compact('dudis', 'kunjungans'));
+    }
+
+    public function exportPdf()
+    {
+        $teacher = Auth::user()->pembimbingSekolah;
+        if (!$teacher) {
+            abort(403, 'Profil Pembimbing Sekolah tidak ditemukan.');
+        }
+
+        $kunjungans = KunjunganMonitoring::with('dudi:id,nama,kota,alamat')
+            ->where('pembimbing_sekolah_id', $teacher->id)
+            ->orderByDesc('tanggal_kunjungan')
+            ->orderByDesc('id')
+            ->get();
+
+        $kopData = PdfKopService::getKopData();
+        $pdf = Pdf::loadView('pembimbing-sekolah.kunjungan.export-pdf', array_merge($kopData, compact('teacher', 'kunjungans')))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('rekap-log-kunjungan-' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function store(Request $request)
