@@ -202,6 +202,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
     // Pesan (Chat) Routes
     Route::get('pesan', [\App\Http\Controllers\PesanController::class, 'index'])->name('pesan.index');
+    Route::get('pesan/search', [\App\Http\Controllers\PesanController::class, 'search'])->name('pesan.search');
     Route::get('pesan/broadcast', [\App\Http\Controllers\PesanController::class, 'index'])->name('pesan.broadcast.form');
     Route::post('pesan/broadcast', [\App\Http\Controllers\PesanController::class, 'broadcast'])->name('pesan.broadcast');
     Route::get('pesan/{user}', [\App\Http\Controllers\PesanController::class, 'show'])->name('pesan.show');

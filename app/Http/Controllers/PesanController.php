@@ -131,7 +131,84 @@ class PesanController extends Controller
             $kontak = $kontak->merge($historyUsers);
         }
 
-        return $kontak->unique('id')->values();
+        $uniqueKontak = new \Illuminate\Database\Eloquent\Collection(
+            $kontak->filter()->unique('id')->values()->all()
+        );
+        if ($uniqueKontak->isNotEmpty()) {
+            $uniqueKontak->loadMissing('siswa:id,user_id,nis,kelas');
+        }
+
+        return $uniqueKontak;
+    }
+
+    /**
+     * Pencarian gaya WhatsApp: mencari nama/NIS/kelas kontak sekaligus kata/kalimat di seluruh isi chat.
+     */
+    public function search(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        if ($q === '') {
+            return response()->json([
+                'contacts' => [],
+                'messages' => [],
+            ]);
+        }
+
+        $authId = Auth::id();
+        $needle = mb_strtolower($q);
+
+        // 1. Cari di daftar kontak (nama, NIS, kelas, role)
+        $kontak = $this->getKontak();
+        $matchingContacts = $kontak->filter(function (User $u) use ($needle) {
+            $nameMatch = str_contains(mb_strtolower((string) $u->name), $needle);
+            $roleMatch = str_contains(mb_strtolower(str_replace('_', ' ', (string) $u->role)), $needle);
+            $nisMatch = $u->siswa && str_contains(mb_strtolower((string) $u->siswa->nis), $needle);
+            $kelasMatch = $u->siswa && str_contains(mb_strtolower((string) $u->siswa->kelas), $needle);
+            return $nameMatch || $roleMatch || $nisMatch || $kelasMatch;
+        })->take(20)->values()->map(function (User $u) {
+            $sublabel = $u->siswa
+                ? trim(($u->siswa->kelas ? $u->siswa->kelas . ' · ' : '') . ($u->siswa->nis ?? ''))
+                : ucwords(str_replace('_', ' ', (string) $u->role));
+
+            return [
+                'id' => $u->id,
+                'name' => $u->name,
+                'initial' => strtoupper(mb_substr((string) $u->name, 0, 1)),
+                'sublabel' => $sublabel,
+                'url' => route('pesan.show', $u),
+            ];
+        });
+
+        // 2. Cari di seluruh riwayat isi chat milik user yang login (case-insensitive lintas PostgreSQL/MySQL/SQLite)
+        $matchingMessages = Pesan::with(['fromUser:id,name', 'toUser:id,name'])
+            ->where(function ($query) use ($authId) {
+                $query->where('from_user_id', $authId)
+                    ->orWhere('to_user_id', $authId);
+            })
+            ->whereRaw('LOWER(isi) LIKE ?', ['%' . $needle . '%'])
+            ->latest('created_at')
+            ->limit(25)
+            ->get()
+            ->map(function (Pesan $msg) use ($authId) {
+                $mine = $msg->from_user_id === $authId;
+                $partner = $mine ? $msg->toUser : $msg->fromUser;
+                $partnerId = $mine ? $msg->to_user_id : $msg->from_user_id;
+
+                return [
+                    'id' => $msg->id,
+                    'contact_id' => $partnerId,
+                    'contact_name' => $partner?->name ?? 'Pengguna',
+                    'mine' => $mine,
+                    'isi' => \Illuminate\Support\Str::limit($msg->isi, 120),
+                    'time' => $msg->created_at?->isoFormat('D MMM, HH:mm') ?? '',
+                    'url' => route('pesan.show', $partnerId) . '?highlight=' . $msg->id,
+                ];
+            });
+
+        return response()->json([
+            'contacts' => $matchingContacts,
+            'messages' => $matchingMessages,
+        ]);
     }
 
     /**
