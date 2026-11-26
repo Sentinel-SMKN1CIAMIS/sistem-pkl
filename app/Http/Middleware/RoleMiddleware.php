@@ -30,6 +30,11 @@ class RoleMiddleware
             return $next($request);
         }
 
+        // Dual-role: Pembimbing Sekolah with shared Pokja workspace access
+        if (in_array('pokja', $roles) && $user->canAccessPokja()) {
+            return $next($request);
+        }
+
         // Check if route requires 'pembimbing_sekolah' and user has a pembimbingSekolah profile
         if (in_array('pembimbing_sekolah', $roles) && $user->pembimbingSekolah()->exists()) {
             return $next($request);

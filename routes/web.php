@@ -47,6 +47,11 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     
     // Redirects to correct dashboard based on role
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/workspace', [\App\Http\Controllers\WorkspaceController::class, 'select'])->name('workspace.select');
+    Route::post('/workspace/switch', [\App\Http\Controllers\WorkspaceController::class, 'switch'])->name('workspace.switch');
+    Route::get('/pokja/activity-feed', [\App\Http\Controllers\WorkspaceController::class, 'activityFeed'])
+        ->middleware('role:pokja,super_admin')
+        ->name('pokja.activity-feed');
     
     // Siswa Routes
     Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {

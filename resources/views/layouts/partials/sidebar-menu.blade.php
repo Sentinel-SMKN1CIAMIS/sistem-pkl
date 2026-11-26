@@ -1,6 +1,34 @@
 @php
     $navItems = $navItems ?? [];
+    $sidebarUser = auth()->user();
+    $hasDualWorkspace = $sidebarUser && $sidebarUser->hasDualWorkspace();
+    $activeWs = $sidebarUser ? $sidebarUser->activeWorkspace() : null;
+    $targetWs = $activeWs === 'pokja' ? 'pembimbing_sekolah' : 'pokja';
+    $targetWsLabel = $targetWs === 'pokja' ? 'Workspace Pokja' : 'Pembimbing Sekolah';
 @endphp
+
+@if($hasDualWorkspace)
+    <div class="mb-4 p-3 rounded-2xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/70">
+        <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Workspace Aktif</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $activeWs === 'pokja' ? 'bg-blue-600 text-white' : 'bg-emerald-600 text-white' }}">
+                {{ $activeWs === 'pokja' ? 'Pokja' : 'Pembimbing' }}
+            </span>
+        </div>
+        <form action="{{ route('workspace.switch') }}" method="POST">
+            @csrf
+            <input type="hidden" name="workspace" value="{{ $targetWs }}">
+            <button type="submit"
+                    class="w-full py-2 px-3 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer">
+                <span class="flex items-center gap-1.5 truncate">
+                    <i data-lucide="arrow-left-right" class="w-3.5 h-3.5 {{ $targetWs === 'pokja' ? 'text-blue-500' : 'text-emerald-500' }} shrink-0"></i>
+                    <span class="truncate">Ke {{ $targetWsLabel }}</span>
+                </span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+            </button>
+        </form>
+    </div>
+@endif
 
 <nav class="space-y-2">
     @foreach ($navItems as $item)

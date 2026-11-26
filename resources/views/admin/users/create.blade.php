@@ -23,7 +23,7 @@
 
                     <div>
                         <label for="role" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Role / Hak Akses</label>
-                        <select name="role" id="role" required
+                        <select name="role" id="role" required onchange="togglePokjaCheckboxCreate()"
                                 class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all group">
                             <option value="siswa">SISWA</option>
                             <option value="pembimbing_sekolah">PEMBIMBING SEKOLAH</option>
@@ -33,6 +33,19 @@
                             <option value="super_admin" @if(\App\Models\User::where('role', 'super_admin')->exists()) disabled title="Role Super Admin sudah dibuat (Maksimal 1 akun)" @endif>SUPER ADMIN</option>
                             <option value="kepala_sekolah" @if(\App\Models\User::where('role', 'kepala_sekolah')->exists()) disabled title="Role Kepala Sekolah sudah dibuat (Maksimal 1 akun)" @endif>KEPALA SEKOLAH</option>
                         </select>
+
+                        <div id="is-pokja-wrapper-create" class="mt-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/60 hidden">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="checkbox" name="is_pokja" value="1" {{ old('is_pokja') ? 'checked' : '' }}
+                                       class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                <div>
+                                    <span class="block text-sm font-bold text-slate-800 dark:text-slate-100">Akses Tambahan: Sekaligus Anggota Pokja</span>
+                                    <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                        Berikan akses ke Shared Workspace Pokja tanpa membuat akun terpisah.
+                                    </span>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -62,4 +75,14 @@
             <p class="text-xs text-slate-600 dark:text-slate-400">Pastikan username unik dan instruksikan pengguna untuk segera mengubah password bawaan demi keamanan.</p>
         </div>
     </div>
+
+    <script>
+        function togglePokjaCheckboxCreate() {
+            const roleSelect = document.getElementById('role');
+            const wrapper = document.getElementById('is-pokja-wrapper-create');
+            if (!roleSelect || !wrapper) return;
+            wrapper.classList.toggle('hidden', roleSelect.value !== 'pembimbing_sekolah');
+        }
+        document.addEventListener('DOMContentLoaded', togglePokjaCheckboxCreate);
+    </script>
 </x-app-layout>

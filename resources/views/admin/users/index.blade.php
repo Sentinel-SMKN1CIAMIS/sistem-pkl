@@ -222,6 +222,11 @@
                                 <span class="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-black border {{ $roleClasses[$user->role] ?? 'bg-slate-500/10 text-slate-600 dark:text-slate-400' }}">
                                     {{ str_replace('_', ' ', $user->role) }}
                                 </span>
+                                @if($user->role === 'pembimbing_sekolah' && $user->is_pokja)
+                                    <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] uppercase font-black border bg-blue-600 text-white border-blue-600">
+                                        + POKJA
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                 {{ $user->created_at->format('d M Y') }}

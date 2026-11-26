@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'username', 'email', 'password', 'role', 'avatar', 'is_active', 'last_login_at', 'force_password_change', 'konsentrasi_keahlian_id', 'program_keahlian_id'])]
+#[Fillable(['name', 'username', 'email', 'password', 'role', 'is_pokja', 'avatar', 'is_active', 'last_login_at', 'force_password_change', 'konsentrasi_keahlian_id', 'program_keahlian_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -29,9 +29,43 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'is_pokja' => 'boolean',
             'last_login_at' => 'datetime',
             'force_password_change' => 'boolean',
         ];
+    }
+
+    /**
+     * Whether this user can access the shared Pokja workspace.
+     */
+    public function canAccessPokja(): bool
+    {
+        return $this->role === 'pokja'
+            || ($this->role === 'pembimbing_sekolah' && (bool) $this->is_pokja);
+    }
+
+    /**
+     * Whether this user has dual workspace access (Pembimbing Sekolah + Pokja).
+     */
+    public function hasDualWorkspace(): bool
+    {
+        return $this->role === 'pembimbing_sekolah' && (bool) $this->is_pokja;
+    }
+
+    /**
+     * Resolve the active workspace role for dashboard and navigation rendering.
+     */
+    public function activeWorkspace(): string
+    {
+        if ($this->hasDualWorkspace()) {
+            $ws = session('active_workspace');
+            if (in_array($ws, ['pokja', 'pembimbing_sekolah'], true)) {
+                return $ws;
+            }
+            return 'pembimbing_sekolah';
+        }
+
+        return $this->role;
     }
 
     public function siswa()

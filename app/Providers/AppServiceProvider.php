@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
         // Register Global Navigation Items for Sidebar and Bottom Nav
         view()->composer(['layouts.app', 'layouts.partials.*'], function ($view) {
             $user = auth()->user();
-            $role = $user?->role;
+            $role = $user?->activeWorkspace();
             $navItems = [];
 
             if ($role === 'siswa') {

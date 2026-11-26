@@ -10,7 +10,10 @@ class DashboardController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = \Illuminate\Support\Facades\Auth::user();
-        $role = $user->role;
+        if ($user->hasDualWorkspace() && !session()->has('active_workspace')) {
+            return redirect()->route('workspace.select');
+        }
+        $role = $user->activeWorkspace();
         $stats = [];
 
         switch ($role) {
@@ -286,7 +289,7 @@ class DashboardController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = \Illuminate\Support\Facades\Auth::user();
-        $role = $user->role;
+        $role = $user->activeWorkspace();
         if ($role === 'pembimbing_sekolah') {
             $teacher = $user->pembimbingSekolah;
             

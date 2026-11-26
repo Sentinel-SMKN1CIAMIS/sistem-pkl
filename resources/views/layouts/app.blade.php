@@ -1084,6 +1084,9 @@
         @if(auth()->user()->role === 'siswa')
             <x-reminder-settings-modal />
         @endif
+        @if(auth()->user()->activeWorkspace() === 'pokja' || auth()->user()->role === 'super_admin')
+            <x-pokja-activity-toast />
+        @endif
     @endauth
 
     @include('components.pwa-prompt')

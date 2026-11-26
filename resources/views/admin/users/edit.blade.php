@@ -30,7 +30,7 @@
                             </div>
                             <input type="hidden" name="role" value="super_admin">
                         @else
-                            <select name="role" id="role" required
+                            <select name="role" id="role" required onchange="togglePokjaCheckbox()"
                                     class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 dark:text-slate-200 transition-all">
                                 @foreach(['siswa', 'pembimbing_sekolah', 'pembimbing_dudi', 'pokja', 'kaprog', 'super_admin', 'kepala_sekolah'] as $roleVal)
                                     @php
@@ -40,6 +40,19 @@
                                     <option value="{{ $roleVal }}" {{ $user->role == $roleVal ? 'selected' : '' }} @if($disabled) disabled title="Role {{ str_replace('_', ' ', strtoupper($roleVal)) }} sudah dibuat (Maksimal 1 akun)" @endif>{{ str_replace('_', ' ', strtoupper($roleVal)) }}</option>
                                 @endforeach
                             </select>
+
+                            <div id="is-pokja-wrapper" class="mt-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/60 {{ old('role', $user->role) === 'pembimbing_sekolah' ? '' : 'hidden' }}">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="is_pokja" value="1" {{ old('is_pokja', $user->is_pokja) ? 'checked' : '' }}
+                                           class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                    <div>
+                                        <span class="block text-sm font-bold text-slate-800 dark:text-slate-100">Akses Tambahan: Sekaligus Anggota Pokja</span>
+                                        <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                            Jika dicentang, guru pembimbing ini akan melihat halaman pilih 2 workspace (Workspace Pokja bersama &amp; Pembimbing Sekolah) saat login.
+                                        </span>
+                                    </div>
+                                </label>
+                            </div>
                         @endif
                     </div>
 
@@ -68,4 +81,13 @@
             </form>
         </div>
     </div>
+
+    <script>
+        function togglePokjaCheckbox() {
+            const roleSelect = document.getElementById('role');
+            const wrapper = document.getElementById('is-pokja-wrapper');
+            if (!roleSelect || !wrapper) return;
+            wrapper.classList.toggle('hidden', roleSelect.value !== 'pembimbing_sekolah');
+        }
+    </script>
 </x-app-layout>

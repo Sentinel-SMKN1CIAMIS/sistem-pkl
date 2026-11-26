@@ -113,6 +113,12 @@ class LoginController extends Controller
                     return redirect()->route('auth.change-password.show');
                 }
 
+                // Dual-role Pembimbing Sekolah + Pokja -> redirect to Workspace Selector
+                if ($user->hasDualWorkspace()) {
+                    $request->session()->forget('active_workspace');
+                    return redirect()->route('workspace.select');
+                }
+
                 return redirect()->intended('dashboard');
             }
         }

@@ -1,5 +1,5 @@
 @php
-    $role = auth()->user()?->role;
+    $role = auth()->user()?->activeWorkspace();
     $navItems = [];
 
     if ($role === 'siswa') {

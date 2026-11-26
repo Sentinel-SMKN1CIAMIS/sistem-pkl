@@ -72,6 +72,7 @@ class UserController extends Controller
         $request->validate([
             'username' => 'required|string|unique:users,username',
             'role' => 'required|in:siswa,pembimbing_sekolah,pembimbing_dudi,pokja,super_admin,kepala_sekolah,kaprog',
+            'is_pokja' => 'nullable|boolean',
             'password' => 'required|string|min:8|confirmed'
         ]);
 
@@ -86,6 +87,7 @@ class UserController extends Controller
         User::create([
             'username' => $request->username,
             'role' => $request->role,
+            'is_pokja' => $request->role === 'pembimbing_sekolah' ? $request->boolean('is_pokja') : false,
             'password' => Hash::make($request->password),
             'name' => $request->username, // Default name to username
         ]);
@@ -104,6 +106,7 @@ class UserController extends Controller
         $request->validate([
             'username' => 'required|string|unique:users,username,' . $user->id,
             'role' => 'required|in:siswa,pembimbing_sekolah,pembimbing_dudi,pokja,super_admin,kepala_sekolah,kaprog',
+            'is_pokja' => 'nullable|boolean',
             'password' => 'nullable|string|min:8|confirmed'
         ]);
 
@@ -123,6 +126,7 @@ class UserController extends Controller
 
         $user->username = $request->username;
         $user->role = $request->role;
+        $user->is_pokja = $request->role === 'pembimbing_sekolah' ? $request->boolean('is_pokja') : false;
         
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
