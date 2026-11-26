@@ -105,5 +105,8 @@
                 </tbody>
             </table>
         </div>
+        <div class="px-5 py-3.5 border-t border-slate-200 dark:border-slate-700/60 bg-slate-50/60 dark:bg-slate-800/20">
+            {{ $students->links() }}
+        </div>
     </div>
 </x-app-layout>

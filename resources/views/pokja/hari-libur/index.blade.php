@@ -98,6 +98,9 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700/60">
+                    {{ $holidays->links() }}
+                </div>
             </div>
         </div>
     </div>

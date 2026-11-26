@@ -16,7 +16,8 @@ class HariLiburNasionalController extends Controller
         $holidays = HariLiburNasional::with('creator:id,name')
             ->whereYear('tanggal', $year)
             ->orderBy('tanggal')
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         return view('pokja.hari-libur.index', compact('holidays', 'year'));
     }

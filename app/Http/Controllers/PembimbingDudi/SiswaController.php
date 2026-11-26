@@ -19,7 +19,9 @@ class SiswaController extends Controller
         $students = Siswa::where('pembimbing_dudi_id', $mentor->id)
             ->with(['konsentrasiKeahlian', 'pembimbingSekolah', 'pembimbingSekolahUmum'])
             ->withCount(['jurnal', 'absensi'])
-            ->get();
+            ->orderBy('nama_lengkap')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('pembimbing-dudi.siswa.index', compact('students'));
     }
