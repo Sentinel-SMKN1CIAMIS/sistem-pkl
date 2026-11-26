@@ -127,6 +127,7 @@ class NotifikasiController extends Controller
             ]),
             'messages' => $newPesans->map(fn($p) => [
                 'id' => $p->id,
+                'from_user_id' => $p->from_user_id,
                 'title' => 'Pesan dari ' . ($p->fromUser?->name ?? 'Pengguna'),
                 'body' => \Illuminate\Support\Str::limit($p->isi, 80),
                 'url' => route('pesan.show', $p->from_user_id),

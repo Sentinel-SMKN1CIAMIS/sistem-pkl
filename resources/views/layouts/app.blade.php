@@ -1007,7 +1007,7 @@
             // Polling State Management
             let lastNotifId = parseInt(sessionStorage.getItem('last_notif_id') || '0', 10);
             let lastPesanId = parseInt(sessionStorage.getItem('last_pesan_id') || '0', 10);
-            let isFirstPoll = (lastNotifId === 0 && lastPesanId === 0);
+            let isFirstPoll = sessionStorage.getItem('notif_poll_initialized') !== '1';
 
             async function pollDeviceNotifications() {
                 try {
@@ -1035,6 +1035,7 @@
                         lastPesanId = data.max_pesan_id;
                         sessionStorage.setItem('last_notif_id', lastNotifId);
                         sessionStorage.setItem('last_pesan_id', lastPesanId);
+                        sessionStorage.setItem('notif_poll_initialized', '1');
                         isFirstPoll = false;
                         return;
                     }
@@ -1052,7 +1053,7 @@
                     if (data.messages && data.messages.length > 0) {
                         const currentPath = window.location.pathname;
                         data.messages.forEach(m => {
-                            if (!currentPath.includes('/pesan/' + m.id)) {
+                            if (!currentPath.includes('/pesan/' + m.from_user_id)) {
                                 showNativeNotification(m.title, m.body, m.url, 'pesan-' + m.id);
                             }
                         });
