@@ -223,7 +223,7 @@
                 @php
                     $unreadNotificationsCount = \App\Models\Notifikasi::where('to_user_id' . '', \Illuminate\Support\Facades\Auth::id())
                         ->where('is_read' . '', false)
-                        ->whereNotIn('tipe', ['pesan_baru', 'pesan_broadcast'])
+                        ->whereNotIn('tipe', ['pesan_baru'])
                         ->count();
                 @endphp
                 <div class="relative">

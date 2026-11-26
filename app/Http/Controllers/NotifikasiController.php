@@ -84,10 +84,10 @@ class NotifikasiController extends Controller
         $lastNotifId = $request->integer('last_notif_id', 0);
         $lastPesanId = $request->integer('last_pesan_id', 0);
 
-        // Ambil notifikasi sistem baru (kecuali pesan chat, karena pesan chat ditangani khusus oleh blok messages)
+        // Ambil notifikasi sistem & broadcast baru (hanya pesan chat 1-on-1 yang ditangani khusus oleh blok messages)
         $newNotifs = Notifikasi::where('to_user_id', $userId)
             ->where('is_read', false)
-            ->whereNotIn('tipe', ['pesan_baru', 'pesan_broadcast'])
+            ->whereNotIn('tipe', ['pesan_baru'])
             ->when($lastNotifId > 0, function ($q) use ($lastNotifId) {
                 $q->where('id', '>', $lastNotifId);
             })
@@ -106,10 +106,10 @@ class NotifikasiController extends Controller
             ->take(5)
             ->get();
 
-        // Unread notifikasi sistem (tanpa pesan chat yang sudah punya badge sendiri di menu Pesan)
+        // Unread notifikasi sistem & broadcast (chat 1-on-1 pakai badge menu Pesan)
         $totalUnreadNotif = Notifikasi::where('to_user_id', $userId)
             ->where('is_read', false)
-            ->whereNotIn('tipe', ['pesan_baru', 'pesan_broadcast'])
+            ->whereNotIn('tipe', ['pesan_baru'])
             ->count();
         $totalUnreadPesan = \App\Models\Pesan::where('to_user_id', $userId)->whereNull('dibaca_at')->count();
 
