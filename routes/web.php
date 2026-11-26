@@ -172,6 +172,11 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('pokja/kunjungan-monitoring/export-pdf', [\App\Http\Controllers\Pokja\KunjunganMonitoringController::class, 'exportPdf'])->name('pokja.kunjungan.export_pdf');
     });
 
+    // Broadcast Pengingat Siswa Berisiko (Early Warning) - Pokja, Super Admin, Kepsek, Kaprog, Pembimbing Sekolah
+    Route::middleware('role:pokja,super_admin,kepala_sekolah,kaprog,pembimbing_sekolah')->group(function () {
+        Route::post('early-warning/broadcast', [\App\Http\Controllers\EarlyWarningBroadcastController::class, 'send'])->name('early_warning.broadcast');
+    });
+
     // Tanggal Merah Nasional & Broadcast Pengumuman - Pokja, Super Admin, Kepala Sekolah
     Route::middleware('role:pokja,super_admin,kepala_sekolah')->prefix('pokja')->name('pokja.')->group(function () {
         Route::get('hari-libur', [\App\Http\Controllers\Pokja\HariLiburNasionalController::class, 'index'])->name('hari_libur.index');
