@@ -43,6 +43,10 @@
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                     Sudah Diizinkan — Muat Ulang
                 </button>
+                <button type="button" id="notif-gate-dismiss-denied-btn"
+                        class="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold transition-colors cursor-pointer">
+                    Lanjutkan Dulu (Akan Ditanyakan Lagi Saat Masuk Kembali)
+                </button>
             </div>
         </div>
     </div>
@@ -61,17 +65,28 @@
         const deniedBox = document.getElementById('notif-gate-denied');
         const allowBtn = document.getElementById('notif-gate-allow-btn');
         const recheckBtn = document.getElementById('notif-gate-recheck-btn');
+        const dismissDeniedBtn = document.getElementById('notif-gate-dismiss-denied-btn');
         if (!gate) return;
 
-        function evaluatePermission() {
+        const DISMISS_KEY = 'notif_denied_dismissed_once';
+        let leftApp = false;
+
+        function evaluatePermission(forceShow = false) {
             const perm = Notification.permission;
             if (perm === 'granted') {
+                sessionStorage.removeItem(DISMISS_KEY);
                 gate.classList.add('hidden');
                 document.body.style.overflow = '';
                 if (typeof window.syncWebPushSubscription === 'function') {
                     window.syncWebPushSubscription(false);
                 }
                 return true;
+            }
+
+            if (perm === 'denied' && !forceShow && sessionStorage.getItem(DISMISS_KEY) === '1') {
+                gate.classList.add('hidden');
+                document.body.style.overflow = '';
+                return false;
             }
 
             gate.classList.remove('hidden');
@@ -101,22 +116,42 @@
                 // ignore
             } finally {
                 allowBtn.disabled = false;
-                evaluatePermission();
+                evaluatePermission(true);
             }
         });
 
         recheckBtn?.addEventListener('click', () => {
-            if (!evaluatePermission()) {
+            sessionStorage.removeItem(DISMISS_KEY);
+            if (!evaluatePermission(true)) {
                 window.location.reload();
             }
         });
 
+        dismissDeniedBtn?.addEventListener('click', () => {
+            sessionStorage.setItem(DISMISS_KEY, '1');
+            gate.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+
         evaluatePermission();
+
+        // Jika user sempat keluar dari app/tab lalu masuk lagi, munculkan lagi pengingatnya
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                leftApp = true;
+            } else if (document.visibilityState === 'visible' && leftApp) {
+                leftApp = false;
+                if (Notification.permission !== 'granted') {
+                    sessionStorage.removeItem(DISMISS_KEY);
+                    evaluatePermission(true);
+                }
+            }
+        });
 
         // Pantau jika user mengubah izin lewat setelan browser secara live
         if (navigator.permissions && navigator.permissions.query) {
             navigator.permissions.query({ name: 'notifications' }).then(status => {
-                status.onchange = () => evaluatePermission();
+                status.onchange = () => evaluatePermission(true);
             }).catch(() => {});
         }
     });
