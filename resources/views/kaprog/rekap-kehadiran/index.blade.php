@@ -10,11 +10,21 @@
                 Menampilkan rekap kehadiran &amp; status early warning seluruh siswa pada program keahlian Anda (tidak terbatas pada siswa bimbingan pribadi).
             </p>
         </div>
-        <a href="{{ route('kaprog.rekap_kehadiran.export_pdf', request()->query()) }}"
-           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors shrink-0 w-fit">
-            <i data-lucide="file-down" class="w-4 h-4"></i>
-            Export PDF
-        </a>
+        <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            @if(($summaryStats['total_berisiko'] ?? 0) > 0)
+                <button type="button"
+                        onclick="window.dispatchEvent(new CustomEvent('open-ew-broadcast', { detail: { mode: 'bulk', filterSeverity: 'all' } }))"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-colors cursor-pointer">
+                    <i data-lucide="megaphone" class="w-4 h-4"></i>
+                    Broadcast Berisiko ({{ $summaryStats['total_berisiko'] }})
+                </button>
+            @endif
+            <a href="{{ route('kaprog.rekap_kehadiran.export_pdf', request()->query()) }}"
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors shrink-0 w-fit">
+                <i data-lucide="file-down" class="w-4 h-4"></i>
+                Export PDF
+            </a>
+        </div>
     </div>
 
     {{-- Summary Cards --}}
@@ -172,4 +182,9 @@
             {{ $rows->links() }}
         </div>
     </div>
+
+    <x-early-warning-broadcast-modal
+        :totalAtRisk="$summaryStats['total_berisiko'] ?? 0"
+        :criticalCount="$summaryStats['total_kritis'] ?? 0"
+        :warningCount="max(0, ($summaryStats['total_berisiko'] ?? 0) - ($summaryStats['total_kritis'] ?? 0))" />
 </x-app-layout>

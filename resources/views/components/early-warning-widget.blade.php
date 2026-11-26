@@ -40,6 +40,14 @@
                     Jurnal Tertunggak: {{ $warningCount }}
                 </span>
             @endif
+            @if($totalAtRisk > 0)
+                <button type="button"
+                        onclick="window.dispatchEvent(new CustomEvent('open-ew-broadcast', { detail: { mode: 'bulk', filterSeverity: 'all' } }))"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-colors cursor-pointer">
+                    <i data-lucide="megaphone" class="w-3.5 h-3.5"></i>
+                    Broadcast Pengingat
+                </button>
+            @endif
             @if($detailUrl)
                 <a href="{{ $detailUrl }}" class="px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold hover:opacity-90 transition-opacity">
                     Lihat Rekap Lengkap &rarr;
@@ -62,7 +70,7 @@
                         <th class="py-2.5 px-3">Kelas / Jurusan</th>
                         <th class="py-2.5 px-3">DUDI</th>
                         <th class="py-2.5 px-3">Indikator Risiko</th>
-                        <th class="py-2.5 pl-3 text-right">Status</th>
+                        <th class="py-2.5 pl-3 text-right">Status &amp; Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
@@ -90,9 +98,18 @@
                                 </div>
                             </td>
                             <td class="py-2.5 pl-3 text-right whitespace-nowrap">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase {{ $row['severity'] === 'critical' ? 'bg-red-500 text-white' : 'bg-amber-500 text-white' }}">
-                                    {{ $row['severity'] === 'critical' ? 'Kritis' : 'Perlu Pantau' }}
-                                </span>
+                                <div class="inline-flex items-center gap-1.5">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase {{ $row['severity'] === 'critical' ? 'bg-red-500 text-white' : 'bg-amber-500 text-white' }}">
+                                        {{ $row['severity'] === 'critical' ? 'Kritis' : 'Perlu Pantau' }}
+                                    </span>
+                                    <button type="button"
+                                            onclick='window.dispatchEvent(new CustomEvent("open-ew-broadcast", { detail: { mode: "single", siswaId: {{ $s->id }}, siswaName: @json($s->nama_lengkap), reasons: @json(implode("; ", $row["reasons"])) } }))'
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold transition-colors cursor-pointer"
+                                            title="Kirim pengingat ke {{ $s->nama_lengkap }}">
+                                        <i data-lucide="send" class="w-3 h-3"></i>
+                                        Tegur
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
@@ -101,3 +118,10 @@
         </div>
     @endif
 </div>
+
+@if($totalAtRisk > 0)
+    <x-early-warning-broadcast-modal
+        :totalAtRisk="$totalAtRisk"
+        :criticalCount="$criticalCount"
+        :warningCount="$warningCount" />
+@endif

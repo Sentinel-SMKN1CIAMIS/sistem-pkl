@@ -11,6 +11,14 @@
             </p>
         </div>
         <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            @if(($summary['berisiko'] ?? 0) > 0)
+                <button type="button"
+                        onclick="window.dispatchEvent(new CustomEvent('open-ew-broadcast', { detail: { mode: 'bulk', filterSeverity: 'all' } }))"
+                        class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5 cursor-pointer">
+                    <i data-lucide="megaphone" class="w-4 h-4"></i>
+                    Broadcast Berisiko ({{ $summary['berisiko'] }})
+                </button>
+            @endif
             <a href="{{ route('kaprog.monitoring_siswa.export_pdf', request()->query()) }}"
                class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5 w-fit">
                 <i data-lucide="file-down" class="w-4 h-4"></i>
@@ -164,11 +172,22 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-right whitespace-nowrap">
-                                <a href="{{ route('kaprog.monitoring_siswa.show', $s) }}"
-                                   class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors">
-                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                                    Pantau
-                                </a>
+                                <div class="inline-flex items-center gap-1.5">
+                                    @if($warn)
+                                        <button type="button"
+                                                onclick='window.dispatchEvent(new CustomEvent("open-ew-broadcast", { detail: { mode: "single", siswaId: {{ $s->id }}, siswaName: @json($s->nama_lengkap), reasons: @json(implode("; ", $warn["reasons"])) } }))'
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-colors cursor-pointer"
+                                                title="Kirim pengingat ke {{ $s->nama_lengkap }}">
+                                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                                            Tegur
+                                        </button>
+                                    @endif
+                                    <a href="{{ route('kaprog.monitoring_siswa.show', $s) }}"
+                                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors">
+                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                        Pantau
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -179,6 +198,13 @@
                 </tbody>
             </table>
         </div>
-        <div class="p-4">{{ $students->links() }}</div>
+        <div class="px-4 py-3.5 border-t border-slate-200 dark:border-slate-700/60 bg-slate-50/60 dark:bg-slate-800/20">
+            {{ $students->links() }}
+        </div>
     </div>
+
+    <x-early-warning-broadcast-modal
+        :totalAtRisk="$summary['berisiko'] ?? 0"
+        :criticalCount="$summary['berisiko'] ?? 0"
+        :warningCount="0" />
 </x-app-layout>
