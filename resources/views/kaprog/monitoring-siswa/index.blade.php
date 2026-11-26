@@ -10,11 +10,18 @@
                 Pantau kehadiran, jurnal harian, dan status risiko seluruh siswa di jurusan Anda secara langsung tanpa harus membuka guru pembimbing satu per satu.
             </p>
         </div>
-        <a href="{{ route('kaprog.rekap_kehadiran.index') }}"
-           class="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shrink-0 inline-flex items-center gap-1.5 w-fit">
-            <i data-lucide="clipboard-list" class="w-4 h-4 text-blue-500"></i>
-            Rekap Kehadiran Bulanan
-        </a>
+        <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            <a href="{{ route('kaprog.monitoring_siswa.export_pdf', request()->query()) }}"
+               class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5 w-fit">
+                <i data-lucide="file-down" class="w-4 h-4"></i>
+                Export PDF
+            </a>
+            <a href="{{ route('kaprog.rekap_kehadiran.index') }}"
+               class="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors inline-flex items-center gap-1.5 w-fit">
+                <i data-lucide="clipboard-list" class="w-4 h-4 text-blue-500"></i>
+                Rekap Kehadiran Bulanan
+            </a>
+        </div>
     </div>
 
     {{-- Summary Cards --}}

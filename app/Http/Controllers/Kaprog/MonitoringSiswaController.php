@@ -10,6 +10,8 @@ use App\Models\KonsentrasiKeahlian;
 use App\Models\ProgramKeahlian;
 use App\Models\Siswa;
 use App\Services\EarlyWarningService;
+use App\Services\PdfKopService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -176,5 +178,92 @@ class MonitoringSiswaController extends Controller
             'attendanceCounts',
             'warning'
         ));
+    }
+
+    public function exportPdf(Request $request, EarlyWarningService $earlyWarningService)
+    {
+        $user = Auth::user();
+        if (!$user->program_keahlian_id) {
+            abort(403, 'Akun Kaprog Anda belum terhubung ke Program Keahlian manapun.');
+        }
+
+        $program = ProgramKeahlian::find($user->program_keahlian_id);
+        $allowedConcentrationIds = KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)
+            ->pluck('id')
+            ->all();
+
+        $search = trim((string) $request->query('search', ''));
+        $selectedConcentration = $request->query('konsentrasi_keahlian_id', 'semua');
+        $selectedKelas = $request->query('kelas', 'semua');
+        $selectedDudi = $request->query('dudi_id', 'semua');
+        $todayStatusFilter = $request->query('status_hari_ini', 'semua');
+        $riskFilter = $request->query('risk', 'semua');
+        $todayStr = Carbon::today()->toDateString();
+
+        $query = Siswa::with([
+            'konsentrasiKeahlian:id,kode,nama',
+            'dudi:id,nama,kota',
+            'pembimbingSekolah:id,nama_lengkap',
+        ])->withCount([
+            'jurnal as total_jurnal_count',
+            'jurnal as valid_jurnal_count' => fn($q) => $q->where(fn($sub) => $sub->where('approval_status', 'approved')->orWhere('status', 'valid')),
+            'absensi as total_hadir_count' => fn($q) => $q->where('status', 'hadir'),
+        ])->whereIn('konsentrasi_keahlian_id', $allowedConcentrationIds);
+
+        if ($selectedConcentration !== 'semua' && in_array((int) $selectedConcentration, $allowedConcentrationIds, true)) {
+            $query->where('konsentrasi_keahlian_id', (int) $selectedConcentration);
+        }
+        if ($selectedKelas !== 'semua') {
+            $query->where('kelas', $selectedKelas);
+        }
+        if ($selectedDudi !== 'semua') {
+            $query->where('dudi_id', (int) $selectedDudi);
+        }
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('nis', 'like', "%{$search}%")
+                    ->orWhereHas('dudi', fn($dq) => $dq->where('nama', 'like', "%{$search}%"));
+            });
+        }
+        if ($todayStatusFilter === 'hadir') {
+            $query->whereHas('absensi', fn($q) => $q->whereDate('tanggal', $todayStr)->where('status', 'hadir'));
+        } elseif ($todayStatusFilter === 'belum_absen') {
+            $query->whereDoesntHave('absensi', fn($q) => $q->whereDate('tanggal', $todayStr));
+        } elseif ($todayStatusFilter === 'izin_sakit_libur') {
+            $query->whereHas('absensi', fn($q) => $q->whereDate('tanggal', $todayStr)->whereIn('status', ['izin', 'sakit', 'libur']));
+        }
+
+        $allActiveInProgram = Siswa::whereIn('konsentrasi_keahlian_id', $allowedConcentrationIds)
+            ->where('status_pkl', 'sedang_pkl')
+            ->get();
+        $warningEval = $earlyWarningService->evaluateStudents($allActiveInProgram, Carbon::today(), null);
+        $warningsBySiswa = $warningEval['items']->keyBy('siswa_id');
+        $atRiskIds = $warningsBySiswa->keys()->all();
+
+        if ($riskFilter === 'berisiko') {
+            $query->whereIn('id', empty($atRiskIds) ? [0] : $atRiskIds);
+        } elseif ($riskFilter === 'aman' && !empty($atRiskIds)) {
+            $query->whereNotIn('id', $atRiskIds);
+        }
+
+        $students = $query->orderBy('kelas')->orderBy('nama_lengkap')->get();
+        $todayAbsensiBySiswa = Absensi::whereIn('siswa_id', $students->pluck('id')->all())
+            ->whereDate('tanggal', $todayStr)
+            ->get()
+            ->keyBy('siswa_id');
+
+        $kopData = PdfKopService::getKopData();
+        $pdf = Pdf::loadView('kaprog.monitoring-siswa.export-pdf', array_merge($kopData, compact(
+            'program',
+            'students',
+            'todayAbsensiBySiswa',
+            'warningsBySiswa',
+            'selectedKelas',
+            'riskFilter'
+        )))->setPaper('a4', 'landscape');
+
+        $slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $program?->kode ?? 'jurusan'));
+        return $pdf->download("rekap-monitoring-siswa-{$slug}-" . now()->format('Y-m-d') . '.pdf');
     }
 }

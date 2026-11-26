@@ -9,20 +9,18 @@ use App\Models\Siswa;
 use App\Models\MonitoringPembimbing;
 use App\Models\KonsentrasiKeahlian;
 use App\Models\ProgramKeahlian;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use App\Services\PdfKopService;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MonitoringController extends Controller
 {
-    public function index(Request $request)
+    private function buildMentorsData(Request $request): array
     {
         $user = Auth::user();
-        if (!$user->program_keahlian_id) {
-            return back()->with('error', 'Anda tidak memiliki wewenang program keahlian.');
-        }
-
         $allowedConcentrationIds = KonsentrasiKeahlian::where('program_keahlian_id', $user->program_keahlian_id)->pluck('id')->toArray();
 
-        // Query only Pembimbing Sekolah belonging to the Kaprog's program or teaching/guiding students in the Kaprog's program
         $query = PembimbingSekolah::with(['user', 'konsentrasiKeahlian'])
             ->where(function($q) use ($allowedConcentrationIds) {
                 $q->whereIn('konsentrasi_keahlian_id', $allowedConcentrationIds)
@@ -86,7 +84,6 @@ class MonitoringController extends Controller
                 }
             ]);
 
-        // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -95,15 +92,11 @@ class MonitoringController extends Controller
             });
         }
 
-        // Tipe filter
         if ($request->filled('tipe')) {
             $query->where('tipe', $request->tipe);
         }
 
-        $mentors = $query->latest()->get();
-
-        // Enrich & calculate status dynamically based only on Kaprog's students
-        $mentors = $mentors->map(function ($mentor) {
+        $allMentors = $query->latest()->get()->map(function ($mentor) {
             $mentor->siswa_count = $mentor->siswa_count + $mentor->siswa_umum_count;
             $mentor->total_jurnals_count = $mentor->total_jurnals_count + $mentor->total_jurnals_umum_count;
             $mentor->pending_jurnals_count = $mentor->pending_jurnals_count + $mentor->pending_jurnals_umum_count;
@@ -121,23 +114,71 @@ class MonitoringController extends Controller
             return $mentor;
         });
 
-        // Filter by status if requested
         if ($request->filled('status')) {
             $status = $request->status;
-            $mentors = $mentors->filter(function($mentor) use ($status) {
-                return $mentor->activity_status === $status;
-            });
+            $allMentors = $allMentors->filter(fn($mentor) => $mentor->activity_status === $status)->values();
         }
 
-        // Statistics for dashboard based on Kaprog's allowed program
         $stats = [
-            'total' => $mentors->count(),
-            'aktif' => $mentors->where('activity_status', 'aktif')->count(),
-            'kurang_aktif' => $mentors->where('activity_status', 'kurang_aktif')->count(),
-            'tidak_pernah_login' => $mentors->where('activity_status', 'tidak_pernah_login')->count(),
+            'total' => $allMentors->count(),
+            'aktif' => $allMentors->where('activity_status', 'aktif')->count(),
+            'kurang_aktif' => $allMentors->where('activity_status', 'kurang_aktif')->count(),
+            'tidak_pernah_login' => $allMentors->where('activity_status', 'tidak_pernah_login')->count(),
         ];
 
-        return view('kaprog.monitoring.index', compact('mentors', 'stats'));
+        $program = ProgramKeahlian::find($user->program_keahlian_id);
+
+        return compact('allMentors', 'stats', 'program');
+    }
+
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->program_keahlian_id) {
+            return back()->with('error', 'Anda tidak memiliki wewenang program keahlian.');
+        }
+
+        $data = $this->buildMentorsData($request);
+        $allMentors = $data['allMentors'];
+
+        $perPage = 12;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $mentors = new LengthAwarePaginator(
+            $allMentors->forPage($currentPage, $perPage)->values(),
+            $allMentors->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+
+        return view('kaprog.monitoring.index', [
+            'mentors' => $mentors,
+            'stats' => $data['stats'],
+        ]);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->program_keahlian_id) {
+            abort(403, 'Anda tidak memiliki wewenang program keahlian.');
+        }
+
+        $data = $this->buildMentorsData($request);
+        $kopData = PdfKopService::getKopData();
+
+        $pdf = Pdf::loadView('pdf.monitoring-pembimbing', array_merge($kopData, [
+            'mentors' => $data['allMentors'],
+            'stats' => $data['stats'],
+            'scopeTitle' => 'Program Keahlian ' . ($data['program']?->nama ?? '-'),
+            'signerTitle' => 'Kepala Program Keahlian',
+            'signerName' => $user->name,
+        ]))->setPaper('a4', 'landscape');
+
+        return $pdf->download('rekap-monitoring-pembimbing-' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function show(PembimbingSekolah $pembimbingSekolah)

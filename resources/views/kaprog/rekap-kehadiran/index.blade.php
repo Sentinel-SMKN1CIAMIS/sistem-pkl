@@ -10,6 +10,11 @@
                 Menampilkan rekap kehadiran &amp; status early warning seluruh siswa pada program keahlian Anda (tidak terbatas pada siswa bimbingan pribadi).
             </p>
         </div>
+        <a href="{{ route('kaprog.rekap_kehadiran.export_pdf', request()->query()) }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors shrink-0 w-fit">
+            <i data-lucide="file-down" class="w-4 h-4"></i>
+            Export PDF
+        </a>
     </div>
 
     {{-- Summary Cards --}}
@@ -79,6 +84,12 @@
                 </select>
             </div>
             <div class="flex gap-2">
+                <select name="per_page" aria-label="Jumlah baris per halaman"
+                        class="w-16 px-2 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-200">
+                    @foreach([15, 25, 50] as $opt)
+                        <option value="{{ $opt }}" {{ ($perPage ?? 15) === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                    @endforeach
+                </select>
                 <button type="submit" class="flex-1 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer">
                     Filter
                 </button>
@@ -156,6 +167,9 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div class="px-4 py-3.5 border-t border-slate-200 dark:border-slate-700/60 bg-slate-50/60 dark:bg-slate-800/20">
+            {{ $rows->links() }}
         </div>
     </div>
 </x-app-layout>
