@@ -17,7 +17,7 @@ class ViewOnlyMiddleware
     {
         if (auth()->check() && auth()->user()->role === 'kepala_sekolah') {
             if (!$request->isMethod('GET') && !$request->isMethod('HEAD')) {
-                if ($request->routeIs('logout')) {
+                if ($request->routeIs('logout') || $request->routeIs('pokja.pengumuman.*')) {
                     return $next($request);
                 }
                 abort(403, 'Aksi ini tidak diizinkan untuk akun Kepala Sekolah (View Only).');

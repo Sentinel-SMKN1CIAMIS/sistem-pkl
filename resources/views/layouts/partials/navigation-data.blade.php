@@ -70,6 +70,7 @@
                 'icon' => 'eye',
                 'children' => [
                     ['name' => 'Monitoring Pembimbing', 'route' => 'pokja.monitoring.index', 'icon' => 'eye'],
+                    ['name' => 'Log Kunjungan Lapangan', 'route' => 'pokja.kunjungan.index', 'icon' => 'map-pin'],
                     ['name' => 'Evaluasi PKL', 'route' => 'pokja.evaluasi.index', 'icon' => 'bar-chart-3'],
                     ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
                 ]
@@ -81,6 +82,8 @@
                 'name' => 'Pengaturan',
                 'icon' => 'settings',
                 'children' => [
+                    ['name' => 'Tanggal Merah Nasional', 'route' => 'pokja.hari_libur.index', 'icon' => 'calendar-off'],
+                    ['name' => 'Broadcast Pengumuman', 'route' => 'pokja.pengumuman.index', 'icon' => 'megaphone'],
                     ['name' => 'Custom Report & Ekspor', 'route' => 'pokja.custom_report.index', 'icon' => 'file-spreadsheet'],
                     ['name' => 'Impor Pemetaan PKL', 'route' => 'pokja.pengaturan.import_pemetaan', 'icon' => 'file-up'],
                     ['name' => 'Template Sertifikat', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'award'],
@@ -88,6 +91,8 @@
                     ['name' => 'Kop Laporan PDF', 'route' => 'pokja.pengaturan.kop_laporan', 'icon' => 'building'],
                 ]
             ];
+        } else {
+            $navItems[] = ['name' => 'Broadcast Pengumuman', 'route' => 'pokja.pengumuman.index', 'icon' => 'megaphone'];
         }
 
         $navItems[] = ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'];
@@ -142,6 +147,7 @@
                 'icon' => 'eye',
                 'children' => [
                     ['name' => 'Monitoring Pembimbing', 'route' => 'pokja.monitoring.index', 'icon' => 'eye'],
+                    ['name' => 'Log Kunjungan Lapangan', 'route' => 'pokja.kunjungan.index', 'icon' => 'map-pin'],
                     ['name' => 'Evaluasi PKL', 'route' => 'pokja.evaluasi.index', 'icon' => 'bar-chart-3'],
                     ['name' => 'Feedback DUDI', 'route' => 'pokja.feedback.index', 'icon' => 'message-square'],
                 ]
@@ -150,6 +156,8 @@
                 'name' => 'Pengaturan',
                 'icon' => 'settings',
                 'children' => [
+                    ['name' => 'Tanggal Merah Nasional', 'route' => 'pokja.hari_libur.index', 'icon' => 'calendar-off'],
+                    ['name' => 'Broadcast Pengumuman', 'route' => 'pokja.pengumuman.index', 'icon' => 'megaphone'],
                     ['name' => 'Custom Report & Ekspor', 'route' => 'admin.custom_report.index', 'icon' => 'file-spreadsheet'],
                     ['name' => 'Impor Pemetaan PKL', 'route' => 'pokja.pengaturan.import_pemetaan', 'icon' => 'file-up'],
                     ['name' => 'Template Sertifikat', 'route' => 'pokja.pengaturan.sertifikat', 'icon' => 'award'],

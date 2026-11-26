@@ -109,7 +109,8 @@ class SendPklRemindersCommand extends Command
             $clockInAt = Carbon::parse($tanggalStr . ' ' . $absensi->waktu_datang);
             $hoursSinceClockIn = $clockInAt->diffInMinutes($now, false) / 60;
 
-            $customPulang = $absensi->siswa?->jam_notif_pulang;
+            $hasCustomSettings = (bool) $absensi->siswa?->reminder_settings_configured;
+            $customPulang = $hasCustomSettings ? $absensi->siswa?->jam_notif_pulang : null;
             $isCustomPulangReached = $customPulang
                 && $tanggalStr === $todayStr
                 && $hoursSinceClockIn >= 1

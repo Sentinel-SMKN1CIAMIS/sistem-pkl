@@ -56,12 +56,17 @@ class AbsensiController extends Controller
             ->map(fn($d) => Carbon::parse($d)->toDateString())
             ->flip();
 
+        $nationalHolidayDates = \App\Models\HariLiburNasional::whereBetween('tanggal', [$windowStart->toDateString(), $today->copy()->subDay()->toDateString()])
+            ->pluck('tanggal')
+            ->map(fn($d) => Carbon::parse($d)->toDateString())
+            ->flip();
+
         $hasStartedPkl = Absensi::where('siswa_id', $siswa->id)->exists();
         if ($hasStartedPkl) {
             for ($offset = 1; $offset <= min($maxBackdateDays, 7); $offset++) {
                 $checkDate = $today->copy()->subDays($offset);
                 $dateStr = $checkDate->toDateString();
-                if ($existingDates->has($dateStr) || $siswa->isRoutineDayOff($checkDate) || \App\Models\HariLiburNasional::findByDate($checkDate) !== null) {
+                if ($existingDates->has($dateStr) || $siswa->isRoutineDayOff($checkDate) || $nationalHolidayDates->has($dateStr)) {
                     continue;
                 }
                 $recentDates->push([
