@@ -140,9 +140,11 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // Data DUDI (Read-Only)
         Route::get('dudi', [\App\Http\Controllers\DudiController::class, 'index'])->name('dudi.index');
 
-        // Monitoring Pembimbing (View Only)
+        // Monitoring Pembimbing & Monitoring Siswa Langsung (View Only)
         Route::get('monitoring', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'index'])->name('monitoring.index');
         Route::get('monitoring/{pembimbingSekolah}', [\App\Http\Controllers\Kaprog\MonitoringController::class, 'show'])->name('monitoring.show');
+        Route::get('monitoring-siswa', [\App\Http\Controllers\Kaprog\MonitoringSiswaController::class, 'index'])->name('monitoring_siswa.index');
+        Route::get('monitoring-siswa/{siswa}', [\App\Http\Controllers\Kaprog\MonitoringSiswaController::class, 'show'])->name('monitoring_siswa.show');
         Route::get('rekap-kehadiran', [\App\Http\Controllers\Kaprog\RekapKehadiranController::class, 'index'])->name('rekap_kehadiran.index');
         
         // Pengajuan PKL

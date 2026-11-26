@@ -112,7 +112,7 @@
                         @php $s = $row['siswa']; $w = $row['warning']; @endphp
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/20">
                             <td class="px-4 py-3 whitespace-nowrap">
-                                <span class="font-bold text-slate-900 dark:text-white block">{{ $s->nama_lengkap }}</span>
+                                <a href="{{ route('kaprog.monitoring_siswa.show', $s) }}" class="font-bold text-blue-600 dark:text-blue-400 hover:underline block">{{ $s->nama_lengkap }}</a>
                                 <span class="text-[10px] font-mono text-slate-400">{{ $s->nis }}</span>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-slate-700 dark:text-slate-300">

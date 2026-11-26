@@ -102,6 +102,7 @@
             ['name' => 'Pengajuan PKL', 'route' => 'kaprog.pengajuan_pkl.index', 'icon' => 'file-plus-2'],
             ['name' => 'Peta DUDI', 'route' => 'shared.pemetaan.maps', 'icon' => 'map'],
             ['name' => 'Monitoring Pembimbing', 'route' => 'kaprog.monitoring.index', 'icon' => 'eye'],
+            ['name' => 'Monitoring Siswa', 'route' => 'kaprog.monitoring_siswa.index', 'icon' => 'users'],
             ['name' => 'Rekap Kehadiran Jurusan', 'route' => 'kaprog.rekap_kehadiran.index', 'icon' => 'clipboard-list'],
             ['name' => 'Laporan Kaprog', 'route' => 'kaprog.laporan.index', 'icon' => 'file-bar-chart-2'],
             ['name' => 'Pesan', 'route' => 'pesan.index', 'icon' => 'message-circle'],
