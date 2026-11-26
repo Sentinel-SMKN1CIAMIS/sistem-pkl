@@ -1,7 +1,19 @@
 <x-app-layout>
     <x-slot name="header">Pesan</x-slot>
 
-    <div class="flex flex-col md:flex-row gap-0 h-[calc(100vh-12rem)] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
+    <style>
+        .pesan-shell {
+            height: calc(100vh - 14.5rem);
+            height: calc(100dvh - 14.5rem);
+        }
+        @media (min-width: 768px) {
+            .pesan-shell {
+                height: calc(100vh - 12rem);
+            }
+        }
+    </style>
+
+    <div class="pesan-shell flex flex-col md:flex-row gap-0 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
 
         {{-- Panel Kiri: Daftar Kontak + Pencarian WhatsApp-style --}}
         @include('pesan.partials.sidebar', ['kontakWithMeta' => $kontakWithMeta, 'activeUserId' => null, 'mobileHidden' => false])

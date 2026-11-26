@@ -4,7 +4,7 @@
     'mobileHidden' => false,
 ])
 
-<div class="{{ $mobileHidden ? 'hidden md:flex' : 'flex' }} w-full md:w-80 flex-shrink-0 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex-col"
+<div class="{{ $mobileHidden ? 'hidden md:flex' : 'flex' }} w-full md:w-80 flex-shrink-0 overflow-hidden border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex-col" style="min-height: 0; height: 100%;"
      x-data="{
         q: '',
         loading: false,

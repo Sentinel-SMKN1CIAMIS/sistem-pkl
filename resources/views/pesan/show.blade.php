@@ -20,18 +20,27 @@
             transform: translateY(1rem) scale(0.95) !important;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
+        .pesan-shell {
+            height: calc(100vh - 14.5rem);
+            height: calc(100dvh - 14.5rem);
+        }
+        @media (min-width: 768px) {
+            .pesan-shell {
+                height: calc(100vh - 12rem);
+            }
+        }
     </style>
 
     {{-- Toast Container --}}
     <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
-    <div class="flex flex-col md:flex-row gap-0 h-[calc(100vh-12rem)] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
+    <div class="pesan-shell flex flex-col md:flex-row gap-0 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
 
         {{-- Panel Kiri: Daftar Kontak + Pencarian WhatsApp-style --}}
         @include('pesan.partials.sidebar', ['kontakWithMeta' => $kontakWithMeta, 'activeUserId' => $user->id, 'mobileHidden' => true])
 
         {{-- Panel Kanan: Thread Chat --}}
-        <div class="flex-1 flex flex-col bg-slate-50 dark:bg-slate-800/50 min-w-0">
+        <div class="flex-1 flex flex-col bg-slate-50 dark:bg-slate-800/50 min-w-0 overflow-hidden" style="min-height: 0; height: 100%;">
 
             {{-- Header Chat --}}
             <div class="flex items-center justify-between gap-3 px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
@@ -83,7 +92,7 @@
             </div>
 
             {{-- Area Pesan --}}
-            <div id="chat-area" class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-2 scroll-smooth">
+            <div id="chat-area" class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-2 scroll-smooth" style="min-height: 0; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;">
                 @foreach($messages as $msg)
                     @php $mine = $msg->from_user_id === auth()->id(); @endphp
                     <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $msg->id }}">
@@ -207,9 +216,9 @@
         }, type === 'error' ? 12000 : 6000);
     }
 
-    // Scroll ke bawah (kecuali jika ada ?highlight=msgId dari hasil pencarian)
+    // Scroll ke bawah hanya di dalam container #chat-area (jangan geser window luar di HP)
     function scrollBottom() {
-        chatBottom.scrollIntoView({ behavior: 'smooth' });
+        chatArea.scrollTop = chatArea.scrollHeight;
     }
     const highlightMsgId = new URLSearchParams(window.location.search).get('highlight');
     if (highlightMsgId) {
