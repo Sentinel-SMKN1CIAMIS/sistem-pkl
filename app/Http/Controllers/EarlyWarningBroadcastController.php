@@ -118,7 +118,7 @@ class EarlyWarningBroadcastController extends Controller
             ];
         }
 
-        // 3. Kirim Web Push Notification ke HP / Browser siswa
+        // 3. Kirim Web Push Notification langsung ke HP / Browser siswa (tanpa bergantung queue worker)
         if (count($pushAttemptedUsers) <= 50) {
             foreach ($pushAttemptedUsers as $entry) {
                 $res = $webPushService->sendToUser($entry['user_id'], [
@@ -135,7 +135,7 @@ class EarlyWarningBroadcastController extends Controller
                 ['Siswa PKL', 'absensi & jurnal PKL'],
                 $template
             );
-            $webPushService->dispatchBroadcast(
+            $res = $webPushService->sendToUsers(
                 array_column($pushAttemptedUsers, 'user_id'),
                 [
                     'title' => $judul,
@@ -144,11 +144,10 @@ class EarlyWarningBroadcastController extends Controller
                     'tag' => 'early-warning-' . $user->id . '-' . now()->format('Ymd'),
                 ]
             );
+            $pushDelivered += (int) ($res['sent'] ?? 0);
         }
 
-        $pushNote = count($pushAttemptedUsers) <= 50
-            ? " Push HP terkirim ke {$pushDelivered} perangkat aktif."
-            : ' Push HP sedang diproses di latar belakang.';
+        $pushNote = " Push HP terkirim ke {$pushDelivered} perangkat aktif.";
 
         return back()->with(
             'success',

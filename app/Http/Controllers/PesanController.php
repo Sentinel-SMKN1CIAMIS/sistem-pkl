@@ -386,7 +386,8 @@ class PesanController extends Controller
             $recipientIds[] = $k->id;
         }
 
-        // Kirim Web Push Notification ke semua kontak penerima
+        // Kirim Web Push Notification langsung (sinkron per chunk 100 perangkat aktif) agar tidak tertahan queue
+        $pushDelivered = 0;
         if (!empty($recipientIds)) {
             $payload = [
                 'title' => 'Broadcast dari ' . Auth::user()->name,
@@ -395,17 +396,14 @@ class PesanController extends Controller
                 'tag'   => 'pesan-broadcast-' . $authId . '-' . now()->timestamp,
             ];
             try {
-                if (count($recipientIds) <= 50) {
-                    $webPushService->sendToUsers($recipientIds, $payload);
-                } else {
-                    $webPushService->dispatchBroadcast($recipientIds, $payload);
-                }
+                $pushRes = $webPushService->sendToUsers($recipientIds, $payload);
+                $pushDelivered = (int) ($pushRes['sent'] ?? 0);
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('Broadcast Pesan WebPush failed: ' . $e->getMessage());
             }
         }
 
-        return back()->with('success', 'Pesan broadcast berhasil dikirim ke ' . $kontak->count() . ' kontak.');
+        return back()->with('success', 'Pesan broadcast berhasil dikirim ke ' . $kontak->count() . ' kontak (Push HP terkirim ke ' . $pushDelivered . ' perangkat aktif).');
     }
 
     /**

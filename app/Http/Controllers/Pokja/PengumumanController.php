@@ -68,15 +68,21 @@ class PengumumanController extends Controller
                 Notifikasi::insert($chunk);
             }
 
-            $webPush->dispatchBroadcast($targetUserIds, [
-                'title' => 'Pengumuman: ' . $pengumuman->judul,
-                'body' => mb_strimwidth($pengumuman->isi, 0, 140, '...'),
-                'url' => '/dashboard',
-                'tag' => 'pengumuman-' . $pengumuman->id,
-            ]);
+            $pushDelivered = 0;
+            try {
+                $pushRes = $webPush->sendToUsers($targetUserIds, [
+                    'title' => 'Pengumuman: ' . $pengumuman->judul,
+                    'body' => mb_strimwidth($pengumuman->isi, 0, 140, '...'),
+                    'url' => '/dashboard',
+                    'tag' => 'pengumuman-' . $pengumuman->id,
+                ]);
+                $pushDelivered = (int) ($pushRes['sent'] ?? 0);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Pengumuman WebPush failed: ' . $e->getMessage());
+            }
         }
 
-        return back()->with('success', 'Pengumuman berhasil dipublikasikan ke ' . count($targetUserIds) . ' pengguna.');
+        return back()->with('success', 'Pengumuman berhasil dipublikasikan ke ' . count($targetUserIds) . ' pengguna' . (!empty($targetUserIds) ? " (Push HP terkirim ke {$pushDelivered} perangkat aktif)." : '.'));
     }
 
     public function toggle(Pengumuman $pengumuman)
