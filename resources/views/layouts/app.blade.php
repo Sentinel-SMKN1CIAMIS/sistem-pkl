@@ -869,7 +869,7 @@
                 return outputArray;
             }
 
-            async function syncWebPushSubscription() {
+            async function syncWebPushSubscription(force = false) {
                 if (!vapidPublicKey || !('serviceWorker' in navigator) || !('PushManager' in window)) {
                     return;
                 }
@@ -891,7 +891,7 @@
                     if (!subJson || !subJson.endpoint || !subJson.keys) return;
 
                     const syncKey = currentAuthUserId + ':' + subJson.endpoint;
-                    if (sessionStorage.getItem('webpush_synced') === syncKey) {
+                    if (!force && sessionStorage.getItem('webpush_synced') === syncKey) {
                         return;
                     }
 
@@ -917,6 +917,7 @@
                     console.warn('WebPush subscription skipped:', err);
                 }
             }
+            window.syncWebPushSubscription = syncWebPushSubscription;
 
             // Request Native Notification Permission
             function requestNotificationPermission() {
@@ -1082,6 +1083,7 @@
     @endauth
 
     @auth
+        <x-notification-permission-gate />
         @if(auth()->user()->role === 'siswa')
             <x-reminder-settings-modal />
         @endif
