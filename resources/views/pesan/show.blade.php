@@ -27,76 +27,50 @@
 
     <div class="flex flex-col md:flex-row gap-0 h-[calc(100vh-12rem)] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
 
-        {{-- Panel Kiri: Daftar Kontak --}}
-        <div class="hidden md:flex w-80 flex-shrink-0 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex-col">
-            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h2 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Percakapan</h2>
-                @if(in_array(auth()->user()->role, ['pembimbing_sekolah', 'pembimbing_dudi', 'pokja', 'super_admin']))
-                <button onclick="document.getElementById('broadcastModal').classList.remove('hidden')"
-                        class="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors" title="Broadcast ke semua kontak">
-                    <i data-lucide="megaphone" class="w-4 h-4"></i>
-                </button>
-                @endif
-            </div>
-
-            <div class="flex-1 overflow-y-auto">
-                @forelse($kontakWithMeta as $meta)
-                    <a href="{{ route('pesan.show', $meta->user) }}"
-                       class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800 transition-colors {{ $meta->user->id === $user->id ? 'bg-blue-50 dark:bg-blue-500/10 border-l-2 border-l-blue-500' : '' }}">
-                        <div class="w-10 h-10 flex-none aspect-square rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
-                            {{ strtoupper(substr($meta->user->name, 0, 1)) }}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between gap-1">
-                                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{{ $meta->user->name }}</span>
-                                @if($meta->last_msg)
-                                    <span class="text-[10px] text-slate-400 flex-shrink-0">{{ $meta->last_msg->created_at->format('H:i') }}</span>
-                                @endif
-                            </div>
-                            <div class="flex items-center justify-between gap-1">
-                                <span class="text-xs text-slate-400 dark:text-slate-500 truncate">
-                                    @if($meta->last_msg)
-                                        {{ $meta->last_msg->from_user_id === auth()->id() ? 'Anda: ' : '' }}
-                                        @if($meta->last_msg->is_broadcast)
-                                            <span class="font-semibold text-indigo-500 dark:text-indigo-400">📢</span>
-                                        @endif
-                                        {{ $meta->last_msg->isi }}
-                                    @else
-                                        <span class="italic">Belum ada pesan</span>
-                                    @endif
-                                </span>
-                                @if($meta->unread > 0)
-                                    <span class="flex-shrink-0 bg-blue-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                                        {{ $meta->unread > 9 ? '9+' : $meta->unread }}
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                    </a>
-                @empty
-                    <div class="flex flex-col items-center justify-center h-40 text-slate-400 dark:text-slate-500 text-sm text-center p-6">
-                        <i data-lucide="users" class="w-10 h-10 mb-3 opacity-40"></i>
-                        <p>Belum ada kontak.</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
+        {{-- Panel Kiri: Daftar Kontak + Pencarian WhatsApp-style --}}
+        @include('pesan.partials.sidebar', ['kontakWithMeta' => $kontakWithMeta, 'activeUserId' => $user->id, 'mobileHidden' => true])
 
         {{-- Panel Kanan: Thread Chat --}}
         <div class="flex-1 flex flex-col bg-slate-50 dark:bg-slate-800/50 min-w-0">
 
             {{-- Header Chat --}}
-            <div class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-                <a href="{{ route('pesan.index') }}" class="md:hidden p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
-                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                </a>
-                <div style="min-width: 36px; min-height: 36px; flex-shrink: 0;" class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
-                    {{ strtoupper(substr($user->name, 0, 1)) }}
+            <div class="flex items-center justify-between gap-3 px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <a href="{{ route('pesan.index') }}" class="md:hidden p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </a>
+                    <div style="min-width: 36px; min-height: 36px; flex-shrink: 0;" class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-tight truncate">{{ $user->name }}</p>
+                        <p class="text-xs text-slate-400 capitalize">{{ str_replace('_', ' ', $user->role) }}</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-tight">{{ $user->name }}</p>
-                    <p class="text-xs text-slate-400 capitalize">{{ str_replace('_', ' ', $user->role) }}</p>
-                </div>
+                <button type="button" id="toggle-inchat-search"
+                        class="p-2 rounded-xl text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                        title="Cari kata di dalam percakapan ini"
+                        aria-label="Cari di dalam percakapan">
+                    <i data-lucide="search" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            {{-- In-Chat Search Bar (toggleable) --}}
+            <div id="inchat-search-bar" class="hidden px-4 py-2 bg-slate-100 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2 flex-shrink-0">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                <input type="text" id="inchat-search-input"
+                       placeholder="Cari kata atau kalimat di obrolan ini..."
+                       class="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500">
+                <span id="inchat-search-count" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 min-w-[44px] text-center"></span>
+                <button type="button" id="inchat-search-prev" class="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 cursor-pointer" title="Hasil sebelumnya">
+                    <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+                </button>
+                <button type="button" id="inchat-search-next" class="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 cursor-pointer" title="Hasil berikutnya">
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </button>
+                <button type="button" id="inchat-search-close" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer" title="Tutup pencarian">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
             </div>
 
             {{-- Offline / Connection Error Bar --}}
@@ -233,11 +207,103 @@
         }, type === 'error' ? 12000 : 6000);
     }
 
-    // Scroll ke bawah
+    // Scroll ke bawah (kecuali jika ada ?highlight=msgId dari hasil pencarian)
     function scrollBottom() {
         chatBottom.scrollIntoView({ behavior: 'smooth' });
     }
-    scrollBottom();
+    const highlightMsgId = new URLSearchParams(window.location.search).get('highlight');
+    if (highlightMsgId) {
+        const targetEl = document.querySelector(`[data-msg-id="${highlightMsgId}"]`);
+        if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const bubble = targetEl.querySelector('div');
+            if (bubble) {
+                bubble.classList.add('ring-2', 'ring-amber-400', 'ring-offset-2');
+                setTimeout(() => bubble.classList.remove('ring-2', 'ring-amber-400', 'ring-offset-2'), 3500);
+            }
+        } else {
+            scrollBottom();
+        }
+    } else {
+        scrollBottom();
+    }
+
+    // In-Chat Search (Cari kata/kalimat di dalam thread ini)
+    (function initInChatSearch() {
+        const toggleBtn = document.getElementById('toggle-inchat-search');
+        const bar = document.getElementById('inchat-search-bar');
+        const searchInput = document.getElementById('inchat-search-input');
+        const countEl = document.getElementById('inchat-search-count');
+        const prevBtn = document.getElementById('inchat-search-prev');
+        const nextBtn = document.getElementById('inchat-search-next');
+        const closeBtn = document.getElementById('inchat-search-close');
+        if (!toggleBtn || !bar || !searchInput) return;
+
+        let matches = [];
+        let activeIdx = -1;
+
+        function clearHighlights() {
+            document.querySelectorAll('#chat-area [data-msg-id] > div').forEach(b => {
+                b.classList.remove('ring-2', 'ring-amber-400', 'ring-offset-2');
+            });
+            matches = [];
+            activeIdx = -1;
+            countEl.textContent = '';
+        }
+
+        function focusMatch(idx) {
+            if (matches.length === 0) return;
+            matches.forEach(el => el.querySelector('div')?.classList.remove('ring-2', 'ring-amber-400', 'ring-offset-2'));
+            activeIdx = (idx + matches.length) % matches.length;
+            const el = matches[activeIdx];
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.querySelector('div')?.classList.add('ring-2', 'ring-amber-400', 'ring-offset-2');
+            countEl.textContent = `${activeIdx + 1} / ${matches.length}`;
+        }
+
+        function runSearch() {
+            const term = searchInput.value.trim().toLowerCase();
+            clearHighlights();
+            if (!term) return;
+
+            document.querySelectorAll('#chat-area [data-msg-id]').forEach(row => {
+                const text = (row.querySelector('p')?.textContent || '').toLowerCase();
+                if (text.includes(term)) matches.push(row);
+            });
+
+            if (matches.length > 0) {
+                focusMatch(matches.length - 1);
+            } else {
+                countEl.textContent = '0 / 0';
+            }
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            bar.classList.toggle('hidden');
+            if (!bar.classList.contains('hidden')) {
+                searchInput.focus();
+            } else {
+                searchInput.value = '';
+                clearHighlights();
+            }
+        });
+        closeBtn.addEventListener('click', () => {
+            bar.classList.add('hidden');
+            searchInput.value = '';
+            clearHighlights();
+        });
+        searchInput.addEventListener('input', runSearch);
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                focusMatch(e.shiftKey ? activeIdx - 1 : activeIdx + 1);
+            } else if (e.key === 'Escape') {
+                closeBtn.click();
+            }
+        });
+        prevBtn.addEventListener('click', () => focusMatch(activeIdx - 1));
+        nextBtn.addEventListener('click', () => focusMatch(activeIdx + 1));
+    })();
 
     // Auto-resize textarea
     input.addEventListener('input', () => {
